@@ -7,10 +7,11 @@ every map updates.
 
 ## The problem
 
-If you make maps in R *and* QGIS *and* the web, you’re maintaining the
-same colors, line weights, and classification breaks in multiple places.
-Change a stream color in QGIS? Now you need to update your tmap code,
-your leaflet code, and your MapLibre style. It doesn’t scale.
+NGE produces maps across multiple tools — QGIS for field work, tmap for
+bookdown reports, MapLibre GL for web maps. Symbology (colors, line
+weights, classification breaks) is duplicated manually across each tool.
+Change a color in QGIS → manually update R code → manually update web
+styles. It doesn’t scale.
 
 ## The solution
 
@@ -22,68 +23,157 @@ A canonical style registry that serves as the single source of truth:
       ↓ gq_tmap_style() / gq_mapgl_style()
     tmap, mapgl, leaflet, ggplot2
 
-## Load a registry
+## Real data: Bittner Creek
 
-The registry is just JSON. Load it with
-[`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md):
+gq ships with real spatial data for Bittner Creek near Prince George — a
+~56 km² watershed pulled from the BC Freshwater Atlas and bcfishpass via
+the newgraph database. This includes the watershed boundary, FWA
+streams, lakes, DRA roads, CN railway, and 95 PSCIS fish passage
+assessments.
 
 ``` r
 library(gq)
+library(sf)
+#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
 
+data(bittner_wsd, bittner_streams, bittner_lakes,
+     bittner_roads, bittner_railway, bittner_pscis,
+     package = "gq")
+
+cat("Watershed:", round(bittner_wsd$area_ha), "ha\n")
+#> Watershed: 5600 ha
+cat("Streams:", nrow(bittner_streams), "segments\n")
+#> Streams: 150 segments
+cat("Lakes:", nrow(bittner_lakes), "\n")
+#> Lakes: 12
+cat("Roads:", nrow(bittner_roads), "\n")
+#> Roads: 5576
+cat("PSCIS crossings:", nrow(bittner_pscis), "\n")
+#> PSCIS crossings: 95
+```
+
+## Load the style registry
+
+The styles come from a QGIS project extracted with
+[`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md).
+The registry maps layer names to rendering properties — fill colors,
+stroke weights, classification breaks:
+
+``` r
 reg_path <- system.file("examples", "demo_registry.json", package = "gq")
 reg <- gq_registry_read(reg_path)
 
-names(reg$layers)
-#> [1] "watershed" "lake"      "stream"    "road"      "crossing"
-```
-
-Each layer has a type (polygon, line, point) and style properties:
-
-``` r
+# Lake style — fill, stroke, opacity all defined once
 reg$layers$lake
 #> $type
 #> [1] "polygon"
 #> 
+#> $source_layer
+#> [1] "whse_basemapping.fwa_lakes_poly"
+#> 
 #> $fill
 #> $fill$color
-#> [1] "#c6ddf0"
+#> [1] "#dcecf4"
 #> 
 #> $fill$opacity
-#> [1] 0.85
+#> [1] 0.7
 #> 
 #> 
 #> $stroke
 #> $stroke$color
-#> [1] "#7ba7cc"
+#> [1] "#1f78b4"
 #> 
 #> $stroke$width
-#> [1] 0.5
+#> [1] 0.2
 ```
 
-## Translate to tmap
+## tmap: static map for reports
 
 [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
-converts a registry layer to tmap v4 arguments — ready to pass directly
-to
-[`tm_polygons()`](https://r-tmap.github.io/tmap/reference/tm_polygons.html),
-[`tm_lines()`](https://r-tmap.github.io/tmap/reference/tm_lines.html),
-or
-[`tm_dots()`](https://r-tmap.github.io/tmap/reference/tm_symbols.html):
+converts registry entries directly to tmap v4 arguments. Here’s a study
+area map following NGE cartographic conventions:
 
 ``` r
+library(tmap)
+sf_use_s2(FALSE)
+#> Spherical geometry (s2) switched off
+
+# Filter streams for display
+streams_display <- bittner_streams[bittner_streams$stream_order >= 3, ]
+
+# Roads by class for visual hierarchy
+roads_hwy <- bittner_roads[bittner_roads$road_type == "RH1", ]
+roads_art <- bittner_roads[bittner_roads$road_type %in% c("RA1", "RA2"), ]
+
+# PSCIS classification from the registry — same colors as QGIS
+pscis_cls <- gq_tmap_classes(reg$layers$crossing)
+
+m <- tm_shape(bittner_wsd) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
+tm_shape(bittner_lakes) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
+tm_shape(streams_display) +
+  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
+tm_shape(bittner_railway) +
+  tm_lines(col = "black", lwd = 1.2) +
+tm_shape(bittner_railway) +
+  tm_lines(col = "white", lwd = 0.6, lty = "42") +
+tm_shape(roads_hwy) +
+  tm_lines(col = "#c0392b", lwd = 2.0) +
+tm_shape(roads_art) +
+  tm_lines(col = "#e67e22", lwd = 1.4) +
+tm_shape(bittner_pscis) +
+  tm_dots(
+    fill = pscis_cls$field,
+    fill.scale = tm_scale_categorical(
+      values = pscis_cls$values,
+      labels = pscis_cls$labels
+    ),
+    size = 0.3
+  ) +
+tm_layout(
+  frame = TRUE,
+  inner.margins = c(0, 0, 0, 0),
+  legend.position = c("left", "top"),
+  legend.frame = TRUE,
+  legend.bg.color = "white",
+  legend.bg.alpha = 0.85
+)
+
+m
+```
+
+![Study area map of Bittner Creek watershed near Prince George showing
+streams, lakes, roads, railway, and PSCIS
+crossings](gq-intro_files/figure-html/tmap-study-area-1.png)
+
+Every color on that map traces back to the registry. The PSCIS crossing
+colors (red = barrier, green = passable, orange = potential, purple =
+unknown) match the QGIS project exactly because they come from the same
+`registry.json`.
+
+## How the style translation works
+
+The registry stores canonical properties.
+[`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
+translates them to tmap’s parameter names:
+
+``` r
+# Registry → tmap for a polygon layer
 gq_tmap_style(reg$layers$lake)
 #> $fill
-#> [1] "#c6ddf0"
+#> [1] "#dcecf4"
 #> 
 #> $fill_alpha
-#> [1] 0.85
+#> [1] 0.7
 #> 
 #> $col
-#> [1] "#7ba7cc"
+#> [1] "#1f78b4"
 #> 
 #> $lwd
-#> [1] 0.5
+#> [1] 0.2
 
+# Registry → tmap for a line layer
 gq_tmap_style(reg$layers$stream)
 #> $col
 #> [1] "#7ba7cc"
@@ -92,226 +182,119 @@ gq_tmap_style(reg$layers$stream)
 #> [1] 1.2
 ```
 
-## Build a map
-
-gq ships with small demo datasets (`watershed`, `lake`, `stream`,
-`road`, `crossing`) for illustration. Here’s a full map styled entirely
-from the registry:
-
-``` r
-library(tmap)
-library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
-
-# Load demo spatial data
-data(watershed, lake, stream, road, crossing, package = "gq")
-
-# Style everything from the registry — one source of truth
-tm_shape(watershed) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
-tm_shape(lake) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
-tm_shape(stream) +
-  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
-tm_shape(road) +
-  tm_lines(col = "grey50", lwd = 1.5) +
-tm_shape(crossing) +
-  do.call(tm_dots, gq_tmap_style(reg$layers$crossing))
-```
-
-![Map showing watersheds, lakes, streams, roads and crossings styled
-from the gq registry](gq-intro_files/figure-html/demo-map-1.png)
-
-Every color, opacity, and line weight comes from `reg` — not hard-coded
-in the plotting code.
-
-## Classified layers
-
-Many layers use categorized symbology (road types, fish passage status).
-The registry stores per-class colors:
-
-``` r
-reg$layers$road$classification
-#> $field
-#> [1] "road_type"
-#> 
-#> $classes
-#> $classes$highway
-#> $classes$highway$color
-#> [1] "#c0392b"
-#> 
-#> $classes$highway$width
-#> [1] 2.5
-#> 
-#> $classes$highway$label
-#> [1] "Highway"
-#> 
-#> 
-#> $classes$arterial
-#> $classes$arterial$color
-#> [1] "#e67e22"
-#> 
-#> $classes$arterial$width
-#> [1] 1.8
-#> 
-#> $classes$arterial$label
-#> [1] "Arterial"
-#> 
-#> 
-#> $classes$local
-#> $classes$local$color
-#> [1] "#95a5a6"
-#> 
-#> $classes$local$width
-#> [1] 1
-#> 
-#> $classes$local$label
-#> [1] "Local"
-```
-
+For classified layers,
 [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
-extracts this into a format ready for
+extracts the field name, color vector, and labels — ready for
 [`tm_scale_categorical()`](https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html):
 
 ``` r
-road_cls <- gq_tmap_classes(reg$layers$road)
-road_cls
+gq_tmap_classes(reg$layers$crossing)
 #> $field
-#> [1] "road_type"
+#> [1] "barrier_result_code"
 #> 
 #> $values
-#>   highway  arterial     local 
-#> "#c0392b" "#e67e22" "#95a5a6" 
+#>   BARRIER  PASSABLE POTENTIAL   UNKNOWN 
+#> "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4" 
 #> 
 #> $labels
-#> [1] "Highway"  "Arterial" "Local"
+#> [1] "Barrier"           "Passable"          "Potential Barrier"
+#> [4] "Unknown"
 ```
 
-``` r
-crossing_cls <- gq_tmap_classes(reg$layers$crossing)
+## MapLibre GL: interactive web map
 
-tm_shape(watershed) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
-tm_shape(lake) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
-tm_shape(stream) +
-  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
-tm_shape(road) +
-  tm_lines(
-    col = road_cls$field,
-    col.scale = tm_scale_categorical(
-      values = road_cls$values,
-      labels = road_cls$labels
-    ),
-    lwd = 2
-  ) +
-tm_shape(crossing) +
-  tm_dots(
-    fill = crossing_cls$field,
-    fill.scale = tm_scale_categorical(
-      values = crossing_cls$values,
-      labels = crossing_cls$labels
-    ),
-    size = 0.5
+The same registry produces MapLibre GL paint properties for web maps via
+[`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md):
+
+``` r
+library(mapgl)
+
+# PSCIS match expression from registry — same classification as tmap
+pscis_expr <- gq_mapgl_classes(reg$layers$crossing)
+
+# Watershed style
+wsd_style <- gq_mapgl_style(reg$layers$watershed)
+lake_style <- gq_mapgl_style(reg$layers$lake)
+stream_style <- gq_mapgl_style(reg$layers$stream)
+
+maplibre(
+  bounds = as.numeric(st_bbox(bittner_wsd))
+) |>
+  add_fill_layer(
+    id = "watershed",
+    source = bittner_wsd,
+    fill_color = wsd_style$paint[["fill-color"]],
+    fill_opacity = wsd_style$paint[["fill-opacity"]]
+  ) |>
+  add_fill_layer(
+    id = "lakes",
+    source = bittner_lakes,
+    fill_color = lake_style$paint[["fill-color"]],
+    fill_opacity = lake_style$paint[["fill-opacity"]]
+  ) |>
+  add_line_layer(
+    id = "streams",
+    source = streams_display,
+    line_color = stream_style$paint[["line-color"]],
+    line_width = 1
+  ) |>
+  add_line_layer(
+    id = "railway",
+    source = bittner_railway,
+    line_color = "black",
+    line_width = 1.5
+  ) |>
+  add_line_layer(
+    id = "roads-hwy",
+    source = roads_hwy,
+    line_color = "#c0392b",
+    line_width = 2
+  ) |>
+  add_circle_layer(
+    id = "pscis",
+    source = bittner_pscis,
+    circle_color = pscis_expr,
+    circle_radius = 5,
+    circle_stroke_color = "white",
+    circle_stroke_width = 1
   )
 ```
 
-![Map showing roads colored by type and crossings colored by fish
-passage status](gq-intro_files/figure-html/classified-map-1.png)
-
-## MapLibre GL output
-
-The same registry translates to MapLibre GL paint properties for web
-maps:
+The PSCIS crossings use a MapLibre `match` expression built from the
+registry:
 
 ``` r
-gq_mapgl_style(reg$layers$lake)
-#> $paint
-#> $paint$`fill-color`
-#> [1] "#c6ddf0"
-#> 
-#> $paint$`fill-opacity`
-#> [1] 0.85
-#> 
-#> $paint$`fill-outline-color`
-#> [1] "#7ba7cc"
-#> 
-#> 
-#> $layer_type
-#> [1] "fill"
-
-gq_mapgl_style(reg$layers$stream)
-#> $paint
-#> $paint$`line-color`
-#> [1] "#7ba7cc"
-#> 
-#> $paint$`line-width`
-#> [1] 1.2
-#> 
-#> 
-#> $layout
-#> list()
-#> 
-#> $layer_type
-#> [1] "line"
-```
-
-For classified layers,
-[`gq_mapgl_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.md)
-builds a MapLibre match expression:
-
-``` r
-str(gq_mapgl_classes(reg$layers$road))
-#> List of 9
+str(pscis_expr)
+#> List of 11
 #>  $ : chr "match"
 #>  $ :List of 2
 #>   ..$ : chr "get"
-#>   ..$ : chr "road_type"
-#>  $ : chr "highway"
-#>  $ : chr "#c0392b"
-#>  $ : chr "arterial"
-#>  $ : chr "#e67e22"
-#>  $ : chr "local"
-#>  $ : chr "#95a5a6"
+#>   ..$ : chr "barrier_result_code"
+#>  $ : chr "BARRIER"
+#>  $ : chr "#ca3c3c"
+#>  $ : chr "PASSABLE"
+#>  $ : chr "#33a02c"
+#>  $ : chr "POTENTIAL"
+#>  $ : chr "#ff7f00"
+#>  $ : chr "UNKNOWN"
+#>  $ : chr "#bf2ac4"
 #>  $ : chr "#888888"
 ```
 
-This expression goes directly into
-`mapgl::add_line_layer(paint = list("line-color" = expr))`.
+Same classification, same colors — one source of truth for both static
+and interactive maps.
 
 ## Extract from QGIS
 
 If you have an existing QGIS project,
 [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
-parses the .qgs XML and builds a registry from it — no PyQGIS needed:
+parses the .qgs XML and builds a registry — no PyQGIS needed:
 
 ``` r
 qgs_path <- system.file("examples", "mini_project.qgs", package = "gq")
 extracted <- gq_qgs_extract(qgs_path)
-
 names(extracted$layers)
 #> [1] "lakes"     "streams"   "crossings" "roads"
-extracted$layers$lakes
-#> $type
-#> [1] "polygon"
-#> 
-#> $source_layer
-#> [1] "lakes"
-#> 
-#> $fill
-#> $fill$color
-#> [1] "#c6ddf0"
-#> 
-#> $fill$opacity
-#> [1] 0.851
-#> 
-#> 
-#> $stroke
-#> $stroke$color
-#> [1] "#7ba7cc"
-#> 
-#> $stroke$width
-#> [1] 0.5
 ```
 
 Write it out as your registry:
@@ -322,15 +305,15 @@ jsonlite::write_json(extracted, "registry.json", pretty = TRUE, auto_unbox = TRU
 
 ## One source of truth
 
-The workflow is:
+The workflow:
 
 1.  Design styles in **QGIS** (the best visual tool for cartography)
 2.  Extract with
     [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
     → `registry.json`
-3.  In R scripts:
+3.  In R:
     [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
-    for static maps,
+    for static report maps,
     [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
     for web
 4.  Change a color in the registry → every map updates
