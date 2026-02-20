@@ -68,5 +68,4 @@ gq_tmap_style(reg$layers$crossing)
 
 # Use with tmap v4:
 # tm_shape(lakes_sf) + do.call(tm_polygons, gq_tmap_style(reg$layers$lake))
-# tm_shape(lakes_sf) + tm_polygons(!!!gq_tmap_style(reg$layers$lake))
 ```
