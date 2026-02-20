@@ -1,4 +1,4 @@
-#' Read layer styles from a QGIS project file
+#' Extract layer styles from a QGIS project file
 #'
 #' Parses a .qgs XML file and extracts symbology (fill, stroke, classification,
 #' labels) for all vector layers into a list suitable for writing to registry.json.
@@ -9,10 +9,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' reg <- gq_read_qgs("path/to/project.qgs")
+#' reg <- gq_qgs_extract("path/to/project.qgs")
 #' jsonlite::write_json(reg, "registry/registry.json", pretty = TRUE, auto_unbox = TRUE)
 #' }
-gq_read_qgs <- function(path) {
+gq_qgs_extract <- function(path) {
   if (!requireNamespace("xml2", quietly = TRUE)) stop("xml2 is required")
 
   doc <- xml2::read_xml(path)
