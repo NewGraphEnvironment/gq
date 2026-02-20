@@ -7,11 +7,11 @@ every map updates.
 
 ## The problem
 
-NGE produces maps across multiple tools — QGIS for field work, tmap for
-bookdown reports, MapLibre GL for web maps. Symbology (colors, line
-weights, classification breaks) is duplicated manually across each tool.
-Change a color in QGIS → manually update R code → manually update web
-styles. It doesn’t scale.
+New Graph produces maps across multiple tools — QGIS for field work,
+tmap for bookdown reports, MapLibre GL for web maps. Symbology (colors,
+line weights, classification breaks) is duplicated manually across each
+tool. Change a color in QGIS → manually update R code → manually update
+web styles. It doesn’t scale.
 
 ## The solution
 
@@ -60,10 +60,17 @@ The registry maps layer names to rendering properties — fill colors,
 stroke weights, classification breaks:
 
 ``` r
-reg_path <- system.file("examples", "demo_registry.json", package = "gq")
+reg_path <- system.file("examples", "reg_demo.json", package = "gq")
 reg <- gq_registry_read(reg_path)
 
-# Lake style — fill, stroke, opacity all defined once
+# What layers did we extract?
+names(reg$layers)
+#> [1] "conservancy"                "crossings_pscis_assessment"
+#> [3] "lake"                       "provincial_park"           
+#> [5] "railway"                    "roads_dra"                 
+#> [7] "stream_labels"              "streams_all"
+
+# Lake style — fill, stroke, opacity, label settings all captured
 reg$layers$lake
 #> $type
 #> [1] "polygon"
@@ -85,35 +92,126 @@ reg$layers$lake
 #> 
 #> $stroke$width
 #> [1] 0.2
+#> 
+#> 
+#> $label
+#> $label$font
+#> [1] "Helvetica"
+#> 
+#> $label$size
+#> [1] 10
+#> 
+#> $label$style
+#> [1] "italic"
+#> 
+#> $label$color
+#> [1] "#1f78b4"
+#> 
+#> $label$halo
+#> $label$halo$color
+#> [1] "#ffffff"
+#> 
+#> $label$halo$width
+#> [1] 0.3
 ```
 
 ## tmap: static map for reports
 
 [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
 converts registry entries directly to tmap v4 arguments. Here’s a study
-area map following NGE cartographic conventions:
+area map following New Graph cartographic conventions:
 
 ``` r
 library(tmap)
+library(maptiles)
 sf_use_s2(FALSE)
 #> Spherical geometry (s2) switched off
 
-# Filter streams for display
-streams_display <- bittner_streams[bittner_streams$stream_order >= 3, ]
+# --- Basemap: Positron-NoLabels × hillshade blend ---
+# Label-free raster basemap gives terrain relief without competing labels.
+# We control all text ourselves via tm_text().
+# See cartography skill for scale-based basemap selection guidelines.
+bbox <- st_bbox(bittner_wsd)
+bbox["xmin"] <- bbox["xmin"] - 0.03
+bbox["xmax"] <- bbox["xmax"] + 0.03
+bbox["ymin"] <- bbox["ymin"] - 0.015
+bbox["ymax"] <- bbox["ymax"] + 0.015
+bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
 
-# Roads by class for visual hierarchy
+positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels", zoom = 10, crop = TRUE)
+relief <- get_tiles(bbox_sf, provider = "Esri.WorldShadedRelief", zoom = 10, crop = TRUE)
+relief_rs <- terra::resample(relief, positron)
+p_n <- positron / 255
+r_g <- terra::mean(relief_rs) / 255
+blended <- terra::clamp(p_n * (r_g ^ 0.5) * 255, lower = 0, upper = 255)
+basemap_stars <- stars::st_as_stars(blended)
+
+# --- Data prep ---
+streams_display <- bittner_streams[bittner_streams$stream_order >= 3, ]
 roads_hwy <- bittner_roads[bittner_roads$road_type == "RH1", ]
 roads_art <- bittner_roads[bittner_roads$road_type %in% c("RA1", "RA2"), ]
 
-# PSCIS classification from the registry — same colors as QGIS
-pscis_cls <- gq_tmap_classes(reg$layers$crossing)
+# Stream labels: dissolve named streams to single point per name
+stream_labels <- bittner_streams[
+  !is.na(bittner_streams$gnis_name) & bittner_streams$stream_order >= 4, ]
+stream_labels <- do.call(rbind, lapply(
+  split(stream_labels, stream_labels$gnis_name),
+  function(x) {
+    combined <- st_union(x)
+    pt <- st_point_on_surface(combined)
+    st_sf(gnis_name = x$gnis_name[1], geometry = pt, crs = st_crs(x))
+  }
+))
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
+#> although coordinates are longitude/latitude, st_union assumes that they are
+#> planar
+#> Warning in st_point_on_surface.sfc(combined): st_point_on_surface may not give
+#> correct results for longitude/latitude data
 
-m <- tm_shape(bittner_wsd) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
+# Separate Bittner Creek for emphasis
+bittner_label <- stream_labels[stream_labels$gnis_name == "Bittner Creek", ]
+other_labels <- stream_labels[stream_labels$gnis_name != "Bittner Creek", ]
+
+# PSCIS classification from the registry — same colors as QGIS
+pscis_cls <- gq_tmap_classes(reg$layers$crossings_pscis_assessment)
+
+# New Graph logo (bundled, pre-resized to square for tm_logo)
+logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
+
+# --- Map composition ---
+m <- tm_shape(basemap_stars) +
+  tm_rgb() +
+tm_shape(bittner_wsd) +
+  tm_polygons(fill = "#a8c8e0", fill_alpha = 0.4, col = "#2c3e50", lwd = 1.8) +
 tm_shape(bittner_lakes) +
   do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
 tm_shape(streams_display) +
-  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
+  tm_lines(col = "#a9e0ff", lwd = 1.4) +
+tm_shape(other_labels) +
+  tm_text("gnis_name", size = 0.4, fontface = "italic", col = "#1a5276",
+          options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE)) +
+tm_shape(bittner_label) +
+  tm_text("gnis_name", size = 0.55, fontface = "bold.italic", col = "#1a3c5e",
+          options = opt_tm_text(shadow = TRUE)) +
 tm_shape(bittner_railway) +
   tm_lines(col = "black", lwd = 1.2) +
 tm_shape(bittner_railway) +
@@ -129,15 +227,38 @@ tm_shape(bittner_pscis) +
       values = pscis_cls$values,
       labels = pscis_cls$labels
     ),
-    size = 0.3
+    fill.legend = tm_legend(show = FALSE),
+    size = 0.5,
+    col = "white",
+    lwd = 0.8
   ) +
+# Manual legend for full control — PSCIS crossings + infrastructure
+tm_add_legend(
+  type = "symbols",
+  labels = pscis_cls$labels,
+  fill = pscis_cls$values,
+  col = "white",
+  size = 0.8,
+  shape = 21,
+  title = "PSCIS Crossings"
+) +
+tm_add_legend(
+  type = "lines",
+  labels = c("Highway", "Arterial", "Railway"),
+  col = c("#c0392b", "#e67e22", "black"),
+  lwd = c(2, 1.4, 1.2)
+) +
+tm_logo(logo_path, position = c("right", "top"), height = 3) +
 tm_layout(
   frame = TRUE,
   inner.margins = c(0, 0, 0, 0),
+  outer.margins = c(0.002, 0.002, 0.002, 0.002),
   legend.position = c("left", "top"),
   legend.frame = TRUE,
   legend.bg.color = "white",
-  legend.bg.alpha = 0.85
+  legend.bg.alpha = 0.85,
+  legend.text.size = 0.55,
+  legend.title.size = 0.65
 )
 
 m
@@ -174,12 +295,12 @@ gq_tmap_style(reg$layers$lake)
 #> [1] 0.2
 
 # Registry → tmap for a line layer
-gq_tmap_style(reg$layers$stream)
+gq_tmap_style(reg$layers$railway)
 #> $col
-#> [1] "#7ba7cc"
+#> [1] "#000000"
 #> 
 #> $lwd
-#> [1] 1.2
+#> [1] 0.4
 ```
 
 For classified layers,
@@ -188,7 +309,7 @@ extracts the field name, color vector, and labels — ready for
 [`tm_scale_categorical()`](https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html):
 
 ``` r
-gq_tmap_classes(reg$layers$crossing)
+gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 #> $field
 #> [1] "barrier_result_code"
 #> 
@@ -197,8 +318,7 @@ gq_tmap_classes(reg$layers$crossing)
 #> "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4" 
 #> 
 #> $labels
-#> [1] "Barrier"           "Passable"          "Potential Barrier"
-#> [4] "Unknown"
+#> [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"
 ```
 
 ## MapLibre GL: interactive web map
@@ -210,12 +330,11 @@ The same registry produces MapLibre GL paint properties for web maps via
 library(mapgl)
 
 # PSCIS match expression from registry — same classification as tmap
-pscis_expr <- gq_mapgl_classes(reg$layers$crossing)
+pscis_expr <- gq_mapgl_classes(reg$layers$crossings_pscis_assessment)
 
-# Watershed style
-wsd_style <- gq_mapgl_style(reg$layers$watershed)
+# Layer styles from registry
 lake_style <- gq_mapgl_style(reg$layers$lake)
-stream_style <- gq_mapgl_style(reg$layers$stream)
+railway_style <- gq_mapgl_style(reg$layers$railway)
 
 maplibre(
   bounds = as.numeric(st_bbox(bittner_wsd))
@@ -223,8 +342,8 @@ maplibre(
   add_fill_layer(
     id = "watershed",
     source = bittner_wsd,
-    fill_color = wsd_style$paint[["fill-color"]],
-    fill_opacity = wsd_style$paint[["fill-opacity"]]
+    fill_color = "#a8c8e0",
+    fill_opacity = 0.4
   ) |>
   add_fill_layer(
     id = "lakes",
@@ -235,13 +354,13 @@ maplibre(
   add_line_layer(
     id = "streams",
     source = streams_display,
-    line_color = stream_style$paint[["line-color"]],
+    line_color = "#a9e0ff",
     line_width = 1
   ) |>
   add_line_layer(
     id = "railway",
     source = bittner_railway,
-    line_color = "black",
+    line_color = railway_style$paint[["line-color"]],
     line_width = 1.5
   ) |>
   add_line_layer(
