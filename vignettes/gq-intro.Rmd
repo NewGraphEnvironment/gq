@@ -1,0 +1,193 @@
+---
+title: "Getting started with gq"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with gq}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  dpi = 150
+)
+```
+
+**gq** is a style management system for cartography. Define your map styles once
+in a JSON registry, then translate them to any rendering target — tmap, mapgl,
+leaflet, ggplot2. Change a color in one place and every map updates.
+
+## The problem
+
+If you make maps in R *and* QGIS *and* the web, you're maintaining the same
+colors, line weights, and classification breaks in multiple places. Change a
+stream color in QGIS? Now you need to update your tmap code, your leaflet code,
+and your MapLibre style. It doesn't scale.
+
+## The solution
+
+A canonical style registry that serves as the single source of truth:
+
+```
+QGIS Project (.qgs)
+  ↓ gq_qgs_extract()
+registry.json
+  ↓ gq_tmap_style() / gq_mapgl_style()
+tmap, mapgl, leaflet, ggplot2
+```
+
+## Load a registry
+
+The registry is just JSON. Load it with `gq_registry_read()`:
+
+```{r load-registry}
+library(gq)
+
+reg_path <- system.file("examples", "demo_registry.json", package = "gq")
+reg <- gq_registry_read(reg_path)
+
+names(reg$layers)
+```
+
+Each layer has a type (polygon, line, point) and style properties:
+
+```{r inspect-layer}
+reg$layers$lake
+```
+
+## Translate to tmap
+
+`gq_tmap_style()` converts a registry layer to tmap v4 arguments — ready to
+pass directly to `tm_polygons()`, `tm_lines()`, or `tm_dots()`:
+
+```{r tmap-args}
+gq_tmap_style(reg$layers$lake)
+
+gq_tmap_style(reg$layers$stream)
+```
+
+## Build a map
+
+gq ships with small demo datasets (`watershed`, `lake`, `stream`, `road`,
+`crossing`) for illustration. Here's a full map styled entirely from the
+registry:
+
+```{r demo-map, fig.alt = "Map showing watersheds, lakes, streams, roads and crossings styled from the gq registry"}
+library(tmap)
+library(sf)
+
+# Load demo spatial data
+data(watershed, lake, stream, road, crossing, package = "gq")
+
+# Style everything from the registry — one source of truth
+tm_shape(watershed) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
+tm_shape(lake) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
+tm_shape(stream) +
+  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
+tm_shape(road) +
+  tm_lines(col = "grey50", lwd = 1.5) +
+tm_shape(crossing) +
+  do.call(tm_dots, gq_tmap_style(reg$layers$crossing))
+```
+
+Every color, opacity, and line weight comes from `reg` — not hard-coded in the
+plotting code.
+
+## Classified layers
+
+Many layers use categorized symbology (road types, fish passage status). The
+registry stores per-class colors:
+
+```{r classification}
+reg$layers$road$classification
+```
+
+`gq_tmap_classes()` extracts this into a format ready for `tm_scale_categorical()`:
+
+```{r tmap-classes}
+road_cls <- gq_tmap_classes(reg$layers$road)
+road_cls
+```
+
+```{r classified-map, fig.alt = "Map showing roads colored by type and crossings colored by fish passage status"}
+crossing_cls <- gq_tmap_classes(reg$layers$crossing)
+
+tm_shape(watershed) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
+tm_shape(lake) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$lake)) +
+tm_shape(stream) +
+  do.call(tm_lines, gq_tmap_style(reg$layers$stream)) +
+tm_shape(road) +
+  tm_lines(
+    col = road_cls$field,
+    col.scale = tm_scale_categorical(
+      values = road_cls$values,
+      labels = road_cls$labels
+    ),
+    lwd = 2
+  ) +
+tm_shape(crossing) +
+  tm_dots(
+    fill = crossing_cls$field,
+    fill.scale = tm_scale_categorical(
+      values = crossing_cls$values,
+      labels = crossing_cls$labels
+    ),
+    size = 0.5
+  )
+```
+
+## MapLibre GL output
+
+The same registry translates to MapLibre GL paint properties for web maps:
+
+```{r mapgl-output}
+gq_mapgl_style(reg$layers$lake)
+
+gq_mapgl_style(reg$layers$stream)
+```
+
+For classified layers, `gq_mapgl_classes()` builds a MapLibre match expression:
+
+```{r mapgl-classes}
+str(gq_mapgl_classes(reg$layers$road))
+```
+
+This expression goes directly into `mapgl::add_line_layer(paint = list("line-color" = expr))`.
+
+## Extract from QGIS
+
+If you have an existing QGIS project, `gq_qgs_extract()` parses the .qgs XML
+and builds a registry from it — no PyQGIS needed:
+
+```{r extract}
+qgs_path <- system.file("examples", "mini_project.qgs", package = "gq")
+extracted <- gq_qgs_extract(qgs_path)
+
+names(extracted$layers)
+extracted$layers$lakes
+```
+
+Write it out as your registry:
+
+```{r write-registry, eval = FALSE}
+jsonlite::write_json(extracted, "registry.json", pretty = TRUE, auto_unbox = TRUE)
+```
+
+## One source of truth
+
+The workflow is:
+
+1. Design styles in **QGIS** (the best visual tool for cartography)
+2. Extract with `gq_qgs_extract()` → `registry.json`
+3. In R scripts: `gq_tmap_style()` for static maps, `gq_mapgl_style()` for web
+4. Change a color in the registry → every map updates
+
+No more copy-pasting hex codes across files.

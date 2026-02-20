@@ -16,11 +16,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
+    knitr,
     rlang,
-    testthat (>= 3.0.0)
+    rmarkdown,
+    sf,
+    testthat (>= 3.0.0),
+    tmap
 Config/testthat/edition: 3
 Depends:
     R (>= 4.1)
 Imports: 
     jsonlite,
     xml2
+LazyData: true
+VignetteBuilder: knitr

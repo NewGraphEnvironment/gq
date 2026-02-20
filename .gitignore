@@ -25,3 +25,4 @@ Thumbs.db
 # Planning (gitignored by default, archive explicitly)
 planning/active/
 docs
+inst/doc

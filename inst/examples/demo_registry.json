@@ -1,0 +1,84 @@
+{
+  "name": "demo",
+  "version": "0.1.0",
+  "source": "demo",
+  "layers": {
+    "watershed": {
+      "type": "polygon",
+      "fill": {
+        "color": "#a8c8e0",
+        "opacity": 0.4
+      },
+      "stroke": {
+        "color": "#2c3e50",
+        "width": 1.8
+      }
+    },
+    "lake": {
+      "type": "polygon",
+      "fill": {
+        "color": "#c6ddf0",
+        "opacity": 0.85
+      },
+      "stroke": {
+        "color": "#7ba7cc",
+        "width": 0.5
+      }
+    },
+    "stream": {
+      "type": "line",
+      "stroke": {
+        "color": "#7ba7cc",
+        "width": 1.2
+      }
+    },
+    "road": {
+      "type": "line",
+      "classification": {
+        "field": "road_type",
+        "classes": {
+          "highway": {
+            "color": "#c0392b",
+            "width": 2.5,
+            "label": "Highway"
+          },
+          "arterial": {
+            "color": "#e67e22",
+            "width": 1.8,
+            "label": "Arterial"
+          },
+          "local": {
+            "color": "#95a5a6",
+            "width": 1.0,
+            "label": "Local"
+          }
+        }
+      }
+    },
+    "crossing": {
+      "type": "point",
+      "mark": {
+        "color": "#e74c3c",
+        "radius": 4,
+        "shape": "circle"
+      },
+      "classification": {
+        "field": "status",
+        "classes": {
+          "passable": {
+            "color": "#27ae60",
+            "label": "Passable"
+          },
+          "barrier": {
+            "color": "#c0392b",
+            "label": "Barrier"
+          },
+          "unknown": {
+            "color": "#95a5a6",
+            "label": "Unknown"
+          }
+        }
+      }
+    }
+  }
+}
