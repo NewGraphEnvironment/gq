@@ -1,7 +1,7 @@
 {
-  "name": "demo",
+  "name": "bittner_creek_demo",
   "version": "0.1.0",
-  "source": "demo",
+  "source": "bcrestoration_mobile.qgs",
   "layers": {
     "watershed": {
       "type": "polygon",
@@ -16,13 +16,14 @@
     },
     "lake": {
       "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_lakes_poly",
       "fill": {
-        "color": "#c6ddf0",
-        "opacity": 0.85
+        "color": "#dcecf4",
+        "opacity": 0.7
       },
       "stroke": {
-        "color": "#7ba7cc",
-        "width": 0.5
+        "color": "#1f78b4",
+        "width": 0.2
       }
     },
     "stream": {
@@ -32,24 +33,43 @@
         "width": 1.2
       }
     },
+    "railway": {
+      "type": "line",
+      "source_layer": "whse_basemapping.gba_railway_tracks_sp",
+      "stroke": {
+        "color": "#000000",
+        "width": 1.2
+      }
+    },
     "road": {
       "type": "line",
+      "source_layer": "whse_basemapping.transport_line",
       "classification": {
         "field": "road_type",
         "classes": {
-          "highway": {
+          "RH1": {
             "color": "#c0392b",
-            "width": 2.5,
+            "width": 2.0,
             "label": "Highway"
           },
-          "arterial": {
+          "RA1": {
             "color": "#e67e22",
             "width": 1.8,
-            "label": "Arterial"
+            "label": "Primary Arterial"
           },
-          "local": {
-            "color": "#95a5a6",
+          "RA2": {
+            "color": "#f1c40f",
+            "width": 1.4,
+            "label": "Secondary Arterial"
+          },
+          "RC2": {
+            "color": "#f7dc6f",
             "width": 1.0,
+            "label": "Collector"
+          },
+          "RLO": {
+            "color": "#484848",
+            "width": 0.46,
             "label": "Local"
           }
         }
@@ -57,24 +77,28 @@
     },
     "crossing": {
       "type": "point",
-      "mark": {
-        "color": "#e74c3c",
-        "radius": 4,
-        "shape": "circle"
-      },
+      "source_layer": "whse_fish.pscis_assessment_svw",
       "classification": {
-        "field": "status",
+        "field": "barrier_result_code",
         "classes": {
-          "passable": {
-            "color": "#27ae60",
-            "label": "Passable"
-          },
-          "barrier": {
-            "color": "#c0392b",
+          "BARRIER": {
+            "color": "#ca3c3c",
+            "radius": 3,
             "label": "Barrier"
           },
-          "unknown": {
-            "color": "#95a5a6",
+          "PASSABLE": {
+            "color": "#33a02c",
+            "radius": 3,
+            "label": "Passable"
+          },
+          "POTENTIAL": {
+            "color": "#ff7f00",
+            "radius": 3,
+            "label": "Potential Barrier"
+          },
+          "UNKNOWN": {
+            "color": "#bf2ac4",
+            "radius": 3,
             "label": "Unknown"
           }
         }

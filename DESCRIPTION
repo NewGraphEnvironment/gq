@@ -17,6 +17,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
     knitr,
+    mapgl,
     rlang,
     rmarkdown,
     sf,
