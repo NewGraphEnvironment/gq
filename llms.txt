@@ -1,0 +1,52 @@
+# gq
+
+> It’s all about style.
+
+Cartographic style management across QGIS, tmap, leaflet, and web
+mapping (MapLibre GL / PMTiles).
+
+**gq** extracts symbology from QGIS projects (QML), stores it in a
+canonical JSON registry, and translates it to any rendering target — so
+your maps look the same whether they’re static reports, interactive
+leaflet maps, or cloud-native web tiles.
+
+## Architecture
+
+    QGIS Project (.qgs/.qgz)
+      ↓ PyQGIS extract
+    QML files (.qml)
+      ↓ parse
+    Canonical Style Registry (JSON)
+      ↓ translate
+    ┌─────────┬──────────┬─────────────┬─────────┐
+    │  tmap   │ leaflet  │ MapLibre GL │ ggplot2 │
+    │  (R)    │   (R)    │   (JSON)    │  (R)    │
+    └─────────┴──────────┴─────────────┴─────────┘
+
+## Status
+
+Early R&D. See [SRED
+tracking](https://github.com/NewGraphEnvironment/sred-2025-2026/issues/13).
+
+## License
+
+MIT
+
+# Package index
+
+## All functions
+
+- [`gq_mapgl_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.md)
+  : Get a MapLibre match expression for a classified layer
+- [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
+  : Translate a registry layer style to mapgl arguments
+- [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
+  : Extract layer styles from a QGIS project file
+- [`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md)
+  : Read a gq style registry from JSON
+- [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
+  : Get a named list of tmap arguments for each class in a classified
+  layer
+- [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
+  : Translate a registry layer style to tmap v4 arguments
+
