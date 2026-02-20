@@ -1,0 +1,327 @@
+{
+  "name": "NGE Standard Styles",
+  "version": "0.1.0",
+  "source": "bcrestoration_mobile.qgs",
+  "layers": {
+    "watershed_group_boundary": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_watershed_groups_poly",
+      "fill": {
+        "color": "#639f5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 0.66
+      }
+    },
+    "provincial_park": {
+      "type": "polygon",
+      "source_layer": "whse_tantalis.ta_park_ecores_pa_svw",
+      "fill": {
+        "color": "#639f5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 0.66
+      },
+      "label": {
+        "field": "protected_lands_name",
+        "font": "Courier",
+        "size": 8,
+        "color": "#639f5f"
+      }
+    },
+    "conservancy": {
+      "type": "polygon",
+      "source_layer": "whse_tantalis.ta_conservancy_areas_svw",
+      "fill": {
+        "color": "#639f5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 0.66
+      }
+    },
+    "lake": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_lakes_poly",
+      "fill": {
+        "color": "#dceef4",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      }
+    },
+    "wetland": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_wetlands_poly",
+      "fill": {
+        "color": "#dceef4",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      }
+    },
+    "manmade_waterbodies": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_manmade_waterbodies_poly",
+      "fill": {
+        "color": "#dceef4",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      }
+    },
+    "glaciers": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_glaciers_poly",
+      "fill": {
+        "color": "#ffffff",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      }
+    },
+    "floodplains": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.cwb_floodplains_bc_area_svw",
+      "fill": {
+        "color": "#1f78b4",
+        "opacity": 0.5
+      },
+      "stroke": {
+        "color": "#8fb583",
+        "style": "none",
+        "width": 0.26
+      }
+    },
+    "first_nation_reserve": {
+      "type": "polygon",
+      "source_layer": "whse_admin_boundaries.clab_indian_reserves",
+      "fill": {
+        "color": "#b27db7",
+        "opacity": 0.394
+      },
+      "stroke": {
+        "color": "#6d5983",
+        "width": 0.26
+      }
+    },
+    "municipalities": {
+      "type": "polygon",
+      "source_layer": "whse_legal_admin_boundaries.abms_municipalities_sp",
+      "fill": {
+        "color": "#b2b2b2",
+        "opacity": 0.394
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "streams_all": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "feature_code",
+        "classes": {
+          "stream": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65
+          },
+          "stream_intermittent": {
+            "color": "#a9e0ff",
+            "width": 0.3,
+            "opacity": 1.0,
+            "dash": "2.5 3.5"
+          }
+        }
+      }
+    },
+    "stream_labels": {
+      "type": "line",
+      "source_layer": "whse_basemapping.fwa_named_streams",
+      "stroke": {
+        "width": 0
+      },
+      "label": {
+        "field": "gnis_name",
+        "font": "Helvetica",
+        "size": 11,
+        "style": "italic",
+        "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        }
+      }
+    },
+    "streams_bt": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_bt",
+        "note": "Categorized symbol — colors extracted from bcrestoration_mobile.qgs"
+      }
+    },
+    "streams_st": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_st",
+        "note": "Categorized symbol — colors extracted from bcrestoration_mobile.qgs"
+      }
+    },
+    "streams_salmon": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_salmon",
+        "note": "Categorized symbol — colors extracted from bcrestoration_mobile.qgs"
+      }
+    },
+    "railway": {
+      "type": "line",
+      "source_layer": "whse_basemapping.gba_railway_tracks_sp",
+      "stroke": {
+        "color": "#000000",
+        "width": 0.4
+      },
+      "overlay": {
+        "note": "MarkerLine overlay creates railway ballast/tie pattern"
+      }
+    },
+    "roads_dra": {
+      "type": "line",
+      "source_layer": "whse_basemapping.transport_line",
+      "classification": {
+        "field": "transport_line_type_code",
+        "classes": {
+          "RF": {
+            "label": "Freeway",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.86,
+            "color": "#ffc485",
+            "width": 1.32
+          },
+          "RH1": {
+            "label": "Highway",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "color": "#ffe585",
+            "width": 1.03
+          },
+          "RH2": {
+            "label": "Highway",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "color": "#ffe585",
+            "width": 1.03
+          },
+          "RA1": {
+            "label": "Arterial",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "color": "#ffeeae",
+            "width": 1.03
+          },
+          "RA2": {
+            "label": "Arterial",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "color": "#ffeeae",
+            "width": 1.03
+          }
+        }
+      }
+    },
+    "roads_ften": {
+      "type": "line",
+      "source_layer": "whse_forest_tenure.ften_road_section_lines_svw",
+      "classification": {
+        "field": "file_type_description",
+        "classes": {
+          "Forest Service Road": {
+            "color": "#404040",
+            "width": 0.86
+          },
+          "Road Permit": {
+            "color": "#404040",
+            "width": 0.46
+          },
+          "Special Use Permit": {
+            "color": "#404040",
+            "width": 0.46
+          }
+        }
+      }
+    },
+    "transmission_line": {
+      "type": "line",
+      "source_layer": "whse_basemapping.gba_transmission_lines_sp",
+      "stroke": {
+        "color": "#6d6d6d",
+        "width": 0.46,
+        "dash": "dash_dot"
+      }
+    },
+    "crossings_pscis": {
+      "type": "point",
+      "source_layer": "whse_fish.pscis_assessment_svw",
+      "classification": {
+        "field": "barrier_result_code",
+        "classes": {
+          "BARRIER": {
+            "color": "#ca3c3c",
+            "shape": "circle",
+            "radius": 3
+          },
+          "PASSABLE": {
+            "color": "#33a02c",
+            "shape": "circle",
+            "radius": 3
+          },
+          "POTENTIAL": {
+            "color": "#ff7f00",
+            "shape": "circle",
+            "radius": 3
+          },
+          "UNKNOWN": {
+            "color": "#bf2ac4",
+            "shape": "circle",
+            "radius": 3
+          }
+        }
+      }
+    },
+    "fiss_obstacles": {
+      "type": "point",
+      "source_layer": "whse_fish.fiss_obstacles_pnt_sp",
+      "filter": {
+        "field": "obstacle_name",
+        "operator": "!=",
+        "value": "Culvert"
+      }
+    },
+    "moti_culverts": {
+      "type": "point",
+      "source_layer": "whse_imagery_and_base_maps.mot_culverts_sp"
+    },
+    "hydrometric_stations": {
+      "type": "point",
+      "source_layer": "whse_environmental_monitoring.envcan_hydrometric_stn_sp"
+    }
+  }
+}
