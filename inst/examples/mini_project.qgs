@@ -1,0 +1,84 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.34.0-Prizren">
+  <projectlayers>
+    <maplayer type="vector" geometry="Polygon">
+      <layername>Lakes</layername>
+      <datasource>dbname='test' table="public"."lakes" (geom)|layername=lakes</datasource>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" alpha="1" type="fill">
+            <layer class="SimpleFill">
+              <Option name="color" value="198,221,240,217" type="QString"/>
+              <Option name="outline_color" value="123,167,204,255" type="QString"/>
+              <Option name="outline_width" value="0.5" type="QString"/>
+              <Option name="outline_style" value="solid" type="QString"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+    <maplayer type="vector" geometry="Line">
+      <layername>Streams</layername>
+      <datasource>dbname='test' table="public"."streams" (geom)|layername=streams</datasource>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" alpha="0.8" type="line">
+            <layer class="SimpleLine">
+              <Option name="line_color" value="123,167,204,255" type="QString"/>
+              <Option name="line_width" value="0.4" type="QString"/>
+              <Option name="line_style" value="solid" type="QString"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+    <maplayer type="vector" geometry="Point">
+      <layername>Crossings</layername>
+      <datasource>dbname='test' table="public"."crossings" (geom)|layername=crossings</datasource>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" alpha="1" type="marker">
+            <layer class="SimpleMarker">
+              <Option name="color" value="231,76,60,255" type="QString"/>
+              <Option name="size" value="4" type="QString"/>
+              <Option name="name" value="circle" type="QString"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+    <maplayer type="vector" geometry="Line" labelsEnabled="1">
+      <layername>Roads</layername>
+      <datasource>dbname='test' table="public"."roads" (geom)|layername=roads</datasource>
+      <renderer-v2 type="categorizedSymbol" attr="road_type">
+        <categories>
+          <category value="highway" label="Highway" symbol="0"/>
+          <category value="arterial" label="Arterial" symbol="1"/>
+        </categories>
+        <symbols>
+          <symbol name="0" alpha="1" type="line">
+            <layer class="SimpleLine">
+              <Option name="line_color" value="192,57,43,255" type="QString"/>
+              <Option name="line_width" value="2.0" type="QString"/>
+            </layer>
+          </symbol>
+          <symbol name="1" alpha="1" type="line">
+            <layer class="SimpleLine">
+              <Option name="line_color" value="230,126,34,255" type="QString"/>
+              <Option name="line_width" value="1.5" type="QString"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+      <labeling type="simple">
+        <settings>
+          <text-format>
+            <Option name="fieldName" value="road_name" type="QString"/>
+          </text-format>
+          <text-style fontFamily="Arial" fontSize="10" fontItalic="0" fontBold="1" textColor="26,60,94,255"/>
+          <text-buffer bufferDraw="1" bufferSize="1.5" bufferColor="255,255,255,255"/>
+        </settings>
+      </labeling>
+    </maplayer>
+  </projectlayers>
+</qgis>

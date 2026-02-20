@@ -1,0 +1,26 @@
+Package: gq
+Title: Cartographic Style Management Across Rendering Targets
+Version: 0.0.0.9000
+Authors@R: 
+    person("Allan", "Irvine", , "al@newgraphenvironment.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-3495-2128"))
+Description: Extract symbology from QGIS projects, store in a canonical
+    JSON registry, and translate to tmap, leaflet, MapLibre GL, and
+    ggplot2. One source of truth for map styles across all rendering
+    targets.
+License: MIT + file LICENSE
+URL: https://github.com/NewGraphEnvironment/gq,
+    https://newgraphenvironment.github.io/gq/
+BugReports: https://github.com/NewGraphEnvironment/gq/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+    rlang,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Depends:
+    R (>= 4.1)
+Imports: 
+    jsonlite,
+    xml2

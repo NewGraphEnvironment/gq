@@ -1,4 +1,4 @@
-# gq
+# gq <img src="man/figures/logo.png" align="right" height="139" alt="gq hex sticker" />
 
 > It's all about style.
 
@@ -27,4 +27,4 @@ Early R&D. See [SRED tracking](https://github.com/NewGraphEnvironment/sred-2025-
 
 ## License
 
-TBD
+MIT

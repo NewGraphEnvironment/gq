@@ -1,0 +1,13 @@
+^LICENSE\.md$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^CLAUDE\.md$
+^dev$
+^python$
+^scripts$
+^styles$
+^planning$
+^registry$
+^data-raw$

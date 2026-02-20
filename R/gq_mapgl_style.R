@@ -8,16 +8,25 @@
 #' @return A named list with `paint` and optionally `layout` elements.
 #'
 #' @examples
-#' \dontrun{
-#' reg <- gq_registry_read("registry/registry.json")
+#' path <- system.file("examples", "mini_registry.json", package = "gq")
+#' reg <- gq_registry_read(path)
 #'
+#' # Polygon: returns paint list with fill-color, fill-opacity, fill-outline-color
 #' style <- gq_mapgl_style(reg$layers$lake)
-#' maplibre() |>
-#'   add_fill_layer(
-#'     source = lakes_source,
-#'     paint = style$paint
-#'   )
-#' }
+#' style$layer_type
+#' style$paint
+#'
+#' # Line: returns paint list with line-color, line-width, line-opacity
+#' gq_mapgl_style(reg$layers$stream)
+#'
+#' # Point: returns paint list with circle-color, circle-radius
+#' gq_mapgl_style(reg$layers$crossing)
+#'
+#' # Use with mapgl:
+#' # maplibre() |>
+#' #   add_fill_layer(source = lakes_src, paint = style$paint)
+#'
+#' @export
 gq_mapgl_style <- function(layer) {
   type <- layer$type
   if (is.null(type)) stop("Layer must have a 'type' field (polygon, line, point)")
@@ -97,14 +106,22 @@ mapgl_point <- function(layer) {
 #' @return A list representing a MapLibre match expression.
 #'
 #' @examples
-#' \dontrun{
-#' expr <- gq_mapgl_classes(reg$layers$crossings_pscis_assessment, "circle-color")
-#' maplibre() |>
-#'   add_circle_layer(
-#'     source = crossings_source,
-#'     paint = list("circle-color" = expr)
-#'   )
-#' }
+#' path <- system.file("examples", "mini_registry.json", package = "gq")
+#' reg <- gq_registry_read(path)
+#'
+#' # Build a MapLibre match expression for classified roads
+#' expr <- gq_mapgl_classes(reg$layers$road)
+#' # Returns: ["match", ["get", "road_type"], "highway", "#c0392b", "arterial", "#e67e22", "#888888"]
+#' str(expr)
+#'
+#' # Use with mapgl:
+#' # maplibre() |>
+#' #   add_line_layer(
+#' #     source = roads_src,
+#' #     paint = list("line-color" = expr)
+#' #   )
+#'
+#' @export
 gq_mapgl_classes <- function(layer, property = NULL) {
   cls <- layer$classification
   if (is.null(cls)) stop("Layer does not have classification")

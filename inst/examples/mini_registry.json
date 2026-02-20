@@ -1,0 +1,64 @@
+{
+  "name": "test",
+  "version": "0.1.0",
+  "source": "test.qgs",
+  "layers": {
+    "lake": {
+      "type": "polygon",
+      "source_layer": "lakes",
+      "fill": {
+        "color": "#c6ddf0",
+        "opacity": 0.85
+      },
+      "stroke": {
+        "color": "#7ba7cc",
+        "width": 0.5
+      }
+    },
+    "stream": {
+      "type": "line",
+      "source_layer": "streams",
+      "stroke": {
+        "color": "#7ba7cc",
+        "width": 0.4,
+        "opacity": 0.8
+      }
+    },
+    "crossing": {
+      "type": "point",
+      "source_layer": "crossings",
+      "mark": {
+        "color": "#e74c3c",
+        "radius": 4,
+        "shape": "circle"
+      },
+      "fill": {
+        "color": "#e74c3c",
+        "opacity": 0.9
+      }
+    },
+    "road": {
+      "type": "line",
+      "source_layer": "roads",
+      "classification": {
+        "field": "road_type",
+        "classes": {
+          "highway": {
+            "color": "#c0392b",
+            "width": 2.0,
+            "label": "Highway"
+          },
+          "arterial": {
+            "color": "#e67e22",
+            "width": 1.5,
+            "label": "Arterial"
+          },
+          "__empty__": {
+            "color": "#888888",
+            "width": 0.5
+          }
+        }
+      }
+    }
+  }
+}

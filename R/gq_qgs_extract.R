@@ -8,10 +8,22 @@
 #'   Each layer contains type, source_layer, fill/stroke/classification/label as applicable.
 #'
 #' @examples
-#' \dontrun{
-#' reg <- gq_qgs_extract("path/to/project.qgs")
-#' jsonlite::write_json(reg, "registry/registry.json", pretty = TRUE, auto_unbox = TRUE)
-#' }
+#' path <- system.file("examples", "mini_project.qgs", package = "gq")
+#' reg <- gq_qgs_extract(path)
+#'
+#' # Shows all layers extracted from the QGIS project
+#' names(reg$layers)
+#'
+#' # Polygon layer — fill and stroke extracted from SimpleFill symbol
+#' reg$layers$lakes
+#'
+#' # Categorized layer — classification field and per-class colors
+#' reg$layers$roads$classification
+#'
+#' # Labels — font, size, weight, halo all captured
+#' reg$layers$roads$label
+#'
+#' @export
 gq_qgs_extract <- function(path) {
   if (!requireNamespace("xml2", quietly = TRUE)) stop("xml2 is required")
 

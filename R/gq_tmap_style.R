@@ -8,16 +8,23 @@
 #' @return A named list of tmap arguments. Use with `do.call()` or `!!!`.
 #'
 #' @examples
-#' \dontrun{
-#' reg <- gq_registry_read("registry/registry.json")
+#' path <- system.file("examples", "mini_registry.json", package = "gq")
+#' reg <- gq_registry_read(path)
 #'
-#' # polygon layer
-#' args <- gq_tmap_style(reg$layers$lake)
-#' tm_shape(lakes_sf) + do.call(tm_polygons, args)
+#' # Polygon: returns fill, fill_alpha, col, lwd ready for tm_polygons()
+#' gq_tmap_style(reg$layers$lake)
 #'
-#' # or with rlang splice
-#' tm_shape(lakes_sf) + tm_polygons(!!!gq_tmap_style(reg$layers$lake))
-#' }
+#' # Line: returns col, lwd, col_alpha ready for tm_lines()
+#' gq_tmap_style(reg$layers$stream)
+#'
+#' # Point: returns fill, size ready for tm_dots()
+#' gq_tmap_style(reg$layers$crossing)
+#'
+#' # Use with tmap v4:
+#' # tm_shape(lakes_sf) + do.call(tm_polygons, gq_tmap_style(reg$layers$lake))
+#' # tm_shape(lakes_sf) + tm_polygons(!!!gq_tmap_style(reg$layers$lake))
+#'
+#' @export
 gq_tmap_style <- function(layer) {
   type <- layer$type
   if (is.null(type)) stop("Layer must have a 'type' field (polygon, line, point)")
@@ -97,14 +104,23 @@ tmap_point <- function(layer) {
 #' @return A named list with `values` (named color vector), `labels`, and `field`.
 #'
 #' @examples
-#' \dontrun{
-#' cls <- gq_tmap_classes(reg$layers$crossings_pscis_assessment)
-#' tm_shape(crossings_sf) +
-#'   tm_dots(
-#'     fill = cls$field,
-#'     fill.scale = tm_scale_categorical(values = cls$values, labels = cls$labels)
-#'   )
-#' }
+#' path <- system.file("examples", "mini_registry.json", package = "gq")
+#' reg <- gq_registry_read(path)
+#'
+#' # Extract classification — field name, color vector, and labels
+#' cls <- gq_tmap_classes(reg$layers$road)
+#' cls$field
+#' cls$values
+#' cls$labels
+#'
+#' # Use with tmap v4:
+#' # tm_shape(roads_sf) +
+#' #   tm_lines(
+#' #     col = cls$field,
+#' #     col.scale = tm_scale_categorical(values = cls$values, labels = cls$labels)
+#' #   )
+#'
+#' @export
 gq_tmap_classes <- function(layer) {
   cls <- layer$classification
   if (is.null(cls)) stop("Layer does not have classification")
@@ -131,5 +147,3 @@ gq_tmap_classes <- function(layer) {
   )
 }
 
-#' @noRd
-`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
