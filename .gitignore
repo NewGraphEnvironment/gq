@@ -10,7 +10,6 @@ build/
 .Rhistory
 .RData
 .Rproj.user/
-*.Rproj
 
 # IDE
 .vscode/
