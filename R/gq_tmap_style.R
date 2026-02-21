@@ -40,6 +40,11 @@ gq_tmap_style <- function(layer) {
 # --- internal helpers --------------------------------------------------------
 
 #' @noRd
+to_title <- function(x) {
+  paste0(toupper(substring(x, 1, 1)), tolower(substring(x, 2)))
+}
+
+#' @noRd
 tmap_polygon <- function(layer) {
   args <- list()
 
@@ -127,9 +132,10 @@ gq_tmap_classes <- function(layer) {
   values <- vapply(cls$classes, function(x) x$color %||% NA_character_, character(1))
   labels <- vapply(cls$classes, function(x) x$label %||% NA_character_, character(1))
 
-  # use class keys as labels where label is missing
+
+  # use class keys as labels where label is missing, converting to title case
   keys <- names(cls$classes)
-  labels[is.na(labels)] <- keys[is.na(labels)]
+  labels[is.na(labels)] <- to_title(keys[is.na(labels)])
 
   # remove __empty__ class
   keep <- keys != "__empty__"

@@ -74,6 +74,20 @@ test_that("gq_tmap_classes returns classification info", {
   expect_equal(cls$labels, c("Highway", "Arterial"))
 })
 
+test_that("gq_tmap_classes converts fallback labels to title case", {
+  layer <- list(
+    classification = list(
+      field = "status",
+      classes = list(
+        BARRIER = list(color = "#ca3c3c"),
+        PASSABLE = list(color = "#33a02c")
+      )
+    )
+  )
+  cls <- gq_tmap_classes(layer)
+  expect_equal(cls$labels, c("Barrier", "Passable"))
+})
+
 test_that("gq_tmap_classes errors without classification", {
   expect_error(gq_tmap_classes(list(type = "line")), "classification")
 })
