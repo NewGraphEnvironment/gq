@@ -318,7 +318,7 @@ gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 #> "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4" 
 #> 
 #> $labels
-#> [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"
+#> [1] "Barrier"   "Passable"  "Potential" "Unknown"
 ```
 
 ## MapLibre GL: interactive web map
