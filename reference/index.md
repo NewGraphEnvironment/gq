@@ -8,6 +8,12 @@
   : Translate a registry layer style to mapgl arguments
 - [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
   : Extract layer styles from a QGIS project file
+- [`gq_reg_merge()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_merge.md)
+  : Merge multiple gq registries
+- [`gq_reg_read()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read.md)
+  : Read a gq style registry from JSON (alias)
+- [`gq_reg_read_csv()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read_csv.md)
+  : Read a gq style registry from CSV
 - [`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md)
   : Read a gq style registry from JSON
 - [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
