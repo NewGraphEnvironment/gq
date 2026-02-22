@@ -1,0 +1,1212 @@
+{
+  "name": "bcrestoration_mobile",
+  "version": "0.1.0",
+  "source": "bcrestoration_mobile.qgs",
+  "layers": {
+    "conservancy": {
+      "type": "polygon",
+      "source_layer": "whse_tantalis.ta_conservancy_areas_svw",
+      "fill": {
+        "color": "#639b5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 0.66
+      },
+      "label": {
+        "font": "Courier",
+        "size": 8,
+        "color": "#639b5f"
+      }
+    },
+    "crossings_pscis_design": {
+      "type": "point",
+      "source_layer": "whse_fish.pscis_design_proposal_svw",
+      "mark": {
+        "color": "#e8718d",
+        "shape": "circle",
+        "radius": 2
+      }
+    },
+    "crossings_pscis_remedation": {
+      "type": "point",
+      "source_layer": "whse_fish.pscis_remediation_svw",
+      "mark": {
+        "color": "#91522d",
+        "shape": "circle",
+        "radius": 2
+      }
+    },
+    "crossings_pscis_modelled_dams": {
+      "type": "point",
+      "source_layer": "bcfishpass.crossings_vw",
+      "renderer": "rule_based",
+      "note": "Rule-based renderer — manual review needed",
+      "label": {
+        "font": "Arial",
+        "size": 10,
+        "color": "#000000"
+      }
+    },
+    "crossings_pscis_assessment": {
+      "type": "point",
+      "source_layer": "whse_fish.pscis_assessment_svw",
+      "classification": {
+        "field": "barrier_result_code",
+        "classes": {
+          "BARRIER": {
+            "color": "#ca3c3c",
+            "shape": "circle",
+            "radius": 3
+          },
+          "PASSABLE": {
+            "color": "#33a02c",
+            "shape": "circle",
+            "radius": 3
+          },
+          "POTENTIAL": {
+            "color": "#ff7f00",
+            "shape": "circle",
+            "radius": 3
+          },
+          "UNKNOWN": {
+            "color": "#bf2ac4",
+            "shape": "circle",
+            "radius": 3
+          },
+          "__empty__": {
+            "color": "#c052df",
+            "shape": "circle",
+            "radius": 3
+          }
+        }
+      },
+      "label": {
+        "font": ".AppleSystemUIFont",
+        "size": 9,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.75
+        }
+      }
+    },
+    "crossings_pscis_confirmation": {
+      "type": "point",
+      "source_layer": "whse_fish.pscis_habitat_confirmation_svw",
+      "mark": {
+        "color": "#beb297",
+        "shape": "circle",
+        "radius": 2
+      }
+    },
+    "crossings_modelled": {
+      "type": "point",
+      "source_layer": "bcfishpass.crossings_vw",
+      "mark": {
+        "color": "#ffffff",
+        "shape": "circle",
+        "radius": 2.5
+      },
+      "note": "2 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": "Arial",
+        "size": 8.5,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.5
+        }
+      }
+    },
+    "fiss_obstacles": {
+      "type": "point",
+      "source_layer": "whse_fish.fiss_obstacles_pnt_sp",
+      "mark": {
+        "color": "#000000",
+        "shape": "square",
+        "radius": 2
+      },
+      "label": {
+        "font": "Courier",
+        "size": 6,
+        "color": "#000000"
+      }
+    },
+    "frep_rip2021_mar2022": {
+      "type": "point",
+      "mark": {
+        "color": "#7fad00",
+        "shape": "circle",
+        "radius": 4
+      }
+    },
+    "fire_historical_burn": {
+      "type": "polygon",
+      "source_layer": "whse_land_and_natural_resource.prot_historical_fire_polys_sp",
+      "fill": {
+        "color": "#ff7f00",
+        "opacity": 0.402
+      },
+      "stroke": {
+        "color": "#ff6011",
+        "width": 0.26,
+        "style": "none"
+      },
+      "note": "4 symbol layers — overlay/casing may apply"
+    },
+    "fire_severity": {
+      "type": "polygon",
+      "source_layer": "whse_forest_vegetation.veg_burn_severity_sp",
+      "classification": {
+        "field": "burn_severity_rating",
+        "classes": {
+          "High": {
+            "color": "#f51c1f",
+            "outline_width": 0.26
+          },
+          "Low": {
+            "color": "#ffea00",
+            "outline_width": 0.26
+          },
+          "Medium": {
+            "color": "#ff7f00",
+            "outline_width": 0.26
+          },
+          "Unburned": {
+            "color": "#ed8148",
+            "opacity": 0.4,
+            "outline_width": 0.26
+          },
+          "__empty__": {
+            "color": "#a1ed5e",
+            "outline_width": 0.26
+          }
+        }
+      }
+    },
+    "first_nation_reserve": {
+      "type": "polygon",
+      "source_layer": "whse_admin_boundaries.clab_indian_reserves",
+      "fill": {
+        "color": "#b2b2b2",
+        "opacity": 0.394
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "form_fiss_site": {
+      "type": "point",
+      "source_layer": "form_fiss_site",
+      "mark": {
+        "color": "#ffffff",
+        "shape": "circle",
+        "radius": 5.2
+      },
+      "note": "2 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": ".AppleSystemUIFont",
+        "size": 10,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        }
+      }
+    },
+    "form_pscis": {
+      "type": "point",
+      "source_layer": "form_pscis",
+      "mark": {
+        "color": "#b80808",
+        "shape": "star",
+        "radius": 6.6
+      },
+      "note": "2 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": "Tahoma",
+        "size": 10,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        }
+      }
+    },
+    "lake": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_lakes_poly",
+      "fill": {
+        "color": "#dcecf4",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      },
+      "label": {
+        "font": "Helvetica",
+        "size": 10,
+        "style": "italic",
+        "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        }
+      }
+    },
+    "moti_culverts": {
+      "type": "point",
+      "source_layer": "whse_imagery_and_base_maps.mot_culverts_sp",
+      "mark": {
+        "color": "#000000",
+        "shape": "circle",
+        "radius": 2
+      },
+      "label": {
+        "font": ".AppleSystemUIFont",
+        "size": 8,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.25
+        }
+      }
+    },
+    "pipeline_installed": {
+      "type": "line",
+      "source_layer": "whse_mineral_tenure.og_pipeline_segment_permit_sp",
+      "stroke": {
+        "color": "#000000",
+        "width": 0.66
+      }
+    },
+    "pipeline_permit": {
+      "type": "polygon",
+      "source_layer": "whse_mineral_tenure.og_pipeline_area_permit_sp",
+      "note": "3 symbol layers — overlay/casing may apply"
+    },
+    "provincial_park": {
+      "type": "polygon",
+      "source_layer": "whse_tantalis.ta_park_ecores_pa_svw",
+      "fill": {
+        "color": "#639b5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 0.66
+      },
+      "label": {
+        "font": "Courier",
+        "size": 8,
+        "color": "#639b5f"
+      }
+    },
+    "railway": {
+      "type": "line",
+      "source_layer": "whse_basemapping.gba_railway_tracks_sp",
+      "stroke": {
+        "color": "#000000",
+        "width": 0.4
+      },
+      "note": "3 symbol layers — overlay/casing may apply"
+    },
+    "roads_dra": {
+      "type": "line",
+      "source_layer": "whse_basemapping.transport_line",
+      "classification": {
+        "field": "transport_line_type_code",
+        "classes": {
+          "RF": {
+            "color": "#ffc485",
+            "width": 1.3182,
+            "label": "Freeway",
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.86
+          },
+          "__empty__": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6
+          },
+          "RLO": {
+            "color": "#484848",
+            "width": 0.46,
+            "label": "Local"
+          },
+          "TD": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Trail"
+          }
+        }
+      },
+      "label": {
+        "font": "Arial",
+        "size": 6,
+        "color": "#4a4a4a"
+      }
+    },
+    "roads_ften": {
+      "type": "line",
+      "source_layer": "whse_forest_tenure.ften_road_section_lines_svw",
+      "classification": {
+        "field": "file_type_description",
+        "classes": {
+          "Forest Service Road": {
+            "color": "#404040",
+            "width": 0.86
+          },
+          "__empty__": {
+            "color": "#404040",
+            "width": 0.46
+          }
+        }
+      },
+      "label": {
+        "font": "Arial",
+        "size": 8,
+        "color": "#3d3d3d"
+      }
+    },
+    "stream_labels": {
+      "type": "line",
+      "source_layer": "whse_basemapping.fwa_named_streams",
+      "stroke": {
+        "color": "#fafafa",
+        "width": 0,
+        "dash": "no"
+      },
+      "label": {
+        "font": "Helvetica",
+        "size": 11,
+        "style": "italic",
+        "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        }
+      }
+    },
+    "streams_all": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "feature_code",
+        "classes": {
+          "__empty__": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65
+          },
+          "GA24850150": {
+            "color": "#a9e0ff",
+            "width": 0.3,
+            "label": "Stream - intermittent"
+          }
+        }
+      }
+    },
+    "transmission_line": {
+      "type": "line",
+      "source_layer": "whse_basemapping.gba_transmission_lines_sp",
+      "stroke": {
+        "color": "#6d6d6d",
+        "width": 0.46,
+        "dash": "dash dot"
+      }
+    },
+    "watershed_group_boundary": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_watershed_groups_poly",
+      "fill": {
+        "color": "#85b66f",
+        "opacity": 0.5
+      },
+      "stroke": {
+        "color": "#5d5d5d",
+        "width": 1.86
+      }
+    },
+    "wetland": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_wetlands_poly",
+      "fill": {
+        "color": "#a3cdb9",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#728584",
+        "width": 0.26,
+        "style": "none"
+      },
+      "note": "5 symbol layers — overlay/casing may apply"
+    },
+    "municipalities": {
+      "type": "polygon",
+      "source_layer": "whse_legal_admin_boundaries.abms_municipalities_sp",
+      "fill": {
+        "color": "#cccccc",
+        "opacity": 0.347
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      },
+      "note": "3 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": "Arial Black",
+        "size": 18,
+        "color": "#8d8989",
+        "halo": {
+          "color": "#e8e8e8",
+          "width": 0.8
+        }
+      }
+    },
+    "pipeline_application": {
+      "type": "polygon",
+      "source_layer": "whse_mineral_tenure.og_pipeline_area_appl_sp",
+      "fill": {
+        "color": "#7d8b8f"
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "bcfishobs_fiss_fish_observations": {
+      "type": "point",
+      "source_layer": "bcfishobs.fiss_fish_obsrvtn_events_vw",
+      "mark": {
+        "color": "#db1e2a",
+        "shape": "triangle",
+        "radius": 2.4
+      },
+      "label": {
+        "font": "Courier",
+        "size": 5,
+        "color": "#000000"
+      }
+    },
+    "fiss_stream_sample_sites": {
+      "type": "point",
+      "source_layer": "whse_fish.fiss_stream_sample_sites_sp",
+      "mark": {
+        "color": "#f7f7f7",
+        "shape": "circle",
+        "radius": 1.8
+      },
+      "note": "2 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": "Courier",
+        "size": 6,
+        "color": "#000000"
+      }
+    },
+    "streams_bt": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_bt",
+        "classes": {
+          "SPAWN;NONE": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers"
+          },
+          "SPAWN;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers; intermittent"
+          },
+          "SPAWN;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier"
+          },
+          "SPAWN;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier; intermittent"
+          },
+          "SPAWN;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier"
+          },
+          "SPAWN;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier; intermittent"
+          },
+          "SPAWN;DAM": {
+            "color": "#ae7dd6",
+            "width": 1.7,
+            "label": "Spawning; dam"
+          },
+          "SPAWN;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 1.7,
+            "label": "Spawning; dam; intermittent"
+          },
+          "SPAWN;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated"
+          },
+          "SPAWN;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated; intermittent"
+          },
+          "REAR;NONE": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers"
+          },
+          "REAR;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers; intermittent"
+          },
+          "REAR;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier"
+          },
+          "REAR;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier; intermittent"
+          },
+          "REAR;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier"
+          },
+          "REAR;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier; intermittent"
+          },
+          "REAR;DAM": {
+            "color": "#ae7dd6",
+            "width": 1,
+            "label": "Rearing; dam"
+          },
+          "REAR;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 1,
+            "label": "Rearing; dam; intermittent"
+          },
+          "REAR;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated"
+          },
+          "REAR;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated; intermittent"
+          },
+          "ACCESS;NONE": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers"
+          },
+          "ACCESS;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers; intermittent"
+          },
+          "ACCESS;MODELLED": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier"
+          },
+          "ACCESS;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier; intermittent"
+          },
+          "ACCESS;ASSESSED": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier"
+          },
+          "ACCESS;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier; intermittent"
+          },
+          "ACCESS;DAM": {
+            "color": "#ae7dd6",
+            "width": 0.4,
+            "label": "No known barriers; dam"
+          },
+          "ACCESS;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 0.4,
+            "label": "No known barriers; dam; intermittent"
+          },
+          "ACCESS;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated"
+          },
+          "ACCESS;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated; intermittent"
+          }
+        }
+      }
+    },
+    "streams_salmon": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_salmon",
+        "classes": {
+          "SPAWN;NONE": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers"
+          },
+          "SPAWN;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers; intermittent"
+          },
+          "SPAWN;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier"
+          },
+          "SPAWN;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier; intermittent"
+          },
+          "SPAWN;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier"
+          },
+          "SPAWN;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier; intermittent"
+          },
+          "SPAWN;DAM": {
+            "color": "#ae7dd6",
+            "width": 1.7,
+            "label": "Spawning; dam"
+          },
+          "SPAWN;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 1.7,
+            "label": "Spawning; dam; intermittent"
+          },
+          "SPAWN;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated"
+          },
+          "SPAWN;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated; intermittent"
+          },
+          "REAR;NONE": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers"
+          },
+          "REAR;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers; intermittent"
+          },
+          "REAR;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier"
+          },
+          "REAR;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier; intermittent"
+          },
+          "REAR;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier"
+          },
+          "REAR;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier; intermittent"
+          },
+          "REAR;DAM": {
+            "color": "#ae7dd6",
+            "width": 1,
+            "label": "Rearing; dam"
+          },
+          "REAR;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 1,
+            "label": "Rearing; dam; intermittent"
+          },
+          "REAR;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated"
+          },
+          "REAR;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated; intermittent"
+          },
+          "ACCESS;NONE": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers"
+          },
+          "ACCESS;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers; intermittent"
+          },
+          "ACCESS;MODELLED": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier"
+          },
+          "ACCESS;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier; intermittent"
+          },
+          "ACCESS;ASSESSED": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier"
+          },
+          "ACCESS;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier; intermittent"
+          },
+          "ACCESS;DAM": {
+            "color": "#ae7dd6",
+            "width": 0.4,
+            "label": "No known barriers; dam"
+          },
+          "ACCESS;DAM;INTERMITTENT": {
+            "color": "#ae7dd6",
+            "width": 0.4,
+            "label": "No known barriers; dam; intermittent"
+          },
+          "ACCESS;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated"
+          },
+          "ACCESS;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated; intermittent"
+          }
+        }
+      }
+    },
+    "streams_st": {
+      "type": "line",
+      "source_layer": "bcfishpass.streams_vw",
+      "classification": {
+        "field": "mapping_code_st",
+        "classes": {
+          "SPAWN;NONE": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers"
+          },
+          "SPAWN;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1.7,
+            "label": "Spawning; no known barriers; intermittent"
+          },
+          "SPAWN;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier"
+          },
+          "SPAWN;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1.7,
+            "label": "Spawning; potential barrier; intermittent"
+          },
+          "SPAWN;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier"
+          },
+          "SPAWN;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; known barrier; intermittent"
+          },
+          "SPAWN;DAM": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; dam"
+          },
+          "SPAWN;DAM;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1.7,
+            "label": "Spawning; dam; intermittent"
+          },
+          "SPAWN;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated"
+          },
+          "SPAWN;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1.7,
+            "label": "Spawning; remediated; intermittent"
+          },
+          "REAR;NONE": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers"
+          },
+          "REAR;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 1,
+            "label": "Rearing; no known barriers; intermittent"
+          },
+          "REAR;MODELLED": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier"
+          },
+          "REAR;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 1,
+            "label": "Rearing; potential barrier; intermittent"
+          },
+          "REAR;ASSESSED": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier"
+          },
+          "REAR;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; known barrier; intermittent"
+          },
+          "REAR;DAM": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; dam"
+          },
+          "REAR;DAM;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 1,
+            "label": "Rearing; dam; intermittent"
+          },
+          "REAR;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated"
+          },
+          "REAR;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 1,
+            "label": "Rearing; remediated; intermittent"
+          },
+          "ACCESS;NONE": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers"
+          },
+          "ACCESS;NONE;INTERMITTENT": {
+            "color": "#129bdb",
+            "width": 0.4,
+            "label": "No known barriers; no known barriers; intermittent"
+          },
+          "ACCESS;MODELLED": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier"
+          },
+          "ACCESS;MODELLED;INTERMITTENT": {
+            "color": "#ff9f85",
+            "width": 0.4,
+            "label": "No known barriers; potential barrier; intermittent"
+          },
+          "ACCESS;ASSESSED": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier"
+          },
+          "ACCESS;ASSESSED;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; known barrier; intermittent"
+          },
+          "ACCESS;DAM": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; dam"
+          },
+          "ACCESS;DAM;INTERMITTENT": {
+            "color": "#ef4545",
+            "width": 0.4,
+            "label": "No known barriers; dam; intermittent"
+          },
+          "ACCESS;REMEDIATED": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated"
+          },
+          "ACCESS;REMEDIATED;INTERMITTENT": {
+            "color": "#33a02c",
+            "width": 0.4,
+            "label": "No known barriers; remediated; intermittent"
+          }
+        }
+      }
+    },
+    "floodplains": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.cwb_floodplains_bc_area_svw",
+      "fill": {
+        "color": "#1f78b4",
+        "opacity": 0.5
+      },
+      "stroke": {
+        "color": "#8fb583",
+        "width": 0.26,
+        "style": "none"
+      }
+    },
+    "glaciers": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_glaciers_poly",
+      "fill": {
+        "color": "#ffffff",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      },
+      "label": {
+        "font": "Helvetica",
+        "size": 10,
+        "style": "italic",
+        "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        }
+      }
+    },
+    "manmade_waterbodies": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.fwa_manmade_waterbodies_poly",
+      "fill": {
+        "color": "#dcecf4",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#1f78b4",
+        "width": 0.2
+      },
+      "label": {
+        "font": "Helvetica",
+        "size": 10,
+        "style": "italic",
+        "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        }
+      }
+    },
+    "utm_zones": {
+      "type": "polygon",
+      "source_layer": "whse_basemapping.utmg_utm_zones_sp",
+      "fill": {
+        "color": "#8f1a89",
+        "opacity": 0
+      },
+      "stroke": {
+        "color": "#000000",
+        "width": 0.25
+      }
+    },
+    "land_ownership": {
+      "type": "polygon",
+      "source_layer": "whse_cadastre.pmbc_parcel_fabric_poly_svw",
+      "classification": {
+        "field": "owner_type",
+        "classes": {
+          "Crown Agency": {
+            "color": "#21e087",
+            "outline_width": 0.26
+          },
+          "Crown Provincial": {
+            "color": "#daef8e",
+            "outline_width": 0.26
+          },
+          "Federal": {
+            "color": "#d8273f",
+            "outline_width": 0.26
+          },
+          "Mixed Ownership": {
+            "color": "#b07ddc",
+            "outline_width": 0.26
+          },
+          "Municipal": {
+            "color": "#1931cd",
+            "outline_width": 0.26
+          },
+          "Private": {
+            "color": "#11b0d8",
+            "outline_width": 0.26
+          },
+          "Unclassified": {
+            "color": "#ca760f",
+            "outline_width": 0.26
+          },
+          "Untitled Provincial": {
+            "color": "#5cd94c",
+            "outline_width": 0.26
+          },
+          "__empty__": {
+            "color": "#eb5ace",
+            "outline_width": 0.26
+          }
+        }
+      }
+    },
+    "hydrometric_stations_environment_canada": {
+      "type": "point",
+      "source_layer": "whse_environmental_monitoring.envcan_hydrometric_stn_sp",
+      "mark": {
+        "color": "#60c5ff",
+        "shape": "circle",
+        "radius": 4
+      },
+      "label": {
+        "font": "Courier",
+        "size": 8,
+        "color": "#363636"
+      }
+    },
+    "range_tenure": {
+      "type": "polygon",
+      "source_layer": "whse_forest_tenure.ften_range_poly_carto_vw",
+      "fill": {
+        "color": "#8d5a42",
+        "opacity": 0.3
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "biogeoclimatic_ecosystem_classification": {
+      "type": "polygon",
+      "source_layer": "whse_forest_vegetation.bec_biogeoclimatic_poly",
+      "fill": {
+        "color": "#7d8b8f",
+        "opacity": 0.7
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "orthophoto_tiles": {
+      "type": "polygon",
+      "source_layer": "whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly",
+      "fill": {
+        "color": "#8d5a99",
+        "opacity": 0
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.5
+      },
+      "label": {
+        "font": "Helvetica",
+        "size": 10,
+        "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        }
+      }
+    },
+    "moti_major_structures": {
+      "type": "line",
+      "source_layer": "whse_imagery_and_base_maps.mot_road_structure_sp",
+      "stroke": {
+        "color": "#000000",
+        "width": 2.06
+      },
+      "note": "2 symbol layers — overlay/casing may apply",
+      "label": {
+        "font": "Helvetica",
+        "size": 10,
+        "color": "#323232"
+      }
+    },
+    "terrestrial_ecosystem_information_scanned_map_boundary": {
+      "type": "polygon",
+      "source_layer": "whse_terrestrial_ecology.ste_scanned_map_boundary_sp",
+      "fill": {
+        "color": "#729b6f"
+      },
+      "stroke": {
+        "color": "#232323",
+        "width": 0.26
+      }
+    },
+    "terrain_mapping_project_boundaries": {
+      "type": "polygon",
+      "source_layer": "whse_terrestrial_ecology.ste_ter_project_boundaries_svw",
+      "fill": {
+        "color": "#a47158",
+        "opacity": 0
+      },
+      "stroke": {
+        "color": "#f51cea",
+        "width": 0.8
+      }
+    },
+    "fisheries_sensitive_watersheds": {
+      "type": "polygon",
+      "source_layer": "whse_wildlife_management.wcp_fish_sensitive_ws_poly",
+      "fill": {
+        "color": "#ed3232",
+        "opacity": 0.25
+      },
+      "stroke": {
+        "color": "#525252",
+        "width": 0.26
+      }
+    }
+  }
+}

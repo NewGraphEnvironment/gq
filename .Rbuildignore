@@ -11,3 +11,5 @@
 ^planning$
 ^registry$
 ^data-raw$
+^doc$
+^Meta$
