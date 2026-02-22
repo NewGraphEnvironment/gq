@@ -1,3 +1,14 @@
+test_that("gq_reg_main loads the master registry", {
+  reg <- gq_reg_main()
+  expect_true(all(c("name", "version", "source", "layers") %in% names(reg)))
+  expect_equal(reg$name, "main")
+  expect_true(length(reg$layers) >= 50)
+  # Has both QGIS-extracted and CSV layers
+  expect_true("lake" %in% names(reg$layers))
+  expect_true("bec_zone" %in% names(reg$layers))
+  expect_true("dam" %in% names(reg$layers))
+})
+
 test_that("gq_reg_read is alias for gq_registry_read", {
   path <- system.file("examples", "mini_registry.json", package = "gq")
   expect_identical(gq_reg_read(path), gq_registry_read(path))

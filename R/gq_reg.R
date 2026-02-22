@@ -1,3 +1,26 @@
+#' Load the main gq style registry
+#'
+#' Returns the merged master registry (`reg_main.json`) that ships with gq.
+#' This is the single source of truth for all layer styles — the union of
+#' QGIS-extracted registries and hand-curated CSV styles.
+#'
+#' @return A list with `name`, `version`, `source`, and `layers` elements.
+#'
+#' @examples
+#' reg <- gq_reg_main()
+#' names(reg$layers)
+#'
+#' # Use directly with style translators
+#' gq_tmap_style(gq_reg_main()$layers$lake)
+#'
+#' @export
+gq_reg_main <- function() {
+  path <- system.file("registry", "reg_main.json", package = "gq")
+  if (path == "") stop("reg_main.json not found — reinstall gq")
+  gq_registry_read(path)
+}
+
+
 #' Read a gq style registry from JSON (alias)
 #'
 #' Short alias for [gq_registry_read()].
