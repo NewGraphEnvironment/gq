@@ -42,6 +42,8 @@ MIT
   : Translate a registry layer style to mapgl arguments
 - [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
   : Extract layer styles from a QGIS project file
+- [`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md)
+  : Load the main gq style registry
 - [`gq_reg_merge()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_merge.md)
   : Merge multiple gq registries
 - [`gq_reg_read()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read.md)
