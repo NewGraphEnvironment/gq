@@ -1,15 +1,15 @@
-layer_key,type,source_layer,class_field,class_value,fill_color,fill_opacity,stroke_color,stroke_width,stroke_opacity,mark_color,mark_shape,mark_radius,mark_stroke_color,mark_stroke_width,label_color,label_size,label_font,label_halo_color,label_halo_width,label_offset_x,label_offset_y,note
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,SBS,#8fbc8f,0.25,#888888,0.5,0.4,,,,,,,,,,,,dark sea green
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,ESSF,#b0c4de,0.25,#888888,0.5,0.4,,,,,,,,,,,,light steel blue
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,ICH,#deb887,0.25,#888888,0.5,0.4,,,,,,,,,,,,burlywood
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,BWBS,#d8bfd8,0.25,#888888,0.5,0.4,,,,,,,,,,,,thistle
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,CWH,#98fb98,0.25,#888888,0.5,0.4,,,,,,,,,,,,pale green
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,MS,#f0e68c,0.25,#888888,0.5,0.4,,,,,,,,,,,,khaki
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,SBPS,#c4d4a0,0.25,#888888,0.5,0.4,,,,,,,,,,,,sage
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,SWB,#e6e6fa,0.25,#888888,0.5,0.4,,,,,,,,,,,,lavender
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,AT,#f5f5dc,0.25,#888888,0.5,0.4,,,,,,,,,,,,beige
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,MH,#a8d8a8,0.25,#888888,0.5,0.4,,,,,,,,,,,,soft green
-bec_zone,polygon,whse_forest_vegetation.bec_biogeoclimatic_poly,ZONE,BG,#e8d8a0,0.25,#888888,0.5,0.4,,,,,,,,,,,,soft tan
-rivers_poly,polygon,whse_basemapping.fwa_rivers_poly,,,#7ba7cc,0.7,,,,,,,,,,,,,,,,wide channel polygons
-dam,point,bcfishpass.dams,,,,,,,,#c0392b,circle,7,white,2,#c0392b,11,Open Sans Bold,white,1.5,0,1.5,
-town,point,whse_basemapping.gns_geographical_names_sp,,,,,,,,#2c3e50,circle,5,white,1.5,#2c3e50,12,Open Sans Bold,white,1.5,0,1.2,
+"layer_key","type","source_layer","class_field","class_value","class_label","fill_color","fill_opacity","stroke_color","stroke_width","stroke_opacity","mark_color","mark_shape","mark_radius","mark_stroke_color","mark_stroke_width","label_color","label_size","label_font","label_halo_color","label_halo_width","label_offset_x","label_offset_y","note"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","SBS","SBS","#8fbc8f",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"dark sea green"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","ESSF","ESSF","#b0c4de",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"light steel blue"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","ICH","ICH","#deb887",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"burlywood"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","BWBS","BWBS","#d8bfd8",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"thistle"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","CWH","CWH","#98fb98",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"pale green"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","MS","MS","#f0e68c",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"khaki"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","SBPS","SBPS","#c4d4a0",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"sage"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","SWB","SWB","#e6e6fa",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"lavender"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","AT","AT","#f5f5dc",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"beige"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","MH","MH","#a8d8a8",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"soft green"
+"bec_zone","polygon","whse_forest_vegetation.bec_biogeoclimatic_poly","ZONE","BG","BG","#e8d8a0",0.25,"#888888",0.5,0.4,,,,,,,,,,,,,"soft tan"
+"rivers_poly","polygon","whse_basemapping.fwa_rivers_poly",,,,"#7ba7cc",0.7,,,,,,,,,,,,,,,,
+"dam","point","bcfishpass.dams",,,,,,,,,"#c0392b","circle",7,"white",2,"#c0392b",11,"Open Sans Bold","white",1.5,0,1.5,
+"town","point","whse_basemapping.gns_geographical_names_sp",,,,,,,,,"#2c3e50","circle",5,"white",1.5,"#2c3e50",12,"Open Sans Bold","white",1.5,0,1.2,
