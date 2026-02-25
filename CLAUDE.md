@@ -19,14 +19,14 @@ The name is a reference — it’s all about style.
 
 ## Repository Relationships
 
-| Repo                                 | Relationship                                                           |
-|--------------------------------------|------------------------------------------------------------------------|
-| `soul`                               | Parent ecosystem — conventions, skills (including `cartography` skill) |
-| `soul/skills/cartography`            | Codified map-making patterns for tmap + fwapg (consumer of gq styles)  |
-| `sred-2025-2026`                     | R&D tracking — Experiment 6.11                                         |
-| `awshak`                             | Infrastructure (future: style hosting, OGC API Styles endpoint)        |
-| `nrp-nutrient-loading-2025`          | First consumer project (tmap watershed maps)                           |
-| All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects)                        |
+| Repo                                 | Relationship                                                                  |
+|--------------------------------------|-------------------------------------------------------------------------------|
+| `soul`                               | Parent ecosystem — conventions, skills (including `cartography` skill)        |
+| `soul/skills/cartography`            | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
+| `sred-2025-2026`                     | R&D tracking — Experiment 6.11                                                |
+| `awshak`                             | Infrastructure (future: style hosting, OGC API Styles endpoint)               |
+| `nrp-nutrient-loading-2025`          | First consumer project (tmap watershed maps)                                  |
+| All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects)                               |
 
 ## SRED Tracking
 
@@ -36,8 +36,8 @@ Relates to NewGraphEnvironment/sred-2025-2026#13
 
 ### The Problem
 
-NGE produces maps across multiple tools: - **QGIS** — interactive GIS,
-field data, Mergin Maps sync - **tmap** — static maps in bookdown
+New Graph produces maps across multiple tools: - **QGIS** — interactive
+GIS, field data, Mergin Maps sync - **tmap** — static maps in bookdown
 reports (R) - **leaflet** — interactive maps in bookdown reports (R) -
 **Web mapping** — PMTiles + MapLibre GL for cloud-native web maps -
 **ggplot2** — statistical plots with spatial context (R)
@@ -50,16 +50,18 @@ manually update R code → manually update web styles. This doesn’t scale.
 
 A canonical style registry that serves as the single source of truth:
 
-    QGIS Project (.qgs/.qgz)
-      ↓ PyQGIS extract
-    QML files (.qml)
-      ↓ parse to canonical
-    registry.json (canonical styles)
-      ↓ translate per target
-    ┌──────────┬──────────┬──────────────┬──────────┐
-    │  tmap    │ leaflet  │ MapLibre GL  │ ggplot2  │
-    │  (R)     │  (R)     │  (JSON)      │  (R)     │
-    └──────────┴──────────┴──────────────┴──────────┘
+    QGIS Project (.qgs)          Hand-curated CSV
+      ↓ gq_qgs_extract()           ↓ gq_reg_read_csv()
+    registry JSON                 registry list
+      ↓                             ↓
+      └──── gq_reg_merge() ────────┘
+                  ↓
+            reg_main.json (master registry)
+                  ↓ gq_reg_main()
+      ┌───────────┼───────────┐
+      │ tmap      │ mapgl     │ (future: leaflet, ggplot2)
+      │ (static)  │ (web)     │
+      └───────────┴───────────┘
 
 ### Canonical Style Format
 
@@ -148,36 +150,41 @@ properties:
 
 ### Components
 
-#### 1. Python: QGIS ↔︎ Registry (`python/gq/`)
+#### R Package (the package root IS the R package)
 
-PyQGIS-driven tools to: - **Export:** Extract layer styles from a QGIS
-project → QML files → canonical JSON - **Import:** Apply canonical JSON
-styles back to QGIS layers - **Sync:** Round-trip styles between QGIS
-and registry
+**Registry functions:** -
+[`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md)
+— load the master registry (51+ layers, no arguments needed) -
+`gq_registry_read(path)` — read any registry JSON file -
+`gq_reg_read(path)` — alias for
+[`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md) -
+`gq_reg_read_csv(path)` — read a hand-curated CSV registry -
+`gq_reg_merge(..., csv, priority)` — merge multiple registries
 
-Requires QGIS Python environment (PyQGIS).
+**Style translators:** - `gq_tmap_style(layer)` — translate layer → tmap
+v4 polygon/line/point args - `gq_tmap_classes(layer)` — translate
+classified layer → field, values, labels - `gq_mapgl_style(layer)` —
+translate layer → MapLibre GL paint properties -
+`gq_mapgl_classes(layer)` — translate classified layer → MapLibre match
+expression
 
-#### 2. R Package: Registry → R Renderers (`R/gq/`)
+**QGIS extraction:** - `gq_qgs_extract(path)` — parse .qgs XML →
+registry JSON (no PyQGIS needed)
 
-R functions to: - `gq_read_registry()` — load canonical styles from
-registry.json -
-[`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
-— translate canonical style to tmap v4 aesthetics - `gq_leaflet_style()`
-— translate to leaflet options - `gq_ggplot_style()` — translate to
-ggplot2 scale/theme - `gq_maplibre_style()` — generate MapLibre GL JSON
-style spec
+#### Registry sources (`inst/registry/`)
 
-#### 3. Style Registry (`registry/`)
+- `reg_main.json` — master merged registry (single source of truth)
+- `reg_qgis_restoration.json` — extracted from restoration QGIS project
+  (47 layers)
+- `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project
+  (42 layers)
+- `reg_csv_custom.csv` — hand-curated styles for layers without QGIS
+  source
 
-- `registry.json` — the canonical style definitions
-- Versioned alongside code
-- Schema validation
+#### Build script (`data-raw/reg_build_main.R`)
 
-#### 4. QML Archive (`styles/qml/`)
-
-- Extracted QML files from QGIS projects
-- Source material for the canonical registry
-- Preserved for round-tripping back to QGIS
+Merges all registry sources into `reg_main.json`. Run manually after
+updating any source registry.
 
 ### Multi-Backend Data Sources
 
@@ -189,74 +196,76 @@ Shapefiles / GeoJSON - Cloud-native (PMTiles, COG, FlatGeobuf)
 The registry maps **layer names** to styles, not data sources to styles.
 The consuming tool (tmap, leaflet, etc.) handles data access separately.
 
-### Web Mapping Pipeline
+### Future
 
-For cloud-native web mapping: 1. Data in PMTiles (vector) or COG
-(raster) 2. Styles from registry → MapLibre GL JSON style spec 3. Hosted
-on S3/Cloudflare 4. Viewer at `viewer.a11s.one` or custom MapLibre app
-
-### Future: Standards Integration
-
-- **QGIS Hub API** — publish/discover community styles
+- **leaflet translator** — `gq_leaflet_style()` for interactive bookdown
+  maps
+- **ggplot2 translator** — `gq_ggplot_style()` for statistical plots
+- **GitHub Action** — auto-rebuild `reg_main.json` on registry source
+  changes (gq#11)
 - **OGC API Styles** — serve styles via standard endpoint (awshak)
-- **Mapbox/MapLibre Style Spec** — direct output for web mapping
-
-## Prior Research Context
-
-### PyQGIS Style Export (from prior conversation)
-
-Architecture explored for extracting styles from QGIS projects: - Use
-`QgsProject.instance().read()` to load .qgs/.qgz - Iterate `mapLayers()`
-to access each layer - `layer.renderer()` gives the symbology renderer
-(single, categorized, graduated, rule-based) -
-`layer.exportNamedStyle()` exports QML XML - Parse QML XML to extract
-fill/stroke/label properties - Handle renderer types:
-`QgsSingleSymbolRenderer`, `QgsCategorizedSymbolRenderer`,
-`QgsGraduatedSymbolRenderer`, `QgsRuleBasedRenderer` - Symbol layers:
-`QgsSimpleFillSymbolLayer`, `QgsSimpleLineSymbolLayer`,
-`QgsMarkerSymbolLayer`
-
-### Registry Schema (from prior conversation)
-
-The `registry.json` schema was designed with: - Layer-name-based lookup
-(not file-based) - Support for classification (categorized, graduated,
-rule-based) - Filter expressions for rendering vs labeling thresholds -
-Overlay support (e.g., railway double-line trick) - Label hierarchy
-(size, weight, style, color, min-scale, max-scale)
 
 ## Key Patterns
 
-### Style Precedence
+### Usage pattern
 
-1.  **Project override** — project-specific `gq_styles.json` overrides
-    registry defaults
-2.  **Registry default** — `registry/registry.json` canonical styles
-3.  **Fallback** — sensible defaults if no style found
+``` r
+library(gq)
+reg <- gq_reg_main()  # load once per script
 
-### NGE Color Palette (from cartography skill)
+# Simple layer → tmap
+sty <- gq_tmap_style(reg$layers$lake)
+tm_shape(lakes_sf) + do.call(tm_polygons, sty)
 
-| Element     | Fill                       | Border    | Alpha |
-|-------------|----------------------------|-----------|-------|
-| Watershed A | `#a8c8e0`                  | `#2c3e50` | 0.40  |
-| Watershed B | `#6a9bc3`                  | `#2c3e50` | 0.40  |
-| Parks       | `#a3c4a3`                  | `#5a7a5a` | 0.35  |
-| Lakes       | `#c6ddf0`                  | `#7ba7cc` | 0.85  |
-| Streams     | `#7ba7cc`                  | —         | —     |
-| Highway     | `#c0392b`                  | —         | —     |
-| Railway     | `#000000` + `#ffffff` dash | —         | —     |
+# Classified layer → tmap
+cls <- gq_tmap_classes(reg$layers$pscis_assessment)
+tm_dots(fill = cls$field, fill.scale = tm_scale_categorical(values = cls$values, labels = cls$labels))
+
+# Simple layer → mapgl
+lake_gl <- gq_mapgl_style(reg$layers$lake)
+add_fill_layer(id = "lakes", source = lakes_sf, fill_color = lake_gl$paint[["fill-color"]])
+
+# Classified layer → mapgl
+bec_expr <- gq_mapgl_classes(reg$layers$bec_zone)
+add_fill_layer(id = "bec", source = bec_sf, fill_color = bec_expr)
+```
+
+### Style precedence
+
+[`gq_reg_merge()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_merge.md)
+controls precedence. Default is `priority = "last"` (later sources win).
+Projects can merge their own CSV on top of
+[`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md)
+to override specific layers.
+
+### Title case labels
+
+[`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
+auto-converts ALL CAPS fallback labels to title case (e.g., BARRIER →
+Barrier). Explicit `label` or `class_label` fields in the registry
+override this — use for acronyms like BEC zone codes.
 
 ## Development
 
-### Python setup
-
-``` bash
-cd python && pip install -e .
-```
-
-### R package
+### Install
 
 ``` r
-devtools::install("R/gq")
+pak::pak("NewGraphEnvironment/gq")
+```
+
+### Dev workflow
+
+``` r
+devtools::load_all()
+devtools::test()        # 127+ tests
+devtools::document()    # if roxygen changed
+devtools::check()       # before release
+```
+
+### Rebuild master registry
+
+``` r
+source("data-raw/reg_build_main.R")
 ```
 
 ## Learning Preferences
