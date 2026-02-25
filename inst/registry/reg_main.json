@@ -1361,6 +1361,39 @@
           "width": 1.5
         }
       }
+    },
+    "harvest_area": {
+      "type": "polygon",
+      "fill": {
+        "color": "#8b7355",
+        "opacity": 0.3
+      },
+      "stroke": {
+        "color": "#5c4033",
+        "width": 1.5,
+        "opacity": 0.7
+      }
+    },
+    "planting_site": {
+      "type": "point",
+      "mark": {
+        "color": "#2d8659",
+        "shape": "circle",
+        "radius": 7,
+        "stroke_color": "white",
+        "stroke_width": 2
+      },
+      "label": {
+        "color": "#2d8659",
+        "size": 11,
+        "font": "Open Sans Bold",
+        "offset_x": 0,
+        "offset_y": 1.5,
+        "halo": {
+          "color": "white",
+          "width": 1.5
+        }
+      }
     }
   }
 }

@@ -13,3 +13,5 @@
 "rivers_poly","polygon","whse_basemapping.fwa_rivers_poly",,,,"#7ba7cc",0.7,,,,,,,,,,,,,,,,
 "dam","point","bcfishpass.dams",,,,,,,,,"#c0392b","circle",7,"white",2,"#c0392b",11,"Open Sans Bold","white",1.5,0,1.5,
 "town","point","whse_basemapping.gns_geographical_names_sp",,,,,,,,,"#2c3e50","circle",5,"white",1.5,"#2c3e50",12,"Open Sans Bold","white",1.5,0,1.2,
+"harvest_area","polygon",,,,,"#8b7355",0.3,"#5c4033",1.5,0.7,,,,,,,,,,,,,"buffered river corridor — seed collection zone"
+"planting_site","point",,,,,,,,,,"#2d8659","circle",7,"white",2,"#2d8659",11,"Open Sans Bold","white",1.5,0,1.5,"proposed restoration planting location"

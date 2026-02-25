@@ -70,6 +70,15 @@ gq_reg_read <- function(path) {
 gq_reg_read_csv <- function(path) {
   df <- utils::read.csv(path, stringsAsFactors = FALSE, na.strings = c("", "NA"))
 
+  # Coerce numeric columns — read.csv reads mixed columns as character
+  num_cols <- c("fill_opacity", "stroke_width", "stroke_opacity",
+                "mark_radius", "mark_stroke_width",
+                "label_size", "label_halo_width",
+                "label_offset_x", "label_offset_y")
+  for (col in intersect(num_cols, names(df))) {
+    df[[col]] <- suppressWarnings(as.numeric(df[[col]]))
+  }
+
   required <- c("layer_key", "type")
   missing <- setdiff(required, names(df))
   if (length(missing) > 0) {
