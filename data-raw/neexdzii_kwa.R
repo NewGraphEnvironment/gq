@@ -28,10 +28,10 @@ result <- frs_network(blk, drm_ds, upstream_measure = drm_us,
   )
 )
 
-# Transform to WGS84
-neexdzii_streams <- st_transform(result$streams, 4326)
-neexdzii_lakes <- st_transform(result$lakes, 4326)
-neexdzii_wetlands <- st_transform(result$wetlands, 4326)
+# Transform to WGS84 and drop Z/M (GEOS requires XY for union/clip)
+neexdzii_streams <- st_zm(st_transform(result$streams, 4326))
+neexdzii_lakes <- st_zm(st_transform(result$lakes, 4326))
+neexdzii_wetlands <- st_zm(st_transform(result$wetlands, 4326))
 
 cat("Streams:", nrow(neexdzii_streams), "\n")
 cat("Lakes:", nrow(neexdzii_lakes), "\n")
@@ -53,7 +53,7 @@ roads <- frs_db_query(sprintf(
    AND ST_Intersects(geom, %s)", env
 ))
 roads <- st_collection_extract(st_intersection(roads, wsd_3005), "LINESTRING")
-neexdzii_roads <- st_transform(roads, 4326)
+neexdzii_roads <- st_zm(st_transform(roads, 4326))
 cat("Roads:", nrow(neexdzii_roads), "\n")
 
 railway <- frs_db_query(sprintf(
@@ -64,19 +64,19 @@ railway <- frs_db_query(sprintf(
 if (nrow(railway) > 0) {
   railway <- st_collection_extract(st_intersection(railway, wsd_3005), "LINESTRING")
 }
-neexdzii_railway <- st_transform(railway, 4326)
+neexdzii_railway <- st_zm(st_transform(railway, 4326))
 cat("Railway:", nrow(neexdzii_railway), "\n")
 
 # -- Keymap data: BC outline + Bulkley/Morice watershed groups --
-neexdzii_bc <- st_transform(frs_db_query(
+neexdzii_bc <- st_zm(st_transform(frs_db_query(
   "SELECT ST_Simplify(geom, 5000) as geom FROM whse_basemapping.fwa_bcboundary"
-), 4326)
+), 4326))
 
-neexdzii_wsg <- st_transform(frs_db_query(
+neexdzii_wsg <- st_zm(st_transform(frs_db_query(
   "SELECT watershed_group_code, geom
    FROM whse_basemapping.fwa_watershed_groups_poly
    WHERE watershed_group_code IN ('BULK', 'MORR')"
-), 4326)
+), 4326))
 
 # -- Save as package data --
 usethis::use_data(

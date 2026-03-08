@@ -1,0 +1,265 @@
+---
+title: "Map composition with gq and tmap"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Map composition with gq and tmap}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 9,
+  dpi = 150
+)
+```
+
+gq translates registry styles into tmap arguments. This vignette shows a
+complete map composition — basemap, layers, legend, logo, keymap — following
+New Graph cartographic conventions.
+
+## Study area: Neexdzii Kwa subbasin
+
+A subbasin of the Neexdzii Kwa (Upper Bulkley River) in the traditional
+territory of the Wet'suwet'en, bounded by Johnny David Creek (downstream)
+and Richfield Creek (upstream). ~212 km², pulled from the BC Freshwater Atlas
+via [fresh](https://github.com/NewGraphEnvironment/fresh).
+
+```{r load-data}
+library(gq)
+library(sf)
+library(tmap)
+library(maptiles)
+
+sf_use_s2(FALSE)
+
+data(neexdzii_wsd, neexdzii_streams, neexdzii_lakes, neexdzii_wetlands,
+     neexdzii_roads, neexdzii_railway, neexdzii_bc, neexdzii_wsg,
+     package = "gq")
+
+cat("Watershed:", round(as.numeric(st_area(neexdzii_wsd)) / 10000), "ha\n")
+cat("Streams:", nrow(neexdzii_streams), "segments\n")
+cat("Lakes:", nrow(neexdzii_lakes), "\n")
+cat("Wetlands:", nrow(neexdzii_wetlands), "\n")
+cat("Roads:", nrow(neexdzii_roads), "\n")
+```
+
+## Load styles from the registry
+
+One call to `gq_reg_main()` loads the master registry. Every color on the
+map traces back to this registry — streams, roads, railway, lakes, wetlands.
+
+```{r load-registry}
+reg <- gq_reg_main()
+
+# Extract colors and widths from classified layers for manual use
+stream_col <- reg$layers$streams_all$classification$classes[["__empty__"]]$color
+stream_lwd <- reg$layers$streams_all$classification$classes[["__empty__"]]$width
+
+road_hwy <- reg$layers$roads_dra$classification$classes[["RF"]]
+road_other <- reg$layers$roads_dra$classification$classes[["__empty__"]]
+
+railway_col <- reg$layers$railway$stroke$color
+railway_lwd <- reg$layers$railway$stroke$width
+```
+
+## Data prep
+
+Filter streams by order for display, split roads by type for layered styling.
+
+```{r data-prep}
+# Streams: order >= 3 for display, >= 5 for labels
+streams_display <- neexdzii_streams[neexdzii_streams$stream_order >= 3, ]
+
+# Stream labels: dissolve named streams to single point per name
+streams_named <- neexdzii_streams[
+  !is.na(neexdzii_streams$gnis_name) & neexdzii_streams$stream_order >= 5, ]
+
+if (nrow(streams_named) > 0) {
+  stream_labels <- do.call(rbind, lapply(
+    split(streams_named, streams_named$gnis_name),
+    function(x) {
+      combined <- st_union(x)
+      pt <- st_point_on_surface(combined)
+      st_sf(gnis_name = x$gnis_name[1], geometry = pt, crs = st_crs(x))
+    }
+  ))
+} else {
+  stream_labels <- streams_named[0, ]
+}
+
+# Roads: split highways from other roads for distinct styling
+highways <- neexdzii_roads[neexdzii_roads$road_type %in%
+  c("RF", "RH1", "RH2"), ]
+roads_other <- neexdzii_roads[!neexdzii_roads$road_type %in%
+  c("RF", "RH1", "RH2"), ]
+
+# Lake labels
+lakes_named <- neexdzii_lakes[!is.na(neexdzii_lakes$gnis_name_1) &
+                                neexdzii_lakes$gnis_name_1 != "", ]
+```
+
+## Basemap: Positron x hillshade blend
+
+Label-free raster basemap gives terrain relief without competing with our
+own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels blended
+with hillshade works well.
+
+```{r basemap}
+bbox <- st_bbox(neexdzii_wsd)
+y_pad <- (bbox["ymax"] - bbox["ymin"]) * 0.03
+bbox["ymin"] <- bbox["ymin"] - y_pad
+bbox["ymax"] <- bbox["ymax"] + y_pad
+bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
+
+positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels",
+                      zoom = 10, crop = TRUE)
+relief <- get_tiles(bbox_sf, provider = "Esri.WorldShadedRelief",
+                    zoom = 10, crop = TRUE)
+relief_rs <- terra::resample(relief, positron)
+p_n <- positron / 255
+r_g <- terra::mean(relief_rs) / 255
+blended <- terra::clamp(p_n * (r_g ^ 0.5) * 255, lower = 0, upper = 255)
+basemap_stars <- stars::st_as_stars(blended)
+```
+
+## Keymap inset
+
+Small overview map showing the subbasin within the Bulkley/Morice watershed
+groups and BC.
+
+```{r keymap}
+keymap <- tm_shape(neexdzii_bc) +
+  tm_borders(col = "grey60", lwd = 0.5) +
+tm_shape(neexdzii_wsg) +
+  tm_polygons(fill = stream_col, fill_alpha = 0.5,
+              col = "#1f78b4", lwd = 0.5) +
+tm_shape(neexdzii_wsd) +
+  tm_polygons(fill = "#ef4545", col = "#ef4545", lwd = 0.3) +
+tm_layout(
+  frame = TRUE,
+  bg.color = "white",
+  inner.margins = c(0.02, 0.02, 0.02, 0.02)
+)
+```
+
+## Main map
+
+Draw order matters: wetlands first, then streams, lakes on top of streams,
+transport infrastructure, then labels last.
+
+```{r map-composition, fig.alt = "Map of a Neexdzii Kwa subbasin showing streams, lakes, wetlands, roads, and railway styled from the gq registry"}
+bb_box <- st_as_sfc(bbox, crs = st_crs(neexdzii_wsd))
+logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
+
+tmap_mode("plot")
+
+# Polygon layers use do.call() with gq_tmap_style() directly
+m <- tm_shape(basemap_stars) +
+  tm_rgb() +
+tm_shape(bb_box) +
+  tm_borders(lwd = 0, col = NA) +
+tm_shape(neexdzii_wsd) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
+tm_shape(neexdzii_wetlands) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$wetland)) +
+tm_shape(streams_display) +
+  tm_lines(col = stream_col, lwd = stream_lwd * 2) +
+tm_shape(neexdzii_lakes) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$lake))
+
+# Lake labels
+if (nrow(lakes_named) > 0) {
+  m <- m + tm_shape(lakes_named) +
+    tm_text("gnis_name_1", size = 0.5, col = "#1f78b4",
+            fontface = "italic",
+            options = opt_tm_text(shadow = TRUE))
+}
+
+# Transport — thinnest first, highways on top
+# Colors from roads_dra classification in registry
+if (nrow(roads_other) > 0) {
+  m <- m + tm_shape(roads_other) +
+    tm_lines(col = road_other$color, lwd = road_other$width * 2)
+}
+if (nrow(highways) > 0) {
+  m <- m + tm_shape(highways) +
+    tm_lines(col = road_hwy$color, lwd = road_hwy$width * 2)
+}
+
+# Railway overlay (black base + white dashed) — color from registry
+if (nrow(neexdzii_railway) > 0) {
+  m <- m + tm_shape(neexdzii_railway) +
+    tm_lines(col = railway_col, lwd = railway_lwd * 2) +
+  tm_shape(neexdzii_railway) +
+    tm_lines(col = "white", lwd = railway_lwd, lty = "42")
+}
+
+# Stream labels
+if (nrow(stream_labels) > 0) {
+  m <- m + tm_shape(stream_labels) +
+    tm_text("gnis_name", size = 0.45, fontface = "italic", col = "#1a5276",
+            options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
+}
+
+# Manual legends — colors pulled from registry, not hardcoded
+m <- m +
+tm_add_legend(
+  type = "polygons",
+  labels = c("Lake", "Wetland"),
+  fill = c(
+    reg$layers$lake$fill$color,
+    reg$layers$wetland$fill$color
+  )
+) +
+tm_add_legend(
+  type = "lines",
+  labels = c("Stream", "Highway", "Road", "Railway"),
+  col = c(stream_col, road_hwy$color, road_other$color, railway_col),
+  lwd = c(0.5, 1.3, 0.5, 0.8),
+  lty = c("solid", "solid", "solid", "twodash")
+)
+
+# Layout: four-corner rule
+# - Legend: bottom-left
+# - Logo: top-right
+# - Scalebar: bottom-center
+# - Keymap: bottom-right (via grid viewport)
+m <- m +
+tm_scalebar(
+  breaks = c(0, 2, 4, 6),
+  text.size = 0.5,
+  position = c("center", "bottom"),
+  margins = c(0, 0, 0, 0)
+) +
+tm_logo(logo_path, position = c("right", "top"), height = 2.5,
+        margins = c(0, 0, 0, 0)) +
+tm_layout(
+  frame = TRUE,
+  frame.lwd = 0.5,
+  asp = 0,
+  legend.position = c("left", "bottom"),
+  legend.frame = TRUE,
+  legend.bg.color = "white",
+  legend.bg.alpha = 0.85,
+  legend.text.size = 0.55,
+  legend.title.size = 0.65,
+  inner.margins = c(0.04, 0.001, 0.001, 0.001),
+  outer.margins = c(0.003, 0.003, 0.003, 0.003),
+  meta.margins = 0
+)
+
+print(m)
+print(keymap, vp = grid::viewport(
+  x = 0.86, y = 0.12, width = 0.25, height = 0.22
+))
+```
+
+Every color on this map traces back to `gq_reg_main()`:
+
+- **Polygon layers** (watershed, lake, wetland) use `do.call(tm_polygons, gq_tmap_style(...))`
+- **Line layers** (streams, roads, railway) pull colors from classified registry entries
+- **Legend colors** reference the same registry objects — change a color once, every element updates
