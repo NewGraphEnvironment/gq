@@ -11,5 +11,8 @@
 ^planning$
 ^registry$
 ^data-raw$
+^task_plan\.md$
+^findings\.md$
+^progress\.md$
 ^doc$
 ^Meta$
