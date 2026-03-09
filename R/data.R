@@ -108,6 +108,58 @@
 #' @source BC Freshwater Atlas via newgraph database and fresh package
 "neexdzii_streams"
 
+#' Neexdzii Kwa salmon habitat
+#'
+#' Modelled salmon habitat segments from bcfishpass within the
+#' Neexdzii Kwa subbasin, fetched via network query.
+#'
+#' @format An `sf` data frame with columns including:
+#'   \describe{
+#'     \item{gnis_name}{Stream name}
+#'     \item{stream_order}{Strahler stream order}
+#'     \item{mapping_code}{Habitat mapping code (e.g. SPAWN;NONE, REAR;MODELLED)}
+#'     \item{spawning}{Spawning habitat indicator}
+#'     \item{rearing}{Rearing habitat indicator}
+#'     \item{access}{Access type (e.g. ACCESSIBLE)}
+#'     \item{geom}{Linestring geometry (WGS 84)}
+#'   }
+#' @source bcfishpass via newgraph database and fresh package
+"neexdzii_habitat"
+
+#' Neexdzii Kwa crossings
+#'
+#' Stream crossings from bcfishpass within the Neexdzii Kwa subbasin.
+#'
+#' @format An `sf` data frame with columns including:
+#'   \describe{
+#'     \item{barrier_status}{Barrier status (BARRIER, PASSABLE, POTENTIAL, UNKNOWN)}
+#'     \item{pscis_status}{PSCIS assessment status}
+#'     \item{crossing_source}{Source of crossing data}
+#'     \item{geom}{Point geometry (WGS 84)}
+#'   }
+#' @source bcfishpass via newgraph database and fresh package
+"neexdzii_crossings"
+
+#' Neexdzii Kwa fish observations
+#'
+#' Fish observation events from FISS within the Neexdzii Kwa subbasin.
+#'
+#' @format An `sf` data frame with columns including:
+#'   \describe{
+#'     \item{species_code}{Species code (CO, CH, RB, etc.)}
+#'     \item{geom}{Point geometry (WGS 84)}
+#'   }
+#' @source bcfishobs via newgraph database and fresh package
+"neexdzii_fish_obs"
+
+#' Neexdzii Kwa falls
+#'
+#' Known falls/barriers from bcfishpass within the Neexdzii Kwa subbasin.
+#'
+#' @format An `sf` data frame with point geometry (WGS 84).
+#' @source bcfishpass via newgraph database and fresh package
+"neexdzii_falls"
+
 #' Neexdzii Kwa lakes
 #'
 #' FWA lake polygons matched by waterbody key on the stream network

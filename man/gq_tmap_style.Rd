@@ -4,33 +4,39 @@
 \alias{gq_tmap_style}
 \title{Translate a registry layer style to tmap v4 arguments}
 \usage{
-gq_tmap_style(layer)
+gq_tmap_style(layer_or_reg, name = NULL)
 }
 \arguments{
-\item{layer}{A layer entry from the registry (e.g., \code{reg$layers$lake}).}
+\item{layer_or_reg}{Either a layer entry from the registry
+(e.g., \code{reg$layers$lake}) or a full registry list when using name-based
+lookup.}
+
+\item{name}{Optional layer name for name-based lookup. Accepts
+\code{name_qgis_snake} (e.g., \code{"lake"}) or \code{name_qgis} (e.g.,
+\code{"Crossings - PSCIS assessment"}). Normalized to match registry keys.}
 }
 \value{
-A named list of tmap arguments. Use with \code{do.call()} or \verb{!!!}.
+A named list of tmap arguments. Use with \code{do.call()}.
 }
 \description{
-Takes a single layer entry from the registry and returns a named list
-of arguments suitable for tmap v4 layer functions (tm_polygons, tm_lines,
-tm_dots).
+Wraps \code{\link[=gq_style]{gq_style()}} and returns a named list of arguments suitable for
+tmap v4 layer functions (tm_polygons, tm_lines, tm_dots, tm_symbols).
+Handles both simple and classified layers.
 }
 \examples{
 path <- system.file("examples", "mini_registry.json", package = "gq")
 reg <- gq_registry_read(path)
 
-# Polygon: returns fill, fill_alpha, col, lwd ready for tm_polygons()
+# Name-based lookup
+gq_tmap_style(reg, "lake")
+gq_tmap_style(reg, "stream")
+gq_tmap_style(reg, "road")
+
+# Object-based (backwards compatible)
 gq_tmap_style(reg$layers$lake)
 
-# Line: returns col, lwd, col_alpha ready for tm_lines()
-gq_tmap_style(reg$layers$stream)
-
-# Point: returns fill, size ready for tm_dots()
-gq_tmap_style(reg$layers$crossing)
-
 # Use with tmap v4:
-# tm_shape(lakes_sf) + do.call(tm_polygons, gq_tmap_style(reg$layers$lake))
+# tm_shape(lakes_sf) + do.call(tm_polygons, gq_tmap_style(reg, "lake"))
+# tm_shape(roads_sf) + do.call(tm_lines, gq_tmap_style(reg, "road"))
 
 }

@@ -20,6 +20,14 @@ cat("AOI area:", round(as.numeric(st_area(st_transform(neexdzii_wsd, 3005))) / 1
 result <- frs_network(blk, drm_ds, upstream_measure = drm_us,
   tables = list(
     streams = "whse_basemapping.fwa_stream_networks_sp",
+    habitat = list(
+      table = "bcfishpass.streams_salmon_vw",
+      cols = c("segmented_stream_id", "blue_line_key", "gnis_name",
+               "stream_order", "mapping_code", "spawning", "rearing",
+               "access", "geom"),
+      wscode_col = "wscode",
+      localcode_col = "localcode"
+    ),
     lakes = "whse_basemapping.fwa_lakes_poly",
     wetlands = "whse_basemapping.fwa_wetlands_poly",
     crossings = "bcfishpass.crossings",
@@ -30,12 +38,20 @@ result <- frs_network(blk, drm_ds, upstream_measure = drm_us,
 
 # Transform to WGS84 and drop Z/M (GEOS requires XY for union/clip)
 neexdzii_streams <- st_zm(st_transform(result$streams, 4326))
+neexdzii_habitat <- st_zm(st_transform(result$habitat, 4326))
 neexdzii_lakes <- st_zm(st_transform(result$lakes, 4326))
 neexdzii_wetlands <- st_zm(st_transform(result$wetlands, 4326))
+neexdzii_crossings <- st_zm(st_transform(result$crossings, 4326))
+neexdzii_fish_obs <- st_zm(st_transform(result$fish_obs, 4326))
+neexdzii_falls <- st_zm(st_transform(result$falls, 4326))
 
 cat("Streams:", nrow(neexdzii_streams), "\n")
+cat("Habitat:", nrow(neexdzii_habitat), "\n")
 cat("Lakes:", nrow(neexdzii_lakes), "\n")
 cat("Wetlands:", nrow(neexdzii_wetlands), "\n")
+cat("Crossings:", nrow(neexdzii_crossings), "\n")
+cat("Fish obs:", nrow(neexdzii_fish_obs), "\n")
+cat("Falls:", nrow(neexdzii_falls), "\n")
 
 # -- Roads, FSRs, railway — spatial query against AOI bbox, clip to subbasin --
 wsd_3005 <- st_transform(neexdzii_wsd, 3005)
@@ -80,7 +96,9 @@ neexdzii_wsg <- st_zm(st_transform(frs_db_query(
 
 # -- Save as package data --
 usethis::use_data(
-  neexdzii_wsd, neexdzii_streams, neexdzii_lakes, neexdzii_wetlands,
+  neexdzii_wsd, neexdzii_streams, neexdzii_habitat,
+  neexdzii_lakes, neexdzii_wetlands,
+  neexdzii_crossings, neexdzii_fish_obs, neexdzii_falls,
   neexdzii_roads, neexdzii_railway, neexdzii_bc, neexdzii_wsg,
   overwrite = TRUE
 )

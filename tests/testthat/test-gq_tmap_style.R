@@ -57,6 +57,7 @@ test_that("gq_tmap_style errors on unknown type", {
 
 test_that("gq_tmap_classes returns classification info", {
   layer <- list(
+    type = "line",
     classification = list(
       field = "road_type",
       classes = list(
@@ -76,6 +77,7 @@ test_that("gq_tmap_classes returns classification info", {
 
 test_that("gq_tmap_classes converts fallback labels to title case", {
   layer <- list(
+    type = "point",
     classification = list(
       field = "status",
       classes = list(
@@ -90,4 +92,92 @@ test_that("gq_tmap_classes converts fallback labels to title case", {
 
 test_that("gq_tmap_classes errors without classification", {
   expect_error(gq_tmap_classes(list(type = "line")), "classification")
+})
+
+# --- name-based lookup tests ------------------------------------------------
+
+test_that("gq_tmap_style works with registry + name", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  args <- gq_tmap_style(reg, "lake")
+  expect_equal(args$fill, "#c6ddf0")
+  expect_equal(args$col, "#7ba7cc")
+})
+
+test_that("gq_tmap_style normalizes display names", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  # Spaces and caps should normalize to snake_case key
+  args <- gq_tmap_style(reg, "Lake")
+  expect_equal(args$fill, "#c6ddf0")
+})
+
+test_that("gq_tmap_style returns classified args for categorized layers", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  args <- gq_tmap_style(reg, "road")
+
+  expect_equal(args$col, "road_type")
+  expect_s3_class(args$col.scale, "tm_scale_categorical")
+  expect_false(is.null(args$col.legend))
+  expect_equal(args$lwd, 2)
+})
+
+test_that("gq_tmap_style errors with helpful message for bad name", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  expect_error(gq_tmap_style(reg, "nonexistent_layer"), "not found")
+})
+
+test_that("gq_tmap_style errors when registry has no layers field", {
+  expect_error(gq_tmap_style(list(foo = 1), "lake"), "registry")
+})
+
+test_that("gq_tmap_classes works with registry + name", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  cls <- gq_tmap_classes(reg, "road")
+  expect_equal(cls$field, "road_type")
+  expect_length(cls$values, 2)
+})
+
+test_that("gq_tmap_style handles classified point layers", {
+  reg <- list(layers = list(
+    xing = list(
+      type = "point",
+      classification = list(
+        field = "status",
+        classes = list(
+          BARRIER = list(color = "#ca3c3c", radius = 3),
+          PASSABLE = list(color = "#33a02c", radius = 3)
+        )
+      )
+    )
+  ))
+  args <- gq_tmap_style(reg, "xing")
+  expect_equal(args$fill, "status")
+  expect_s3_class(args$fill.scale, "tm_scale_categorical")
+})
+
+test_that("gq_tmap_style handles classified polygon layers", {
+  reg <- list(layers = list(
+    bec = list(
+      type = "polygon",
+      classification = list(
+        field = "zone",
+        classes = list(
+          CWH = list(color = "#a3c4a3", label = "Coastal Western Hemlock"),
+          SBS = list(color = "#d4a373", label = "Sub-Boreal Spruce")
+        )
+      )
+    )
+  ))
+  args <- gq_tmap_style(reg, "bec")
+  expect_equal(args$fill, "zone")
+  expect_s3_class(args$fill.scale, "tm_scale_categorical")
 })

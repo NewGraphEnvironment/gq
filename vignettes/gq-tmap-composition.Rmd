@@ -36,21 +36,25 @@ library(maptiles)
 
 sf_use_s2(FALSE)
 
-data(neexdzii_wsd, neexdzii_streams, neexdzii_lakes, neexdzii_wetlands,
+data(neexdzii_wsd, neexdzii_streams, neexdzii_habitat,
+     neexdzii_lakes, neexdzii_wetlands,
+     neexdzii_crossings, neexdzii_fish_obs, neexdzii_falls,
      neexdzii_roads, neexdzii_railway, neexdzii_bc, neexdzii_wsg,
      package = "gq")
 
 cat("Watershed:", round(as.numeric(st_area(neexdzii_wsd)) / 10000), "ha\n")
-cat("Streams:", nrow(neexdzii_streams), "segments\n")
-cat("Lakes:", nrow(neexdzii_lakes), "\n")
-cat("Wetlands:", nrow(neexdzii_wetlands), "\n")
-cat("Roads:", nrow(neexdzii_roads), "\n")
+cat("Streams:", nrow(neexdzii_streams), "| Habitat:", nrow(neexdzii_habitat), "\n")
+cat("Crossings:", nrow(neexdzii_crossings), "| Fish obs:", nrow(neexdzii_fish_obs),
+    "| Falls:", nrow(neexdzii_falls), "\n")
+cat("Lakes:", nrow(neexdzii_lakes), "| Wetlands:", nrow(neexdzii_wetlands), "\n")
+cat("Roads:", nrow(neexdzii_roads), "| Railway:", nrow(neexdzii_railway), "\n")
 ```
 
 ## Load styles from the registry
 
 One call to `gq_reg_main()` loads the master registry. Every color on the
-map traces back to this registry — streams, roads, railway, lakes, wetlands.
+map traces back to this registry — streams, roads, railway, habitat,
+crossings, fish observations, falls, lakes, wetlands.
 
 ```{r load-registry}
 reg <- gq_reg_main()
@@ -64,11 +68,28 @@ road_other <- reg$layers$roads_dra$classification$classes[["__empty__"]]
 
 railway_col <- reg$layers$railway$stroke$color
 railway_lwd <- reg$layers$railway$stroke$width
+
+# Salmon habitat — spawn vs rear colors from streams_salmon classification
+hab_classes <- reg$layers$streams_salmon$classification$classes
+spawn_col <- hab_classes[["SPAWN;NONE"]]$color
+spawn_lwd <- hab_classes[["SPAWN;NONE"]]$width
+rear_col <- hab_classes[["REAR;NONE"]]$color
+rear_lwd <- hab_classes[["REAR;NONE"]]$width
+
+# Crossings — barrier status colors from pscis_assessment classification
+xing_classes <- reg$layers$crossings_pscis_assessment$classification$classes
+xing_colors <- vapply(c("BARRIER", "PASSABLE", "POTENTIAL", "UNKNOWN"),
+                      function(k) xing_classes[[k]]$color, character(1))
+
+# Fish observations and falls — point styles from registry
+fish_mark <- reg$layers$bcfishobs_fiss_fish_observations$mark
+falls_mark <- reg$layers$fiss_obstacles$mark
 ```
 
 ## Data prep
 
-Filter streams by order for display, split roads by type for layered styling.
+Filter streams by order for display, split roads by type, classify habitat
+and crossings for layered styling.
 
 ```{r data-prep}
 # Streams: order >= 3 for display, >= 5 for labels
@@ -91,6 +112,16 @@ if (nrow(streams_named) > 0) {
   stream_labels <- streams_named[0, ]
 }
 
+# Habitat: split spawn vs rear for distinct widths
+habitat_spawn <- neexdzii_habitat[grepl("^SPAWN", neexdzii_habitat$mapping_code), ]
+habitat_rear <- neexdzii_habitat[grepl("^REAR", neexdzii_habitat$mapping_code), ]
+
+# Crossings: split by barrier_status for colored points
+xing_barrier <- neexdzii_crossings[neexdzii_crossings$barrier_status == "BARRIER", ]
+xing_passable <- neexdzii_crossings[neexdzii_crossings$barrier_status == "PASSABLE", ]
+xing_potential <- neexdzii_crossings[neexdzii_crossings$barrier_status == "POTENTIAL", ]
+xing_unknown <- neexdzii_crossings[neexdzii_crossings$barrier_status == "UNKNOWN", ]
+
 # Roads: split highways from other roads for distinct styling
 highways <- neexdzii_roads[neexdzii_roads$road_type %in%
   c("RF", "RH1", "RH2"), ]
@@ -109,10 +140,36 @@ own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels blended
 with hillshade works well.
 
 ```{r basemap}
+# Compute bbox that matches the canvas aspect ratio (7:9) to fill the page
 bbox <- st_bbox(neexdzii_wsd)
-y_pad <- (bbox["ymax"] - bbox["ymin"]) * 0.03
+target_asp <- 7 / 9  # fig.width / fig.height
+dx <- bbox["xmax"] - bbox["xmin"]
+dy <- bbox["ymax"] - bbox["ymin"]
+# Approximate aspect ratio correction for latitude
+lat_mid <- (bbox["ymin"] + bbox["ymax"]) / 2
+cos_lat <- cos(lat_mid * pi / 180)
+geo_asp <- (dx * cos_lat) / dy
+
+if (geo_asp > target_asp) {
+  # Too wide — expand height
+  new_dy <- (dx * cos_lat) / target_asp
+  pad <- (new_dy - dy) / 2
+  bbox["ymin"] <- bbox["ymin"] - pad
+  bbox["ymax"] <- bbox["ymax"] + pad
+} else {
+  # Too tall — expand width
+  new_dx <- (dy * target_asp) / cos_lat
+  pad <- (new_dx - dx) / 2
+  bbox["xmin"] <- bbox["xmin"] - pad
+  bbox["xmax"] <- bbox["xmax"] + pad
+}
+# Small margin so features don't touch the frame
+y_pad <- (bbox["ymax"] - bbox["ymin"]) * 0.02
+x_pad <- (bbox["xmax"] - bbox["xmin"]) * 0.02
 bbox["ymin"] <- bbox["ymin"] - y_pad
 bbox["ymax"] <- bbox["ymax"] + y_pad
+bbox["xmin"] <- bbox["xmin"] - x_pad
+bbox["xmax"] <- bbox["xmax"] + x_pad
 bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
 
 positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels",
@@ -148,10 +205,10 @@ tm_layout(
 
 ## Main map
 
-Draw order matters: wetlands first, then streams, lakes on top of streams,
-transport infrastructure, then labels last.
+Draw order matters: polygons first, then habitat lines, base streams, lakes
+on top, transport, point features (crossings, fish, falls), then labels last.
 
-```{r map-composition, fig.alt = "Map of a Neexdzii Kwa subbasin showing streams, lakes, wetlands, roads, and railway styled from the gq registry"}
+```{r map-composition, fig.alt = "Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry"}
 bb_box <- st_as_sfc(bbox, crs = st_crs(neexdzii_wsd))
 logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
 
@@ -165,7 +222,20 @@ tm_shape(bb_box) +
 tm_shape(neexdzii_wsd) +
   do.call(tm_polygons, gq_tmap_style(reg$layers$watershed)) +
 tm_shape(neexdzii_wetlands) +
-  do.call(tm_polygons, gq_tmap_style(reg$layers$wetland)) +
+  do.call(tm_polygons, gq_tmap_style(reg$layers$wetland))
+
+# Salmon habitat — rearing first (thinner), spawning on top (thicker)
+if (nrow(habitat_rear) > 0) {
+  m <- m + tm_shape(habitat_rear) +
+    tm_lines(col = rear_col, lwd = rear_lwd * 2)
+}
+if (nrow(habitat_spawn) > 0) {
+  m <- m + tm_shape(habitat_spawn) +
+    tm_lines(col = spawn_col, lwd = spawn_lwd * 2)
+}
+
+# Base streams on top of habitat
+m <- m +
 tm_shape(streams_display) +
   tm_lines(col = stream_col, lwd = stream_lwd * 2) +
 tm_shape(neexdzii_lakes) +
@@ -180,7 +250,6 @@ if (nrow(lakes_named) > 0) {
 }
 
 # Transport — thinnest first, highways on top
-# Colors from roads_dra classification in registry
 if (nrow(roads_other) > 0) {
   m <- m + tm_shape(roads_other) +
     tm_lines(col = road_other$color, lwd = road_other$width * 2)
@@ -198,6 +267,30 @@ if (nrow(neexdzii_railway) > 0) {
     tm_lines(col = "white", lwd = railway_lwd, lty = "42")
 }
 
+# Point features — crossings by barrier status, fish obs, falls
+for (status in c("POTENTIAL", "UNKNOWN", "PASSABLE", "BARRIER")) {
+  xing_sub <- neexdzii_crossings[neexdzii_crossings$barrier_status == status, ]
+  if (nrow(xing_sub) > 0) {
+    m <- m + tm_shape(xing_sub) +
+      tm_dots(fill = xing_colors[[status]], size = 0.15,
+              col = xing_colors[[status]])
+  }
+}
+
+# Fish observations — red triangles from registry
+if (nrow(neexdzii_fish_obs) > 0) {
+  m <- m + tm_shape(neexdzii_fish_obs) +
+    tm_symbols(shape = 24, fill = fish_mark$color, col = fish_mark$color,
+               size = 0.12)
+}
+
+# Falls — black squares from registry
+if (nrow(neexdzii_falls) > 0) {
+  m <- m + tm_shape(neexdzii_falls) +
+    tm_symbols(shape = 22, fill = falls_mark$color, col = falls_mark$color,
+               size = 0.2)
+}
+
 # Stream labels
 if (nrow(stream_labels) > 0) {
   m <- m + tm_shape(stream_labels) +
@@ -205,22 +298,30 @@ if (nrow(stream_labels) > 0) {
             options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
 }
 
-# Manual legends — colors pulled from registry, not hardcoded
+# Manual legends — all colors from registry
 m <- m +
 tm_add_legend(
   type = "polygons",
   labels = c("Lake", "Wetland"),
-  fill = c(
-    reg$layers$lake$fill$color,
-    reg$layers$wetland$fill$color
-  )
+  fill = c(reg$layers$lake$fill$color, reg$layers$wetland$fill$color)
 ) +
 tm_add_legend(
   type = "lines",
-  labels = c("Stream", "Highway", "Road", "Railway"),
-  col = c(stream_col, road_hwy$color, road_other$color, railway_col),
-  lwd = c(0.5, 1.3, 0.5, 0.8),
-  lty = c("solid", "solid", "solid", "twodash")
+  labels = c("Stream", "Spawning", "Rearing", "Highway", "Road", "Railway"),
+  col = c(stream_col, spawn_col, rear_col,
+          road_hwy$color, road_other$color, railway_col),
+  lwd = c(0.5, 1.3, 0.8, 1.3, 0.5, 0.8),
+  lty = c("solid", "solid", "solid", "solid", "solid", "twodash")
+) +
+tm_add_legend(
+  type = "symbols",
+  labels = c("Barrier", "Passable", "Potential", "Unknown",
+             "Fish Obs", "Falls"),
+  fill = c(xing_colors[["BARRIER"]], xing_colors[["PASSABLE"]],
+           xing_colors[["POTENTIAL"]], xing_colors[["UNKNOWN"]],
+           fish_mark$color, falls_mark$color),
+  shape = c(21, 21, 21, 21, 24, 22),
+  size = c(0.4, 0.4, 0.4, 0.4, 0.35, 0.4)
 )
 
 # Layout: four-corner rule
@@ -245,9 +346,9 @@ tm_layout(
   legend.frame = TRUE,
   legend.bg.color = "white",
   legend.bg.alpha = 0.85,
-  legend.text.size = 0.55,
-  legend.title.size = 0.65,
-  inner.margins = c(0.04, 0.001, 0.001, 0.001),
+  legend.text.size = 0.5,
+  legend.title.size = 0.6,
+  inner.margins = c(0.001, 0.001, 0.001, 0.001),
   outer.margins = c(0.003, 0.003, 0.003, 0.003),
   meta.margins = 0
 )
@@ -261,5 +362,6 @@ print(keymap, vp = grid::viewport(
 Every color on this map traces back to `gq_reg_main()`:
 
 - **Polygon layers** (watershed, lake, wetland) use `do.call(tm_polygons, gq_tmap_style(...))`
-- **Line layers** (streams, roads, railway) pull colors from classified registry entries
+- **Line layers** (streams, habitat, roads, railway) pull colors from classified registry entries
+- **Point layers** (crossings, fish obs, falls) use mark styles from the registry
 - **Legend colors** reference the same registry objects — change a color once, every element updates
