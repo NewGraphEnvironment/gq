@@ -5,18 +5,18 @@
 #
 # Sources (priority order — later wins for duplicate keys):
 #   1. inst/registry/reg_qgis_restoration.json  (QGIS extraction)
-#   2. inst/registry/reg_csv_custom.csv          (hand-curated)
+#   2. inst/registry/reg_custom.csv          (hand-curated)
 #
 # To add a new source, append it to the merge call below.
 
 devtools::load_all()
 
 rs <- gq_reg_read("inst/registry/reg_qgis_restoration.json")
-csv_reg <- gq_reg_read_csv("inst/registry/reg_csv_custom.csv")
+csv_reg <- gq_reg_custom("inst/registry/reg_custom.csv")
 
 master <- gq_reg_merge(rs, csv_reg)
 master$name <- "main"
-master$source <- "reg_qgis_restoration.json + reg_csv_custom.csv"
+master$source <- "reg_qgis_restoration.json + reg_custom.csv"
 
 jsonlite::write_json(master, "inst/registry/reg_main.json",
                      pretty = TRUE, auto_unbox = TRUE)

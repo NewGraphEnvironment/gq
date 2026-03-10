@@ -4,7 +4,7 @@
 \alias{gq_tmap_classes}
 \title{Get classification info for tmap scale functions}
 \usage{
-gq_tmap_classes(layer_or_reg, name = NULL)
+gq_tmap_classes(layer_or_reg, name = NULL, field = NULL)
 }
 \arguments{
 \item{layer_or_reg}{Either a layer entry from the registry
@@ -14,6 +14,12 @@ lookup.}
 \item{name}{Optional layer name for name-based lookup. Accepts
 \code{name_qgis_snake} (e.g., \code{"lake"}) or \code{name_qgis} (e.g.,
 \code{"Crossings - PSCIS assessment"}). Normalized to match registry keys.}
+
+\item{field}{Optional character string to override the classification field
+name. Useful when data comes from an alternative source with a different
+column name (e.g., bcfishpass \code{barrier_status} vs WHSE
+\code{barrier_result_code}). See \code{inst/registry/xref_layers.csv} for known
+alternatives.}
 }
 \value{
 A named list with \code{values} (named color vector), \code{labels}, and \code{field}.

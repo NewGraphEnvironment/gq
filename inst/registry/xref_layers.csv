@@ -1,0 +1,3 @@
+"name_qgis_snake","name_table","class_field","name_legend","note"
+"crossings_pscis_assessment","bcfishpass.crossings","barrier_status","Crossings","bcfishpass models barrier_status from PSCIS barrier_result_code + passability model"
+"streams_salmon","bcfishpass.streams_salmon_vw","mapping_code","Salmon habitat","species-specific view; mapping_code is the native column name here"

@@ -1,7 +1,7 @@
 {
   "name": "main",
   "version": "0.1.0",
-  "source": "reg_qgis_restoration.json + reg_csv_custom.csv",
+  "source": "reg_qgis_restoration.json + reg_custom.csv",
   "layers": {
     "conservancy": {
       "type": "polygon",
@@ -324,19 +324,152 @@
           "RF": {
             "color": "#ffc485",
             "width": 1.3182,
-            "label": "Freeway",
             "casing_color": "#9c9c9c",
-            "casing_width": 1.86
+            "casing_width": 1.86,
+            "label": "Freeway"
           },
-          "__empty__": {
-            "color": "#484848",
-            "width": 0.46,
-            "opacity": 0.6
+          "RRP": {
+            "color": "#ffe585",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Highway"
+          },
+          "RH1": {
+            "color": "#ffe585",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Highway"
+          },
+          "RH2": {
+            "color": "#ffe585",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Highway"
+          },
+          "RA1": {
+            "color": "#ffeead",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Arterial"
+          },
+          "RA2": {
+            "color": "#ffeead",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Arterial"
+          },
+          "RC1": {
+            "color": "#fff5cd",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Collector"
+          },
+          "RC2": {
+            "color": "#fff5cd",
+            "width": 1.0348,
+            "casing_color": "#9c9c9c",
+            "casing_width": 1.46,
+            "label": "Collector"
           },
           "RLO": {
             "color": "#484848",
             "width": 0.46,
             "label": "Local"
+          },
+          "RLN": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RST": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RSV": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RYL": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RPD": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RDN": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RA": {
+            "color": "#484848",
+            "width": 0.26,
+            "label": "Lane/driveway/alley"
+          },
+          "RR": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RR1": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RRT": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RU": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RRS": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RRD": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RRN": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "RRC": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
+          },
+          "REC": {
+            "color": "#484848",
+            "width": 0.46,
+            "opacity": 0.6,
+            "label": "Resource/recreation/other"
           },
           "TD": {
             "color": "#484848",
@@ -362,9 +495,20 @@
             "color": "#404040",
             "width": 0.86
           },
-          "__empty__": {
+          "Road Permit": {
             "color": "#404040",
-            "width": 0.46
+            "width": 0.46,
+            "label": "Road Permit / Special Use Permit"
+          },
+          "Special Use Permit, Forest": {
+            "color": "#404040",
+            "width": 0.46,
+            "label": "Road Permit / Special Use Permit"
+          },
+          "Special Use Permit, Non-Forest": {
+            "color": "#404040",
+            "width": 0.46,
+            "label": "Road Permit / Special Use Permit"
           }
         }
       },
@@ -399,10 +543,77 @@
       "classification": {
         "field": "feature_code",
         "classes": {
-          "__empty__": {
+          "WA11410000": {
             "color": "#a9e0ff",
             "width": 0.26,
-            "opacity": 0.65
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111110": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111111": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111120": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111130": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111150": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111170": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111180": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "WA24111190": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "GA08800110": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "GA24850000": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
+          },
+          "GA24850140": {
+            "color": "#a9e0ff",
+            "width": 0.26,
+            "opacity": 0.65,
+            "label": "Stream"
           },
           "GA24850150": {
             "color": "#a9e0ff",

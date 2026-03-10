@@ -16,6 +16,10 @@
 #' gq_tmap_style(reg, "stream")
 #' gq_tmap_style(reg, "road")
 #'
+#' # Override classification field for alternative data source
+#' # (e.g., bcfishpass barrier_status vs WHSE barrier_result_code)
+#' gq_tmap_style(reg, "road", field = "my_road_type")
+#'
 #' # Object-based (backwards compatible)
 #' gq_tmap_style(reg$layers$lake)
 #'
@@ -24,8 +28,8 @@
 #' # tm_shape(roads_sf) + do.call(tm_lines, gq_tmap_style(reg, "road"))
 #'
 #' @export
-gq_tmap_style <- function(layer_or_reg, name = NULL) {
-  sty <- gq_style(layer_or_reg, name)
+gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
+  sty <- gq_style(layer_or_reg, name, field = field)
 
   if (!is.null(sty$classification)) {
     return(tmap_classified(sty))
@@ -62,8 +66,8 @@ gq_tmap_style <- function(layer_or_reg, name = NULL) {
 #' cls <- gq_tmap_classes(reg$layers$road)
 #'
 #' @export
-gq_tmap_classes <- function(layer_or_reg, name = NULL) {
-  sty <- gq_style(layer_or_reg, name)
+gq_tmap_classes <- function(layer_or_reg, name = NULL, field = NULL) {
+  sty <- gq_style(layer_or_reg, name, field = field)
   cls <- sty$classification
   if (is.null(cls)) stop("Layer does not have classification")
   list(field = cls$field, values = cls$values, labels = cls$labels)

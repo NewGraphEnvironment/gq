@@ -126,6 +126,24 @@ test_that("gq_tmap_style returns classified args for categorized layers", {
   expect_equal(args$lwd, 2)
 })
 
+test_that("gq_tmap_style field override works for classified layers", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  args <- gq_tmap_style(reg, "road", field = "alt_road_type")
+  expect_equal(args$col, "alt_road_type")
+  expect_s3_class(args$col.scale, "tm_scale_categorical")
+})
+
+test_that("gq_tmap_classes field override works", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  cls <- gq_tmap_classes(reg, "road", field = "alt_road_type")
+  expect_equal(cls$field, "alt_road_type")
+  expect_length(cls$values, 2)
+})
+
 test_that("gq_tmap_style errors with helpful message for bad name", {
   reg <- gq_registry_read(
     system.file("examples", "mini_registry.json", package = "gq")

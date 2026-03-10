@@ -10,6 +10,11 @@
 #' @param name Optional layer name for name-based lookup. Accepts
 #'   `name_qgis_snake` (e.g., `"lake"`) or `name_qgis` (e.g.,
 #'   `"Crossings - PSCIS assessment"`). Normalized to match registry keys.
+#' @param field Optional character string to override the classification field
+#'   name. Useful when data comes from an alternative source with a different
+#'   column name (e.g., bcfishpass `barrier_status` vs WHSE
+#'   `barrier_result_code`). See `inst/registry/xref_layers.csv` for known
+#'   alternatives.
 #' @return A named list with `type` and style properties. For simple layers:
 #'   `fill`, `stroke`, `mark` as applicable. For classified layers: adds
 #'   `classification` with `field`, `values` (named color vector), `labels`,
@@ -28,11 +33,14 @@
 #' # Classified line — includes field, values, labels
 #' gq_style(reg, "road")
 #'
+#' # Override classification field for alternative data source
+#' gq_style(reg, "road", field = "my_road_type")
+#'
 #' # Object-based (backwards compatible)
 #' gq_style(reg$layers$lake)
 #'
 #' @export
-gq_style <- function(layer_or_reg, name = NULL) {
+gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
   layer <- resolve_layer(layer_or_reg, name)
 
   type <- layer$type
@@ -63,7 +71,7 @@ gq_style <- function(layer_or_reg, name = NULL) {
     names(values) <- keys
 
     result$classification <- list(
-      field = cls$field,
+      field = field %||% cls$field,
       values = values,
       labels = unname(labels)
     )

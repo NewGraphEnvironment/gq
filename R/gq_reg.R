@@ -39,9 +39,9 @@ gq_reg_read <- function(path) {
 }
 
 
-#' Read a gq style registry from CSV
+#' Read a gq custom style registry
 #'
-#' Reads a CSV file and converts it to the same list structure as
+#' Reads a hand-curated CSV file and converts it to the same list structure as
 #' [gq_registry_read()]. Multiple rows per `layer_key` with a `class_field`
 #' and `class_value` produce a classification layer. Single rows produce
 #' simple fill/stroke/mark/label styles.
@@ -55,8 +55,8 @@ gq_reg_read <- function(path) {
 #'   compatible with [gq_tmap_style()], [gq_mapgl_style()], etc.
 #'
 #' @examples
-#' path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-#' reg <- gq_reg_read_csv(path)
+#' path <- system.file("registry", "reg_custom.csv", package = "gq")
+#' reg <- gq_reg_custom(path)
 #' names(reg$layers)
 #'
 #' # Classified layer (multiple rows per layer_key)
@@ -67,7 +67,7 @@ gq_reg_read <- function(path) {
 #' reg$layers$rivers_poly$fill
 #'
 #' @export
-gq_reg_read_csv <- function(path) {
+gq_reg_custom <- function(path) {
   df <- utils::read.csv(path, stringsAsFactors = FALSE, na.strings = c("", "NA"))
 
   # Coerce numeric columns — read.csv reads mixed columns as character
@@ -149,10 +149,10 @@ gq_reg_read_csv <- function(path) {
 #' a single master registry. For duplicate layer keys, the `priority` argument
 #' controls which source wins. Conflicts are logged as an attribute.
 #'
-#' @param ... Registry list objects (from [gq_reg_read()], [gq_reg_read_csv()],
+#' @param ... Registry list objects (from [gq_reg_read()], [gq_reg_custom()],
 #'   or [gq_registry_read()]).
 #' @param csv Optional character vector of CSV file paths to include.
-#'   Each is read via [gq_reg_read_csv()] and appended to the merge inputs.
+#'   Each is read via [gq_reg_custom()] and appended to the merge inputs.
 #' @param priority Either `"last"` (default, later sources win) or `"first"`
 #'   (earlier sources win) for duplicate layer keys.
 #' @return A merged registry list. Conflicts are stored in a `"conflicts"`
@@ -171,7 +171,7 @@ gq_reg_merge <- function(..., csv = NULL, priority = c("last", "first")) {
   regs <- list(...)
 
   if (!is.null(csv)) {
-    csv_regs <- lapply(csv, gq_reg_read_csv)
+    csv_regs <- lapply(csv, gq_reg_custom)
     regs <- c(regs, csv_regs)
   }
 

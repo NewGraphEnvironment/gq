@@ -62,7 +62,7 @@ env <- sprintf(
 )
 
 roads <- frs_db_query(sprintf(
-  "SELECT transport_line_type_code as road_type, geom
+  "SELECT transport_line_type_code, geom
    FROM whse_basemapping.transport_line
    WHERE transport_line_type_code IN
      ('RF','RH1','RH2','RA','RA1','RA2','RC1','RC2','RLO')

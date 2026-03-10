@@ -80,6 +80,26 @@ test_that("gq_style includes widths for classified lines", {
   expect_equal(sty$classification$widths, c(HWY = 2.0, LOCAL = 0.5))
 })
 
+test_that("gq_style field override replaces classification field", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  sty <- gq_style(reg, "road", field = "my_road_col")
+  expect_equal(sty$classification$field, "my_road_col")
+  # values and labels unchanged
+  expect_length(sty$classification$values, 2)
+  expect_equal(sty$classification$labels, c("Highway", "Arterial"))
+})
+
+test_that("gq_style field override ignored for simple layers", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  sty <- gq_style(reg, "lake", field = "ignored")
+  expect_null(sty$classification)
+  expect_equal(sty$fill$color, "#c6ddf0")
+})
+
 test_that("gq_style includes radii for classified points", {
   reg <- list(layers = list(
     xing = list(

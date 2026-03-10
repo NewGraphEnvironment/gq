@@ -236,8 +236,6 @@ parse_categorized <- function(renderer, geom_type) {
       if (!is.na(size)) cls$radius <- as.numeric(size)
     }
 
-    if (!is.na(cat_label) && !is.na(cat_value) && cat_label != cat_value) cls$label <- cat_label
-
     # check for multi-layer symbols (casing)
     all_sym_layers <- xml2::xml_find_all(sym, ".//layer")
     if (length(all_sym_layers) > 1) {
@@ -256,8 +254,22 @@ parse_categorized <- function(renderer, geom_type) {
       }
     }
 
-    key <- if (is.na(cat_value) || cat_value == "") "__empty__" else cat_value
-    classes[[key]] <- cls
+    # Grouped categories: QGIS groups multiple values under one symbol using
+    # <val> children instead of a single value attribute (#25)
+    val_nodes <- xml2::xml_find_all(cat, ".//val")
+    if (length(val_nodes) > 0) {
+      if (!is.na(cat_label)) cls$label <- cat_label
+      for (vn in val_nodes) {
+        vval <- xml2::xml_attr(vn, "value")
+        if (!is.na(vval) && vval != "") classes[[vval]] <- cls
+      }
+    } else {
+      if (!is.na(cat_label) && !is.na(cat_value) && cat_label != cat_value) {
+        cls$label <- cat_label
+      }
+      key <- if (is.na(cat_value) || cat_value == "") "__empty__" else cat_value
+      classes[[key]] <- cls
+    }
   }
 
   list(classification = list(field = attr_field, classes = classes))

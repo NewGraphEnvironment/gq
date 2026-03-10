@@ -4,7 +4,7 @@
 \alias{gq_tmap_style}
 \title{Translate a registry layer style to tmap v4 arguments}
 \usage{
-gq_tmap_style(layer_or_reg, name = NULL)
+gq_tmap_style(layer_or_reg, name = NULL, field = NULL)
 }
 \arguments{
 \item{layer_or_reg}{Either a layer entry from the registry
@@ -14,6 +14,12 @@ lookup.}
 \item{name}{Optional layer name for name-based lookup. Accepts
 \code{name_qgis_snake} (e.g., \code{"lake"}) or \code{name_qgis} (e.g.,
 \code{"Crossings - PSCIS assessment"}). Normalized to match registry keys.}
+
+\item{field}{Optional character string to override the classification field
+name. Useful when data comes from an alternative source with a different
+column name (e.g., bcfishpass \code{barrier_status} vs WHSE
+\code{barrier_result_code}). See \code{inst/registry/xref_layers.csv} for known
+alternatives.}
 }
 \value{
 A named list of tmap arguments. Use with \code{do.call()}.
@@ -31,6 +37,10 @@ reg <- gq_registry_read(path)
 gq_tmap_style(reg, "lake")
 gq_tmap_style(reg, "stream")
 gq_tmap_style(reg, "road")
+
+# Override classification field for alternative data source
+# (e.g., bcfishpass barrier_status vs WHSE barrier_result_code)
+gq_tmap_style(reg, "road", field = "my_road_type")
 
 # Object-based (backwards compatible)
 gq_tmap_style(reg$layers$lake)
