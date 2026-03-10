@@ -15,11 +15,11 @@ test_that("gq_reg_read is alias for gq_registry_read", {
 })
 
 
-# --- gq_reg_read_csv -------------------------------------------------------
+# --- gq_reg_custom -------------------------------------------------------
 
-test_that("gq_reg_read_csv reads classified layer (bec_zone)", {
-  path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-  reg <- gq_reg_read_csv(path)
+test_that("gq_reg_custom reads classified layer (bec_zone)", {
+  path <- system.file("registry", "reg_custom.csv", package = "gq")
+  reg <- gq_reg_custom(path)
 
   expect_true("bec_zone" %in% names(reg$layers))
   bz <- reg$layers$bec_zone
@@ -30,9 +30,9 @@ test_that("gq_reg_read_csv reads classified layer (bec_zone)", {
   expect_equal(bz$classification$classes$SBS$color, "#8fbc8f")
 })
 
-test_that("gq_reg_read_csv reads simple polygon layer (rivers_poly)", {
-  path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-  reg <- gq_reg_read_csv(path)
+test_that("gq_reg_custom reads simple polygon layer (rivers_poly)", {
+  path <- system.file("registry", "reg_custom.csv", package = "gq")
+  reg <- gq_reg_custom(path)
 
   rp <- reg$layers$rivers_poly
   expect_equal(rp$type, "polygon")
@@ -41,9 +41,9 @@ test_that("gq_reg_read_csv reads simple polygon layer (rivers_poly)", {
   expect_null(rp$classification)
 })
 
-test_that("gq_reg_read_csv reads point layer with mark and label (dam)", {
-  path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-  reg <- gq_reg_read_csv(path)
+test_that("gq_reg_custom reads point layer with mark and label (dam)", {
+  path <- system.file("registry", "reg_custom.csv", package = "gq")
+  reg <- gq_reg_custom(path)
 
   dam <- reg$layers$dam
   expect_equal(dam$type, "point")
@@ -56,9 +56,9 @@ test_that("gq_reg_read_csv reads point layer with mark and label (dam)", {
   expect_equal(dam$label$halo$color, "white")
 })
 
-test_that("gq_reg_read_csv reads point layer (town)", {
-  path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-  reg <- gq_reg_read_csv(path)
+test_that("gq_reg_custom reads point layer (town)", {
+  path <- system.file("registry", "reg_custom.csv", package = "gq")
+  reg <- gq_reg_custom(path)
 
   town <- reg$layers$town
   expect_equal(town$type, "point")
@@ -66,18 +66,18 @@ test_that("gq_reg_read_csv reads point layer (town)", {
   expect_equal(town$label$size, 12)
 })
 
-test_that("gq_reg_read_csv returns standard registry structure", {
-  path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
-  reg <- gq_reg_read_csv(path)
+test_that("gq_reg_custom returns standard registry structure", {
+  path <- system.file("registry", "reg_custom.csv", package = "gq")
+  reg <- gq_reg_custom(path)
 
   expect_true(all(c("name", "version", "source", "layers") %in% names(reg)))
-  expect_equal(reg$source, "reg_csv_custom.csv")
+  expect_equal(reg$source, "reg_custom.csv")
 })
 
-test_that("gq_reg_read_csv errors on missing required columns", {
+test_that("gq_reg_custom errors on missing required columns", {
   tmp <- tempfile(fileext = ".csv")
   writeLines("bad_col,type\nfoo,polygon", tmp)
-  expect_error(gq_reg_read_csv(tmp), "layer_key")
+  expect_error(gq_reg_custom(tmp), "layer_key")
 })
 
 
@@ -119,7 +119,7 @@ test_that("gq_reg_merge first wins with priority", {
 })
 
 test_that("gq_reg_merge accepts csv parameter", {
-  csv_path <- system.file("registry", "reg_csv_custom.csv", package = "gq")
+  csv_path <- system.file("registry", "reg_custom.csv", package = "gq")
   reg1 <- list(name = "a", source = "a.json",
                layers = list(lake = list(type = "polygon")))
 

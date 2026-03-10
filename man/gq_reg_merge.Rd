@@ -7,11 +7,11 @@
 gq_reg_merge(..., csv = NULL, priority = c("last", "first"))
 }
 \arguments{
-\item{...}{Registry list objects (from \code{\link[=gq_reg_read]{gq_reg_read()}}, \code{\link[=gq_reg_read_csv]{gq_reg_read_csv()}},
+\item{...}{Registry list objects (from \code{\link[=gq_reg_read]{gq_reg_read()}}, \code{\link[=gq_reg_custom]{gq_reg_custom()}},
 or \code{\link[=gq_registry_read]{gq_registry_read()}}).}
 
 \item{csv}{Optional character vector of CSV file paths to include.
-Each is read via \code{\link[=gq_reg_read_csv]{gq_reg_read_csv()}} and appended to the merge inputs.}
+Each is read via \code{\link[=gq_reg_custom]{gq_reg_custom()}} and appended to the merge inputs.}
 
 \item{priority}{Either \code{"last"} (default, later sources win) or \code{"first"}
 (earlier sources win) for duplicate layer keys.}
