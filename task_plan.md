@@ -15,15 +15,19 @@ composition using registry styles on Neexdzii Kwa (Upper Bulkley) data.
 ### Phase 1: Data and documentation `status:complete`
 - [x] Generate Neexdzii Kwa spatial data via fresh (`data-raw/neexdzii_kwa.R`)
 - [x] Save as package data (`data/*.rda`)
-- [ ] Document datasets in `R/data.R` (roxygen)
-- [ ] Run `devtools::document()` to generate `.Rd` files
-- [ ] Commit: data generation script, data files, documentation
+- [x] Document datasets in `R/data.R` (roxygen)
+- [x] Run `devtools::document()` to generate `.Rd` files
+- [x] Commit: data generation script, data files, documentation (c89a2d8)
 
-### Phase 2: Vignette draft `status:not_started`
-- [ ] Draft `vignettes/gq-tmap-composition.Rmd` (already written, needs render test)
-- [ ] Render vignette, check output
-- [ ] Fix any tmap issues (use fork at `~/Projects/repo/tmap` if needed)
-- [ ] Commit: vignette
+### Phase 2: Vignette draft `status:complete`
+- [x] Draft `vignettes/gq-tmap-composition.Rmd`
+- [x] Render vignette, check output — renders clean
+- [x] Fix Z/M dimension issue (GEOS compat) — fixed at data source
+- [x] Fix `reg$layers$stream` → `streams_all` classification lookup
+- [x] All colors from registry — no hardcoded hex except white overlay
+- [x] Visual check: map fills frame, four-corner rule, keymap works
+- [ ] Width scaling issue (gq#16) — manual `* 2` multiplier for now
+- [x] Commit: vignette (8cd070a)
 
 ### Phase 3: Composition helper functions `status:not_started`
 - [ ] `gq_tmap_basemap()` — maptiles provider + alpha blending
