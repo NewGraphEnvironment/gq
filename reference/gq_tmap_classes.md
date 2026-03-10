@@ -1,19 +1,34 @@
-# Get a named list of tmap arguments for each class in a classified layer
+# Get classification info for tmap scale functions
 
-For categorized/graduated layers, returns the fill or col values
-suitable for tmap's scale functions.
+For categorized/graduated layers, returns the field, color values, and
+labels suitable for tmap's `tm_scale_categorical()`.
 
 ## Usage
 
 ``` r
-gq_tmap_classes(layer)
+gq_tmap_classes(layer_or_reg, name = NULL, field = NULL)
 ```
 
 ## Arguments
 
-- layer:
+- layer_or_reg:
 
-  A classified layer entry from the registry.
+  Either a layer entry from the registry (e.g., `reg$layers$lake`) or a
+  full registry list when using name-based lookup.
+
+- name:
+
+  Optional layer name for name-based lookup. Accepts `name_qgis_snake`
+  (e.g., `"lake"`) or `name_qgis` (e.g.,
+  `"Crossings - PSCIS assessment"`). Normalized to match registry keys.
+
+- field:
+
+  Optional character string to override the classification field name.
+  Useful when data comes from an alternative source with a different
+  column name (e.g., bcfishpass `barrier_status` vs WHSE
+  `barrier_result_code`). See `inst/registry/xref_layers.csv` for known
+  alternatives.
 
 ## Value
 
@@ -25,8 +40,8 @@ A named list with `values` (named color vector), `labels`, and `field`.
 path <- system.file("examples", "mini_registry.json", package = "gq")
 reg <- gq_registry_read(path)
 
-# Extract classification — field name, color vector, and labels
-cls <- gq_tmap_classes(reg$layers$road)
+# Name-based lookup
+cls <- gq_tmap_classes(reg, "road")
 cls$field
 #> [1] "road_type"
 cls$values
@@ -35,10 +50,6 @@ cls$values
 cls$labels
 #> [1] "Highway"  "Arterial"
 
-# Use with tmap v4:
-# tm_shape(roads_sf) +
-#   tm_lines(
-#     col = cls$field,
-#     col.scale = tm_scale_categorical(values = cls$values, labels = cls$labels)
-#   )
+# Object-based (backwards compatible)
+cls <- gq_tmap_classes(reg$layers$road)
 ```

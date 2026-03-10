@@ -17,7 +17,7 @@ gq_reg_merge(..., csv = NULL, priority = c("last", "first"))
 
   Registry list objects (from
   [`gq_reg_read()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read.md),
-  [`gq_reg_read_csv()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read_csv.md),
+  [`gq_reg_custom()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_custom.md),
   or
   [`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md)).
 
@@ -25,7 +25,7 @@ gq_reg_merge(..., csv = NULL, priority = c("last", "first"))
 
   Optional character vector of CSV file paths to include. Each is read
   via
-  [`gq_reg_read_csv()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_read_csv.md)
+  [`gq_reg_custom()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_custom.md)
   and appended to the merge inputs.
 
 - priority:
