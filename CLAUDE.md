@@ -152,17 +152,22 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 #### R Package (the package root IS the R package)
 
 **Registry functions:**
-- `gq_reg_main()` — load the master registry (51+ layers, no arguments needed)
+- `gq_reg_main()` — load the master registry (53 layers, no arguments needed)
 - `gq_registry_read(path)` — read any registry JSON file
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
 - `gq_reg_merge(..., csv, priority)` — merge multiple registries
 
-**Style translators:**
-- `gq_tmap_style(layer)` — translate layer → tmap v4 polygon/line/point args
-- `gq_tmap_classes(layer)` — translate classified layer → field, values, labels
+**Style resolvers:**
+- `gq_style(reg, name, field)` — backend-agnostic style resolver (colors, widths, classification)
+- `gq_tmap_style(reg, name, field)` — translate layer → tmap v4 polygon/line/point args
+- `gq_tmap_classes(reg, name, field)` — translate classified layer → field, values, labels
 - `gq_mapgl_style(layer)` — translate layer → MapLibre GL paint properties
 - `gq_mapgl_classes(layer)` — translate classified layer → MapLibre match expression
+
+The `field` parameter overrides the classification field name when data comes
+from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
+`barrier_result_code`). See `inst/registry/xref_layers.csv`.
 
 **QGIS extraction:**
 - `gq_qgs_extract(path)` — parse .qgs XML → registry JSON (no PyQGIS needed)
@@ -206,13 +211,19 @@ The registry maps **layer names** to styles, not data sources to styles. The con
 library(gq)
 reg <- gq_reg_main()  # load once per script
 
-# Simple layer → tmap
-sty <- gq_tmap_style(reg$layers$lake)
-tm_shape(lakes_sf) + do.call(tm_polygons, sty)
+# Simple layer → tmap (name-based lookup)
+tm_shape(lakes_sf) + do.call(tm_polygons, gq_tmap_style(reg, "lake"))
 
 # Classified layer → tmap
-cls <- gq_tmap_classes(reg$layers$pscis_assessment)
-tm_dots(fill = cls$field, fill.scale = tm_scale_categorical(values = cls$values, labels = cls$labels))
+tm_shape(roads_sf) + do.call(tm_lines, gq_tmap_style(reg, "roads_dra"))
+
+# Override field when data source differs from registry
+tm_shape(crossings_sf) +
+  do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment",
+                                  field = "barrier_status"))
+
+# Backend-agnostic style extraction
+gq_style(reg, "railway")$stroke$color  # "#000000"
 
 # Simple layer → mapgl
 lake_gl <- gq_mapgl_style(reg$layers$lake)
@@ -638,7 +649,7 @@ Use the `gq` package for all shared layer symbology. Never hardcode hex color va
 
 ```r
 library(gq)
-reg <- gq_reg_main()  # load once per script — 51+ layers
+reg <- gq_reg_main()  # load once per script — 53 layers
 ```
 
 **Core pattern:** `reg$layers$lake`, `reg$layers$road`, `reg$layers$bec_zone`, etc.
