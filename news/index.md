@@ -4,6 +4,20 @@
 
 ### 0.0.0.9000
 
+- Add groups, templates, and themes composition layer
+  ([\#28](https://github.com/NewGraphEnvironment/gq/issues/28)). Three
+  CSVs in `inst/registry/` model how layers compose into QGIS projects —
+  group membership with nesting and z-order, project templates, and
+  visibility themes. Seven new functions:
+  [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md),
+  [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md),
+  [`gq_templates()`](https://newgraphenvironment.github.io/gq/reference/gq_templates.md),
+  [`gq_template_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_template_groups.md),
+  [`gq_template_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_template_layers.md),
+  [`gq_themes()`](https://newgraphenvironment.github.io/gq/reference/gq_themes.md),
+  [`gq_theme_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_theme_groups.md).
+  All 53 registry layer keys mapped to 12 canonical groups.
+
 - Add
   [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
   — backend-agnostic style resolver with name-based registry lookup.
