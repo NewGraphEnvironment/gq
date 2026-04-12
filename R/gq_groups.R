@@ -141,7 +141,7 @@ gq_template_groups <- function(template) {
 #' @param registry Optional registry list (from [gq_reg_main()]). If `NULL`,
 #'   loads via [gq_reg_main()].
 #' @return A data.frame with columns: template, group, group_order, subgroup,
-#'   layer_key, order, source_layer, type.
+#'   layer_key, order, source_layer, source_type, type.
 #'
 #' @examples
 #' gq_template_layers("bcfishpass_mobile")
@@ -179,7 +179,7 @@ gq_template_layers <- function(template, registry = NULL) {
                          layers$order), , drop = FALSE]
 
   cols <- c("template", "group", "group_order", "subgroup", "layer_key",
-            "order", "source_layer", "type")
+            "order", "source_layer", "source_type", "type")
   cols <- intersect(cols, names(layers))
   layers <- layers[, cols, drop = FALSE]
   rownames(layers) <- NULL
