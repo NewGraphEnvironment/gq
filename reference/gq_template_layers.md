@@ -151,7 +151,7 @@ gq_template_layers("bcfishpass_mobile")
 #> 10                                      bcfishpass.crossings_vw         aws
 #> 11                   whse_imagery_and_base_maps.mot_culverts_sp      bcdata
 #> 12             whse_imagery_and_base_maps.mot_road_structure_sp      bcdata
-#> 13                                              bcfishpass.dams      bcdata
+#> 13                                              bcfishpass.dams         aws
 #> 14                        whse_fish.fiss_stream_sample_sites_sp      bcdata
 #> 15                        bcfishobs.fiss_fish_obsrvtn_events_vw         aws
 #> 16                              whse_fish.fiss_obstacles_pnt_sp         aws

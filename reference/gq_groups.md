@@ -112,7 +112,7 @@ gq_groups()
 #> 23                          crossings_pscis_modelled_dams     6         aws
 #> 24                                          moti_culverts     7      bcdata
 #> 25                                  moti_major_structures     8      bcdata
-#> 26                                                    dam     9      bcdata
+#> 26                                                    dam     9         aws
 #> 27                                            streams_all     1         aws
 #> 28                                          stream_labels     2         fwa
 #> 29                         fisheries_sensitive_watersheds     3      bcdata
@@ -230,7 +230,7 @@ gq_groups(registry = reg)
 #> 23                          crossings_pscis_modelled_dams     6         aws
 #> 24                                          moti_culverts     7      bcdata
 #> 25                                  moti_major_structures     8      bcdata
-#> 26                                                    dam     9      bcdata
+#> 26                                                    dam     9         aws
 #> 27                                            streams_all     1         aws
 #> 28                                          stream_labels     2         fwa
 #> 29                         fisheries_sensitive_watersheds     3      bcdata

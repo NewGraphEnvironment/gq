@@ -89,7 +89,7 @@ gq_group_layers("Crossings", registry = reg)
 #> 6 Crossings     <NA> crossings_pscis_modelled_dams     6         aws
 #> 7 Crossings     <NA>                 moti_culverts     7      bcdata
 #> 8 Crossings     <NA>         moti_major_structures     8      bcdata
-#> 9 Crossings     <NA>                           dam     9      bcdata
+#> 9 Crossings     <NA>                           dam     9         aws
 #>                                       source_layer  type
 #> 1                   whse_fish.pscis_assessment_svw point
 #> 2         whse_fish.pscis_habitat_confirmation_svw point
