@@ -14,6 +14,10 @@
   : Bittner Creek stream network
 - [`bittner_wsd`](https://newgraphenvironment.github.io/gq/reference/bittner_wsd.md)
   : Bittner Creek watershed boundary
+- [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
+  : Get layers in a group
+- [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)
+  : List all layer groups
 - [`gq_mapgl_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.md)
   : Get a MapLibre match expression for a classified layer
 - [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
@@ -32,6 +36,16 @@
   : Read a gq style registry from JSON
 - [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
   : Get backend-agnostic style for a registry layer
+- [`gq_template_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_template_groups.md)
+  : Get groups in a template
+- [`gq_template_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_template_layers.md)
+  : Resolve template to layers
+- [`gq_templates()`](https://newgraphenvironment.github.io/gq/reference/gq_templates.md)
+  : List all project templates
+- [`gq_theme_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_theme_groups.md)
+  : Get group visibility for a theme
+- [`gq_themes()`](https://newgraphenvironment.github.io/gq/reference/gq_themes.md)
+  : List all visibility themes
 - [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
   : Get classification info for tmap scale functions
 - [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)

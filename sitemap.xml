@@ -17,6 +17,8 @@
 <url><loc>https://newgraphenvironment.github.io/gq/reference/bittner_roads.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/bittner_streams.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/bittner_wsd.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_group_layers.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_groups.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.html</loc></url>
@@ -26,6 +28,11 @@
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_reg_read.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_registry_read.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_style.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_template_groups.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_template_layers.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_templates.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_theme_groups.html</loc></url>
+<url><loc>https://newgraphenvironment.github.io/gq/reference/gq_themes.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.html</loc></url>
 <url><loc>https://newgraphenvironment.github.io/gq/reference/index.html</loc></url>
