@@ -1,0 +1,57 @@
+group,subgroup,layer_key,order
+Basemap,,watershed_group_boundary,1
+Basemap,,municipalities,2
+Basemap,,provincial_park,3
+Basemap,,conservancy,4
+Basemap,,first_nation_reserve,5
+Basemap,,range_tenure,6
+Basemap,,land_ownership,7
+Basemap,,fire_historical_burn,8
+Basemap,,fire_severity,9
+Basemap,,glaciers,10
+Basemap,,town,11
+Basemap,Waterbodies,lake,1
+Basemap,Waterbodies,wetland,2
+Basemap,Waterbodies,rivers_poly,3
+Basemap,Waterbodies,manmade_waterbodies,4
+Basemap,BEC,bec_zone,1
+Basemap,BEC,biogeoclimatic_ecosystem_classification,2
+Crossings,,crossings_pscis_assessment,1
+Crossings,,crossings_pscis_confirmation,2
+Crossings,,crossings_pscis_design,3
+Crossings,,crossings_pscis_remedation,4
+Crossings,,crossings_modelled,5
+Crossings,,crossings_pscis_modelled_dams,6
+Crossings,,moti_culverts,7
+Crossings,,moti_major_structures,8
+Crossings,,dam,9
+Streams,,streams_all,1
+Streams,,stream_labels,2
+Streams,,fisheries_sensitive_watersheds,3
+Streams,Habitat Models,streams_bt,1
+Streams,Habitat Models,streams_salmon,2
+Streams,Habitat Models,streams_st,3
+Other Point Features,,fiss_stream_sample_sites,1
+Other Point Features,,bcfishobs_fiss_fish_observations,2
+Other Point Features,,fiss_obstacles,3
+Other Point Features,,hydrometric_stations_environment_canada,4
+Roads/Rails/Pipelines,,roads_dra,1
+Roads/Rails/Pipelines,,roads_ften,2
+Roads/Rails/Pipelines,,railway,3
+Roads/Rails/Pipelines,,pipeline_installed,4
+Roads/Rails/Pipelines,,pipeline_permit,5
+Roads/Rails/Pipelines,,pipeline_application,6
+Roads/Rails/Pipelines,,transmission_line,7
+Forms,,form_pscis,1
+Forms,,form_fiss_site,2
+Forms,,form_edna,3
+Forms,,form_monitoring,4
+Floodplain,,floodplains,1
+Restoration,,harvest_area,1
+Restoration,,planting_site,2
+Web Mapping Services,,fire_perimeters_current,1
+Web Mapping Services,,frep_rip2021_mar2022,2
+Base - Orthoimagery,,orthophoto_tiles,1
+Base - misc,,utm_zones,1
+Base - misc,,terrestrial_ecosystem_information_scanned_map_boundary,2
+Base - misc,,terrain_mapping_project_boundaries,3

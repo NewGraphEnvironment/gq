@@ -1,0 +1,18 @@
+template,group,group_order
+bcfishpass_mobile,Forms,1
+bcfishpass_mobile,Crossings,2
+bcfishpass_mobile,Other Point Features,3
+bcfishpass_mobile,Roads/Rails/Pipelines,4
+bcfishpass_mobile,Streams,5
+bcfishpass_mobile,Basemap,6
+bcfishpass_mobile,Web Mapping Services,7
+bcfishpass_mobile,Base - misc,8
+bcrestoration_mobile,Forms,1
+bcrestoration_mobile,Crossings,2
+bcrestoration_mobile,Streams,3
+bcrestoration_mobile,Roads/Rails/Pipelines,4
+bcrestoration_mobile,Basemap,5
+bcrestoration_mobile,Floodplain,6
+bcrestoration_mobile,Restoration,7
+bcrestoration_mobile,Web Mapping Services,8
+bcrestoration_mobile,Base - misc,9

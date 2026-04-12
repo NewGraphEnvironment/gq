@@ -1,0 +1,16 @@
+theme,group,visible
+Field View,Forms,true
+Field View,Basemap,true
+Field View,Crossings,false
+Field View,Streams,false
+Field View,Other Point Features,false
+Field View,Roads/Rails/Pipelines,false
+Analysis View,Forms,true
+Analysis View,Crossings,true
+Analysis View,Streams,true
+Analysis View,Basemap,true
+Analysis View,Other Point Features,true
+Analysis View,Roads/Rails/Pipelines,true
+UAV View,Forms,false
+UAV View,Basemap,true
+UAV View,Crossings,false
