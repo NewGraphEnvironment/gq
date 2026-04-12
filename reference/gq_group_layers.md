@@ -50,28 +50,46 @@ gq_group_layers("Basemap")
 #> 15 Basemap Waterbodies                                 wetland     2
 #> 16 Basemap Waterbodies                             rivers_poly     3
 #> 17 Basemap Waterbodies                     manmade_waterbodies     4
+#>    source_type
+#> 1       bcdata
+#> 2       bcdata
+#> 3       bcdata
+#> 4       bcdata
+#> 5       bcdata
+#> 6          aws
+#> 7          aws
+#> 8       bcdata
+#> 9       bcdata
+#> 10      bcdata
+#> 11      bcdata
+#> 12      bcdata
+#> 13      bcdata
+#> 14      bcdata
+#> 15      bcdata
+#> 16      bcdata
+#> 17      bcdata
 gq_group_layers("Streams")
-#>     group       subgroup                      layer_key order
-#> 1 Streams           <NA>                    streams_all     1
-#> 2 Streams           <NA>                  stream_labels     2
-#> 3 Streams           <NA> fisheries_sensitive_watersheds     3
-#> 4 Streams Habitat Models                     streams_bt     1
-#> 5 Streams Habitat Models                 streams_salmon     2
-#> 6 Streams Habitat Models                     streams_st     3
+#>     group       subgroup                      layer_key order source_type
+#> 1 Streams           <NA>                    streams_all     1         aws
+#> 2 Streams           <NA>                  stream_labels     2         fwa
+#> 3 Streams           <NA> fisheries_sensitive_watersheds     3      bcdata
+#> 4 Streams Habitat Models                     streams_bt     1         aws
+#> 5 Streams Habitat Models                 streams_salmon     2         aws
+#> 6 Streams Habitat Models                     streams_st     3         aws
 
 # With source_layer info
 reg <- gq_reg_main()
 gq_group_layers("Crossings", registry = reg)
-#>       group subgroup                     layer_key order
-#> 1 Crossings     <NA>    crossings_pscis_assessment     1
-#> 2 Crossings     <NA>  crossings_pscis_confirmation     2
-#> 3 Crossings     <NA>        crossings_pscis_design     3
-#> 4 Crossings     <NA>    crossings_pscis_remedation     4
-#> 5 Crossings     <NA>            crossings_modelled     5
-#> 6 Crossings     <NA> crossings_pscis_modelled_dams     6
-#> 7 Crossings     <NA>                 moti_culverts     7
-#> 8 Crossings     <NA>         moti_major_structures     8
-#> 9 Crossings     <NA>                           dam     9
+#>       group subgroup                     layer_key order source_type
+#> 1 Crossings     <NA>    crossings_pscis_assessment     1      bcdata
+#> 2 Crossings     <NA>  crossings_pscis_confirmation     2      bcdata
+#> 3 Crossings     <NA>        crossings_pscis_design     3      bcdata
+#> 4 Crossings     <NA>    crossings_pscis_remedation     4      bcdata
+#> 5 Crossings     <NA>            crossings_modelled     5         aws
+#> 6 Crossings     <NA> crossings_pscis_modelled_dams     6         aws
+#> 7 Crossings     <NA>                 moti_culverts     7      bcdata
+#> 8 Crossings     <NA>         moti_major_structures     8      bcdata
+#> 9 Crossings     <NA>                           dam     9      bcdata
 #>                                       source_layer  type
 #> 1                   whse_fish.pscis_assessment_svw point
 #> 2         whse_fish.pscis_habitat_confirmation_svw point

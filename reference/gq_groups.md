@@ -86,63 +86,63 @@ gq_groups()
 #> 54           Base - misc           <NA>
 #> 55           Base - misc           <NA>
 #> 56           Base - misc           <NA>
-#>                                                 layer_key order
-#> 1                                watershed_group_boundary     1
-#> 2                                          municipalities     2
-#> 3                                         provincial_park     3
-#> 4                                             conservancy     4
-#> 5                                    first_nation_reserve     5
-#> 6                                            range_tenure     6
-#> 7                                          land_ownership     7
-#> 8                                    fire_historical_burn     8
-#> 9                                           fire_severity     9
-#> 10                                               glaciers    10
-#> 11                                                   town    11
-#> 12                                                   lake     1
-#> 13                                                wetland     2
-#> 14                                            rivers_poly     3
-#> 15                                    manmade_waterbodies     4
-#> 16                                               bec_zone     1
-#> 17                biogeoclimatic_ecosystem_classification     2
-#> 18                             crossings_pscis_assessment     1
-#> 19                           crossings_pscis_confirmation     2
-#> 20                                 crossings_pscis_design     3
-#> 21                             crossings_pscis_remedation     4
-#> 22                                     crossings_modelled     5
-#> 23                          crossings_pscis_modelled_dams     6
-#> 24                                          moti_culverts     7
-#> 25                                  moti_major_structures     8
-#> 26                                                    dam     9
-#> 27                                            streams_all     1
-#> 28                                          stream_labels     2
-#> 29                         fisheries_sensitive_watersheds     3
-#> 30                                             streams_bt     1
-#> 31                                         streams_salmon     2
-#> 32                                             streams_st     3
-#> 33                               fiss_stream_sample_sites     1
-#> 34                       bcfishobs_fiss_fish_observations     2
-#> 35                                         fiss_obstacles     3
-#> 36                hydrometric_stations_environment_canada     4
-#> 37                                              roads_dra     1
-#> 38                                             roads_ften     2
-#> 39                                                railway     3
-#> 40                                     pipeline_installed     4
-#> 41                                        pipeline_permit     5
-#> 42                                   pipeline_application     6
-#> 43                                      transmission_line     7
-#> 44                                             form_pscis     1
-#> 45                                         form_fiss_site     2
-#> 46                                              form_edna     3
-#> 47                                        form_monitoring     4
-#> 48                                            floodplains     1
-#> 49                                           harvest_area     1
-#> 50                                          planting_site     2
-#> 51                                fire_perimeters_current     1
-#> 52                                   frep_rip2021_mar2022     2
-#> 53                                       orthophoto_tiles     1
-#> 54                                              utm_zones     1
-#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2
-#> 56                     terrain_mapping_project_boundaries     3
+#>                                                 layer_key order source_type
+#> 1                                watershed_group_boundary     1      bcdata
+#> 2                                          municipalities     2      bcdata
+#> 3                                         provincial_park     3      bcdata
+#> 4                                             conservancy     4      bcdata
+#> 5                                    first_nation_reserve     5      bcdata
+#> 6                                            range_tenure     6         aws
+#> 7                                          land_ownership     7         aws
+#> 8                                    fire_historical_burn     8      bcdata
+#> 9                                           fire_severity     9      bcdata
+#> 10                                               glaciers    10      bcdata
+#> 11                                                   town    11      bcdata
+#> 12                                                   lake     1      bcdata
+#> 13                                                wetland     2      bcdata
+#> 14                                            rivers_poly     3      bcdata
+#> 15                                    manmade_waterbodies     4      bcdata
+#> 16                                               bec_zone     1      bcdata
+#> 17                biogeoclimatic_ecosystem_classification     2      bcdata
+#> 18                             crossings_pscis_assessment     1      bcdata
+#> 19                           crossings_pscis_confirmation     2      bcdata
+#> 20                                 crossings_pscis_design     3      bcdata
+#> 21                             crossings_pscis_remedation     4      bcdata
+#> 22                                     crossings_modelled     5         aws
+#> 23                          crossings_pscis_modelled_dams     6         aws
+#> 24                                          moti_culverts     7      bcdata
+#> 25                                  moti_major_structures     8      bcdata
+#> 26                                                    dam     9      bcdata
+#> 27                                            streams_all     1         aws
+#> 28                                          stream_labels     2         fwa
+#> 29                         fisheries_sensitive_watersheds     3      bcdata
+#> 30                                             streams_bt     1         aws
+#> 31                                         streams_salmon     2         aws
+#> 32                                             streams_st     3         aws
+#> 33                               fiss_stream_sample_sites     1      bcdata
+#> 34                       bcfishobs_fiss_fish_observations     2         aws
+#> 35                                         fiss_obstacles     3         aws
+#> 36                hydrometric_stations_environment_canada     4      bcdata
+#> 37                                              roads_dra     1         aws
+#> 38                                             roads_ften     2         aws
+#> 39                                                railway     3      bcdata
+#> 40                                     pipeline_installed     4      bcdata
+#> 41                                        pipeline_permit     5      bcdata
+#> 42                                   pipeline_application     6      bcdata
+#> 43                                      transmission_line     7      bcdata
+#> 44                                             form_pscis     1       local
+#> 45                                         form_fiss_site     2       local
+#> 46                                              form_edna     3       local
+#> 47                                        form_monitoring     4       local
+#> 48                                            floodplains     1      bcdata
+#> 49                                           harvest_area     1      bcdata
+#> 50                                          planting_site     2      bcdata
+#> 51                                fire_perimeters_current     1         wms
+#> 52                                   frep_rip2021_mar2022     2         wms
+#> 53                                       orthophoto_tiles     1      bcdata
+#> 54                                              utm_zones     1      bcdata
+#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
+#> 56                     terrain_mapping_project_boundaries     3      bcdata
 
 # With style registry info joined
 reg <- gq_reg_main()
@@ -204,63 +204,63 @@ gq_groups(registry = reg)
 #> 54           Base - misc           <NA>
 #> 55           Base - misc           <NA>
 #> 56           Base - misc           <NA>
-#>                                                 layer_key order
-#> 1                                watershed_group_boundary     1
-#> 2                                          municipalities     2
-#> 3                                         provincial_park     3
-#> 4                                             conservancy     4
-#> 5                                    first_nation_reserve     5
-#> 6                                            range_tenure     6
-#> 7                                          land_ownership     7
-#> 8                                    fire_historical_burn     8
-#> 9                                           fire_severity     9
-#> 10                                               glaciers    10
-#> 11                                                   town    11
-#> 12                                                   lake     1
-#> 13                                                wetland     2
-#> 14                                            rivers_poly     3
-#> 15                                    manmade_waterbodies     4
-#> 16                                               bec_zone     1
-#> 17                biogeoclimatic_ecosystem_classification     2
-#> 18                             crossings_pscis_assessment     1
-#> 19                           crossings_pscis_confirmation     2
-#> 20                                 crossings_pscis_design     3
-#> 21                             crossings_pscis_remedation     4
-#> 22                                     crossings_modelled     5
-#> 23                          crossings_pscis_modelled_dams     6
-#> 24                                          moti_culverts     7
-#> 25                                  moti_major_structures     8
-#> 26                                                    dam     9
-#> 27                                            streams_all     1
-#> 28                                          stream_labels     2
-#> 29                         fisheries_sensitive_watersheds     3
-#> 30                                             streams_bt     1
-#> 31                                         streams_salmon     2
-#> 32                                             streams_st     3
-#> 33                               fiss_stream_sample_sites     1
-#> 34                       bcfishobs_fiss_fish_observations     2
-#> 35                                         fiss_obstacles     3
-#> 36                hydrometric_stations_environment_canada     4
-#> 37                                              roads_dra     1
-#> 38                                             roads_ften     2
-#> 39                                                railway     3
-#> 40                                     pipeline_installed     4
-#> 41                                        pipeline_permit     5
-#> 42                                   pipeline_application     6
-#> 43                                      transmission_line     7
-#> 44                                             form_pscis     1
-#> 45                                         form_fiss_site     2
-#> 46                                              form_edna     3
-#> 47                                        form_monitoring     4
-#> 48                                            floodplains     1
-#> 49                                           harvest_area     1
-#> 50                                          planting_site     2
-#> 51                                fire_perimeters_current     1
-#> 52                                   frep_rip2021_mar2022     2
-#> 53                                       orthophoto_tiles     1
-#> 54                                              utm_zones     1
-#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2
-#> 56                     terrain_mapping_project_boundaries     3
+#>                                                 layer_key order source_type
+#> 1                                watershed_group_boundary     1      bcdata
+#> 2                                          municipalities     2      bcdata
+#> 3                                         provincial_park     3      bcdata
+#> 4                                             conservancy     4      bcdata
+#> 5                                    first_nation_reserve     5      bcdata
+#> 6                                            range_tenure     6         aws
+#> 7                                          land_ownership     7         aws
+#> 8                                    fire_historical_burn     8      bcdata
+#> 9                                           fire_severity     9      bcdata
+#> 10                                               glaciers    10      bcdata
+#> 11                                                   town    11      bcdata
+#> 12                                                   lake     1      bcdata
+#> 13                                                wetland     2      bcdata
+#> 14                                            rivers_poly     3      bcdata
+#> 15                                    manmade_waterbodies     4      bcdata
+#> 16                                               bec_zone     1      bcdata
+#> 17                biogeoclimatic_ecosystem_classification     2      bcdata
+#> 18                             crossings_pscis_assessment     1      bcdata
+#> 19                           crossings_pscis_confirmation     2      bcdata
+#> 20                                 crossings_pscis_design     3      bcdata
+#> 21                             crossings_pscis_remedation     4      bcdata
+#> 22                                     crossings_modelled     5         aws
+#> 23                          crossings_pscis_modelled_dams     6         aws
+#> 24                                          moti_culverts     7      bcdata
+#> 25                                  moti_major_structures     8      bcdata
+#> 26                                                    dam     9      bcdata
+#> 27                                            streams_all     1         aws
+#> 28                                          stream_labels     2         fwa
+#> 29                         fisheries_sensitive_watersheds     3      bcdata
+#> 30                                             streams_bt     1         aws
+#> 31                                         streams_salmon     2         aws
+#> 32                                             streams_st     3         aws
+#> 33                               fiss_stream_sample_sites     1      bcdata
+#> 34                       bcfishobs_fiss_fish_observations     2         aws
+#> 35                                         fiss_obstacles     3         aws
+#> 36                hydrometric_stations_environment_canada     4      bcdata
+#> 37                                              roads_dra     1         aws
+#> 38                                             roads_ften     2         aws
+#> 39                                                railway     3      bcdata
+#> 40                                     pipeline_installed     4      bcdata
+#> 41                                        pipeline_permit     5      bcdata
+#> 42                                   pipeline_application     6      bcdata
+#> 43                                      transmission_line     7      bcdata
+#> 44                                             form_pscis     1       local
+#> 45                                         form_fiss_site     2       local
+#> 46                                              form_edna     3       local
+#> 47                                        form_monitoring     4       local
+#> 48                                            floodplains     1      bcdata
+#> 49                                           harvest_area     1      bcdata
+#> 50                                          planting_site     2      bcdata
+#> 51                                fire_perimeters_current     1         wms
+#> 52                                   frep_rip2021_mar2022     2         wms
+#> 53                                       orthophoto_tiles     1      bcdata
+#> 54                                              utm_zones     1      bcdata
+#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
+#> 56                     terrain_mapping_project_boundaries     3      bcdata
 #>                                                    source_layer    type
 #> 1                    whse_basemapping.fwa_watershed_groups_poly polygon
 #> 2            whse_legal_admin_boundaries.abms_municipalities_sp polygon
