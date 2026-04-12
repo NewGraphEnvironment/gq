@@ -24,7 +24,7 @@ Crossings,,crossings_modelled,5,aws
 Crossings,,crossings_pscis_modelled_dams,6,aws
 Crossings,,moti_culverts,7,bcdata
 Crossings,,moti_major_structures,8,bcdata
-Crossings,,dam,9,bcdata
+Crossings,,dam,9,aws
 Streams,,streams_all,1,aws
 Streams,,stream_labels,2,fwa
 Streams,,fisheries_sensitive_watersheds,3,bcdata
