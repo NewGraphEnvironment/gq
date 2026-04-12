@@ -2,6 +2,14 @@
 
 ## 0.0.0.9000
 
+* Add groups, templates, and themes composition layer (#28). Three CSVs
+  in `inst/registry/` model how layers compose into QGIS projects — group
+  membership with nesting and z-order, project templates, and visibility
+  themes. Seven new functions: `gq_groups()`, `gq_group_layers()`,
+  `gq_templates()`, `gq_template_groups()`, `gq_template_layers()`,
+  `gq_themes()`, `gq_theme_groups()`. All 53 registry layer keys mapped
+  to 12 canonical groups.
+
 * Add `gq_style()` — backend-agnostic style resolver with name-based registry
   lookup. Accepts layer names like `"lake"` or `"Crossings - PSCIS assessment"`,
   normalizes to registry keys, returns plain lists of colors, widths, and
