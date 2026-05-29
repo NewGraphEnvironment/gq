@@ -32,6 +32,7 @@ streams, lakes, DRA roads, CN railway, and 95 PSCIS fish passage
 assessments.
 
 ``` r
+
 library(gq)
 library(sf)
 #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
@@ -60,6 +61,7 @@ The registry maps layer names to rendering properties — fill colors,
 stroke weights, classification breaks:
 
 ``` r
+
 reg_path <- system.file("examples", "reg_demo.json", package = "gq")
 reg <- gq_registry_read(reg_path)
 
@@ -122,6 +124,7 @@ converts registry entries directly to tmap v4 arguments. Here’s a study
 area map following New Graph cartographic conventions:
 
 ``` r
+
 library(tmap)
 library(maptiles)
 sf_use_s2(FALSE)
@@ -280,6 +283,7 @@ The registry stores canonical properties.
 translates them to tmap’s parameter names:
 
 ``` r
+
 # Registry → tmap for a polygon layer
 gq_tmap_style(reg$layers$lake)
 #> $fill
@@ -309,6 +313,7 @@ extracts the field name, color vector, and labels — ready for
 [`tm_scale_categorical()`](https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html):
 
 ``` r
+
 gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 #> $field
 #> [1] "barrier_result_code"
@@ -327,6 +332,7 @@ The same registry produces MapLibre GL paint properties for web maps via
 [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md):
 
 ``` r
+
 library(mapgl)
 
 # PSCIS match expression from registry — same classification as tmap
@@ -383,6 +389,7 @@ The PSCIS crossings use a MapLibre `match` expression built from the
 registry:
 
 ``` r
+
 str(pscis_expr)
 #> List of 11
 #>  $ : chr "match"
@@ -410,6 +417,7 @@ If you have an existing QGIS project,
 parses the .qgs XML and builds a registry — no PyQGIS needed:
 
 ``` r
+
 qgs_path <- system.file("examples", "mini_project.qgs", package = "gq")
 extracted <- gq_qgs_extract(qgs_path)
 names(extracted$layers)
@@ -419,6 +427,7 @@ names(extracted$layers)
 Write it out as your registry:
 
 ``` r
+
 jsonlite::write_json(extracted, "registry.json", pretty = TRUE, auto_unbox = TRUE)
 ```
 

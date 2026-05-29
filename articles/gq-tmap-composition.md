@@ -13,6 +13,7 @@ BC Freshwater Atlas via
 [fresh](https://github.com/NewGraphEnvironment/fresh).
 
 ``` r
+
 library(gq)
 library(sf)
 #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
@@ -50,6 +51,7 @@ loads the master registry.
 resolves any layer by name — no manual color extraction needed.
 
 ``` r
+
 reg <- gq_reg_main()
 
 # gq_style() returns backend-agnostic style info by name
@@ -180,6 +182,7 @@ maps the alternative column name to the same style — no column renames
 needed. See `inst/registry/xref_layers.csv` for the cross-reference.
 
 ``` r
+
 # Streams: order >= 3 for display, >= 5 for labels
 streams_display <- neexdzii_streams[neexdzii_streams$stream_order >= 3, ]
 
@@ -220,6 +223,7 @@ our own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels
 blended with hillshade works well.
 
 ``` r
+
 # Compute bbox that matches the canvas aspect ratio (7:9) to fill the page
 bbox <- st_bbox(neexdzii_wsd)
 target_asp <- 7 / 9  # fig.width / fig.height
@@ -269,6 +273,7 @@ Small overview map showing the subbasin within the Bulkley/Morice
 watershed groups and BC.
 
 ``` r
+
 # Watershed group fill matches lake stroke color from registry
 lake_sty <- gq_style(reg, "lake")
 
@@ -293,6 +298,7 @@ lakes on top, transport, point features (crossings, fish, falls), then
 labels last.
 
 ``` r
+
 bb_box <- st_as_sfc(bbox, crs = st_crs(neexdzii_wsd))
 logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
 

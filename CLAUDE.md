@@ -19,15 +19,15 @@ The name is a reference — it’s all about style.
 
 ## Repository Relationships
 
-| Repo                                 | Relationship                                                                       |
-|--------------------------------------|------------------------------------------------------------------------------------|
-| `soul`                               | Parent ecosystem — conventions, skills (including `cartography` skill)             |
-| `soul/skills/cartography`            | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles)      |
-| `sred-2025-2026`                     | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2)                  |
-| `awshak`                             | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles     |
-| `nrp-nutrient-loading-2025`          | First consumer project (tmap watershed maps)                                       |
-| All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects)                                    |
-| QWC2 (`qgis/qwc2`)                   | Browser-based viewer — serves `.qgs` via QGIS Server; gq extracts from same `.qgs` |
+| Repo | Relationship |
+|----|----|
+| `soul` | Parent ecosystem — conventions, skills (including `cartography` skill) |
+| `soul/skills/cartography` | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
+| `sred-2025-2026` | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2) |
+| `awshak` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
+| `nrp-nutrient-loading-2025` | First consumer project (tmap watershed maps) |
+| All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects) |
+| QWC2 (`qgis/qwc2`) | Browser-based viewer — serves `.qgs` via QGIS Server; gq extracts from same `.qgs` |
 
 ## SRED Tracking
 
@@ -226,6 +226,7 @@ The consuming tool (tmap, leaflet, etc.) handles data access separately.
 ### Usage pattern
 
 ``` r
+
 library(gq)
 reg <- gq_reg_main()  # load once per script
 
@@ -272,12 +273,14 @@ override this — use for acronyms like BEC zone codes.
 ### Install
 
 ``` r
+
 pak::pak("NewGraphEnvironment/gq")
 ```
 
 ### Dev workflow
 
 ``` r
+
 devtools::load_all()
 devtools::test()        # 127+ tests
 devtools::document()    # if roxygen changed
@@ -287,6 +290,7 @@ devtools::check()       # before release
 ### Rebuild master registry
 
 ``` r
+
 source("data-raw/reg_build_main.R")
 ```
 
@@ -307,6 +311,7 @@ Use the `gq` package for all shared layer symbology. Never hardcode hex
 color values when a registry style exists.
 
 ``` r
+
 library(gq)
 reg <- gq_reg_main()  # load once per script — 51+ layers
 ```
@@ -316,10 +321,10 @@ reg <- gq_reg_main()  # load once per script — 51+ layers
 
 ### Translators
 
-| Target | Simple layer                                         | Classified layer                                 |
-|--------|------------------------------------------------------|--------------------------------------------------|
-| tmap   | `gq_tmap_style(layer)` → `do.call(tm_polygons, ...)` | `gq_tmap_classes(layer)` → field, values, labels |
-| mapgl  | `gq_mapgl_style(layer)` → paint properties           | `gq_mapgl_classes(layer)` → match expression     |
+| Target | Simple layer | Classified layer |
+|----|----|----|
+| tmap | `gq_tmap_style(layer)` → `do.call(tm_polygons, ...)` | `gq_tmap_classes(layer)` → field, values, labels |
+| mapgl | `gq_mapgl_style(layer)` → paint properties | `gq_mapgl_classes(layer)` → match expression |
 
 ### Custom styles
 
@@ -327,6 +332,7 @@ For project-specific layers not in the main registry, use a hand-curated
 CSV and merge:
 
 ``` r
+
 reg <- gq_reg_merge(gq_reg_main(), gq_reg_read_csv("path/to/custom.csv"))
 ```
 
@@ -334,11 +340,11 @@ Install: `pak::pak("NewGraphEnvironment/gq")`
 
 ## Map Targets
 
-| Output              | Tool                  | When                               |
-|---------------------|-----------------------|------------------------------------|
-| PDF / print figures | `tmap` v4             | Bookdown PDF, static reports       |
-| Interactive HTML    | `mapgl` (MapLibre GL) | Bookdown gitbook, memos, web pages |
-| QGIS project        | Native QML            | Field work, Mergin Maps            |
+| Output | Tool | When |
+|----|----|----|
+| PDF / print figures | `tmap` v4 | Bookdown PDF, static reports |
+| Interactive HTML | `mapgl` (MapLibre GL) | Bookdown gitbook, memos, web pages |
+| QGIS project | Native QML | Field work, Mergin Maps |
 
 ## Key Rules
 
@@ -390,6 +396,7 @@ inside them over time.
 **Pipeline:**
 
 ``` r
+
 # 1. Delineate floodplain AOI (flooded)
 valleys <- flooded::fl_valley_confine(dem, streams)
 
@@ -543,11 +550,11 @@ implementation details.
 
 Three levels. Default to casual unless context dictates otherwise.
 
-| Level           | When                                            | Style                                                 |
-|-----------------|-------------------------------------------------|-------------------------------------------------------|
-| **Casual**      | Established working relationships               | Professional but warm. Direct, concise. No slang.     |
-| **Very casual** | Close collaborators with rapport                | Colloquial OK. Light humor. Slang acceptable.         |
-| **Formal**      | New contacts, senior officials, formal requests | Full sentences, no contractions, state purpose early. |
+| Level | When | Style |
+|----|----|----|
+| **Casual** | Established working relationships | Professional but warm. Direct, concise. No slang. |
+| **Very casual** | Close collaborators with rapport | Colloquial OK. Light humor. Slang acceptable. |
+| **Formal** | New contacts, senior officials, formal requests | Full sentences, no contractions, state purpose early. |
 
 **Collaborative, not directive.** Acknowledge their constraints:
 
@@ -678,13 +685,13 @@ Environment repositories.
 Five repos form the governance and operations layer across all New Graph
 Environment work:
 
-| Repo                                                                | Purpose                                                       | Analogy     |
-|---------------------------------------------------------------------|---------------------------------------------------------------|-------------|
-| [compass](https://github.com/NewGraphEnvironment/compass)           | Ethics, values, guiding principles                            | The “why”   |
-| [soul](https://github.com/NewGraphEnvironment/soul)                 | Standards, skills, conventions for LLM agents                 | The “how”   |
-| [compost](https://github.com/NewGraphEnvironment/compost)           | Communications templates, email workflows, contact management | The “who”   |
-| [rtj](https://github.com/NewGraphEnvironment/rtj) (formerly awshak) | Infrastructure as Code, deployment                            | The “where” |
-| [gq](https://github.com/NewGraphEnvironment/gq)                     | Cartographic style management across QGIS, tmap, leaflet, web | The “look”  |
+| Repo | Purpose | Analogy |
+|----|----|----|
+| [compass](https://github.com/NewGraphEnvironment/compass) | Ethics, values, guiding principles | The “why” |
+| [soul](https://github.com/NewGraphEnvironment/soul) | Standards, skills, conventions for LLM agents | The “how” |
+| [compost](https://github.com/NewGraphEnvironment/compost) | Communications templates, email workflows, contact management | The “who” |
+| [rtj](https://github.com/NewGraphEnvironment/rtj) (formerly awshak) | Infrastructure as Code, deployment | The “where” |
+| [gq](https://github.com/NewGraphEnvironment/gq) | Cartographic style management across QGIS, tmap, leaflet, web | The “look” |
 
 **Adaptive management:** Conventions evolve from real project work, not
 theory. When a pattern is learned or refined during project work,
@@ -824,13 +831,13 @@ Scripts and logs live together: `scripts/<module>/logs/`
 - **Milestones** = iteration boundaries (only for release/claim prep)
 - Don’t double-track unless there’s a reason
 
-| Content                                   | Project                               |
-|-------------------------------------------|---------------------------------------|
-| R&D, experiments, SRED-related            | **SRED R&D Tracking (#8)**            |
-| Data storage, sqlite, postgres, pipelines | **Data Architecture (#9)**            |
-| Fish passage field/reporting              | **Fish Passage 2025 (#6)**            |
-| Restoration planning                      | **Aquatic Restoration Planning (#5)** |
-| QGIS, Mergin, field forms                 | **Collaborative GIS (#3)**            |
+| Content | Project |
+|----|----|
+| R&D, experiments, SRED-related | **SRED R&D Tracking (#8)** |
+| Data storage, sqlite, postgres, pipelines | **Data Architecture (#9)** |
+| Fish passage field/reporting | **Fish Passage 2025 (#6)** |
+| Restoration planning | **Aquatic Restoration Planning (#5)** |
+| QGIS, Mergin, field forms | **Collaborative GIS (#3)** |
 
 # Planning Conventions
 
@@ -1093,6 +1100,7 @@ warnings — every lint should be worth fixing.
 ### Recommended .lintr config
 
 ``` r
+
 linters: linters_with_defaults(
     line_length_linter(120),
     object_name_linter(styles = c("snake_case", "dotted.case")),
@@ -1198,11 +1206,11 @@ at New Graph Environment.
 
 Three tools, different purposes. Use the right one.
 
-| Need                                                       | Tool                       | Why                                                           |
-|------------------------------------------------------------|----------------------------|---------------------------------------------------------------|
-| Search by keyword, read metadata/fulltext, semantic search | **MCP `zotero_*` tools**   | pyzotero, works with Zotero item keys                         |
-| Look up by citation key (e.g., `irvine2020ParsnipRiver`)   | **`/zotero-lookup` skill** | Citation keys are a BBT feature — pyzotero can’t resolve them |
-| Create items, attach PDFs, deduplicate                     | **`/zotero-api` skill**    | Connector API for writes, JS console for attachments          |
+| Need | Tool | Why |
+|----|----|----|
+| Search by keyword, read metadata/fulltext, semantic search | **MCP `zotero_*` tools** | pyzotero, works with Zotero item keys |
+| Look up by citation key (e.g., `irvine2020ParsnipRiver`) | **`/zotero-lookup` skill** | Citation keys are a BBT feature — pyzotero can’t resolve them |
+| Create items, attach PDFs, deduplicate | **`/zotero-api` skill** | Connector API for writes, JS console for attachments |
 
 **Citation keys vs item keys:** Citation keys (like
 `irvine2020ParsnipRiver`) come from Better BibTeX. Item keys (like
@@ -1283,6 +1291,7 @@ Zotero → rebuild report → bibliography updates.
 This is set globally in `~/.Rprofile`:
 
 ``` r
+
 # default library — NewGraphEnvironment group (libraryID 9, group 4733734)
 options(rbbt.default.library_id = 9)
 ```
