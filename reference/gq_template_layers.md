@@ -26,7 +26,7 @@ gq_template_layers(template, registry = NULL)
 ## Value
 
 A data.frame with columns: template, group, group_order, subgroup,
-layer_key, order, source_layer, type.
+layer_key, order, source_layer, source_type, type.
 
 ## Examples
 

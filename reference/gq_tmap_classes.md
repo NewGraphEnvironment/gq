@@ -32,7 +32,8 @@ gq_tmap_classes(layer_or_reg, name = NULL, field = NULL)
 
 ## Value
 
-A named list with `values` (named color vector), `labels`, and `field`.
+A named list with `field`, `values` (named color vector), `labels`, and
+`widths` (named line-width vector for line layers; `NULL` otherwise).
 
 ## Examples
 
@@ -49,6 +50,9 @@ cls$values
 #> "#c0392b" "#e67e22" 
 cls$labels
 #> [1] "Highway"  "Arterial"
+cls$widths
+#>  highway arterial 
+#>      2.0      1.5 
 
 # Object-based (backwards compatible)
 cls <- gq_tmap_classes(reg$layers$road)
