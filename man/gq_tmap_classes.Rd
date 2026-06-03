@@ -22,7 +22,8 @@ column name (e.g., bcfishpass \code{barrier_status} vs WHSE
 alternatives.}
 }
 \value{
-A named list with \code{values} (named color vector), \code{labels}, and \code{field}.
+A named list with \code{field}, \code{values} (named color vector), \code{labels},
+and \code{widths} (named line-width vector for line layers; \code{NULL} otherwise).
 }
 \description{
 For categorized/graduated layers, returns the field, color values, and
@@ -37,6 +38,7 @@ cls <- gq_tmap_classes(reg, "road")
 cls$field
 cls$values
 cls$labels
+cls$widths
 
 # Object-based (backwards compatible)
 cls <- gq_tmap_classes(reg$layers$road)
