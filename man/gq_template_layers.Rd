@@ -14,7 +14,7 @@ loads via \code{\link[=gq_reg_main]{gq_reg_main()}}.}
 }
 \value{
 A data.frame with columns: template, group, group_order, subgroup,
-layer_key, order, source_layer, type.
+layer_key, order, source_layer, source_type, type.
 }
 \description{
 Expands a template through its groups to produce a flat data.frame of

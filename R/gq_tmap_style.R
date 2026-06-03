@@ -50,7 +50,8 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #' labels suitable for tmap's `tm_scale_categorical()`.
 #'
 #' @inheritParams gq_style
-#' @return A named list with `values` (named color vector), `labels`, and `field`.
+#' @return A named list with `field`, `values` (named color vector), `labels`,
+#'   and `widths` (named line-width vector for line layers; `NULL` otherwise).
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -61,6 +62,7 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #' cls$field
 #' cls$values
 #' cls$labels
+#' cls$widths
 #'
 #' # Object-based (backwards compatible)
 #' cls <- gq_tmap_classes(reg$layers$road)
@@ -70,7 +72,8 @@ gq_tmap_classes <- function(layer_or_reg, name = NULL, field = NULL) {
   sty <- gq_style(layer_or_reg, name, field = field)
   cls <- sty$classification
   if (is.null(cls)) stop("Layer does not have classification")
-  list(field = cls$field, values = cls$values, labels = cls$labels)
+  list(field = cls$field, values = cls$values, labels = cls$labels,
+       widths = cls$widths)
 }
 
 
