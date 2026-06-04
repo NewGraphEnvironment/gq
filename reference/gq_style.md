@@ -36,7 +36,9 @@ gq_style(layer_or_reg, name = NULL, field = NULL)
 A named list with `type` and style properties. For simple layers:
 `fill`, `stroke`, `mark` as applicable. For classified layers: adds
 `classification` with `field`, `values` (named color vector), `labels`,
-and per-class `widths`/`radii` when available.
+and per-class `widths`/`radii`/`dashes` when available. `dashes` holds
+the raw QGIS dash value (named style like "dash dot", or custom pattern
+like "0.66;2") for classes that are dashed.
 
 ## Examples
 
@@ -103,6 +105,10 @@ gq_style(reg, "road")
 #>  highway arterial 
 #>      2.0      1.5 
 #> 
+#> $classification$dashes
+#>  highway arterial 
+#>       NA "0.66;2" 
+#> 
 #> 
 
 # Override classification field for alternative data source
@@ -124,6 +130,10 @@ gq_style(reg, "road", field = "my_road_type")
 #> $classification$widths
 #>  highway arterial 
 #>      2.0      1.5 
+#> 
+#> $classification$dashes
+#>  highway arterial 
+#>       NA "0.66;2" 
 #> 
 #> 
 

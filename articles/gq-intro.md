@@ -327,6 +327,9 @@ gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 #> 
 #> $widths
 #> NULL
+#> 
+#> $dashes
+#> NULL
 ```
 
 ## MapLibre GL: interactive web map
