@@ -24,7 +24,7 @@ The name is a reference — it’s all about style.
 | `soul` | Parent ecosystem — conventions, skills (including `cartography` skill) |
 | `soul/skills/cartography` | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
 | `sred` | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2) |
-| `awshak` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
+| `rtj` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
 | `nrp-nutrient-loading-2025` | First consumer project (tmap watershed maps) |
 | All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects) |
 | QWC2 (`qgis/qwc2`) | Browser-based viewer — serves `.qgs` via QGIS Server; gq extracts from same `.qgs` |
@@ -216,10 +216,10 @@ The consuming tool (tmap, leaflet, etc.) handles data access separately.
 - **GitHub Action** — auto-rebuild `reg_main.json` on registry source
   changes (gq#11), potentially trigger QWC2 theme refresh
 - **QWC2 integration** — browser-based map viewer serving same `.qgs`
-  projects via QGIS Server (awshak#61, sred#19). No style translation
+  projects via QGIS Server (rtj#61, sred#19). No style translation
   needed — QGIS Server renders natively. Complements Mergin Maps (field)
   and gq (reports).
-- **OGC API Styles** — serve styles via standard endpoint (awshak)
+- **OGC API Styles** — serve styles via standard endpoint (rtj)
 
 ## Key Patterns
 
