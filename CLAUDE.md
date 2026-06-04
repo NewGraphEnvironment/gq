@@ -23,7 +23,7 @@ The name is a reference — it’s all about style.
 |----|----|
 | `soul` | Parent ecosystem — conventions, skills (including `cartography` skill) |
 | `soul/skills/cartography` | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
-| `sred-2025-2026` | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2) |
+| `sred` | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2) |
 | `awshak` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
 | `nrp-nutrient-loading-2025` | First consumer project (tmap watershed maps) |
 | All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects) |
@@ -34,10 +34,10 @@ The name is a reference — it’s all about style.
 Tag SRED on **PRs only** (not issues or commits) so all commits stay in
 lineage and are discrete.
 
-PR body: `Relates to NewGraphEnvironment/sred-2025-2026#13`
+PR body: `Relates to NewGraphEnvironment/sred#13`
 
-- Experiment 6.11: sred-2025-2026#13 — gq core
-- Experiment 6.17: sred-2025-2026#19 — QWC2
+- Experiment 6.11: sred#13 — gq core
+- Experiment 6.17: sred#19 — QWC2
 
 ## Architecture
 
