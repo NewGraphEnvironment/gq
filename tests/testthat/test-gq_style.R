@@ -39,6 +39,30 @@ test_that("gq_style returns classified layer with field/values/labels", {
   expect_equal(sty$classification$labels, c("Highway", "Arterial"))
 })
 
+test_that("gq_style surfaces a per-class dashes vector (#32)", {
+  reg <- gq_registry_read(
+    system.file("examples", "mini_registry.json", package = "gq")
+  )
+  sty <- gq_style(reg, "road")
+  # arterial is dashed, highway is not -> dashes present, NA where solid
+  expect_equal(unname(sty$classification$dashes[["arterial"]]), "0.66;2")
+  expect_true(is.na(sty$classification$dashes[["highway"]]))
+  # parallel to widths: one entry per non-__empty__ class
+  expect_length(sty$classification$dashes, 2)
+})
+
+test_that("gq_style omits dashes when no class is dashed (#32)", {
+  layer <- list(
+    type = "line",
+    classification = list(
+      field = "x",
+      classes = list(a = list(color = "#000"), b = list(color = "#111"))
+    )
+  )
+  sty <- gq_style(layer)
+  expect_null(sty$classification$dashes)
+})
+
 test_that("gq_style normalizes display names", {
   reg <- gq_registry_read(
     system.file("examples", "mini_registry.json", package = "gq")

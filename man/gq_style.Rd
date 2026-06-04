@@ -25,7 +25,9 @@ alternatives.}
 A named list with \code{type} and style properties. For simple layers:
 \code{fill}, \code{stroke}, \code{mark} as applicable. For classified layers: adds
 \code{classification} with \code{field}, \code{values} (named color vector), \code{labels},
-and per-class \code{widths}/\code{radii} when available.
+and per-class \code{widths}/\code{radii}/\code{dashes} when available. \code{dashes} holds the
+raw QGIS dash value (named style like "dash dot", or custom pattern like
+"0.66;2") for classes that are dashed.
 }
 \description{
 Resolves a layer by name and returns a plain list of style properties.

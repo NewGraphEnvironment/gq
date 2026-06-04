@@ -51,6 +51,7 @@
           "arterial": {
             "color": "#e67e22",
             "width": 1.5,
+            "dash": "0.66;2",
             "label": "Arterial"
           },
           "__empty__": {
