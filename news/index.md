@@ -1,8 +1,22 @@
 # Changelog
 
-## gq (development version)
+## gq 0.1.0
 
-### 0.0.0.9000
+First release.
+
+- Capture the QGIS dash pattern on classified line layers
+  ([\#32](https://github.com/NewGraphEnvironment/gq/issues/32)). The
+  extractor previously dropped per-class line style, so dashed classes
+  (e.g. the `;INTERMITTENT` stream classes in `streams_salmon`) came out
+  solid.
+  [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
+  now surfaces a per-class `dashes` vector,
+  [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
+  returns it, and
+  [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
+  consumes the exact pattern. The raw QGIS value is stored so each
+  backend renders it as it can (mapgl uses the exact `line-dasharray`;
+  tmap maps to `lty`).
 
 - Add groups, templates, and themes composition layer
   ([\#28](https://github.com/NewGraphEnvironment/gq/issues/28)). Three
