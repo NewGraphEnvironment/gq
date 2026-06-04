@@ -119,6 +119,26 @@ opt_val <- function(layer_node, name) {
   xml2::xml_attr(node, "value")
 }
 
+#' Extract a dash pattern from a SimpleLine symbol layer
+#'
+#' QGIS encodes dashes two ways: a named `line_style` (e.g. "dash dot"), or a
+#' custom pattern flagged by `use_custom_dash="1"` + `customdash` (e.g. "0.66;2")
+#' with `line_style` left "solid". Returns the raw QGIS value — named style or
+#' custom pattern — or `NA` for a solid line. The custom-dash flag takes
+#' precedence, since QGIS keeps `line_style="solid"` even when a custom pattern
+#' is active.
+#' @noRd
+parse_dash <- function(layer_node) {
+  use_custom <- opt_val(layer_node, "use_custom_dash")
+  if (!is.na(use_custom) && use_custom == "1") {
+    custom <- opt_val(layer_node, "customdash")
+    if (!is.na(custom)) return(custom)
+  }
+  style <- opt_val(layer_node, "line_style")
+  if (!is.na(style) && style != "solid") return(style)
+  NA_character_
+}
+
 #' Parse a singleSymbol renderer
 #' @noRd
 parse_single_symbol <- function(renderer, geom_type) {
@@ -151,13 +171,11 @@ parse_single_symbol <- function(renderer, geom_type) {
   } else if (sym_class == "SimpleLine") {
     color <- opt_val(sym_layer, "line_color")
     width <- opt_val(sym_layer, "line_width")
-    style <- opt_val(sym_layer, "line_style")
-    dash <- opt_val(sym_layer, "customdash")
+    dash <- parse_dash(sym_layer)
 
     stroke <- list(color = rgba_to_hex(color))
     if (!is.na(width)) stroke$width <- as.numeric(width)
-    if (!is.na(style) && style != "solid") stroke$dash <- style
-    if (!is.na(dash) && !is.na(style) && style == "custom_dash") stroke$dash <- dash
+    if (!is.na(dash)) stroke$dash <- dash
 
     stroke_alpha <- sym_alpha * rgba_alpha(color)
     if (stroke_alpha < 1) stroke$opacity <- round(stroke_alpha, 3)
@@ -225,6 +243,8 @@ parse_categorized <- function(renderer, geom_type) {
       width <- opt_val(sym_layer, "line_width")
       cls$color <- rgba_to_hex(color)
       if (!is.na(width)) cls$width <- as.numeric(width)
+      dash <- parse_dash(sym_layer)
+      if (!is.na(dash)) cls$dash <- dash
       line_alpha <- sym_alpha * rgba_alpha(color)
       if (line_alpha < 1) cls$opacity <- round(line_alpha, 3)
     } else if (sym_class == "SimpleMarker") {

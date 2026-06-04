@@ -77,6 +77,47 @@ test_that("gq_qgs_extract parses labels", {
   expect_equal(road$label$halo$width, 1.5)
 })
 
+test_that("gq_qgs_extract captures dash on classified line classes (#32)", {
+  path <- test_path("fixtures", "mini_project.qgs")
+  reg <- gq_qgs_extract(path)
+
+  classes <- reg$layers$roads$classification$classes
+  # arterial uses use_custom_dash=1 + customdash; raw pattern is preserved
+  expect_equal(classes$arterial$dash, "0.66;2")
+  # highway is solid — no dash field
+  expect_null(classes$highway$dash)
+})
+
+test_that("parse_dash reads named, custom, and solid line styles (#32)", {
+  line_layer <- function(...) {
+    opts <- list(...)
+    opt_xml <- paste0(
+      sprintf('<Option name="%s" value="%s"/>', names(opts), unlist(opts)),
+      collapse = ""
+    )
+    xml2::read_xml(paste0(
+      '<layer class="SimpleLine"><Option type="Map">', opt_xml, "</Option></layer>"
+    ))
+  }
+
+  # named style (e.g. transmission_line "dash dot")
+  expect_equal(
+    parse_dash(line_layer(line_style = "dash dot", use_custom_dash = "0")),
+    "dash dot"
+  )
+  # custom dash flag wins even though line_style stays "solid"
+  expect_equal(
+    parse_dash(line_layer(
+      line_style = "solid", use_custom_dash = "1", customdash = "0.66;2"
+    )),
+    "0.66;2"
+  )
+  # plain solid line -> no dash
+  expect_true(is.na(
+    parse_dash(line_layer(line_style = "solid", use_custom_dash = "0"))
+  ))
+})
+
 test_that("gq_qgs_extract errors on missing file", {
   expect_error(gq_qgs_extract("nonexistent.qgs"))
 })
