@@ -281,7 +281,8 @@
       "source_layer": "whse_mineral_tenure.og_pipeline_segment_permit_sp",
       "stroke": {
         "color": "#000000",
-        "width": 0.66
+        "width": 0.66,
+        "dash": "0.66;2"
       }
     },
     "pipeline_permit": {
@@ -420,60 +421,70 @@
           "RR": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RR1": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RRT": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RU": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RRS": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RRD": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RRN": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "RRC": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "REC": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dash",
             "opacity": 0.6,
             "label": "Resource/recreation/other"
           },
           "TD": {
             "color": "#484848",
             "width": 0.46,
+            "dash": "dot",
             "opacity": 0.6,
             "label": "Trail"
           }
@@ -618,6 +629,7 @@
           "GA24850150": {
             "color": "#a9e0ff",
             "width": 0.3,
+            "dash": "2.5;3.5",
             "label": "Stream - intermittent"
           }
         }
@@ -734,6 +746,7 @@
           "SPAWN;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; no known barriers; intermittent"
           },
           "SPAWN;MODELLED": {
@@ -744,6 +757,7 @@
           "SPAWN;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; potential barrier; intermittent"
           },
           "SPAWN;ASSESSED": {
@@ -754,6 +768,7 @@
           "SPAWN;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; known barrier; intermittent"
           },
           "SPAWN;DAM": {
@@ -764,6 +779,7 @@
           "SPAWN;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; dam; intermittent"
           },
           "SPAWN;REMEDIATED": {
@@ -774,6 +790,7 @@
           "SPAWN;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; remediated; intermittent"
           },
           "REAR;NONE": {
@@ -784,6 +801,7 @@
           "REAR;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; no known barriers; intermittent"
           },
           "REAR;MODELLED": {
@@ -794,6 +812,7 @@
           "REAR;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; potential barrier; intermittent"
           },
           "REAR;ASSESSED": {
@@ -804,6 +823,7 @@
           "REAR;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; known barrier; intermittent"
           },
           "REAR;DAM": {
@@ -814,6 +834,7 @@
           "REAR;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; dam; intermittent"
           },
           "REAR;REMEDIATED": {
@@ -824,6 +845,7 @@
           "REAR;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; remediated; intermittent"
           },
           "ACCESS;NONE": {
@@ -834,6 +856,7 @@
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
@@ -844,6 +867,7 @@
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
@@ -854,6 +878,7 @@
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; known barrier; intermittent"
           },
           "ACCESS;DAM": {
@@ -864,6 +889,7 @@
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
@@ -874,6 +900,7 @@
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; remediated; intermittent"
           }
         }
@@ -893,6 +920,7 @@
           "SPAWN;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; no known barriers; intermittent"
           },
           "SPAWN;MODELLED": {
@@ -903,6 +931,7 @@
           "SPAWN;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; potential barrier; intermittent"
           },
           "SPAWN;ASSESSED": {
@@ -913,6 +942,7 @@
           "SPAWN;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; known barrier; intermittent"
           },
           "SPAWN;DAM": {
@@ -923,6 +953,7 @@
           "SPAWN;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; dam; intermittent"
           },
           "SPAWN;REMEDIATED": {
@@ -933,6 +964,7 @@
           "SPAWN;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; remediated; intermittent"
           },
           "REAR;NONE": {
@@ -943,6 +975,7 @@
           "REAR;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; no known barriers; intermittent"
           },
           "REAR;MODELLED": {
@@ -953,6 +986,7 @@
           "REAR;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; potential barrier; intermittent"
           },
           "REAR;ASSESSED": {
@@ -963,6 +997,7 @@
           "REAR;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; known barrier; intermittent"
           },
           "REAR;DAM": {
@@ -973,6 +1008,7 @@
           "REAR;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; dam; intermittent"
           },
           "REAR;REMEDIATED": {
@@ -983,6 +1019,7 @@
           "REAR;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; remediated; intermittent"
           },
           "ACCESS;NONE": {
@@ -993,6 +1030,7 @@
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
@@ -1003,6 +1041,7 @@
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
@@ -1013,6 +1052,7 @@
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; known barrier; intermittent"
           },
           "ACCESS;DAM": {
@@ -1023,6 +1063,7 @@
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
@@ -1033,6 +1074,7 @@
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; remediated; intermittent"
           }
         }
@@ -1052,6 +1094,7 @@
           "SPAWN;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; no known barriers; intermittent"
           },
           "SPAWN;MODELLED": {
@@ -1062,6 +1105,7 @@
           "SPAWN;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; potential barrier; intermittent"
           },
           "SPAWN;ASSESSED": {
@@ -1072,6 +1116,7 @@
           "SPAWN;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; known barrier; intermittent"
           },
           "SPAWN;DAM": {
@@ -1082,6 +1127,7 @@
           "SPAWN;DAM;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; dam; intermittent"
           },
           "SPAWN;REMEDIATED": {
@@ -1092,6 +1138,7 @@
           "SPAWN;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1.7,
+            "dash": "0.66;2",
             "label": "Spawning; remediated; intermittent"
           },
           "REAR;NONE": {
@@ -1102,6 +1149,7 @@
           "REAR;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; no known barriers; intermittent"
           },
           "REAR;MODELLED": {
@@ -1112,6 +1160,7 @@
           "REAR;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; potential barrier; intermittent"
           },
           "REAR;ASSESSED": {
@@ -1122,6 +1171,7 @@
           "REAR;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; known barrier; intermittent"
           },
           "REAR;DAM": {
@@ -1132,6 +1182,7 @@
           "REAR;DAM;INTERMITTENT": {
             "color": "#ef4545",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; dam; intermittent"
           },
           "REAR;REMEDIATED": {
@@ -1142,6 +1193,7 @@
           "REAR;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 1,
+            "dash": "0.66;2",
             "label": "Rearing; remediated; intermittent"
           },
           "ACCESS;NONE": {
@@ -1152,6 +1204,7 @@
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
@@ -1162,6 +1215,7 @@
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
@@ -1172,6 +1226,7 @@
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; known barrier; intermittent"
           },
           "ACCESS;DAM": {
@@ -1182,6 +1237,7 @@
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
@@ -1192,6 +1248,7 @@
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
+            "dash": "0.66;2",
             "label": "No known barriers; remediated; intermittent"
           }
         }
