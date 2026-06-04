@@ -18,7 +18,9 @@
 #' @return A named list with `type` and style properties. For simple layers:
 #'   `fill`, `stroke`, `mark` as applicable. For classified layers: adds
 #'   `classification` with `field`, `values` (named color vector), `labels`,
-#'   and per-class `widths`/`radii` when available.
+#'   and per-class `widths`/`radii`/`dashes` when available. `dashes` holds the
+#'   raw QGIS dash value (named style like "dash dot", or custom pattern like
+#'   "0.66;2") for classes that are dashed.
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -59,6 +61,7 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     widths <- vapply(cls$classes, function(x) x$width %||% NA_real_, numeric(1))
     radii <- vapply(cls$classes, function(x) x$radius %||% NA_real_, numeric(1))
     shapes <- vapply(cls$classes, function(x) x$shape %||% NA_character_, character(1))
+    dashes <- vapply(cls$classes, function(x) x$dash %||% NA_character_, character(1))
 
     # Remove __empty__ class
     keep <- keys != "__empty__"
@@ -67,6 +70,7 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     widths <- widths[keep]
     radii <- radii[keep]
     shapes <- shapes[keep]
+    dashes <- dashes[keep]
     keys <- keys[keep]
     names(values) <- keys
 
@@ -78,6 +82,7 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     if (!all(is.na(widths))) result$classification$widths <- widths
     if (!all(is.na(radii))) result$classification$radii <- radii
     if (!all(is.na(shapes))) result$classification$shapes <- shapes
+    if (!all(is.na(dashes))) result$classification$dashes <- dashes
 
     return(result)
   }

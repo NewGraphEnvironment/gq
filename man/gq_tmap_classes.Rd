@@ -23,7 +23,11 @@ alternatives.}
 }
 \value{
 A named list with \code{field}, \code{values} (named color vector), \code{labels},
-and \code{widths} (named line-width vector for line layers; \code{NULL} otherwise).
+\code{widths} (named line-width vector for line layers; \code{NULL} otherwise), and
+\code{dashes} (named raw-QGIS-dash vector for classes that are dashed; \code{NULL}
+otherwise). The dash value is the raw QGIS encoding (named style like
+"dash dot", or custom pattern like "0.66;2") — consumers map it to their
+backend's line type (e.g. tmap \code{lty = "dashed"} for non-NA entries).
 }
 \description{
 For categorized/graduated layers, returns the field, color values, and
@@ -39,6 +43,7 @@ cls$field
 cls$values
 cls$labels
 cls$widths
+cls$dashes
 
 # Object-based (backwards compatible)
 cls <- gq_tmap_classes(reg$layers$road)

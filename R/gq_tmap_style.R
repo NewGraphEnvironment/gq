@@ -51,7 +51,11 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #'
 #' @inheritParams gq_style
 #' @return A named list with `field`, `values` (named color vector), `labels`,
-#'   and `widths` (named line-width vector for line layers; `NULL` otherwise).
+#'   `widths` (named line-width vector for line layers; `NULL` otherwise), and
+#'   `dashes` (named raw-QGIS-dash vector for classes that are dashed; `NULL`
+#'   otherwise). The dash value is the raw QGIS encoding (named style like
+#'   "dash dot", or custom pattern like "0.66;2") — consumers map it to their
+#'   backend's line type (e.g. tmap `lty = "dashed"` for non-NA entries).
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -63,6 +67,7 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #' cls$values
 #' cls$labels
 #' cls$widths
+#' cls$dashes
 #'
 #' # Object-based (backwards compatible)
 #' cls <- gq_tmap_classes(reg$layers$road)
@@ -73,7 +78,7 @@ gq_tmap_classes <- function(layer_or_reg, name = NULL, field = NULL) {
   cls <- sty$classification
   if (is.null(cls)) stop("Layer does not have classification")
   list(field = cls$field, values = cls$values, labels = cls$labels,
-       widths = cls$widths)
+       widths = cls$widths, dashes = cls$dashes)
 }
 
 
@@ -127,6 +132,23 @@ tmap_polygon_args <- function(sty) {
   args
 }
 
+#' Map a raw QGIS dash value to a valid tmap/grid `lty`
+#'
+#' The registry stores the raw QGIS dash (named style like "dash dot", or a
+#' custom millimetre pattern like "0.66;2"). R's `lty` only accepts a fixed set
+#' of named types or hex digits, not a mm pattern, so anything that isn't
+#' already a valid named `lty` collapses to "dashed". `NULL`/`NA`/"no"/"solid"
+#' return `NULL` (no dash). The raw pattern stays in the registry for backends
+#' that can use it (mapgl's `line-dasharray`).
+#' @noRd
+dash_to_lty <- function(dash) {
+  if (is.null(dash) || is.na(dash) || dash %in% c("no", "solid")) return(NULL)
+  valid_lty <- c("blank", "solid", "dashed", "dotted", "dotdash",
+                 "longdash", "twodash")
+  if (dash %in% valid_lty) return(dash)
+  "dashed"
+}
+
 #' @noRd
 tmap_line_args <- function(sty) {
   args <- list()
@@ -134,9 +156,8 @@ tmap_line_args <- function(sty) {
     args$col <- sty$stroke$color
     if (!is.null(sty$stroke$width)) args$lwd <- sty$stroke$width
     if (!is.null(sty$stroke$opacity)) args$col_alpha <- sty$stroke$opacity
-    if (!is.null(sty$stroke$dash) && sty$stroke$dash != "no") {
-      args$lty <- sty$stroke$dash
-    }
+    lty <- dash_to_lty(sty$stroke$dash)
+    if (!is.null(lty)) args$lty <- lty
   }
   args
 }

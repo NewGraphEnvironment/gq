@@ -66,6 +66,9 @@
             <layer class="SimpleLine">
               <Option name="line_color" value="230,126,34,255" type="QString"/>
               <Option name="line_width" value="1.5" type="QString"/>
+              <Option name="line_style" value="solid" type="QString"/>
+              <Option name="use_custom_dash" value="1" type="QString"/>
+              <Option name="customdash" value="0.66;2" type="QString"/>
             </layer>
           </symbol>
         </symbols>
