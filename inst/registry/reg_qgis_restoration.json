@@ -208,7 +208,7 @@
       },
       "note": "2 symbol layers — overlay/casing may apply",
       "label": {
-        "font": ".AppleSystemUIFont",
+        "font": "Tahoma",
         "size": 10,
         "color": "#323232",
         "halo": {
@@ -633,6 +633,44 @@
             "label": "Stream - intermittent"
           }
         }
+      }
+    },
+    "trails": {
+      "type": "line",
+      "source_layer": "osm.trail",
+      "classification": {
+        "field": "highway",
+        "classes": {
+          "path": {
+            "color": "#965028",
+            "width": 0.46,
+            "dash": "dash",
+            "label": "Trail"
+          },
+          "footway": {
+            "color": "#8c7864",
+            "width": 0.3,
+            "dash": "dot",
+            "label": "Footpath"
+          },
+          "cycleway": {
+            "color": "#1f78b4",
+            "width": 0.56,
+            "dash": "dash",
+            "label": "Cycleway"
+          },
+          "bridleway": {
+            "color": "#6e6e32",
+            "width": 0.46,
+            "dash": "dash dot",
+            "label": "Bridleway"
+          }
+        }
+      },
+      "label": {
+        "font": "Arial",
+        "size": 6,
+        "color": "#4a4a4a"
       }
     },
     "transmission_line": {
