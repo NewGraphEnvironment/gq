@@ -86,6 +86,10 @@ gq_template_layers("bcfishpass_mobile")
 #> 51 bcfishpass_mobile           Base - misc           8           <NA>
 #> 52 bcfishpass_mobile           Base - misc           8           <NA>
 #> 53 bcfishpass_mobile           Base - misc           8           <NA>
+#> 54 bcfishpass_mobile           Base - misc           8           <NA>
+#> 55 bcfishpass_mobile           Base - misc           8           <NA>
+#> 56 bcfishpass_mobile           Base - misc           8           <NA>
+#> 57 bcfishpass_mobile           Base - misc           8           <NA>
 #>                                                 layer_key order
 #> 1                                              form_pscis     1
 #> 2                                          form_fiss_site     2
@@ -140,6 +144,10 @@ gq_template_layers("bcfishpass_mobile")
 #> 51                                              utm_zones     1
 #> 52 terrestrial_ecosystem_information_scanned_map_boundary     2
 #> 53                     terrain_mapping_project_boundaries     3
+#> 54                                        esri_world_topo     4
+#> 55                                            bing_aerial     5
+#> 56                                         esri_satellite     6
+#> 57                                       google_satellite     7
 #>                                                    source_layer source_type
 #> 1                                                    form_pscis       local
 #> 2                                                form_fiss_site       local
@@ -194,6 +202,10 @@ gq_template_layers("bcfishpass_mobile")
 #> 51                           whse_basemapping.utmg_utm_zones_sp      bcdata
 #> 52         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
 #> 53      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
+#> 54                                                         <NA>         wms
+#> 55                                                         <NA>         wms
+#> 56                                                         <NA>         wms
+#> 57                                                         <NA>         wms
 #>       type
 #> 1    point
 #> 2    point
@@ -248,4 +260,8 @@ gq_template_layers("bcfishpass_mobile")
 #> 51 polygon
 #> 52 polygon
 #> 53 polygon
+#> 54    <NA>
+#> 55    <NA>
+#> 56    <NA>
+#> 57    <NA>
 ```

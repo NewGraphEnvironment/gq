@@ -11,7 +11,7 @@ mapping."><meta property="og:image" content="https://newgraphenvironment.github.
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -129,6 +129,10 @@ and optionally source_layer and type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 55           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 56           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 57           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                 layer_key order source_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                watershed_group_boundary     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          municipalities     2      bcdata</span>
@@ -187,6 +191,10 @@ and optionally source_layer and type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 55                                              utm_zones     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 57                     terrain_mapping_project_boundaries     3      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58                                        esri_world_topo     4         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59                                            bing_aerial     5         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60                                         esri_satellite     6         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61                                       google_satellite     7         wms</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With style registry info joined</span></span></span>
 <span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="gq_reg_main.html">gq_reg_main</a></span><span class="op">(</span><span class="op">)</span></span></span>
@@ -249,6 +257,10 @@ and optionally source_layer and type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 55           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 56           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 57           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60           Base - misc           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61           Base - misc           &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                 layer_key order source_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                watershed_group_boundary     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          municipalities     2      bcdata</span>
@@ -307,6 +319,10 @@ and optionally source_layer and type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 55                                              utm_zones     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 57                     terrain_mapping_project_boundaries     3      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58                                        esri_world_topo     4         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59                                            bing_aerial     5         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60                                         esri_satellite     6         wms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61                                       google_satellite     7         wms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                    source_layer    type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                    whse_basemapping.fwa_watershed_groups_poly polygon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2            whse_legal_admin_boundaries.abms_municipalities_sp polygon</span>
@@ -365,6 +381,10 @@ and optionally source_layer and type.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 55                           whse_basemapping.utmg_utm_zones_sp polygon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 56         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 57      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58                                                         &lt;NA&gt;    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59                                                         &lt;NA&gt;    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60                                                         &lt;NA&gt;    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61                                                         &lt;NA&gt;    &lt;NA&gt;</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
