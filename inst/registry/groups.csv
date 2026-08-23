@@ -56,3 +56,7 @@ Base - Orthoimagery,,orthophoto_tiles,1,bcdata
 Base - misc,,utm_zones,1,bcdata
 Base - misc,,terrestrial_ecosystem_information_scanned_map_boundary,2,bcdata
 Base - misc,,terrain_mapping_project_boundaries,3,bcdata
+Base - misc,,esri_world_topo,4,wms
+Base - misc,,bing_aerial,5,wms
+Base - misc,,esri_satellite,6,wms
+Base - misc,,google_satellite,7,wms
