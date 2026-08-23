@@ -1,3 +1,11 @@
+# gq 0.2.1
+
+- The four xyz basemaps (`esri_world_topo`, `bing_aerial`, `esri_satellite`,
+  `google_satellite`) join the roster in `Base - misc`. They were modelled
+  nowhere before — baked into the upstream templates only — while the two data
+  services in `Web Mapping Services` were already here. Measured against the
+  templates rather than assumed: the six remote layers do **not** share a group.
+
 # gq 0.2.0
 
 - **Trail symbology.** The registry carried no trail, path, footway, cycleway or
