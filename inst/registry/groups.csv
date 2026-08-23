@@ -42,6 +42,7 @@ Roads/Rails/Pipelines,,pipeline_installed,4,bcdata
 Roads/Rails/Pipelines,,pipeline_permit,5,bcdata
 Roads/Rails/Pipelines,,pipeline_application,6,bcdata
 Roads/Rails/Pipelines,,transmission_line,7,bcdata
+Roads/Rails/Pipelines,,trails,8,osm
 Forms,,form_pscis,1,local
 Forms,,form_fiss_site,2,local
 Forms,,form_edna,3,local

@@ -14,13 +14,29 @@
 
 devtools::load_all()
 
-qgs <- system.file("templates", "bcrestoration_mobile.qgs", package = "rfp")
-if (qgs == "") {
-  stop(
-    "rfp not installed — needed only to regenerate this registry. Install with ",
-    "pak::pak('NewGraphEnvironment/rfp')",
-    call. = FALSE
-  )
+# `RFP_TEMPLATE` points at a template in an rfp SOURCE CHECKOUT, for the case
+# this registry is regenerated against a style that has not been released yet.
+# Without it `system.file()` resolves to the INSTALLED rfp, which is routinely
+# behind: when the trail style was added the installed copy was three releases
+# old and its template carried no trail layer at all, so the extraction would
+# have silently produced a registry missing the very layer it was run for.
+qgs <- Sys.getenv("RFP_TEMPLATE", "")
+if (nzchar(qgs)) {
+  if (!file.exists(qgs)) {
+    stop("RFP_TEMPLATE does not exist: ", qgs, call. = FALSE)
+  }
+  message("Using RFP_TEMPLATE (source checkout): ", qgs)
+} else {
+  qgs <- system.file("templates", "bcrestoration_mobile.qgs", package = "rfp")
+  if (qgs == "") {
+    stop(
+      "rfp not installed — needed only to regenerate this registry. Install with ",
+      "pak::pak('NewGraphEnvironment/rfp'), or set RFP_TEMPLATE to a checkout.",
+      call. = FALSE
+    )
+  }
+  message("Using installed rfp ", as.character(utils::packageVersion("rfp")),
+          ": ", qgs)
 }
 
 reg <- gq_qgs_extract(qgs)
