@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,14 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="gq-020">gq 0.2.0<a class="anchor" aria-label="anchor" href="#gq-020"></a></h2>
+<ul><li>
+<strong>Trail symbology.</strong> The registry carried no trail, path, footway, cycleway or bridleway layer, so a project that added a trail network had nothing to style it with. <code>trails</code> is now a classified line layer on <code>highway</code> — the only tag populated on every feature, where <code>bicycle</code> sits on 16.4% and would put most features in a fallback class. Classes differ by colour, dash <em>and</em> width, so the map reads in printed greyscale as well as in colour.</li>
+<li>The style is <strong>authored in a QGIS project and extracted</strong>, not hand-written as registry rows. A classified line authored through <code>reg_custom.csv</code> comes back with per-class <code>width</code> and <code>dash</code> both <code>NULL</code>, because that path emits <code>outline_width</code>/<code>outline_color</code> while the translators read <code>width</code>/<code>dash</code> — and dash is exactly what distinguishes a trail from a road.</li>
+<li>
+<code>data-raw/reg_extract_restoration.R</code> accepts <code>RFP_TEMPLATE</code>, pointing at a source checkout. Without it <code><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file()</a></code> resolves to the installed package, which is routinely behind: when this style was extracted the installed copy was three releases old and its template carried no trail layer, so the run would have silently produced a registry missing the layer it was made for.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="gq-010">gq 0.1.0<a class="anchor" aria-label="anchor" href="#gq-010"></a></h2>
 <p>First release.</p>
 <ul><li><p>Capture the QGIS dash pattern on classified line layers (<a href="https://github.com/NewGraphEnvironment/gq/issues/32" class="external-link">#32</a>). The extractor previously dropped per-class line style, so dashed classes (e.g. the <code>;INTERMITTENT</code> stream classes in <code>streams_salmon</code>) came out solid. <code><a href="../reference/gq_style.html">gq_style()</a></code> now surfaces a per-class <code>dashes</code> vector, <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code> returns it, and <code><a href="../reference/gq_mapgl_style.html">gq_mapgl_style()</a></code> consumes the exact pattern. The raw QGIS value is stored so each backend renders it as it can (mapgl uses the exact <code>line-dasharray</code>; tmap maps to <code>lty</code>).</p></li>
@@ -50,7 +58,8 @@
 <li><p>Add <code>inst/registry/xref_layers.csv</code> — cross-reference for layers with alternative data sources and different classification field names.</p></li>
 <li><p>Update composition vignette: all layer colors trace back to <code><a href="../reference/gq_reg_main.html">gq_reg_main()</a></code> via <code><a href="../reference/gq_style.html">gq_style()</a></code> and <code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code>. No hardcoded hex values. Field mismatches handled via <code>field</code> parameter — no column renames.</p></li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
@@ -58,7 +67,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

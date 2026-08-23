@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -286,8 +286,28 @@ registry JSON                 registry list
 <div class="section level2">
 <h2 id="learning-preferences">Learning Preferences<a class="anchor" aria-label="anchor" href="#learning-preferences"></a></h2>
 <p>Teach extreme programming (XP) principles when relevant: - <strong>YAGNI</strong> — Don’t build until you need it - <strong>KISS</strong> — Simplest solution that works - <strong>Small commits</strong> — Atomic, focused changes - <strong>Test early</strong> — Verify as you go</p>
-<p>&lt;!– BEGIN SOUL CONVENTIONS — DO NOT EDIT BELOW THIS LINE –&gt;</p>
+<!-- BEGIN SOUL CONVENTIONS — DO NOT EDIT BELOW THIS LINE -->
 </div>
+</div>
+<div class="section level1">
+<h1 id="always-away">Always Away<a class="anchor" aria-label="anchor" href="#always-away"></a></h1>
+<p>Assume the user is away from the keyboard at all times. Design every operation to run unattended by default; there is no separate “remote work” or “trip prep” mode.</p>
+<p><em>“Let’s assume I’m always away. No special planning for remote work anymore. We are integrated thanks to claude.”</em> (airvine, 2026-07-10)</p>
+<div class="section level2">
+<h2 id="why">Why<a class="anchor" aria-label="anchor" href="#why"></a></h2>
+<p>The machines are always online and Claude sessions drive them. Distinguishing “user present” from “user traveling” added planning overhead with no payoff — and operations designed for co-presence silently break the moment the user steps away.</p>
+</div>
+<div class="section level2">
+<h2 id="how-to-apply">How to apply<a class="anchor" aria-label="anchor" href="#how-to-apply"></a></h2>
+<ul><li>
+<strong>Unattended by default:</strong> background loops with server-state prechecks, scheduled probes where recovery detection matters, teed logs committed per the log-tracking convention.</li>
+<li>
+<strong>Survive the laptop lifecycle:</strong> <code>caffeinate -i</code> for long runs — and know its limit: it does not survive lid close. A killed wrapper can orphan child processes that keep working; check <code>pgrep</code> before declaring a run dead, and record enough state (PWF, committed logs) that any interruption is resumable.</li>
+<li>
+<strong>Gates are phone-answerable:</strong> steps that genuinely need the user (QGIS desktop verification, push approvals, content decisions) are explicit checkpoints answerable from a phone — never assumed co-presence, never blocking questions mid-run.</li>
+<li>
+<strong>Every interruption is a resume point:</strong> commit state before long waits; a session death, sleep, or shutdown should cost a re-run at most, never lost context.</li>
+</ul></div>
 </div>
 <div class="section level1">
 <h1 id="cartography">Cartography<a class="anchor" aria-label="anchor" href="#cartography"></a></h1>
@@ -444,6 +464,8 @@ registry JSON                 registry list
 <li>Use <code>printf '%s\n' "$VAR" | command</code> to pipe values safely</li>
 <li>Heredocs: unquoted <code>&lt;&lt;EOF</code> expands variables locally, <code>&lt;&lt;'EOF'</code> does not — know which you need</li>
 <li>Pass-through-ssh args: <code>printf '%q'</code> escapes per-arg so workload paths with spaces / quotes / metacharacters survive the local-shell → ssh-argv → remote-shell round-trip. Without it, <code>ssh host 'cmd' "$path"</code> joins args with spaces on remote and re-parses, losing argument boundaries.</li>
+<li>
+<code>git commit -m "$(cat &lt;&lt;'EOF' ... EOF)"</code> chokes on apostrophes in prose bodies in some contexts — the bash parser surfaces an unmatched-quote error even though heredoc bodies should be quote-neutral. Resilient default for multi-line commit messages: write the body to <code>/tmp/msg.txt</code> and use <code>git commit -F /tmp/msg.txt</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="heredoc-precedence-in-pipelines">Heredoc precedence in pipelines<a class="anchor" aria-label="anchor" href="#heredoc-precedence-in-pipelines"></a></h3>
@@ -457,6 +479,19 @@ registry JSON                 registry list
 <code>set -eu</code> does NOT propagate exit codes through pipelines. <code>ssh ... | tee log</code> returns tee’s exit (always 0 for healthy tee), masking ssh failure.</li>
 <li>Use <code>set -euo pipefail</code> for any script that pipes a meaningful command into tee/cat/grep/etc. Or check <code>${PIPESTATUS[0]}</code> explicitly.</li>
 <li>Symptom when wrong: task notifications report “exit 0 / completed” while remote work was actually skipped or errored.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a-wrappers-exit-0-is-not-the-work-completed--gate-on-in-band-error--output-mtime">A wrapper’s exit 0 is not “the work completed” — gate on in-band error + output mtime<a class="anchor" aria-label="anchor" href="#a-wrappers-exit-0-is-not-the-work-completed--gate-on-in-band-error--output-mtime"></a></h3>
+<ul><li>A wrapper reports its OWN exit, not the inner job’s. <code>caffeinate -s bash -c '...'</code>, <code>/usr/bin/time -p …</code>, and background tasks routinely surface <strong>exit 0 / “completed”</strong> while the wrapped R/Python script hit <code>Execution halted</code> partway. The interpreter’s error goes to the log, not the wrapper’s exit code.</li>
+<li>
+<strong>Most dangerous in A/B validation:</strong> if the run crashes <em>before</em> it (re)writes its output file, a compare step reads the <strong>stale previous output</strong> and reports a false “identical / passed” — a false positive that looks like success.</li>
+<li>Before trusting any run’s result, gate on BOTH:
+<ol style="list-style-type: decimal"><li>
+<strong>In-band error markers</strong> — <code>grep -c "Execution halted\|Error:" "$log"</code> is 0 (R); the language’s equivalent otherwise.</li>
+<li>
+<strong>The output was actually (re)written</strong> — its mtime is newer than a marker touched at run start (<code>[ output -nt "$marker" ]</code>), not merely that the file exists.</li>
+</ol></li>
+<li>Caught the hard way 2026-07 in <code>floodplains</code>: a Pass-2 reuse change was declared “12.4×, byte-identical” and <strong>merged to main</strong> — but the run had <code>Execution halted</code> before writing, so the A/B compared the unchanged baseline against its own backup. Broke every step-3 run until hotfixed. Same class as the ssh+tee pipefail symptom above, generalized to any wrapped/background job.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="paths">Paths<a class="anchor" aria-label="anchor" href="#paths"></a></h3>
@@ -474,6 +509,17 @@ registry JSON                 registry list
 </li>
 <li>
 <code>grep</code> returning empty silently — downstream commands get empty input</li>
+</ul></div>
+<div class="section level3">
+<h3 id="parallel-writers-sharing-one-output-file-interleave-mid-record">Parallel writers sharing one output file interleave mid-record<a class="anchor" aria-label="anchor" href="#parallel-writers-sharing-one-output-file-interleave-mid-record"></a></h3>
+<ul><li><p><code>xargs -P N ... &gt;&gt; shared_file</code> (or any fan-out where N processes append to the same fd/path) is only safe while each record fits in a single <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code>. O_APPEND makes individual <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code> calls atomic, but a large record (anything beyond pipe/stdio buffer size, ~64 KB) spans multiple writes — concurrent jobs interleave mid-record and corrupt the file.</p></li>
+<li><p>The trap is latent: small records never trip it, so the pattern looks proven until the first large payload arrives. Caught 2026-07-11 in rtj’s <code>stac_register-pypgstac.sh</code> — 20 parallel <code>curl | jq -c</code> jobs appending STAC items to one NDJSON worked for every prior collection (KB-scale items), then 9 MB floodplain items interleaved and produced an orjson decode error ~864 KB into line 1.</p></li>
+<li>
+<p>Fix pattern: each parallel job writes its own temp file (unique name, e.g. md5 of the input), concatenate after the fan-out completes:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">cat</span> urls.txt <span class="kw">|</span> <span class="fu">xargs</span> <span class="at">-P</span> 20 <span class="at">-I</span> {} fetch_one.sh {} <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>   <span class="co"># each writes $OUT_DIR/&lt;md5&gt;.json</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">cat</span> <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>/<span class="pp">*</span>.json <span class="op">&gt;</span> combined.ndjson</span></code></pre></div>
+</li>
+<li><p>Pair with a count guard — parallel <code>curl</code> failures under xargs are also silent: <code>[ "$(wc -l &lt; combined.ndjson)" -eq "$EXPECTED" ] || exit 1</code> before any downstream load.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="mktemp-template-needs-enough-xs-and-a-failed-mktemp-leaves-an-empty-var">
@@ -505,6 +551,16 @@ registry JSON                 registry list
 <strong>When writing a snippet you expect to ship in a <code>skills/</code> SKILL.md or any cloud-init runcmd</strong>: it must be POSIX-portable. Default to <code>sed -E</code>, avoid <code>\+</code>/<code>\|</code>, and don’t pipe <code>ls</code>.</li>
 </ul></div>
 <div class="section level3">
+<h3 id="gh-cli">
+<code>gh</code> CLI<a class="anchor" aria-label="anchor" href="#gh-cli"></a></h3>
+<ul><li>
+<strong><code>gh pr create</code> resolves branch from CWD, not <code>--repo</code></strong>. Specifying <code>--repo NewGraphEnvironment/X</code> does NOT switch branch resolution — the command still reads the current working directory’s checked-out branch. To open a PR in repo X, <code>cd</code> into X’s checkout first, or pass <code>--head &lt;branch&gt;</code> explicitly.</li>
+<li>
+<strong><code>gh issue create</code> with heredoc bodies fails on prose containing special shell characters</strong> (apostrophes, dollar signs, backticks). Use <code>--body-file /tmp/issue.md</code> instead — every project’s <code>newgraph.md</code> convention specifies this; codified here for the underlying class.</li>
+<li>
+<strong>Before <code>gh pr merge</code>, verify the branch is fully pushed.</strong> <code>gh pr merge</code> merges the REMOTE branch — commits made locally but never pushed are silently excluded, so the PR merges “successfully” while <code>main</code> is missing work you know you committed. Check <code>git status -sb</code> shows no <code>ahead N</code> before merging (or that <code>git rev-list --count @{u}..HEAD</code> is 0). Worse: if you then delete the local branch (<code>--delete-branch</code>, or a follow-up <code>git branch -D</code>), the unpushed commits become <strong>dangling</strong> — recoverable via <code>git reflog</code> / <code>git fsck --lost-found</code> then <code>git cherry-pick</code>, but only if you notice they’re missing. Caught twice 2026-07 in <code>floodplains</code>: PR #6 merged 1 of 3 branch commits (the drift#34 <code>changes_only</code> fix + a CLAUDE.md update were unpushed → stranded as danglers → recovered and re-merged via a follow-up PR); a second branch sat 4-ahead-unpushed at compact time. The same check belongs in the <code>gh-pr-merge</code> skill’s pre-merge step.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="process-visibility">Process Visibility<a class="anchor" aria-label="anchor" href="#process-visibility"></a></h3>
 <ul><li>Secrets passed as command-line args are visible in <code>ps aux</code>
 </li>
@@ -525,11 +581,11 @@ registry JSON                 registry list
 <li><p>Don’t write: <code>- test -s /file || { echo "FATAL: ..." }</code> — the <code>:</code> inside braces makes YAML see a dict.</p></li>
 <li>
 <p>Do write: use <code>- |</code> block scalar with explicit <code>if/then/fi</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="kw">- </span><span class="ch">|</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  if [ ! -s /file ]; then</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    echo "FATAL: ..." &gt;&amp;2</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>    exit 1</span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  fi</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="kw">- </span><span class="ch">|</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  if [ ! -s /file ]; then</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>    echo "FATAL: ..." &gt;&amp;2</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    exit 1</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  fi</span></code></pre></div>
 </li>
 <li><p>Validate post-edit: <code>python3 -c "import yaml; runcmd=yaml.safe_load(open('cloud-init.yaml').read().split(chr(10),1)[1])['runcmd']; print([type(x).__name__ for x in runcmd if not isinstance(x,str)] or 'all strings')"</code>. If the output is anything other than <code>all strings</code>, the runcmd will fail.</p></li>
 </ul></div>
@@ -558,9 +614,9 @@ registry JSON                 registry list
 <ul><li><p>DO injects <code>ssh_key_ids</code> only into <code>/root/.ssh/authorized_keys</code> (cloud-init’s <code>cc_ssh</code> module). Cloud-init <code>users:</code> block with <code>ssh_authorized_keys: []</code> does NOT pick those up.</p></li>
 <li>
 <p>Non-root users that need SSH access must copy from root’s keys in runcmd:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> mkdir -p /home/&lt;user&gt;/.ssh</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> cp /root/.ssh/authorized_keys /home/&lt;user&gt;/.ssh/authorized_keys</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> chown -R &lt;user&gt;:&lt;user&gt; /home/&lt;user&gt;/.ssh</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> mkdir -p /home/&lt;user&gt;/.ssh</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> cp /root/.ssh/authorized_keys /home/&lt;user&gt;/.ssh/authorized_keys</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> chown -R &lt;user&gt;:&lt;user&gt; /home/&lt;user&gt;/.ssh</span></span></code></pre></div>
 </li>
 <li><p>Guard with <code>test -s /root/.ssh/authorized_keys</code> to fail loudly if <code>cc_ssh</code> hasn’t run before runcmd (rare race).</p></li>
 </ul></div>
@@ -646,10 +702,10 @@ registry JSON                 registry list
 <li><p>Caught 2026-05-25 in link#205: a <code>pkill</code>’d <code>wsg_run_one.R</code> left a <code>frs_network_features</code> SELECT running 1h45m; subsequent recomputes wedged on <code>DROP VIEW barriers_bt_access</code> for 1h08m before someone noticed.</p></li>
 <li>
 <p><strong>Always terminate the server-side backend</strong>, not just the client:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="kw">SELECT</span> pid, pg_terminate_backend(pid)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="kw">FROM</span> pg_stat_activity</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="kw">WHERE</span> datname<span class="op">=</span><span class="st">'&lt;db&gt;'</span> <span class="kw">AND</span> state<span class="op">=</span><span class="st">'active'</span> <span class="kw">AND</span> now()<span class="op">-</span>query_start <span class="op">&gt;</span> <span class="dt">interval</span> <span class="st">'3 minutes'</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="kw">AND</span> pid <span class="op">&lt;&gt;</span> pg_backend_pid();</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="kw">SELECT</span> pid, pg_terminate_backend(pid)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="kw">FROM</span> pg_stat_activity</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="kw">WHERE</span> datname<span class="op">=</span><span class="st">'&lt;db&gt;'</span> <span class="kw">AND</span> state<span class="op">=</span><span class="st">'active'</span> <span class="kw">AND</span> now()<span class="op">-</span>query_start <span class="op">&gt;</span> <span class="dt">interval</span> <span class="st">'3 minutes'</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="kw">AND</span> pid <span class="op">&lt;&gt;</span> pg_backend_pid();</span></code></pre></div>
 <p>Then kill the client. Order matters when you don’t know which side will block.</p>
 </li>
 </ul></div>
@@ -717,6 +773,10 @@ registry JSON                 registry list
 <code>printf '%q'</code> escapes values for shell safety</li>
 <li>Temp files for secrets: create with <code>chmod 600</code>, delete after use</li>
 </ul></div>
+<div class="section level3">
+<h3 id="gitleaks-pre-commit-hook">Gitleaks pre-commit hook<a class="anchor" aria-label="anchor" href="#gitleaks-pre-commit-hook"></a></h3>
+<p>Configuration patterns and false-positive handling for the <code>gitleaks</code> pre-commit hook (kdot’s Brewfile ships <code>gitleaks</code> + <code>pre-commit</code>; cyclops standardizes the hook): - <strong><code>.gitleaks.toml</code> schema in v8.30+</strong>: top-level table is <code>[[allowlists]]</code> (PLURAL, array of tables). Each entry MUST include at least one of <code>commits</code> / <code>paths</code> / <code>regexes</code> / <code>stopwords</code>. The singular <code>[allowlist]</code> and <code>fingerprints = [...]</code> forms shown in older docs fail to validate. Use <code>paths</code> + <code>regexes</code> together for targeted file-and-content allowlists. Example in <code>soul/.gitleaks.toml</code>. - <strong>PEM marker regex spans multi-line</strong>: gitleaks’s <code>private-key</code> rule is <code>(?i)-----BEGIN...PRIVATE KEY-----[\s\S]*-----END...-----</code>. It matches across comment prefixes, blank lines, and code-fence boundaries. <strong>Commenting out the markers does NOT neutralize the match.</strong> Only fix in content is to omit the literal <code>-----BEGIN/END...-----</code> strings entirely and replace with prose (“Paste your private key here, preserving headers” etc.). See the <code>rtj</code> cypher <code>tfvars.example</code> precedent. - <strong><code>curl-auth-header</code> rule false-positives on non-auth headers</strong>: matches any <code>-H "X: Y"</code> shape, not just credential-bearing headers. Trips on docs with custom CORS or app-specific headers (e.g. <code>Zotero-Allowed-Request: true</code>). Fix: targeted <code>[[allowlists]]</code> with <code>paths</code> + <code>regexes</code>. Don’t path-allowlist the whole file unless content is entirely safe. - <strong><code>pre-commit install</code> legacy-hook handling</strong>: running <code>pre-commit install</code> on a repo with an existing <code>.git/hooks/pre-commit</code> renames it to <code>.legacy</code> and keeps invoking it after framework hooks. No breakage, but means hook surface is split between <code>.pre-commit-config.yaml</code> and <code>.git/hooks/pre-commit.legacy</code>. For full visibility, migrate the legacy check into <code>.pre-commit-config.yaml</code> as a <code>local</code> hook so the whole hook surface is declared in one place. - <strong>AWS canonical example keys are allowlisted by default</strong> (<code>AKIAIOSFODNN7EXAMPLE</code> etc.) — don’t use those in test fixtures expecting a block. Use <code>ghp_</code>-shape PAT lookalikes or other non-allowlisted patterns for hook-trigger tests.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="r--package-installation">R / Package Installation<a class="anchor" aria-label="anchor" href="#r--package-installation"></a></h2>
@@ -742,6 +802,34 @@ registry JSON                 registry list
 <li>mc#33 example: <code>mc_label_ensure</code> used <code>toupper(nm) %in% sys</code> (case-insensitive system-label skip), but <code>resolve_label_names</code> used <code>nm %in% sys</code> (case-sensitive). Result: <code>add = "inbox"</code> with <code>create_missing = TRUE</code> was silently broken — ensure skipped creation, resolve couldn’t match. Fix: both use <code>toupper(nm) %in% sys</code> and the resolver normalizes its return to the canonical case.</li>
 <li>Generalized check: when reviewing a diff that adds normalization (case, whitespace, prefix-trim) on one side of an interaction, grep for the other side and align them.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="cache-keys-must-cover-every-output-affecting-input">Cache keys must cover every output-affecting input<a class="anchor" aria-label="anchor" href="#cache-keys-must-cover-every-output-affecting-input"></a></h3>
+<ul><li>A file cache keyed by fewer inputs than the write depends on returns silently wrong data — the worst failure class: no error, plausible-looking output. Enumerate every parameter that changes the written artifact and put each in the key (or its hash). The safe failure direction is over-keying (spurious refetch), never under-keying.</li>
+<li>drift#25 example: <code>dft_stac_fetch()</code> cached STAC rasters as <code>&lt;source&gt;/&lt;year&gt;.nc</code> — no AOI in the key. A second watershed silently received the first watershed’s raster masked to its own extent (~3% overlap looked plausible enough to almost ship). Fix: filename gains a hash over AOI geometry + <code>res</code>/<code>crs</code>/<code>dt</code>/<code>aggregation</code>/<code>resampling</code>/<code>stac_url</code>/<code>collection</code>/<code>asset</code>.</li>
+<li>Hash <em>resolved</em> values, not raw args: defaults filled from config (<code>%||%</code>) must resolve before hashing, or <code>f(x)</code> and <code>f(x, url = &lt;same-as-default&gt;)</code> key differently for identical output.</li>
+<li>R hashing gotchas (<code><a href="https://rlang.r-lib.org/reference/hash.html" class="external-link">rlang::hash()</a></code> serializes, so type and attributes matter):
+<ul><li>sf geometry: hash WKB (<code>sf::st_as_binary(sf::st_geometry(x), endian = "little")</code>), not the sfc object — sfc carries a PROJ-generated CRS WKT that drifts across PROJ versions (spurious cache misses), and hashing a whole sf data.frame leaks attribute columns into the key. Pass the CRS string as a separate key member.</li>
+<li>Coerce numeric types: <code>10L</code> and <code>10</code> hash differently — <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric()</a></code> before hashing.</li>
+</ul></li>
+<li>Check the cache’s <code>force</code>/refresh escape hatch actually overwrites: drift#25’s <code>force = TRUE</code> errored on the existing file (“File already exists”), broken exactly when needed. Prefer the writer’s explicit <code>overwrite = TRUE</code> arg over a bare <code><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink()</a></code> — unlink fails silently on Windows under an open file handle.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="terra-operator-dispatch-and-edge-cases-in-package-code">terra: operator dispatch and edge cases in package code<a class="anchor" aria-label="anchor" href="#terra-operator-dispatch-and-edge-cases-in-package-code"></a></h3>
+<ul><li>
+<strong>SpatRaster <code>%in%</code> is not dispatched when terra is <em>imported</em> (only when <em>attached</em>).</strong> Inside a package (terra in <code>Imports</code>, used via <code>::</code>), <code>some_raster %in% vec</code> falls through to base <code><a href="https://rdrr.io/r/base/match.html" class="external-link">match()</a></code> and errors with <code>'match' requires vector arguments</code>. A <code><a href="https://rspatial.org/" class="external-link">library(terra)</a></code> smoke test passes (attaching installs the S4 method), so the bug hides until package context. Use <code>terra::subst(x, from, to, others = ...)</code> or <code><a href="https://rspatial.github.io/terra/reference/classify.html" class="external-link">terra::classify()</a></code> for code-set membership/masking instead of the <code>%in%</code> operator. Same trap for any operator terra defines via S4 that base also defines as an ordinary function. (drift#34)</li>
+<li>
+<strong><code><a href="https://rspatial.github.io/terra/reference/freq.html" class="external-link">terra::freq()</a></code> errors on an all-NA raster</strong> (<code>replacement has length zero</code>) rather than returning a 0-row table. Any path that can yield an all-NA layer (an impossible filter, everything masked out) must guard: <code>f &lt;- tryCatch(terra::freq(r), error = function(e) NULL)</code>, then treat <code>NULL</code>/0 rows as “no values”. Don’t assume the empty case gives <code>nrow(freq(r)) == 0</code>. (drift#34)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="sf-st_joinlargest--true-ignores-the-join-predicate">sf: <code>st_join(largest = TRUE)</code> ignores the join predicate<a class="anchor" aria-label="anchor" href="#sf-st_joinlargest--true-ignores-the-join-predicate"></a></h3>
+<ul><li>
+<code>sf::st_join(x, y, join = predicate, largest = TRUE)</code> does <strong>not</strong> use <code>predicate</code> to decide matches — with <code>largest = TRUE</code>, sf runs <code>st_intersection(x, y)</code> and keeps the feature of greatest overlap area, so matching is <em>always</em> intersection-based regardless of what <code>join =</code> is set to. A function that exposes a configurable predicate AND a largest-overlap mode therefore silently mis-attributes when both are combined: pass <code>st_within</code> expecting containment, get anything that merely <em>overlaps</em>. Verify against sf source, not the argument list — the <code>join</code> arg is accepted and ignored, not rejected. Fix: abort when a non-default predicate is combined with the largest-overlap mode, rather than honouring one and dropping the other. (drift#42)</li>
+<li>Corollary: <code>largest = TRUE</code> also drops zero-area geometries from consideration — so a predicate join against <strong>point</strong> or <strong>line</strong> overlays cannot use largest mode at all (no area to compare). Point/line attribution must go through the plain (<code>largest = FALSE</code>) predicate path.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="sf-name-validation-must-account-for-the-geometry-column">sf: name validation must account for the geometry column<a class="anchor" aria-label="anchor" href="#sf-name-validation-must-account-for-the-geometry-column"></a></h3>
+<ul><li>The active geometry column is a named entry in <code>names(x)</code>, but its name is <strong>not fixed</strong> — <code>"geometry"</code> from <code><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">sf::st_read()</a></code> of some sources, <code>"geom"</code> from a GeoPackage/PostGIS layer, <code>"geometry"</code> or <code>"_ogr_geometry_"</code> elsewhere. Code that validates user-supplied column names with <code>cols %in% names(x)</code> will happily accept the geometry column, then break downstream (<code>st_join</code> drops <code>y</code>’s geometry, so a requested “attribute” column silently never appears; a 0-row short-circuit path may instead attach a stray empty sfc). A same-name collision check across two sf objects also misses this when the two layers name their geometry differently. Guard explicitly with <code>attr(x, "sf_column")</code> — reject it from the caller-supplied column set. (drift#42)</li>
+</ul></div>
 </div>
 <div class="section level2">
 <h2 id="general">General<a class="anchor" aria-label="anchor" href="#general"></a></h2>
@@ -755,6 +843,13 @@ registry JSON                 registry list
 <strong>Ask before dropping a reference</strong> — it may be something the user forgot to reinstall on this machine, not something to delete.</li>
 <li>
 <strong>Curated subset, not verbatim copy.</strong> The diff should reflect what you verified, not the whole source.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="test-the-coldcreate-path-of-idempotent-code-not-just-the-warm-no-op">Test the cold/create path of idempotent code, not just the warm no-op<a class="anchor" aria-label="anchor" href="#test-the-coldcreate-path-of-idempotent-code-not-just-the-warm-no-op"></a></h3>
+<ul><li>Idempotent provisioning code (a resolver-file writer, a config installer, a “create unless present” block) has two paths: the <strong>cold</strong> path that actually creates/writes, and the <strong>warm</strong> path that detects “already present” and skips. They exercise almost-disjoint code.</li>
+<li>Testing only on a host where the artifact already exists hits <strong>only the warm no-op</strong> — which cannot catch any cold-path bug: missing-directory, a derivation that returns empty, a pipefail abort before the write, wrong permissions, a flush that never runs. The warm path’s job is literally to do nothing, so a green warm test proves almost nothing about onboarding.</li>
+<li>Every fresh host runs the <strong>cold</strong> path — that’s the one onboarding depends on. Test it deliberately: back up + remove the artifact, run cold, assert it was created correctly, then re-run to confirm the warm no-op. (Caught 2026-06-23 on rtj#75: the resolver-writer’s first test plan only ran the warm path on a host that already had <code>/etc/resolver/&lt;suffix&gt;</code>; a Plan-agent review flagged that the cold path — the one every new host takes — was untested. Fixed by <code>sudo rm</code>-ing the file and running cold before close.)</li>
+<li>Generalizes beyond shell: any “ensure X exists / converge to desired state” operation — Terraform resources, migrations, package installs — wants the from-absent path tested, not just the already-converged re-run.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-staleness">Documentation Staleness<a class="anchor" aria-label="anchor" href="#documentation-staleness"></a></h3>
@@ -930,13 +1025,13 @@ registry JSON                 registry list
 <p><strong>Integrity-preserving ≠ self-effacing.</strong> Factual, not performatively humble.</p>
 <p><strong>Scope:</strong> repo artifacts (issues, PRs, commits, reports). Does not apply to internal planning docs, CLAUDE.md, or chat.</p>
 <p><strong>Issue body structure:</strong></p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">## Problem</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>&lt;what's wrong or missing&gt;</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="fu">## Proposed Solution</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">approach</span><span class="dt">&gt;</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>Relates to #<span class="dt">&lt;</span><span class="kw">local</span><span class="dt">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">## Problem</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>&lt;what's wrong or missing&gt;</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="fu">## Proposed Solution</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">approach</span><span class="dt">&gt;</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>Relates to #<span class="dt">&lt;</span><span class="kw">local</span><span class="dt">&gt;</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="infrastructure-references">Infrastructure references<a class="anchor" aria-label="anchor" href="#infrastructure-references"></a></h4>
@@ -948,15 +1043,15 @@ registry JSON                 registry list
 <div class="section level3">
 <h3 id="github-issue-creation---always-use-files">GitHub Issue Creation - Always Use Files<a class="anchor" aria-label="anchor" href="#github-issue-creation---always-use-files"></a></h3>
 <p>The <code>gh issue create</code> command with heredoc syntax fails repeatedly with EOF errors. ALWAYS use <code>--body-file</code>:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> /tmp/issue_body.md <span class="op">&lt;&lt; 'EOF'</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="st">## Problem</span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="st">...</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="st">## Proposed Solution</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="st">...</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="op">EOF</span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="ex">gh</span> issue create <span class="at">--title</span> <span class="st">"Brief technical title"</span> <span class="at">--body-file</span> /tmp/issue_body.md</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> /tmp/issue_body.md <span class="op">&lt;&lt; 'EOF'</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="st">## Problem</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="st">...</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="st">## Proposed Solution</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="st">...</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="ex">gh</span> issue create <span class="at">--title</span> <span class="st">"Brief technical title"</span> <span class="at">--body-file</span> /tmp/issue_body.md</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1091,33 +1186,33 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <div class="section level3">
 <h3 id="task_planmd">task_plan.md<a class="anchor" aria-label="anchor" href="#task_planmd"></a></h3>
 <p>Phases with checkboxes. This is the core tracking file.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu"># Task Plan</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a></span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">## Phase 1: [Name]</span></span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Another task</span>
-<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
-<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="fu">## Phase 2: [Name]</span></span>
-<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu"># Task Plan</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">## Phase 1: [Name]</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Another task</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="fu">## Phase 2: [Name]</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span></code></pre></div>
 <p>Mark tasks done as they’re completed: <code>- [x] Task description</code></p>
 </div>
 <div class="section level3">
 <h3 id="findingsmd">findings.md<a class="anchor" aria-label="anchor" href="#findingsmd"></a></h3>
 <p>Append-only research log. Discoveries, technical analysis, things learned.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu"># Findings</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">## [Topic]</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">[</span><span class="ot">What was found, with source/date</span><span class="co">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu"># Findings</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">## [Topic]</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">[</span><span class="ot">What was found, with source/date</span><span class="co">]</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="progressmd">progress.md<a class="anchor" aria-label="anchor" href="#progressmd"></a></h3>
 <p>Session entries with commit references.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu"># Progress</span></span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">## Session YYYY-MM-DD</span></span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="ss">- </span>Completed: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="ss">- </span>Commits: <span class="co">[</span><span class="ot">refs</span><span class="co">]</span></span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="ss">- </span>Next: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu"># Progress</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">## Session YYYY-MM-DD</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="ss">- </span>Completed: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="ss">- </span>Commits: <span class="co">[</span><span class="ot">refs</span><span class="co">]</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="ss">- </span>Next: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1152,7 +1247,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <li><p>Prefix column name vectors with <code>cols_</code> for discoverability in the environment pane: <code>cols_all</code>, <code>cols_carry</code>, <code>cols_split</code>, <code>cols_writable</code>. Same principle for other grouped vectors (<code>params_</code>, <code>tbl_</code>, etc.)</p></li>
 <li>
 <p>For SQL DDL+INSERT pairs that share a schema, use a single named vector as the source of truth. Both <code>CREATE TABLE</code> and <code>INSERT (cols) SELECT cols</code> derive their column lists from the same <code>cols_*</code> vector. Avoids drift between table shape and write projection — when columns change, you edit one place. Example:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cols_streams</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  id_segment           <span class="op">=</span> <span class="st">"integer NOT NULL"</span>,</span>
 <span>  watershed_group_code <span class="op">=</span> <span class="st">"varchar(4) NOT NULL"</span>,</span>
@@ -1200,7 +1295,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <li><p>Tests must pass before closing the function’s issue</p></li>
 <li>
 <p>Always grep for errors in the same command as the test run to avoid running twice:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test()'</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">"(FAIL|ERROR|PASS)"</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-5</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test()'</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">"(FAIL|ERROR|PASS)"</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-5</span></span></code></pre></div>
 <p>For error context: <code>grep -E "(ERROR:|FAIL )" -A 10 | head -25</code></p>
 </li>
 </ul><div class="section level3">
@@ -1244,7 +1339,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <p>Run <code>lintr::lint_package()</code> before committing R package code. Fix all warnings — every lint should be worth fixing.</p>
 <div class="section level3">
 <h3 id="recommended-lintr-config">Recommended .lintr config<a class="anchor" aria-label="anchor" href="#recommended-lintr-config"></a></h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linters</span><span class="op">:</span> <span class="fu">linters_with_defaults</span><span class="op">(</span></span>
 <span>    <span class="fu">line_length_linter</span><span class="op">(</span><span class="fl">120</span><span class="op">)</span>,</span>
 <span>    <span class="fu">object_name_linter</span><span class="op">(</span>styles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"snake_case"</span>, <span class="st">"dotted.case"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -1282,18 +1377,18 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <div class="section level3">
 <h3 id="branch-protection">Branch protection<a class="anchor" aria-label="anchor" href="#branch-protection"></a></h3>
 <p>Protect main from deletion and force pushes:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="ex">gh</span> api repos/OWNER/REPO/rulesets <span class="at">--method</span> POST <span class="at">--input</span> <span class="at">-</span> <span class="op">&lt;&lt;'EOF'</span></span>
-<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a><span class="st">{</span></span>
-<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="st">  "name": "Protect main",</span></span>
-<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a><span class="st">  "target": "branch",</span></span>
-<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a><span class="st">  "enforcement": "active",</span></span>
-<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a><span class="st">  "bypass_actors": [</span></span>
-<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a><span class="st">    { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }</span></span>
-<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a><span class="st">  ],</span></span>
-<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a><span class="st">  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },</span></span>
-<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a><span class="st">  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" } ]</span></span>
-<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb27-12"><a href="#cb27-12" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="ex">gh</span> api repos/OWNER/REPO/rulesets <span class="at">--method</span> POST <span class="at">--input</span> <span class="at">-</span> <span class="op">&lt;&lt;'EOF'</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="st">  "name": "Protect main",</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="st">  "target": "branch",</span></span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a><span class="st">  "enforcement": "active",</span></span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a><span class="st">  "bypass_actors": [</span></span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a><span class="st">    { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }</span></span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a><span class="st">  ],</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a><span class="st">  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },</span></span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a><span class="st">  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" } ]</span></span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="scaffold-checklist">Scaffold checklist<a class="anchor" aria-label="anchor" href="#scaffold-checklist"></a></h3>
@@ -1343,6 +1438,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <td>Connector API for writes, JS console for attachments</td>
 </tr></tbody></table><p><strong>Citation keys vs item keys:</strong> Citation keys (like <code>irvine2020ParsnipRiver</code>) come from Better BibTeX. Item keys (like <code>K7WALMSY</code>) are native Zotero. The MCP works with item keys. <code>/zotero-lookup</code> bridges citation keys to item data.</p>
 <p><strong>BBT citation key storage:</strong> As of Feb 2025+, BBT stores citation keys as a <code>citationKey</code> field directly in <code>zotero.sqlite</code> (via Zotero’s item data system), not in a separate BBT database. The old <code>better-bibtex.sqlite</code> and <code>better-bibtex.migrated</code> files are stale and no longer updated. Query citation keys with: <code>SELECT idv.value FROM items i JOIN itemData id ON i.itemID = id.itemID JOIN itemDataValues idv ON id.valueID = idv.valueID JOIN fields f ON id.fieldID = f.fieldID WHERE f.fieldName = 'citationKey'</code>.</p>
+<p><strong>BBT citekey format is locally patched to strip <code>&amp;</code>:</strong> the <code>citekeyFormat</code> pref (<code>extensions.zotero.translators.better-bibtex.citekeyFormat</code> in <code>~/Library/Application Support/Zotero/Profiles/*/prefs.js</code>) has a <code>.replace(find = "&amp;", replace = "")</code> segment added by hand. Without it, institutional authors containing <code>&amp;</code> (e.g. “BC Species &amp; Ecosystem Explorer”, “WA Dept of Fish &amp; Wildlife”) leak <code>&amp;</code> into the citekey, and pandoc’s <code>@key</code> parser stops at <code>&amp;</code> — so cites render broken in any bookdown/quarto build even though biblatex accepts the key. Reapply via Zotero → Tools → Run JavaScript: <code>Zotero.Prefs.set("translators.better-bibtex.citekeyFormat", val)</code> (also patch <code>citekeyFormatEditing</code> to match). Survives Zotero/BBT auto-updates; reverts only on a profile reset or a manual edit via the BBT preferences UI. Detect drift: <code>grep citekeyFormat ~/Library/Application\ Support/Zotero/Profiles/*/prefs.js</code> should show the <code>.replace(find = "&amp;", ...)</code> chain. Teammates on Skeena/Fraser/restoration machines that hit the same <code>@key</code>-breaks-at-<code>&amp;</code> drift should run the same <code>Zotero.Prefs.set</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="adding-references-workflow">Adding References Workflow<a class="anchor" aria-label="anchor" href="#adding-references-workflow"></a></h2>
@@ -1378,11 +1474,11 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <h2 id="in-reports-bookdown">In Reports (bookdown)<a class="anchor" aria-label="anchor" href="#in-reports-bookdown"></a></h2>
 <div class="section level3">
 <h3 id="bibliography-generation">Bibliography generation<a class="anchor" aria-label="anchor" href="#bibliography-generation"></a></h3>
-<div class="sourceCode" id="cb28"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="co"># index.Rmd — dynamic bib from Zotero via Better BibTeX</span></span>
-<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="fu">bibliography</span><span class="kw">:</span><span class="at"> </span><span class="st">"`r rbbt::bbt_write_bib('references.bib', overwrite = TRUE)`"</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># index.Rmd — dynamic bib from Zotero via Better BibTeX</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a><span class="fu">bibliography</span><span class="kw">:</span><span class="at"> </span><span class="st">"`r rbbt::bbt_write_bib('references.bib', overwrite = TRUE)`"</span></span></code></pre></div>
 <p><code>rbbt</code> pulls from BBT, which syncs with Zotero. Edit references in Zotero → rebuild report → bibliography updates.</p>
 <p><strong>Library targeting:</strong> rbbt must know which Zotero library to search. This is set globally in <code>~/.Rprofile</code>:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># default library — NewGraphEnvironment group (libraryID 9, group 4733734)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>rbbt.default.library_id <span class="op">=</span> <span class="fl">9</span><span class="op">)</span></span></code></pre></div>
 <p>Without this option, rbbt searches only the personal library (libraryID 1) and won’t find group library references. The library IDs map to Zotero’s internal numbering — use <code>/zotero-lookup</code> with <code>SELECT DISTINCT libraryID FROM citationkey</code> against the BBT database to discover available libraries.</p>
@@ -1490,7 +1586,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -73,19 +73,20 @@ gq_groups()
 #> 41 Roads/Rails/Pipelines           <NA>
 #> 42 Roads/Rails/Pipelines           <NA>
 #> 43 Roads/Rails/Pipelines           <NA>
-#> 44                 Forms           <NA>
+#> 44 Roads/Rails/Pipelines           <NA>
 #> 45                 Forms           <NA>
 #> 46                 Forms           <NA>
 #> 47                 Forms           <NA>
-#> 48            Floodplain           <NA>
-#> 49           Restoration           <NA>
+#> 48                 Forms           <NA>
+#> 49            Floodplain           <NA>
 #> 50           Restoration           <NA>
-#> 51  Web Mapping Services           <NA>
+#> 51           Restoration           <NA>
 #> 52  Web Mapping Services           <NA>
-#> 53   Base - Orthoimagery           <NA>
-#> 54           Base - misc           <NA>
+#> 53  Web Mapping Services           <NA>
+#> 54   Base - Orthoimagery           <NA>
 #> 55           Base - misc           <NA>
 #> 56           Base - misc           <NA>
+#> 57           Base - misc           <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -130,19 +131,20 @@ gq_groups()
 #> 41                                        pipeline_permit     5      bcdata
 #> 42                                   pipeline_application     6      bcdata
 #> 43                                      transmission_line     7      bcdata
-#> 44                                             form_pscis     1       local
-#> 45                                         form_fiss_site     2       local
-#> 46                                              form_edna     3       local
-#> 47                                        form_monitoring     4       local
-#> 48                                            floodplains     1      bcdata
-#> 49                                           harvest_area     1      bcdata
-#> 50                                          planting_site     2      bcdata
-#> 51                                fire_perimeters_current     1         wms
-#> 52                                   frep_rip2021_mar2022     2         wms
-#> 53                                       orthophoto_tiles     1      bcdata
-#> 54                                              utm_zones     1      bcdata
-#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
-#> 56                     terrain_mapping_project_boundaries     3      bcdata
+#> 44                                                 trails     8         osm
+#> 45                                             form_pscis     1       local
+#> 46                                         form_fiss_site     2       local
+#> 47                                              form_edna     3       local
+#> 48                                        form_monitoring     4       local
+#> 49                                            floodplains     1      bcdata
+#> 50                                           harvest_area     1      bcdata
+#> 51                                          planting_site     2      bcdata
+#> 52                                fire_perimeters_current     1         wms
+#> 53                                   frep_rip2021_mar2022     2         wms
+#> 54                                       orthophoto_tiles     1      bcdata
+#> 55                                              utm_zones     1      bcdata
+#> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
+#> 57                     terrain_mapping_project_boundaries     3      bcdata
 
 # With style registry info joined
 reg <- gq_reg_main()
@@ -191,19 +193,20 @@ gq_groups(registry = reg)
 #> 41 Roads/Rails/Pipelines           <NA>
 #> 42 Roads/Rails/Pipelines           <NA>
 #> 43 Roads/Rails/Pipelines           <NA>
-#> 44                 Forms           <NA>
+#> 44 Roads/Rails/Pipelines           <NA>
 #> 45                 Forms           <NA>
 #> 46                 Forms           <NA>
 #> 47                 Forms           <NA>
-#> 48            Floodplain           <NA>
-#> 49           Restoration           <NA>
+#> 48                 Forms           <NA>
+#> 49            Floodplain           <NA>
 #> 50           Restoration           <NA>
-#> 51  Web Mapping Services           <NA>
+#> 51           Restoration           <NA>
 #> 52  Web Mapping Services           <NA>
-#> 53   Base - Orthoimagery           <NA>
-#> 54           Base - misc           <NA>
+#> 53  Web Mapping Services           <NA>
+#> 54   Base - Orthoimagery           <NA>
 #> 55           Base - misc           <NA>
 #> 56           Base - misc           <NA>
+#> 57           Base - misc           <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -248,19 +251,20 @@ gq_groups(registry = reg)
 #> 41                                        pipeline_permit     5      bcdata
 #> 42                                   pipeline_application     6      bcdata
 #> 43                                      transmission_line     7      bcdata
-#> 44                                             form_pscis     1       local
-#> 45                                         form_fiss_site     2       local
-#> 46                                              form_edna     3       local
-#> 47                                        form_monitoring     4       local
-#> 48                                            floodplains     1      bcdata
-#> 49                                           harvest_area     1      bcdata
-#> 50                                          planting_site     2      bcdata
-#> 51                                fire_perimeters_current     1         wms
-#> 52                                   frep_rip2021_mar2022     2         wms
-#> 53                                       orthophoto_tiles     1      bcdata
-#> 54                                              utm_zones     1      bcdata
-#> 55 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
-#> 56                     terrain_mapping_project_boundaries     3      bcdata
+#> 44                                                 trails     8         osm
+#> 45                                             form_pscis     1       local
+#> 46                                         form_fiss_site     2       local
+#> 47                                              form_edna     3       local
+#> 48                                        form_monitoring     4       local
+#> 49                                            floodplains     1      bcdata
+#> 50                                           harvest_area     1      bcdata
+#> 51                                          planting_site     2      bcdata
+#> 52                                fire_perimeters_current     1         wms
+#> 53                                   frep_rip2021_mar2022     2         wms
+#> 54                                       orthophoto_tiles     1      bcdata
+#> 55                                              utm_zones     1      bcdata
+#> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
+#> 57                     terrain_mapping_project_boundaries     3      bcdata
 #>                                                    source_layer    type
 #> 1                    whse_basemapping.fwa_watershed_groups_poly polygon
 #> 2            whse_legal_admin_boundaries.abms_municipalities_sp polygon
@@ -305,17 +309,18 @@ gq_groups(registry = reg)
 #> 41               whse_mineral_tenure.og_pipeline_area_permit_sp polygon
 #> 42                 whse_mineral_tenure.og_pipeline_area_appl_sp polygon
 #> 43                   whse_basemapping.gba_transmission_lines_sp    line
-#> 44                                                   form_pscis   point
-#> 45                                               form_fiss_site   point
-#> 46                                                         <NA>    <NA>
+#> 44                                                    osm.trail    line
+#> 45                                                   form_pscis   point
+#> 46                                               form_fiss_site   point
 #> 47                                                         <NA>    <NA>
-#> 48                 whse_basemapping.cwb_floodplains_bc_area_svw polygon
-#> 49                                                         <NA> polygon
-#> 50                                                         <NA>   point
-#> 51                                                         <NA>    <NA>
-#> 52                                                         <NA>   point
-#> 53        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly polygon
-#> 54                           whse_basemapping.utmg_utm_zones_sp polygon
-#> 55         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon
-#> 56      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon
+#> 48                                                         <NA>    <NA>
+#> 49                 whse_basemapping.cwb_floodplains_bc_area_svw polygon
+#> 50                                                         <NA> polygon
+#> 51                                                         <NA>   point
+#> 52                                                         <NA>    <NA>
+#> 53                                                         <NA>   point
+#> 54        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly polygon
+#> 55                           whse_basemapping.utmg_utm_zones_sp polygon
+#> 56         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon
+#> 57      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon
 ```

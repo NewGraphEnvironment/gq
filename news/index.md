@@ -1,5 +1,28 @@
 # Changelog
 
+## gq 0.2.0
+
+- **Trail symbology.** The registry carried no trail, path, footway,
+  cycleway or bridleway layer, so a project that added a trail network
+  had nothing to style it with. `trails` is now a classified line layer
+  on `highway` — the only tag populated on every feature, where
+  `bicycle` sits on 16.4% and would put most features in a fallback
+  class. Classes differ by colour, dash *and* width, so the map reads in
+  printed greyscale as well as in colour.
+- The style is **authored in a QGIS project and extracted**, not
+  hand-written as registry rows. A classified line authored through
+  `reg_custom.csv` comes back with per-class `width` and `dash` both
+  `NULL`, because that path emits `outline_width`/`outline_color` while
+  the translators read `width`/`dash` — and dash is exactly what
+  distinguishes a trail from a road.
+- `data-raw/reg_extract_restoration.R` accepts `RFP_TEMPLATE`, pointing
+  at a source checkout. Without it
+  [`system.file()`](https://rdrr.io/r/base/system.file.html) resolves to
+  the installed package, which is routinely behind: when this style was
+  extracted the installed copy was three releases old and its template
+  carried no trail layer, so the run would have silently produced a
+  registry missing the layer it was made for.
+
 ## gq 0.1.0
 
 First release.

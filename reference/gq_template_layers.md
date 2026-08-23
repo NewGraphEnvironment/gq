@@ -57,13 +57,13 @@ gq_template_layers("bcfishpass_mobile")
 #> 22 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
 #> 23 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
 #> 24 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 25 bcfishpass_mobile               Streams           5           <NA>
+#> 25 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
 #> 26 bcfishpass_mobile               Streams           5           <NA>
 #> 27 bcfishpass_mobile               Streams           5           <NA>
-#> 28 bcfishpass_mobile               Streams           5 Habitat Models
+#> 28 bcfishpass_mobile               Streams           5           <NA>
 #> 29 bcfishpass_mobile               Streams           5 Habitat Models
 #> 30 bcfishpass_mobile               Streams           5 Habitat Models
-#> 31 bcfishpass_mobile               Basemap           6           <NA>
+#> 31 bcfishpass_mobile               Streams           5 Habitat Models
 #> 32 bcfishpass_mobile               Basemap           6           <NA>
 #> 33 bcfishpass_mobile               Basemap           6           <NA>
 #> 34 bcfishpass_mobile               Basemap           6           <NA>
@@ -74,17 +74,18 @@ gq_template_layers("bcfishpass_mobile")
 #> 39 bcfishpass_mobile               Basemap           6           <NA>
 #> 40 bcfishpass_mobile               Basemap           6           <NA>
 #> 41 bcfishpass_mobile               Basemap           6           <NA>
-#> 42 bcfishpass_mobile               Basemap           6            BEC
+#> 42 bcfishpass_mobile               Basemap           6           <NA>
 #> 43 bcfishpass_mobile               Basemap           6            BEC
-#> 44 bcfishpass_mobile               Basemap           6    Waterbodies
+#> 44 bcfishpass_mobile               Basemap           6            BEC
 #> 45 bcfishpass_mobile               Basemap           6    Waterbodies
 #> 46 bcfishpass_mobile               Basemap           6    Waterbodies
 #> 47 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 48 bcfishpass_mobile  Web Mapping Services           7           <NA>
+#> 48 bcfishpass_mobile               Basemap           6    Waterbodies
 #> 49 bcfishpass_mobile  Web Mapping Services           7           <NA>
-#> 50 bcfishpass_mobile           Base - misc           8           <NA>
+#> 50 bcfishpass_mobile  Web Mapping Services           7           <NA>
 #> 51 bcfishpass_mobile           Base - misc           8           <NA>
 #> 52 bcfishpass_mobile           Base - misc           8           <NA>
+#> 53 bcfishpass_mobile           Base - misc           8           <NA>
 #>                                                 layer_key order
 #> 1                                              form_pscis     1
 #> 2                                          form_fiss_site     2
@@ -110,34 +111,35 @@ gq_template_layers("bcfishpass_mobile")
 #> 22                                        pipeline_permit     5
 #> 23                                   pipeline_application     6
 #> 24                                      transmission_line     7
-#> 25                                            streams_all     1
-#> 26                                          stream_labels     2
-#> 27                         fisheries_sensitive_watersheds     3
-#> 28                                             streams_bt     1
-#> 29                                         streams_salmon     2
-#> 30                                             streams_st     3
-#> 31                               watershed_group_boundary     1
-#> 32                                         municipalities     2
-#> 33                                        provincial_park     3
-#> 34                                            conservancy     4
-#> 35                                   first_nation_reserve     5
-#> 36                                           range_tenure     6
-#> 37                                         land_ownership     7
-#> 38                                   fire_historical_burn     8
-#> 39                                          fire_severity     9
-#> 40                                               glaciers    10
-#> 41                                                   town    11
-#> 42                                               bec_zone     1
-#> 43                biogeoclimatic_ecosystem_classification     2
-#> 44                                                   lake     1
-#> 45                                                wetland     2
-#> 46                                            rivers_poly     3
-#> 47                                    manmade_waterbodies     4
-#> 48                                fire_perimeters_current     1
-#> 49                                   frep_rip2021_mar2022     2
-#> 50                                              utm_zones     1
-#> 51 terrestrial_ecosystem_information_scanned_map_boundary     2
-#> 52                     terrain_mapping_project_boundaries     3
+#> 25                                                 trails     8
+#> 26                                            streams_all     1
+#> 27                                          stream_labels     2
+#> 28                         fisheries_sensitive_watersheds     3
+#> 29                                             streams_bt     1
+#> 30                                         streams_salmon     2
+#> 31                                             streams_st     3
+#> 32                               watershed_group_boundary     1
+#> 33                                         municipalities     2
+#> 34                                        provincial_park     3
+#> 35                                            conservancy     4
+#> 36                                   first_nation_reserve     5
+#> 37                                           range_tenure     6
+#> 38                                         land_ownership     7
+#> 39                                   fire_historical_burn     8
+#> 40                                          fire_severity     9
+#> 41                                               glaciers    10
+#> 42                                                   town    11
+#> 43                                               bec_zone     1
+#> 44                biogeoclimatic_ecosystem_classification     2
+#> 45                                                   lake     1
+#> 46                                                wetland     2
+#> 47                                            rivers_poly     3
+#> 48                                    manmade_waterbodies     4
+#> 49                                fire_perimeters_current     1
+#> 50                                   frep_rip2021_mar2022     2
+#> 51                                              utm_zones     1
+#> 52 terrestrial_ecosystem_information_scanned_map_boundary     2
+#> 53                     terrain_mapping_project_boundaries     3
 #>                                                    source_layer source_type
 #> 1                                                    form_pscis       local
 #> 2                                                form_fiss_site       local
@@ -163,34 +165,35 @@ gq_template_layers("bcfishpass_mobile")
 #> 22               whse_mineral_tenure.og_pipeline_area_permit_sp      bcdata
 #> 23                 whse_mineral_tenure.og_pipeline_area_appl_sp      bcdata
 #> 24                   whse_basemapping.gba_transmission_lines_sp      bcdata
-#> 25                                        bcfishpass.streams_vw         aws
-#> 26                           whse_basemapping.fwa_named_streams         fwa
-#> 27          whse_wildlife_management.wcp_fish_sensitive_ws_poly      bcdata
-#> 28                                        bcfishpass.streams_vw         aws
+#> 25                                                    osm.trail         osm
+#> 26                                        bcfishpass.streams_vw         aws
+#> 27                           whse_basemapping.fwa_named_streams         fwa
+#> 28          whse_wildlife_management.wcp_fish_sensitive_ws_poly      bcdata
 #> 29                                        bcfishpass.streams_vw         aws
 #> 30                                        bcfishpass.streams_vw         aws
-#> 31                   whse_basemapping.fwa_watershed_groups_poly      bcdata
-#> 32           whse_legal_admin_boundaries.abms_municipalities_sp      bcdata
-#> 33                          whse_tantalis.ta_park_ecores_pa_svw      bcdata
-#> 34                       whse_tantalis.ta_conservancy_areas_svw      bcdata
-#> 35                   whse_admin_boundaries.clab_indian_reserves      bcdata
-#> 36                  whse_forest_tenure.ften_range_poly_carto_vw         aws
-#> 37                    whse_cadastre.pmbc_parcel_fabric_poly_svw         aws
-#> 38 whse_land_and_natural_resource.prot_historical_fire_polys_sp      bcdata
-#> 39                  whse_forest_vegetation.veg_burn_severity_sp      bcdata
-#> 40                           whse_basemapping.fwa_glaciers_poly      bcdata
-#> 41                   whse_basemapping.gns_geographical_names_sp      bcdata
-#> 42               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 31                                        bcfishpass.streams_vw         aws
+#> 32                   whse_basemapping.fwa_watershed_groups_poly      bcdata
+#> 33           whse_legal_admin_boundaries.abms_municipalities_sp      bcdata
+#> 34                          whse_tantalis.ta_park_ecores_pa_svw      bcdata
+#> 35                       whse_tantalis.ta_conservancy_areas_svw      bcdata
+#> 36                   whse_admin_boundaries.clab_indian_reserves      bcdata
+#> 37                  whse_forest_tenure.ften_range_poly_carto_vw         aws
+#> 38                    whse_cadastre.pmbc_parcel_fabric_poly_svw         aws
+#> 39 whse_land_and_natural_resource.prot_historical_fire_polys_sp      bcdata
+#> 40                  whse_forest_vegetation.veg_burn_severity_sp      bcdata
+#> 41                           whse_basemapping.fwa_glaciers_poly      bcdata
+#> 42                   whse_basemapping.gns_geographical_names_sp      bcdata
 #> 43               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
-#> 44                              whse_basemapping.fwa_lakes_poly      bcdata
-#> 45                           whse_basemapping.fwa_wetlands_poly      bcdata
-#> 46                             whse_basemapping.fwa_rivers_poly      bcdata
-#> 47                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
-#> 48                                                         <NA>         wms
+#> 44               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 45                              whse_basemapping.fwa_lakes_poly      bcdata
+#> 46                           whse_basemapping.fwa_wetlands_poly      bcdata
+#> 47                             whse_basemapping.fwa_rivers_poly      bcdata
+#> 48                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
 #> 49                                                         <NA>         wms
-#> 50                           whse_basemapping.utmg_utm_zones_sp      bcdata
-#> 51         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
-#> 52      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
+#> 50                                                         <NA>         wms
+#> 51                           whse_basemapping.utmg_utm_zones_sp      bcdata
+#> 52         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
+#> 53      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
 #>       type
 #> 1    point
 #> 2    point
@@ -218,11 +221,11 @@ gq_template_layers("bcfishpass_mobile")
 #> 24    line
 #> 25    line
 #> 26    line
-#> 27 polygon
-#> 28    line
+#> 27    line
+#> 28 polygon
 #> 29    line
 #> 30    line
-#> 31 polygon
+#> 31    line
 #> 32 polygon
 #> 33 polygon
 #> 34 polygon
@@ -232,16 +235,17 @@ gq_template_layers("bcfishpass_mobile")
 #> 38 polygon
 #> 39 polygon
 #> 40 polygon
-#> 41   point
-#> 42 polygon
+#> 41 polygon
+#> 42   point
 #> 43 polygon
 #> 44 polygon
 #> 45 polygon
 #> 46 polygon
 #> 47 polygon
-#> 48    <NA>
-#> 49   point
-#> 50 polygon
+#> 48 polygon
+#> 49    <NA>
+#> 50   point
 #> 51 polygon
 #> 52 polygon
+#> 53 polygon
 ```
