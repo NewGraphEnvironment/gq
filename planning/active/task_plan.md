@@ -88,12 +88,12 @@ tree red at `tests/testthat/test-gq_groups.R:122,123,127-136`, which the
 
 ## Phase 5 — Docs
 
-- [ ] `README.md:81` — theme concept row still says `"habitat"/"barriers"/"all"`
-- [ ] `README.md:70` — `gq_group_layers("fish_passage_pscis")`; no such group
-- [ ] `README.md:83` — "12 canonical groups, 53 layer keys" is stale at 62 rows
-- [ ] `README.md:110` — claims the tmap vignette composes "from groups + themes";
+- [x] `README.md:81` — theme concept row still says `"habitat"/"barriers"/"all"`
+- [x] `README.md:70` — `gq_group_layers("fish_passage_pscis")`; no such group
+- [x] `README.md:83` — "12 canonical groups, 53 layer keys" is stale at 62 rows
+- [x] `README.md:110` — claims the tmap vignette composes "from groups + themes";
       that vignette has no theme reference. Fix the claim, not the vignette
-- [ ] `CLAUDE.md:175-181` registry-sources list omits `groups.csv`,
+- [x] `CLAUDE.md:175-181` registry-sources list omits `groups.csv`,
       `templates.csv`, `themes.csv` entirely
 - [ ] `NEWS.md` 0.3.0 section; `DESCRIPTION` 0.2.1 → 0.3.0 as the **final**
       commit of the branch
