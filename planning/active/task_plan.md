@@ -46,21 +46,21 @@ repoints its builder at gq and deletes the duplicate.
 
 ## Phase 1 — Vendoring script
 
-- [ ] `data-raw/styles_vendor.R`, following `reg_extract_themes.R:37-55`: locate
+- [x] `data-raw/styles_vendor.R`, following `reg_extract_themes.R:37-55`: locate
       rfp's store via `system.file("extdata", "styles", package = "rfp")` with an
       `RFP_STYLES_DIR` env override, erroring with the `pak::pak(...)` install
       hint when absent
-- [ ] Enumerate **from `index.csv`**, not from the filesystem — copy each
+- [x] Enumerate **from `index.csv`**, not from the filesystem — copy each
       `slug` + `scope` row to `inst/styles/vector/` or
       `inst/styles/vector/overrides/<template>/`; copy `raster/` and `services/`
       wholesale (no index, filenames are already slugs)
-- [ ] Write gq's own `inst/styles/index.csv` keyed by gq's `layer_key`
+- [x] Write gq's own `inst/styles/index.csv` keyed by gq's `layer_key`
       (`normalize_layer_name()` of the recorded layer name), carrying
       `layer_key,layer,template,scope,kind` — gq's key space is authoritative in gq
-- [ ] Abort on: a slug where `normalize_layer_name()` disagrees with rfp's; an
+- [x] Abort on: a slug where `normalize_layer_name()` disagrees with rfp's; an
       index row with no file; **a file with no index row** (the direction rfp's
       guard misses); a duplicate `layer_key,template` pair
-- [ ] Report, don't fail, the keys in `groups.csv` with no QML — the 4 forms are
+- [x] Report, don't fail, the keys in `groups.csv` with no QML — the 4 forms are
       owned by `rfp_form_build()` and the remainder are real gaps worth naming
 
 ## Phase 2 — Accessor
