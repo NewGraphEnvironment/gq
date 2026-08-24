@@ -36,6 +36,8 @@
   : Read a gq style registry from JSON
 - [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
   : Get backend-agnostic style for a registry layer
+- [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
+  : Get the QGIS-native QML style for a layer
 - [`gq_template_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_template_groups.md)
   : Get groups in a template
 - [`gq_template_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_template_layers.md)

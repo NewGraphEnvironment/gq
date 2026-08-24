@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,11 @@ QGIS Project (.qgs / .qgz)                 │
 <span><span class="co"># Compose a project from groups + themes (drives QGIS project assembly + QWC2 visibility presets)</span></span>
 <span><span class="fu"><a href="reference/gq_themes.html">gq_themes</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># the theme roster, per template</span></span>
 <span><span class="fu"><a href="reference/gq_group_layers.html">gq_group_layers</a></span><span class="op">(</span><span class="st">"Crossings"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/gq_template_layers.html">gq_template_layers</a></span><span class="op">(</span><span class="st">"bcrestoration_mobile"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/gq_template_layers.html">gq_template_layers</a></span><span class="op">(</span><span class="st">"bcrestoration_mobile"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># QGIS-native style — the full QML, for anything that speaks to QGIS</span></span>
+<span><span class="fu"><a href="reference/gq_style_qml.html">gq_style_qml</a></span><span class="op">(</span><span class="st">"lake"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/gq_style_qml.html">gq_style_qml</a></span><span class="op">(</span><span class="st">"land_ownership"</span>, template <span class="op">=</span> <span class="st">"bcfishpass_mobile"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="concepts">Concepts<a class="anchor" aria-label="anchor" href="#concepts"></a>
@@ -160,6 +164,10 @@ QGIS Project (.qgs / .qgz)                 │
 <td><strong>xref_layers</strong></td>
 <td>Cross-reference table mapping registry keys to source-system layer names (BC Data Catalogue WMS layers, fwapg views, internal pgsql schemas) so consumers can look up the underlying data when they want it.</td>
 </tr>
+<tr>
+<td><strong>QML corpus</strong></td>
+<td>The same styles in QGIS’s own format, shipped under <code>inst/styles/</code>. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. 50 shared vector styles, 3 per-template overrides, 1 raster, 6 services.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -192,7 +200,8 @@ QGIS Project (.qgs / .qgz)                 │
 </tr>
 </tbody>
 </table>
-<p>Consumers don’t know about QGIS or QML; producers don’t know about tmap or MapLibre. The registry JSON is the contract.</p>
+<p>The registry JSON is the contract between the two: producers don’t know about tmap or MapLibre, and a consumer rendering to those backends never touches QGIS.</p>
+<p>Consumers rendering <strong>to</strong> QGIS are the exception, and <code><a href="reference/gq_style_qml.html">gq_style_qml()</a></code> serves them. Round-tripping a style through the registry is lossy by design; the QML corpus is the lossless path, so a Mergin field project, a QGIS Server / QWC2 deployment or a <code>layer_styles</code> table gets the symbology QGIS actually authored rather than the subset tmap needs.</p>
 </div>
 <div class="section level2">
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
