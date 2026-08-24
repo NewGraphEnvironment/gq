@@ -1,58 +1,109 @@
-# Task: tmap composition helpers and vignette (gq#17)
+# Task: themes.csv describes themes that do not ship, and cannot express a theme within a group (#46)
 
-**Branch:** `tmap-composition`
-**Split from:** gq#14
-**PR target:** `main`
-**SRED:** Relates to NewGraphEnvironment/sred-2025-2026#13
+## Problem
 
-## Goal
+`inst/registry/themes.csv` is fiction. Its 3 themes (`Field View`, `Analysis
+View`, `UAV View`) have **zero overlap** with the 9 themes the templates
+actually ship, and its `theme,group,visible` schema cannot round-trip a real
+theme — QGIS models themes as per-layer `<layer id=… visible="0|1"/>`, with
+groups appearing only as `<checked-group-nodes>` UI state.
 
-Add tmap map composition helpers and a vignette demonstrating full map
-composition using registry styles on Neexdzii Kwa (Upper Bulkley) data.
+## Approved decisions
 
-## Phases
+1. Schema `template,theme,layer_key,visible` — template-first like
+   `templates.csv`. Required, not optional: `Land Tenure` is restoration-only,
+   and `High Detail - Crossings` ships in both templates with different content
+   (27 visible in fishpass, 0 in restoration).
+2. Pure layer rows. No group shorthand — extraction never emits one (YAGNI).
+3. `habitat_lateral` gets a `groups.csv` row so its theme rows resolve.
+4. Retire `gq_theme_groups()`, add `gq_theme_layers()`. Breaking → 0.3.0.
+5. Extract truthfully: only `esri_world_topo` among the basemaps, because that
+   is what the presets contain. rfp#185 tracks re-saving them upstream.
 
-### Phase 1: Data and documentation `status:complete`
-- [x] Generate Neexdzii Kwa spatial data via fresh (`data-raw/neexdzii_kwa.R`)
-- [x] Save as package data (`data/*.rda`)
-- [x] Document datasets in `R/data.R` (roxygen)
-- [x] Run `devtools::document()` to generate `.Rd` files
-- [x] Commit: data generation script, data files, documentation (c89a2d8)
+## Phase 1 — Shared normalizer
 
-### Phase 2: Vignette draft `status:complete`
-- [x] Draft `vignettes/gq-tmap-composition.Rmd`
-- [x] Render vignette, check output — renders clean
-- [x] Fix Z/M dimension issue (GEOS compat) — fixed at data source
-- [x] Fix `reg$layers$stream` → `streams_all` classification lookup
-- [x] All colors from registry — no hardcoded hex except white overlay
-- [x] Visual check: map fills frame, four-corner rule, keymap works
-- [ ] Width scaling issue (gq#16) — manual `* 2` multiplier for now
-- [x] Commit: vignette (8cd070a)
+- [ ] Point `gq_qgs_extract()` at the existing `normalize_layer_name()`
+      (`R/gq_style.R:104`) instead of its byte-identical inline copy at
+      `R/gq_qgs_extract.R:57-58`. Do **not** create a new helper — that would be
+      a third home for one rule
+- [ ] Preserve the rule exactly: `sub("^_|_$", …)` is `sub`, not `gsub`, so only
+      the first boundary underscore is stripped. "Tidying" it to `gsub` changes
+      keys
+- [ ] Add a `normalize_layer_name()` unit test covering leading, trailing and
+      doubled separators. No current test would catch a regression — the
+      extractor fixture's layer names (`Lakes`, `Streams`, `Crossings`, `Roads`)
+      are all clean
 
-### Phase 3: Composition helper functions `status:not_started`
-- [ ] `gq_tmap_basemap()` — maptiles provider + alpha blending
-- [ ] `gq_tmap_legend()` — position, sizing, background defaults
-- [ ] Tests for helpers
-- [ ] Update vignette to use helpers
-- [ ] Commit: functions, tests, vignette update
+## Phase 2 — Extraction script
 
-### Phase 4: Polish and PR `status:not_started`
-- [ ] `devtools::test()` passes
-- [ ] `devtools::check()` clean
-- [ ] `lintr::lint_package()` clean
-- [ ] Push branch, open PR
+- [ ] Add `data-raw/reg_extract_themes.R` following
+      `data-raw/reg_extract_restoration.R`
+- [ ] **Resolve the template-source ambiguity explicitly.** Installed rfp is
+      0.25.1, the source checkout is 0.30.1, and they yield different
+      visible-counts (28 vs 27). Take a template *directory* override
+      (env var, defaulting to `system.file`), and record the rfp version used in
+      a comment header of the generated CSV
+- [ ] Parse `//visibility-presets/visibility-preset`; per `<layer>`, resolve
+      `id` → `<maplayer><layername>` → `normalize_layer_name()`
+- [ ] Emit `template,theme,layer_key,visible` sorted by template, theme,
+      layer_key
+- [ ] Abort loudly on any `layer_key` absent from `groups.csv` — a silent drop
+      would recreate the fiction this issue removes
 
-## Key decisions
+## Phase 3 — Data, reader and API (single commit — see note)
 
-- Data: Neexdzii Kwa subbasin, Johnny David Creek to Richfield Creek on Bulkley
-  mainstem (BLK 360873822, DRM 214900–217800). ~212 km², 1074 streams, 42 lakes.
-- tmap fork at `~/Projects/repo/tmap` available for fixing upstream issues.
-  Enable issues on fork, branch, fix, potentially PR upstream.
-- Helper functions return argument lists for `do.call()` pattern (consistent
-  with existing `gq_tmap_style()`).
+- [ ] Add `habitat_lateral` to `groups.csv`: `Base - misc`, no subgroup,
+      `source_type = local`, `order = 1`, shifting the group's existing 1-7 to
+      2-8. (The two templates disagree on its tree position and the existing
+      orders already do not match either tree; ordering fidelity for
+      `Base - misc` is #40's problem, not this one)
+- [ ] Run the script; commit the regenerated `themes.csv` (~232 rows, 9
+      template-theme pairs)
+- [ ] `gq_themes()` returns the 4-column frame; add a `template = NULL` filter
+- [ ] Replace `gq_theme_groups()` with `gq_theme_layers(theme, template = NULL)`
+      — NAMESPACE, roxygen, runnable `@examples`
+- [ ] Document what an absent layer means: presets govern 25-28 of 54-59
+      layers, so a returned set is partial and says nothing about the rest
+- [ ] Make the `as.logical()` at `R/gq_groups.R:205` a real guard that errors on
+      unparseable values, or drop it — today it is a no-op
+- [ ] `devtools::document()`
 
-## Errors encountered
+**Why one commit:** the data, reader and tests must land together. Committing
+the 4-column CSV while the reader and tests still expect 3 columns leaves the
+tree red at `tests/testthat/test-gq_groups.R:122,123,127-136`, which the
+`/code-check`-clean-per-commit gate forbids.
 
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| (none yet) | | |
+## Phase 4 — Tests
+
+- [ ] Rewrite the three theme tests
+      (`tests/testthat/test-gq_groups.R:119,127,138`) against real theme names
+- [ ] Mirror the integrity test at `:52`: every `themes.csv$layer_key` appears
+      in `groups.csv`
+- [ ] Assert both templates' `High Detail - Crossings` coexist with different
+      visibility — the case the old schema could not represent
+- [ ] Pin the documented behaviour of `gq_theme_layers(theme)` with no
+      `template` (returns both templates' rows concatenated)
+- [ ] Assert empty return for an unknown theme
+- [ ] Keep `expect_type(df$visible, "logical")`
+
+## Phase 5 — Docs
+
+- [ ] `README.md:81` — theme concept row still says `"habitat"/"barriers"/"all"`
+- [ ] `README.md:70` — `gq_group_layers("fish_passage_pscis")`; no such group
+- [ ] `README.md:83` — "12 canonical groups, 53 layer keys" is stale at 62 rows
+- [ ] `README.md:110` — claims the tmap vignette composes "from groups + themes";
+      that vignette has no theme reference. Fix the claim, not the vignette
+- [ ] `CLAUDE.md:175-181` registry-sources list omits `groups.csv`,
+      `templates.csv`, `themes.csv` entirely
+- [ ] `NEWS.md` 0.3.0 section; `DESCRIPTION` 0.2.1 → 0.3.0 as the **final**
+      commit of the branch
+
+## Validation
+
+- [ ] `devtools::test()` — record the pre-change baseline first, then compare
+- [ ] `lintr::lint_package()` clean on changed files
+- [ ] `devtools::check()` no new ERROR/WARNING
+- [ ] `/code-check` clean on each commit
+- [ ] Re-running `reg_extract_themes.R` is idempotent against a pinned rfp
+- [ ] PWF checkboxes match landed work
+- [ ] `/planning-archive`, then `/gh-pr-push`
