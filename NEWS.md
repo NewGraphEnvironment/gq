@@ -1,3 +1,28 @@
+# gq 0.4.0
+
+- **The QGIS-native styles now ship alongside the registry.**
+  `inst/styles/` carries 62 QML files — 50 shared vector styles, 3 per-template
+  overrides, 3 rasters, 6 services — and `gq_style_qml(layer_key, template)`
+  resolves a key to one.
+
+  The registry models roughly 20 symbol properties and a single symbol layer,
+  because that is what tmap and mapgl can render; a QML carries everything QGIS
+  authored, including multi-layer symbols, casing and overlay, and per-class
+  dash. Use the registry for tmap and mapgl, and the corpus for anything that
+  speaks to QGIS — Desktop, Mergin field projects, QGIS Server / QWC2, or a
+  `layer_styles` table.
+
+  Passing a template is always safe: an override wins where one exists, the
+  shared style otherwise, which covers the 50 of 53 layers that do not diverge.
+
+  Unlike every other export this returns a **file path**, so callers get the
+  bytes QGIS wrote without gq re-serializing them.
+
+- gq does not lift QML from a `.qgs`. `data-raw/styles_vendor.R` vendors the
+  artifact rfp already extracts and commits, a dev-only dependency matching the
+  registry extract scripts. See `?gq_style_qml` and the corpus section of
+  `CLAUDE.md`.
+
 # gq 0.3.0
 
 - **Themes describe what the templates actually ship.** `themes.csv` named three
