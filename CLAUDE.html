@@ -290,26 +290,6 @@ registry JSON                 registry list
 </div>
 </div>
 <div class="section level1">
-<h1 id="always-away">Always Away<a class="anchor" aria-label="anchor" href="#always-away"></a></h1>
-<p>Assume the user is away from the keyboard at all times. Design every operation to run unattended by default; there is no separate “remote work” or “trip prep” mode.</p>
-<p><em>“Let’s assume I’m always away. No special planning for remote work anymore. We are integrated thanks to claude.”</em> (airvine, 2026-07-10)</p>
-<div class="section level2">
-<h2 id="why">Why<a class="anchor" aria-label="anchor" href="#why"></a></h2>
-<p>The machines are always online and Claude sessions drive them. Distinguishing “user present” from “user traveling” added planning overhead with no payoff — and operations designed for co-presence silently break the moment the user steps away.</p>
-</div>
-<div class="section level2">
-<h2 id="how-to-apply">How to apply<a class="anchor" aria-label="anchor" href="#how-to-apply"></a></h2>
-<ul><li>
-<strong>Unattended by default:</strong> background loops with server-state prechecks, scheduled probes where recovery detection matters, teed logs committed per the log-tracking convention.</li>
-<li>
-<strong>Survive the laptop lifecycle:</strong> <code>caffeinate -i</code> for long runs — and know its limit: it does not survive lid close. A killed wrapper can orphan child processes that keep working; check <code>pgrep</code> before declaring a run dead, and record enough state (PWF, committed logs) that any interruption is resumable.</li>
-<li>
-<strong>Gates are phone-answerable:</strong> steps that genuinely need the user (QGIS desktop verification, push approvals, content decisions) are explicit checkpoints answerable from a phone — never assumed co-presence, never blocking questions mid-run.</li>
-<li>
-<strong>Every interruption is a resume point:</strong> commit state before long waits; a session death, sleep, or shutdown should cost a re-run at most, never lost context.</li>
-</ul></div>
-</div>
-<div class="section level1">
 <h1 id="cartography">Cartography<a class="anchor" aria-label="anchor" href="#cartography"></a></h1>
 <div class="section level2">
 <h2 id="style-registry">Style Registry<a class="anchor" aria-label="anchor" href="#style-registry"></a></h2>
@@ -456,6 +436,34 @@ registry JSON                 registry list
 <div class="section level2">
 <h2 id="shell-scripts">Shell Scripts<a class="anchor" aria-label="anchor" href="#shell-scripts"></a></h2>
 <div class="section level3">
+<h3 id="a-guard-must-not-fail-toward-skip">A guard must not fail toward “skip”<a class="anchor" aria-label="anchor" href="#a-guard-must-not-fail-toward-skip"></a></h3>
+<ul><li><p>When a check decides whether to do something consequential (cut a tag, send a mail, run a migration), work out which way it fails when the command inside it errors. If the error path and the “nothing to do” path look the same, the guard is indistinguishable from a working one right up until it silently eats the action.</p></li>
+<li>
+<p><code>IF=$(some-cmd ...)</code> inside <code>[ -z "$IF" ]</code> is the usual shape: the command aborts, stdout is empty, and empty reads as “nothing changed”. <strong>Assign first, test the exit status, then test the value.</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="cf">if</span> <span class="va">OUT</span><span class="op">=</span><span class="va">$(</span><span class="fu">git</span> diff <span class="at">--name-only</span> <span class="st">"</span><span class="va">$A</span><span class="st">"</span>..<span class="st">"</span><span class="va">$B</span><span class="st">"</span> <span class="at">--</span> . <span class="st">"</span><span class="va">${EXCL</span><span class="op">[@]</span><span class="va">}</span><span class="st">"</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="va">)</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="bu">[</span> <span class="ot">-z</span> <span class="st">"</span><span class="va">$OUT</span><span class="st">"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">NOTHING_CHANGED</span><span class="op">=</span>1     <span class="co"># only trust emptiness on success</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+</li>
+<li><p>Caught 2026-08-12 in soul’s <code>gh-pr-merge</code> release gate: the diff aborted, the empty output read as “nothing shipped”, and a branch of five commits of real package changes was classified as needing no release.</p></li>
+<li><p><strong>Test a guard against both known answers before shipping it.</strong> One case that should fire and one that should not. The draft above returned the same value for both, which reading the code did not reveal.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="git-pathspec-excludes-use-the-long-form">git pathspec excludes: use the long form<a class="anchor" aria-label="anchor" href="#git-pathspec-excludes-use-the-long-form"></a></h3>
+<ul><li>
+<code>:!path</code> is short-form magic, and git keeps parsing magic characters after the <code>!</code>. A path starting with one aborts the whole command: <code>:!_pkgdown.yml</code> → <code>fatal: Unimplemented pathspec magic '_'</code>.</li>
+<li>Use <code>:(exclude)path</code>. <code>:!./path</code> also works, but the long form says what it means.</li>
+<li>Anything building pathspecs from a file (<code>.Rbuildignore</code>, <code>.gitignore</code>) will eventually meet a leading <code>_</code>, <code>(</code>, or <code>^</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="reading-a-file-line-by-line-drops-the-last-line-without-a-trailing-newline">Reading a file line-by-line drops the last line without a trailing newline<a class="anchor" aria-label="anchor" href="#reading-a-file-line-by-line-drops-the-last-line-without-a-trailing-newline"></a></h3>
+<ul><li>
+<code>while IFS= read -r line; do ...; done &lt; file</code> skips a final line that has no newline after it. Use <code>while IFS= read -r line || [ -n "$line" ]</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="empty-arrays-under-set--u-on-bash-32">Empty arrays under <code>set -u</code> on bash 3.2<a class="anchor" aria-label="anchor" href="#empty-arrays-under-set--u-on-bash-32"></a></h3>
+<ul><li>macOS still ships bash <strong>3.2</strong>, where <code>"${ARR[@]}"</code> on an empty array is an unbound-variable error under <code>set -u</code>. Guard with <code>[ ${#ARR[@]} -gt 0 ]</code> before expanding. Scripts written and tested on Linux bash 5 hit this only on a Mac, and only when the array happens to be empty.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="quoting">Quoting<a class="anchor" aria-label="anchor" href="#quoting"></a></h3>
 <ul><li>Variables in double-quoted strings containing single quotes break if value has <code>'</code>
 </li>
@@ -463,9 +471,32 @@ registry JSON                 registry list
 <code>"echo '${VAR}'"</code> — if VAR contains <code>'</code>, shell syntax breaks</li>
 <li>Use <code>printf '%s\n' "$VAR" | command</code> to pipe values safely</li>
 <li>Heredocs: unquoted <code>&lt;&lt;EOF</code> expands variables locally, <code>&lt;&lt;'EOF'</code> does not — know which you need</li>
+<li>Unquoted heredocs also run <strong>command substitution</strong>: backticks in prose (markdown code spans!) execute and are replaced by their output, usually empty. Writing markdown through an unquoted heredoc silently deletes every <code>`word`</code> in it — no error, and the damage only shows on re-read. Seen 2026-08-06 writing a memory index line: a markdown code span followed by “gone as a concept” landed as “gone as a concept”, subject removed. Any heredoc carrying prose or markdown wants <code>&lt;&lt;'EOF'</code>.</li>
 <li>Pass-through-ssh args: <code>printf '%q'</code> escapes per-arg so workload paths with spaces / quotes / metacharacters survive the local-shell → ssh-argv → remote-shell round-trip. Without it, <code>ssh host 'cmd' "$path"</code> joins args with spaces on remote and re-parses, losing argument boundaries.</li>
 <li>
 <code>git commit -m "$(cat &lt;&lt;'EOF' ... EOF)"</code> chokes on apostrophes in prose bodies in some contexts — the bash parser surfaces an unmatched-quote error even though heredoc bodies should be quote-neutral. Resilient default for multi-line commit messages: write the body to <code>/tmp/msg.txt</code> and use <code>git commit -F /tmp/msg.txt</code>.</li>
+<li>
+<strong>The same trap has a silent variant: <code>Rscript -e</code> / <code>python -c</code> carrying backslash escapes.</strong> The heredoc case above fails loudly, which costs a retry. Passing a regex inline does not: <code>\\b</code> reaches the interpreter mangled, so <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl()</a></code> returns 0 matches against text it matches perfectly from a file. Nothing errors. Seen 2026-07-31 in rfp#93 — the 0 read as “my regex is wrong” and nearly triggered a rewrite of working code; the identical regex scored 4 matches the moment it ran from <code>/tmp/x.R</code>.
+<ul><li>Rule: anything carrying a regex, nested quotes or backslashes gets written to a file and run (<code>Rscript /tmp/x.R</code>). Inline <code>-e</code> is for trivial one-liners only.</li>
+<li>Diagnostic: when an inline command returns a surprising <em>result</em> rather than an error, suspect the quoting layer before the code, and re-run from a file to find out which is wrong. That one step separates a real bug from a shell artifact.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="merging-stderr-into-stdout-corrupts-the-stdout-you-are-parsing">Merging stderr into stdout corrupts the stdout you are parsing<a class="anchor" aria-label="anchor" href="#merging-stderr-into-stdout-corrupts-the-stdout-you-are-parsing"></a></h3>
+<ul><li>
+<p><code>system2(cmd, stdout = TRUE, stderr = TRUE)</code> (and <code>2&gt;&amp;1</code> generally) interleaves the two streams <strong>without respecting line boundaries</strong>, so a write on stderr can land in the middle of a stdout line. If you are parsing that line, it fails — not with a missing value, but with trailing garbage:</p>
+<pre><code>RFPVALUEMAPS {...,"chain":["finder","surveyor's chain"]}QObject::killTimer: Ti
+                                                      ^ parse error here</code></pre>
+</li>
+<li><p><strong>It only shows up on a long line</strong>, which is what makes it a latent trap: the probe worked for a year against a 20-field payload and broke the first time it met a 145-field one. Nothing about the change looks related.</p></li>
+<li>
+<p>Fix: send stderr to a <strong>file</strong>, keep stdout clean, and read the file back only when reporting a failure — so diagnostics are not lost:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">err</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">err</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="va">cmd</span>, <span class="va">args</span>, stdout <span class="op">=</span> <span class="cn">TRUE</span>, stderr <span class="op">=</span> <span class="va">err</span><span class="op">)</span></span>
+<span><span class="co"># ... on failure: paste(utils::tail(readLines(err, warn = FALSE), 30), collapse = "\n")</span></span></code></pre></div>
+</li>
+<li><p>Anything chatty on stderr does this — Qt, GDAL, JVM warnings, progress bars. Suspect it whenever a subprocess parser fails on <em>content</em> rather than on absence.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="heredoc-precedence-in-pipelines">Heredoc precedence in pipelines<a class="anchor" aria-label="anchor" href="#heredoc-precedence-in-pipelines"></a></h3>
@@ -502,6 +533,16 @@ registry JSON                 registry list
 <li>Usage comments should match actual script location</li>
 </ul></div>
 <div class="section level3">
+<h3 id="diagnose-envpath-problems-in-the-shell-that-actually-runs-not-the-ambient-one">Diagnose env/PATH problems in the shell that actually runs, not the ambient one<a class="anchor" aria-label="anchor" href="#diagnose-envpath-problems-in-the-shell-that-actually-runs-not-the-ambient-one"></a></h3>
+<ul><li>Get ground truth <strong>before</strong> forming any theory: <code>env -i HOME=$HOME TERM=$TERM bash -lc 'echo $PATH | tr ":" "\n" | nl'</code> (swap in <code>zsh</code> to check the other side). Numbering shows ordering and duplication in one read.</li>
+<li>
+<strong>Claude Code runs bash regardless of the user’s login shell</strong>, so a PATH measured from an agent shell says nothing about the terminal the user sees. Establish which shell is interactive (<code>echo $0</code>, or the prompt style) before opening any rc file.</li>
+<li>
+<strong>The mutation is usually one level down from the obvious file.</strong> A <code>for file in ~/.{path,exports,aliases,extra}; do source "$file"; done</code> loop in <code>.bash_profile</code> hides real <code>PATH=</code> assignments in files you never opened. Grep every sourced file, not just the rc files.</li>
+<li>Caught 2026-08-19: a 39-entry PATH with 12 duplicates took <strong>three</strong> wrong diagnoses — <code>.zprofile</code> (which did run <code>brew shellenv</code> five times, but the interactive shell was bash, so it was irrelevant), then <code>.bashrc</code> sourcing <code>.bash_profile</code>, then tmux inheriting a stale env. The cause was <code>~/.path</code> hand-prepending what <code>brew shellenv</code> already sets, plus three directories that no longer existed. One <code>env -i</code> run ended it.</li>
+<li>The same mistake closed an infra issue prematurely: MacPorts was removed and verified <strong>in bash</strong>, while <code>.zprofile</code> kept exporting <code>/opt/local/bin</code> on every zsh login for months. Verified in one shell, broken in the one that runs.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="silent-failures">Silent Failures<a class="anchor" aria-label="anchor" href="#silent-failures"></a></h3>
 <ul><li>
 <code>|| true</code> hides real errors — is the failure actually safe to ignore?</li>
@@ -511,13 +552,43 @@ registry JSON                 registry list
 <code>grep</code> returning empty silently — downstream commands get empty input</li>
 </ul></div>
 <div class="section level3">
+<h3 id="cmd--file-truncates-before-cmd-runs--a-failed-command-leaves-a-poisoned-empty-file">
+<code>cmd &gt; file</code> truncates before <code>cmd</code> runs — a failed command leaves a poisoned empty file<a class="anchor" aria-label="anchor" href="#cmd--file-truncates-before-cmd-runs--a-failed-command-leaves-a-poisoned-empty-file"></a></h3>
+<ul><li>The shell creates/truncates the redirect target <strong>before</strong> the command executes. If the command then fails (times out, wrong arg, no network), you’re left with a <strong>zero-byte file</strong> — not the absence of a file. <code>set -euo pipefail</code> does not save you: the truncation already happened before the command’s non-zero exit fires.</li>
+<li>The trap springs on the <em>next</em> run when an <strong>existence-only guard</strong> treats that empty file as valid: <code>[ -f "$f" ] || cmd &gt; "$f"</code> sees the file, skips regeneration forever, and every downstream reader silently consumes an empty value. For a secret/credential cache this reads as a confusing auth failure (empty header → <code>403</code>) with no obvious cause.</li>
+<li>Caught 2026-08 in cyclops#10: <code>op read "op://..." &gt; ~/.config/newgraph/zotero-api-key</code> guarded by <code>[ -f ]</code> — a timed-out 1Password approval would have written an empty file that the guard then blessed permanently.</li>
+<li>Fix — three parts:
+<ol style="list-style-type: decimal"><li>Guard on <strong>non-empty</strong>, not existence: <code>[ -s "$f" ]</code>.</li>
+<li>Write <strong>atomically</strong> so a partial/failed run lands nothing: <code>cmd --out-file "$tmp" &amp;&amp; chmod … &amp;&amp; mv "$tmp" "$f"</code> (or <code>cmd &gt; "$tmp" &amp;&amp; mv</code>), with <code>trap 'rm -f "$tmp"' EXIT</code>.</li>
+<li>Prefer a tool’s own <code>--out-file</code>/<code>-o</code> over <code>&gt;</code> where it exists — the value never transits stdout, so <code>set -x</code>/<code>tee</code>/a pipeline can’t capture it.</li>
+</ol></li>
+</ul></div>
+<div class="section level3">
+<h3 id="empty-is-not-unset--var-passes-a-presence-check-that-unset-fails">Empty is not unset — <code>VAR=</code> passes a presence check that <code>unset</code> fails<a class="anchor" aria-label="anchor" href="#empty-is-not-unset--var-passes-a-presence-check-that-unset-fails"></a></h3>
+<ul><li><p>A command-scoped assignment built from fallbacks, <code>VAR="${A:-${B:-}}" cmd ...</code>, sets <code>VAR</code> to the <strong>empty string</strong> when neither source is set. That is not the same as leaving it unset, and for a tool that branches on <em>presence</em> rather than truthiness it is worse than both.</p></li>
+<li>
+<p>Measured 2026-07-31 (rfp#93): rasterio tests <code>"PROJ_LIB" in os.environ</code> — a membership test an empty string passes — then calls <code>set_proj_data_search_path("")</code>, suppressing its own bundled <code>proj_data</code>:</p>
+<pre><code>PROJ_LIB=   rio warp ... -&gt; Error: Cannot find proj.db
+(unset)     rio warp ... -&gt; EPSG resolves normally</code></pre>
+<p>It surfaced as a missing-dependency error, not a quoting bug, and only on installs whose PROJ layout the caller could not introspect — so the fallback chain looked like the culprit.</p>
+</li>
+<li><p>Same shape wherever presence is the test rather than value: Python <code>os.environ</code>, bash <code>[ -v VAR ]</code>, R <code>Sys.getenv(x, unset = NA)</code>.</p></li>
+<li>
+<p>Fix — build the command as an array, add the assignment only when there is a value:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="va">cmd</span><span class="op">=</span><span class="va">(</span><span class="st">"</span><span class="va">$TOOL</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-n</span> <span class="st">"</span><span class="va">${MY_VAR</span><span class="op">:-</span><span class="va">}</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span> <span class="va">cmd</span><span class="op">=</span><span class="va">(</span>env <span class="st">"REAL_VAR=</span><span class="va">$MY_VAR</span><span class="st">"</span> <span class="st">"</span><span class="va">${cmd</span><span class="op">[@]</span><span class="va">}</span><span class="st">"</span><span class="va">)</span><span class="kw">;</span> <span class="cf">fi</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="st">"</span><span class="va">${cmd</span><span class="op">[@]</span><span class="va">}</span><span class="st">"</span> ...</span></code></pre></div>
+</li>
+<li><p>Do not write <code>[ -n "$X" ] &amp;&amp; arr=(...)</code> as a bare top-level list: under <code>set -e</code> a false test makes the list return non-zero and aborts the script. Use an explicit <code>if</code>.</p></li>
+</ul></div>
+<div class="section level3">
 <h3 id="parallel-writers-sharing-one-output-file-interleave-mid-record">Parallel writers sharing one output file interleave mid-record<a class="anchor" aria-label="anchor" href="#parallel-writers-sharing-one-output-file-interleave-mid-record"></a></h3>
 <ul><li><p><code>xargs -P N ... &gt;&gt; shared_file</code> (or any fan-out where N processes append to the same fd/path) is only safe while each record fits in a single <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code>. O_APPEND makes individual <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code> calls atomic, but a large record (anything beyond pipe/stdio buffer size, ~64 KB) spans multiple writes — concurrent jobs interleave mid-record and corrupt the file.</p></li>
 <li><p>The trap is latent: small records never trip it, so the pattern looks proven until the first large payload arrives. Caught 2026-07-11 in rtj’s <code>stac_register-pypgstac.sh</code> — 20 parallel <code>curl | jq -c</code> jobs appending STAC items to one NDJSON worked for every prior collection (KB-scale items), then 9 MB floodplain items interleaved and produced an orjson decode error ~864 KB into line 1.</p></li>
 <li>
 <p>Fix pattern: each parallel job writes its own temp file (unique name, e.g. md5 of the input), concatenate after the fan-out completes:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">cat</span> urls.txt <span class="kw">|</span> <span class="fu">xargs</span> <span class="at">-P</span> 20 <span class="at">-I</span> {} fetch_one.sh {} <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>   <span class="co"># each writes $OUT_DIR/&lt;md5&gt;.json</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">cat</span> <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>/<span class="pp">*</span>.json <span class="op">&gt;</span> combined.ndjson</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">cat</span> urls.txt <span class="kw">|</span> <span class="fu">xargs</span> <span class="at">-P</span> 20 <span class="at">-I</span> {} fetch_one.sh {} <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>   <span class="co"># each writes $OUT_DIR/&lt;md5&gt;.json</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">cat</span> <span class="st">"</span><span class="va">$OUT_DIR</span><span class="st">"</span>/<span class="pp">*</span>.json <span class="op">&gt;</span> combined.ndjson</span></code></pre></div>
 </li>
 <li><p>Pair with a count guard — parallel <code>curl</code> failures under xargs are also silent: <code>[ "$(wc -l &lt; combined.ndjson)" -eq "$EXPECTED" ] || exit 1</code> before any downstream load.</p></li>
 </ul></div>
@@ -581,11 +652,11 @@ registry JSON                 registry list
 <li><p>Don’t write: <code>- test -s /file || { echo "FATAL: ..." }</code> — the <code>:</code> inside braces makes YAML see a dict.</p></li>
 <li>
 <p>Do write: use <code>- |</code> block scalar with explicit <code>if/then/fi</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="kw">- </span><span class="ch">|</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  if [ ! -s /file ]; then</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>    echo "FATAL: ..." &gt;&amp;2</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    exit 1</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  fi</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="kw">- </span><span class="ch">|</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>  if [ ! -s /file ]; then</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>    echo "FATAL: ..." &gt;&amp;2</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>    exit 1</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  fi</span></code></pre></div>
 </li>
 <li><p>Validate post-edit: <code>python3 -c "import yaml; runcmd=yaml.safe_load(open('cloud-init.yaml').read().split(chr(10),1)[1])['runcmd']; print([type(x).__name__ for x in runcmd if not isinstance(x,str)] or 'all strings')"</code>. If the output is anything other than <code>all strings</code>, the runcmd will fail.</p></li>
 </ul></div>
@@ -614,11 +685,28 @@ registry JSON                 registry list
 <ul><li><p>DO injects <code>ssh_key_ids</code> only into <code>/root/.ssh/authorized_keys</code> (cloud-init’s <code>cc_ssh</code> module). Cloud-init <code>users:</code> block with <code>ssh_authorized_keys: []</code> does NOT pick those up.</p></li>
 <li>
 <p>Non-root users that need SSH access must copy from root’s keys in runcmd:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> mkdir -p /home/&lt;user&gt;/.ssh</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> cp /root/.ssh/authorized_keys /home/&lt;user&gt;/.ssh/authorized_keys</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> chown -R &lt;user&gt;:&lt;user&gt; /home/&lt;user&gt;/.ssh</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> mkdir -p /home/&lt;user&gt;/.ssh</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="kw">-</span><span class="at"> cp /root/.ssh/authorized_keys /home/&lt;user&gt;/.ssh/authorized_keys</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="kw">-</span><span class="at"> chown -R &lt;user&gt;:&lt;user&gt; /home/&lt;user&gt;/.ssh</span></span></code></pre></div>
 </li>
 <li><p>Guard with <code>test -s /root/.ssh/authorized_keys</code> to fail loudly if <code>cc_ssh</code> hasn’t run before runcmd (rare race).</p></li>
+</ul></div>
+</div>
+<div class="section level2">
+<h2 id="spatial-clis-bcdata-ogr-gdal">Spatial CLIs (bcdata, ogr, gdal)<a class="anchor" aria-label="anchor" href="#spatial-clis-bcdata-ogr-gdal"></a></h2>
+<div class="section level3">
+<h3 id="negative-coordinates-get-parsed-as-cli-options--every-bc-bbox-hits-this">Negative coordinates get parsed as CLI options — every BC bbox hits this<a class="anchor" aria-label="anchor" href="#negative-coordinates-get-parsed-as-cli-options--every-bc-bbox-hits-this"></a></h3>
+<ul><li>BC longitudes are all negative, so <code>--bounds -124.73 49.485 -124.595 49.565</code> fails with <code>Error: No such option: -1</code>. The parser sees a leading <code>-</code> and reads it as a flag. Affects click/argparse-based tools generally, not just bcdata.</li>
+<li>Use the <strong>bracketed single-argument form with <code>=</code></strong>: <code>--bounds="[-124.73, 49.485, -124.595, 49.565]"</code>. The <code>=</code> keeps the value attached to the option, and the brackets keep it one token. A bare comma-joined string (<code>--bounds "-124.73,49.485,..."</code>) is not equivalent — it threw an unrelated traceback.</li>
+<li>Same class: any CLI taking negative numbers (elevation offsets, <code>--nodata -9999</code>, buffer distances). Reach for <code>--opt=value</code> by default rather than discovering it per-tool.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bcdata-an-empty-result-raises-attributeerror-it-does-not-return-an-empty-collection">bcdata: an empty result raises AttributeError, it does not return an empty collection<a class="anchor" aria-label="anchor" href="#bcdata-an-empty-result-raises-attributeerror-it-does-not-return-an-empty-collection"></a></h3>
+<ul><li>A bbox query matching nothing exits non-zero with <code>AttributeError: You are calling a geospatial method on the GeoDataFrame, but the active geometry column to use has not been set.</code> — geopandas complaining about an empty frame, several layers below the query.</li>
+<li>The trap: that reads as a broken query, not as “zero features,” so a real and meaningful <strong>absence</strong> looks like tooling failure. Don’t conclude a layer is unavailable from this error.</li>
+<li>
+<strong>Prove absence before acting on it.</strong> Re-run the same query against a wider bbox known to contain features; if that returns rows, the empty result is real data. Caught 2026-08-22 establishing that BC’s FTEN trail layers are genuinely empty over an entire island — the wider-box control returned 851 features, which is what turned “the query is broken” into “the province has no trails here.”</li>
+<li>Wrap counts defensively: <code>try: json.load(...)</code> around the parse, and treat the failure as <code>0 features</code> only after the wider-box control passes.</li>
 </ul></div>
 </div>
 <div class="section level2">
@@ -628,6 +716,13 @@ registry JSON                 registry list
 <ul><li>Parsing <code>tofu state show</code> text output is fragile — use <code>tofu output</code> instead</li>
 <li>Missing outputs that scripts need — add them to main.tf</li>
 <li>Snapshot/image IDs in tfvars after deleting the snapshot — stale reference</li>
+</ul></div>
+<div class="section level3">
+<h3 id="duplicate-module-blocks-across-envs-double-track-global-resources">Duplicate module blocks across envs double-track global resources<a class="anchor" aria-label="anchor" href="#duplicate-module-blocks-across-envs-double-track-global-resources"></a></h3>
+<ul><li>A module instantiated in two env dirs (e.g. <code>module "iam"</code> in both <code>env/prod</code> and <code>env/dev</code>) means account-global resources (IAM users, roles) can be tracked in BOTH local states. Removing the module block from one env turns its state copies into pending DESTROYS — which would delete the real resource out from under the other env.</li>
+<li>Caught 2026-07-18 (rtj#185): <code>env/dev</code> state secretly held <code>role_terraform_awshak</code> — the role every <code>role-assume.sh</code> apply depends on — and a config cleanup turned it into a planned destroy.</li>
+<li>Fix: <code>tofu state rm '&lt;addresses&gt;'</code> in the env relinquishing ownership (no cloud change; auto-backs-up state), leaving exactly one owning env. Verify the resource survives (<code>aws iam get-role ...</code>).</li>
+<li>Review check: any plan that destroys resources in a shared/global-resource module → first confirm which OTHER env states track the same addresses (<code>grep &lt;name&gt; env/*/terraform.tfstate</code> or check the remote backend keys).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="destructive-operations">Destructive Operations<a class="anchor" aria-label="anchor" href="#destructive-operations"></a></h3>
@@ -644,6 +739,12 @@ registry JSON                 registry list
 <li>Caught 2026-05-14 in rtj env/prod for stac-era5-land: bucket fully intact (60 objects, 307 MB) but plan said deleted with 5 child resources “must be replaced.” Apply would have clobbered the policy + lifecycle configs against the still-existing bucket. Recovery via <code>-target</code> on the unrelated resource being added (rtj#157 then codifies <code>lifecycle { prevent_destroy = true }</code> on the bucket + load-bearing children).</li>
 <li>
 <strong>Belt-and-suspenders defense:</strong> add <code>lifecycle { prevent_destroy = true }</code> to high-value resources (S3 buckets, RDS instances, anything irreplaceable) in their module. Tofu will refuse to plan a destroy until the lifecycle line itself is removed in config — converts the failure mode from “apply silently clobbers” into “plan errors with <code>Instance cannot be destroyed</code>.” Don’t apply it to count-based resources where <code>count: 1 → 0</code> is a legitimate transition.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="check-iac-ownership-before-cli-mutating-cloud-config">Check IaC ownership before CLI-mutating cloud config<a class="anchor" aria-label="anchor" href="#check-iac-ownership-before-cli-mutating-cloud-config"></a></h3>
+<ul><li>Before changing bucket policies, lifecycle rules, IAM policies, etc. with the aws CLI, grep the Terraform modules for the resource. If tofu owns it, a CLI change is not “drift” — it is <strong>reverted on the next apply</strong> (silent rule deletion). <code>put-bucket-lifecycle-configuration</code> additionally REPLACES the whole config, so a CLI “add one rule” can also clobber tofu-owned rules immediately.</li>
+<li>Caught 2026-07-18 (water-temp-bc#23): a NoncurrentVersionExpiration rule was one <code>aws s3api put</code> away from being applied — rtj <code>modules/s3</code> owns <code>aws_s3_bucket_lifecycle_configuration</code>, so it would have first clobbered the IA-transition rule, then been reverted. Correct path was a module variable + <code>tofu apply</code> (rtj#187).</li>
+<li>Corollary: when a pipeline’s write pattern evolves (append-only → rewrite-in-place), <strong>re-audit the IAM verbs its role actually needs</strong>. water-temp-bc’s GHA role lacked <code>s3:DeleteObject</code>; the first compaction run half-applied a <code>sync --delete</code> and left the store with duplicate keys until manually repaired (rtj#147 reopened). Check for an existing module toggle first — <code>allow_delete</code> already existed.</li>
 </ul></div>
 </div>
 <div class="section level2">
@@ -673,6 +774,20 @@ registry JSON                 registry list
 <strong>Snapshot-based spins are MORE prone to the race</strong> than first-boot from blank Ubuntu (more startup events compete for the droplet’s event queue).</li>
 <li>
 <strong>Audit existing modules:</strong> <code>grep -L 'time_sleep' env/do/*/&lt;host&gt;/main.tf</code> finds modules missing the gate. As of 2026-05-02, openclaw and geoserv have no <code>time_sleep</code> — they will race eventually.</li>
+<li>
+<strong><code>depends_on</code> alone does not re-create the gate on a replace.</strong> A <code>time_sleep</code> with <code>depends_on</code> but no <code>triggers</code> stays untouched in state when the droplet is replaced (<code>tofu apply -replace=...</code>), so the settle delay silently doesn’t run and the reassignment races anyway. Verified empirically on OpenTofu 1.12.0. A <em>targeted destroy</em> does sweep dependents, so <code>tofu destroy -target=module.droplet</code> + <code>apply</code> is safe while <code>-replace</code> is not. Add <code>triggers = { droplet_id = module.droplet.id }</code> to close it, and prefer targeted destroy in any documented rebuild recipe.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ssh-keys-apply-at-droplet-creation-only--guard-the-forcenew-edit">SSH keys apply at droplet creation only — guard the ForceNew edit<a class="anchor" aria-label="anchor" href="#ssh-keys-apply-at-droplet-creation-only--guard-the-forcenew-edit"></a></h3>
+<ul><li>DO injects <code>ssh_key_ids</code> into <code>/root/.ssh/authorized_keys</code> <strong>once, at first boot</strong> (cloud-init’s <code>cc_ssh</code>) and never revisits the list. A key registered after a droplet was built therefore never reaches it, no matter what tfvars says. Symptom: a machine that reaches freshly-built hosts fine is denied by an older one.</li>
+<li>
+<code>ssh_keys</code> is <strong><code>ForceNew: true</code></strong> in the DO provider (a <code>TypeSet</code>, so reordering is safe). “Just add the key to tfvars” therefore plans a <strong>destroy/recreate of the running host</strong> — and doesn’t even grant the new machine access to the host it destroyed. On a production database or tile server that is a catastrophe dressed as a one-line fix.</li>
+<li>
+<strong>Guard the shared droplet module</strong> with <code>lifecycle { ignore_changes = [ssh_keys] }</code>. It is safe precisely because DO cannot apply the change anyway: the only possible effect of that diff is an unwanted replace. <code>ignore_changes</code> governs updates only — creates and replaces recompute from config, so a deliberate rebuild still picks up the current list.</li>
+<li>Document the tradeoff where operators hit it: after the guard, editing <code>ssh_key_ids</code> produces <strong>no plan diff at all</strong>, and a typo’d key ID surfaces at create rather than at plan.</li>
+<li>To authorize a machine on a running droplet, append its pubkey — with <code>printf '\n%s\n'</code>, never <code>printf '%s\n'</code>. If the remote <code>authorized_keys</code> lacks a trailing newline (common once anyone has appended by hand), a bare append concatenates onto the last line and invalidates <strong>both</strong> keys — locking you out via the procedure meant to prevent lockout. <code>ssh-copy-id</code> handles this correctly.</li>
+<li>Check <em>which</em> file. DO’s injection targets root only. A non-root SSH user has keys only if that env’s cloud-init explicitly copied them at first boot — and that copy is one-time, so appending to root’s file later grants the non-root user nothing.</li>
+<li>Caught in rtj#193: one machine had no path to a production STAC host for months because its key was registered after the droplet was built, and the obvious remediation would have destroyed the host.</li>
 </ul></div>
 </div>
 <div class="section level2">
@@ -702,10 +817,10 @@ registry JSON                 registry list
 <li><p>Caught 2026-05-25 in link#205: a <code>pkill</code>’d <code>wsg_run_one.R</code> left a <code>frs_network_features</code> SELECT running 1h45m; subsequent recomputes wedged on <code>DROP VIEW barriers_bt_access</code> for 1h08m before someone noticed.</p></li>
 <li>
 <p><strong>Always terminate the server-side backend</strong>, not just the client:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="kw">SELECT</span> pid, pg_terminate_backend(pid)</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="kw">FROM</span> pg_stat_activity</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="kw">WHERE</span> datname<span class="op">=</span><span class="st">'&lt;db&gt;'</span> <span class="kw">AND</span> state<span class="op">=</span><span class="st">'active'</span> <span class="kw">AND</span> now()<span class="op">-</span>query_start <span class="op">&gt;</span> <span class="dt">interval</span> <span class="st">'3 minutes'</span></span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="kw">AND</span> pid <span class="op">&lt;&gt;</span> pg_backend_pid();</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="kw">SELECT</span> pid, pg_terminate_backend(pid)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="kw">FROM</span> pg_stat_activity</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="kw">WHERE</span> datname<span class="op">=</span><span class="st">'&lt;db&gt;'</span> <span class="kw">AND</span> state<span class="op">=</span><span class="st">'active'</span> <span class="kw">AND</span> now()<span class="op">-</span>query_start <span class="op">&gt;</span> <span class="dt">interval</span> <span class="st">'3 minutes'</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>  <span class="kw">AND</span> pid <span class="op">&lt;&gt;</span> pg_backend_pid();</span></code></pre></div>
 <p>Then kill the client. Order matters when you don’t know which side will block.</p>
 </li>
 </ul></div>
@@ -777,9 +892,70 @@ registry JSON                 registry list
 <h3 id="gitleaks-pre-commit-hook">Gitleaks pre-commit hook<a class="anchor" aria-label="anchor" href="#gitleaks-pre-commit-hook"></a></h3>
 <p>Configuration patterns and false-positive handling for the <code>gitleaks</code> pre-commit hook (kdot’s Brewfile ships <code>gitleaks</code> + <code>pre-commit</code>; cyclops standardizes the hook): - <strong><code>.gitleaks.toml</code> schema in v8.30+</strong>: top-level table is <code>[[allowlists]]</code> (PLURAL, array of tables). Each entry MUST include at least one of <code>commits</code> / <code>paths</code> / <code>regexes</code> / <code>stopwords</code>. The singular <code>[allowlist]</code> and <code>fingerprints = [...]</code> forms shown in older docs fail to validate. Use <code>paths</code> + <code>regexes</code> together for targeted file-and-content allowlists. Example in <code>soul/.gitleaks.toml</code>. - <strong>PEM marker regex spans multi-line</strong>: gitleaks’s <code>private-key</code> rule is <code>(?i)-----BEGIN...PRIVATE KEY-----[\s\S]*-----END...-----</code>. It matches across comment prefixes, blank lines, and code-fence boundaries. <strong>Commenting out the markers does NOT neutralize the match.</strong> Only fix in content is to omit the literal <code>-----BEGIN/END...-----</code> strings entirely and replace with prose (“Paste your private key here, preserving headers” etc.). See the <code>rtj</code> cypher <code>tfvars.example</code> precedent. - <strong><code>curl-auth-header</code> rule false-positives on non-auth headers</strong>: matches any <code>-H "X: Y"</code> shape, not just credential-bearing headers. Trips on docs with custom CORS or app-specific headers (e.g. <code>Zotero-Allowed-Request: true</code>). Fix: targeted <code>[[allowlists]]</code> with <code>paths</code> + <code>regexes</code>. Don’t path-allowlist the whole file unless content is entirely safe. - <strong><code>pre-commit install</code> legacy-hook handling</strong>: running <code>pre-commit install</code> on a repo with an existing <code>.git/hooks/pre-commit</code> renames it to <code>.legacy</code> and keeps invoking it after framework hooks. No breakage, but means hook surface is split between <code>.pre-commit-config.yaml</code> and <code>.git/hooks/pre-commit.legacy</code>. For full visibility, migrate the legacy check into <code>.pre-commit-config.yaml</code> as a <code>local</code> hook so the whole hook surface is declared in one place. - <strong>AWS canonical example keys are allowlisted by default</strong> (<code>AKIAIOSFODNN7EXAMPLE</code> etc.) — don’t use those in test fixtures expecting a block. Use <code>ghp_</code>-shape PAT lookalikes or other non-allowlisted patterns for hook-trigger tests.</p>
 </div>
+<div class="section level3">
+<h3 id="public-bucket--listable-getobject-vs-listbucket">“Public bucket” ≠ listable: GetObject vs ListBucket<a class="anchor" aria-label="anchor" href="#public-bucket--listable-getobject-vs-listbucket"></a></h3>
+<ul><li>A bucket policy granting only <code>s3:GetObject</code> on <code>bucket/*</code> makes exact-key fetches public but NOT listing — and dataset discovery (<code>arrow::open_dataset()</code>, duckdb globs, STAC <code>/vsicurl/</code> directory reads) requires <code>s3:ListBucket</code> on the <strong>bucket ARN</strong> (no <code>/*</code>; it’s a bucket-level action).</li>
+<li>The breakage hides: anyone with ANY ambient AWS credentials lists fine, so “anonymous access works” goes unverified for years. Caught 2026-07-18 (water-temp-bc#23 → rtj#187): anonymous <code>open_dataset()</code> had never worked on a bucket whose whole purpose was credential-less querying.</li>
+<li>Review checks: for an open-data bucket, the policy needs BOTH statements (GetObject on <code>bucket/*</code>, ListBucket on <code>bucket</code>); acceptance-test anonymous access from a credential-stripped environment (<code>env -u AWS_ACCESS_KEY_ID ... AWS_CONFIG_FILE=/dev/null</code>). Note ListBucket makes the full key listing publicly enumerable — intended for open data, wrong for mixed-content buckets.</li>
+</ul></div>
 </div>
 <div class="section level2">
 <h2 id="r--package-installation">R / Package Installation<a class="anchor" aria-label="anchor" href="#r--package-installation"></a></h2>
+<div class="section level3">
+<h3 id="glue-trims-common-leading-whitespace">
+<code>glue()</code> trims common leading whitespace<a class="anchor" aria-label="anchor" href="#glue-trims-common-leading-whitespace"></a></h3>
+<ul><li>
+<code><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue::glue()</a></code> strips the common indentation of its input, so a template whose output must preserve exact indentation (XML, YAML, Makefiles, Python) comes out subtly wrong — valid-looking, wrongly indented.</li>
+<li>For those blocks use a raw string with a <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub()</a></code> placeholder instead of a glue template. Seen in rfp’s QML form builder, where the photo widget’s XML indentation has to survive verbatim.</li>
+<li>Related, and the opposite mistake: glue does <strong>not</strong> re-parse interpolated values, so literal <code>{...}</code> inside a <em>value</em> is safe. Don’t rewrite a working generator to escape braces that were never a problem — probe it first.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="onexit-at-a-scripts-top-level-never-fires">
+<code>on.exit()</code> at a script’s top level never fires<a class="anchor" aria-label="anchor" href="#onexit-at-a-scripts-top-level-never-fires"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code> registers a handler on the <em>current frame</em>. At the top level of a file run with <code>Rscript</code>, that frame is the global environment, which never exits — so the handler is registered and then simply never called.</li>
+<li>It looks correct, and it is correct inside a function. The failure is silent and, when the thing being cleaned up lives outside the repo, invisible to <code>git status</code>: rfp accumulated six staging directories in <code>$HOME</code> before anyone noticed, from two different scripts that both looked right.</li>
+<li>Use <code>withr::defer(cleanup, envir = globalenv())</code>, which registers a finalizer that runs at session end. It prints <code>Ran 1/1 deferred expressions</code> — that line in script output is the confirmation it worked, not noise.</li>
+<li>Probe rather than assume when checking this: a cleanup target inside <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> is removed by R’s own session cleanup regardless, so testing there reports success for both the working and broken versions.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a-data-raw-script-must-load-the-source-tree-not-the-installed-package">A <code>data-raw/</code> script must load the source tree, not the installed package<a class="anchor" aria-label="anchor" href="#a-data-raw-script-must-load-the-source-tree-not-the-installed-package"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace("pkg")</a></code> succeeds whenever <strong>any</strong> version is installed, so a guard shaped like <code>if (!requireNamespace("pkg")) pkgload::load_all()</code> silently runs against the installed one. A generation script operates on the source tree by definition; reading a different copy of the package to do it is the bug.</li>
+<li>The gap is routinely enormous and nobody notices, because nothing errors. Measured in rfp: the installed package was <strong>sixteen releases behind</strong> the working branch, with a lookup table missing a whole row and an internal constant missing three entries.</li>
+<li>It fails quietly in both directions. One script iterated the stale lookup and <strong>skipped an item entirely</strong>, reporting 11 where the source had 12. Another generated two committed artifacts through a stale scan; those artifacts turned out byte-identical when regenerated correctly, but only because the input data happened not to exercise the missing entries — the same accident that let the original bug ship.</li>
+<li>Fix: <code>pkgload::load_all(quiet = TRUE)</code> <strong>unconditionally</strong>, and call functions unqualified. <code>pkg::</code> and <code>pkg:::</code> in a <code>data-raw/</code> script reach the installed namespace and defeat the point.</li>
+<li>Check for it by asserting a count the script should cover: <code>nrow(registry)</code> against items processed. A silent skip is invisible otherwise.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="lintr-also-resolves-against-the-installed-package-not-the-source-tree">
+<code>lintr</code> also resolves against the installed package, not the source tree<a class="anchor" aria-label="anchor" href="#lintr-also-resolves-against-the-installed-package-not-the-source-tree"></a></h3>
+<ul><li><p>The same installed-vs-source trap as the <code>data-raw</code> case above, in a tool where it reads as a code defect rather than a stale dependency. <code>object_usage_linter</code> resolves a package-level object through the installed namespace, so <strong>every internal constant added on the current branch</strong> is reported as <code>no visible binding for global variable</code>.</p></li>
+<li>
+<p>It is convincing because the surrounding constants resolve fine — they are in the installed copy. Confirm before “fixing” anything:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists</a></span><span class="op">(</span><span class="st">".my_new_constant"</span>, <span class="fu"><a href="https://rdrr.io/r/base/ns-internal.html" class="external-link">asNamespace</a></span><span class="op">(</span><span class="st">"pkg"</span><span class="op">)</span><span class="op">)</span>   <span class="co"># FALSE  -&gt; lint artifact</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists</a></span><span class="op">(</span><span class="st">".an_old_constant"</span>, <span class="fu"><a href="https://rdrr.io/r/base/ns-internal.html" class="external-link">asNamespace</a></span><span class="op">(</span><span class="st">"pkg"</span><span class="op">)</span><span class="op">)</span>   <span class="co"># TRUE</span></span></code></pre></div>
+<p>If the new one is absent from the installed namespace and the old one is present, the warning clears on reinstall and there is nothing to change.</p>
+</li>
+<li><p>Corollary for reading a lint report at all: <strong>compare against the baseline before treating a count as signal.</strong> Lint the file as it stands at <code>HEAD</code> (<code>git show HEAD:R/f.R &gt; /tmp/f.R</code>) and diff the counts by linter. A file that already carried 26 lints in the repo’s prevailing style is not a file your change made worse.</p></li>
+<li><p>And check whether the repo has a <code>.lintr</code> at all. Without one, <code>lint_package()</code> runs the strict defaults, which disagree with tidyverse continuation-indent style on essentially every wrapped call — hundreds of hits that are house style, not defects.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="regenerated-binaries-churn-git-even-when-nothing-changed">Regenerated binaries churn git even when nothing changed<a class="anchor" aria-label="anchor" href="#regenerated-binaries-churn-git-even-when-nothing-changed"></a></h3>
+<ul><li>Formats that embed a creation timestamp or other run-varying metadata produce a different file on every rebuild. An unconditional write then puts a binary diff in every commit, and a real change becomes invisible among the noise.</li>
+<li>GeoPackage is the live case: <code>gpkg_contents.last_change</code> made a ~100 KB file churn on each rebuild of an unchanged form.</li>
+<li>
+<strong>Write to a temp file, compare the things that actually matter, replace only on a real difference.</strong> Choose the comparison deliberately — for a GPKG that is <code>PRAGMA table_info</code> <strong>plus</strong> geometry type <strong>plus</strong> CRS, because CRS lives outside the column list and comparing columns alone silently keeps a stale projection. Then a file appearing in the diff means something genuinely changed.</li>
+<li>Text artifacts that are byte-stable can just be rewritten every time; the guard is only worth it where the format is not.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a-drift-guard-must-cover-every-input-it-claims-to">A drift guard must cover every input it claims to<a class="anchor" aria-label="anchor" href="#a-drift-guard-must-cover-every-input-it-claims-to"></a></h3>
+<ul><li>Guards that assert “nothing has been added without a decision” are only worth their maintenance if they walk <strong>all</strong> the inputs. One that checks a subset gives the same green signal while the uncovered part drifts freely.</li>
+<li>Enumerate the source of truth programmatically rather than listing what you remember: walk the registry / schema / directory, diff it against the declared set, and fail on anything in neither “handled” nor “deliberately ignored”.</li>
+<li>Require a <strong>reason</strong> on every ignored entry. An ignored item without one is a backlog note pretending to be a decision, and it gets re-litigated at every review.</li>
+<li>Then prove the alarm can fire: feed it a deliberately undeclared input and assert it is reported. A guard nobody has seen fail is decoration.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="pak-behavior">pak Behavior<a class="anchor" aria-label="anchor" href="#pak-behavior"></a></h3>
 <ul><li>pak stops on first unresolvable package — all subsequent packages are skipped</li>
@@ -790,6 +966,31 @@ registry JSON                 registry list
 <h3 id="reproducibility">Reproducibility<a class="anchor" aria-label="anchor" href="#reproducibility"></a></h3>
 <ul><li>Branch pins (<code>pkg@branch</code>) are not reproducible — document why used</li>
 <li>Pinned download URLs (RStudio .deb) go stale — document where to update</li>
+</ul></div>
+<div class="section level3">
+<h3 id="r-cmd-build-ships-every-top-level-directory-not-in-rbuildignore">
+<code>R CMD build</code> ships every top-level directory not in <code>.Rbuildignore</code>
+<a class="anchor" aria-label="anchor" href="#r-cmd-build-ships-every-top-level-directory-not-in-rbuildignore"></a></h3>
+<ul><li><p>Internal coordination directories — <code>comms/</code>, <code>research/</code>, <code>planning/</code>, <code>dev/</code> — land in the tarball and therefore in the library of anyone installing from GitHub. <code>R CMD check</code> only flags this as a NOTE (“Non-standard files/directories found at top level”), which is easy to scroll past among the notes you have decided to live with.</p></li>
+<li><p><code>.gitignore</code> does <strong>not</strong> cover this. A locally-gitignored file (e.g. <code>.aider.chat.history.md</code>) is still picked up by <code>R CMD build</code>.</p></li>
+<li><p>The gap appears over time rather than at scaffold: found 2026-07-31 in rfp, where <code>planning</code>, <code>.claude</code>, <code>CLAUDE.md</code> and <code>dev</code> were all excluded but <code>comms</code> and <code>research</code> — added later — were not. 10 files of cross-repo coordination notes were shipping.</p></li>
+<li><p>This matters most for the three-layer repo split (see <code>newgraph.md</code>): <code>comms/</code> is internal-by-definition, so a public-flipped package that ships it leaks exactly what the flip was meant to purge.</p></li>
+<li>
+<p>Audit every R repo at once:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="cf">for</span> d <span class="kw">in</span> ~/Projects/repo/<span class="pp">*</span>/<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="bu">[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$d</span><span class="st">/DESCRIPTION"</span> <span class="bu">]</span> <span class="kw">||</span> <span class="cf">continue</span></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>  <span class="cf">for</span> sub <span class="kw">in</span> comms research planning dev<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-d</span> <span class="st">"</span><span class="va">$d</span><span class="st">/</span><span class="va">$sub</span><span class="st">"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-qE</span> <span class="st">"^\^</span><span class="va">${sub}</span><span class="dt">\\\$</span><span class="st">"</span> <span class="st">"</span><span class="va">$d</span><span class="st">/.Rbuildignore"</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>      <span class="bu">echo</span> <span class="st">"</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">"</span><span class="va">$d</span><span class="st">"</span><span class="va">)</span><span class="st"> ships </span><span class="va">$sub</span><span class="st">/"</span></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="cf">done</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<p>Run 2026-07-31: 20 hits across 16 repos. <code>comms/</code> in <code>link</code>, <code>fish_passage_template_reporting</code>, <code>neexdzii_kwa_benthic_2025</code>; <code>research/</code> in <code>link</code>; the rest <code>planning/</code> or <code>dev/</code>.</p>
+</li>
+<li>
+<p>Verify a fix against the tarball, not the config — the <code>.Rbuildignore</code> regex is easy to get subtly wrong:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="ex">R</span> CMD build . <span class="op">&gt;</span>/dev/null <span class="kw">&amp;&amp;</span> <span class="fu">tar</span> tzf pkg_<span class="pp">*</span>.tar.gz <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-c</span> <span class="st">'^pkg/comms/'</span>   <span class="co"># expect 0</span></span></code></pre></div>
+</li>
 </ul></div>
 <div class="section level3">
 <h3 id="base-name-shadowing-in-formal-args">Base name shadowing in formal args<a class="anchor" aria-label="anchor" href="#base-name-shadowing-in-formal-args"></a></h3>
@@ -830,9 +1031,61 @@ registry JSON                 registry list
 <h3 id="sf-name-validation-must-account-for-the-geometry-column">sf: name validation must account for the geometry column<a class="anchor" aria-label="anchor" href="#sf-name-validation-must-account-for-the-geometry-column"></a></h3>
 <ul><li>The active geometry column is a named entry in <code>names(x)</code>, but its name is <strong>not fixed</strong> — <code>"geometry"</code> from <code><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">sf::st_read()</a></code> of some sources, <code>"geom"</code> from a GeoPackage/PostGIS layer, <code>"geometry"</code> or <code>"_ogr_geometry_"</code> elsewhere. Code that validates user-supplied column names with <code>cols %in% names(x)</code> will happily accept the geometry column, then break downstream (<code>st_join</code> drops <code>y</code>’s geometry, so a requested “attribute” column silently never appears; a 0-row short-circuit path may instead attach a stray empty sfc). A same-name collision check across two sf objects also misses this when the two layers name their geometry differently. Guard explicitly with <code>attr(x, "sf_column")</code> — reject it from the caller-supplied column set. (drift#42)</li>
 </ul></div>
+<div class="section level3">
+<h3 id="sf-reproject-the-polygon-to-get-a-latlon-bbox-never-transform-the-projected-bbox-corners">sf: reproject the polygon to get a lat/lon bbox, never transform the projected bbox corners<a class="anchor" aria-label="anchor" href="#sf-reproject-the-polygon-to-get-a-latlon-bbox-never-transform-the-projected-bbox-corners"></a></h3>
+<ul><li>To hand a geographic (EPSG:4326) bounding box to a bbox-filtered query (WFS/OGC features, <code>?bbox=</code>), reproject the whole AOI <strong>geometry</strong> then take its bbox: <code>sf::st_bbox(sf::st_transform(aoi, 4326))</code>. Do <strong>not</strong> compute the bbox in the projected CRS and transform its two corner points — a projected rectangle’s edges bow under reprojection, so the corner-transformed box is skewed and generally too short on one axis. The pre-filter then silently under-covers the true extent: features inside the AOI but outside the shrunken box are never fetched, and a downstream clip can only <em>remove</em>, never recover them. Symptom: counts a few percent low near the north/south extremes of an area, with no error. A native-CRS bbox filter (e.g. ogr2ogr <code>-spat &lt;bounds&gt; -spat_srs EPSG:3005</code>) is unaffected — only the reproject-the-corners step is the bug. (rfp#12)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="arrow-dplyr-backend-no-grouped-slice--bridge-to-duckdb">arrow dplyr backend: no grouped slice — bridge to duckdb<a class="anchor" aria-label="anchor" href="#arrow-dplyr-backend-no-grouped-slice--bridge-to-duckdb"></a></h3>
+<ul><li>arrow’s dplyr backend errors on grouped <code>slice_max</code>/<code>slice_min</code> (<code>arrow_not_supported("Slicing grouped data")</code>). The working pattern for any “latest per group” over parquet/S3: <code>arrow::open_dataset(...) |&gt; dplyr::filter(...) |&gt; arrow::to_duckdb() |&gt; dplyr::group_by(...) |&gt; dplyr::slice_max(...)</code>.</li>
+<li>The <code>to_duckdb()</code> bridge is also a return-type contract: helpers that return the lazy query should keep the bridge even when they no longer need it internally, or downstream callers using grouped verbs break. (water-temp-bc#17, #23)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="asposixctdate-silently-ignores-tz">as.POSIXct.Date silently ignores tz=<a class="anchor" aria-label="anchor" href="#asposixctdate-silently-ignores-tz"></a></h3>
+<ul><li>
+<code>as.POSIXct(x, tz = "UTC")</code> on a <code>Date</code> ignores <code>tz</code> and converts in the system local zone — west of UTC this shifts date boundaries by the local offset and silently drops edge data. Force UTC via <code>as.POSIXct(format(x), tz = "UTC")</code> when accepting Date inputs; widen Date upper bounds to <code>&lt; next-day-midnight</code> so the whole calendar day is included. (water-temp-bc#17)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="open_datasetunify_schemas--true-requires-aligned-types">open_dataset(unify_schemas = TRUE) requires aligned types<a class="anchor" aria-label="anchor" href="#open_datasetunify_schemas--true-requires-aligned-types"></a></h3>
+<ul><li>Cross-prefix/file schema unification only merges what types allow: <code>timestamp[us, tz=UTC]</code> will not merge with naked <code>timestamp[us]</code>, <code>Grade: string</code> not with <code>Grade: double</code>. Audit the schemas of every file group BEFORE promising unified reads over a mixed archive; plan a normalization pass otherwise. (water-temp-bc#17)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="duckdb-larger-than-memory-dedup-shard-the-work--settings-wont-save-you">duckdb larger-than-memory dedup: shard the work — settings won’t save you<a class="anchor" aria-label="anchor" href="#duckdb-larger-than-memory-dedup-shard-the-work--settings-wont-save-you"></a></h3>
+<ul><li>duckdb’s <strong>window operator</strong> (QUALIFY row_number …) does not spill enough to survive big partitions (OOM’d an 8 GB limit on a ~124M-row input). The <strong>arg_max/struct-payload hash aggregate</strong> cannot spill its state either (observed OOM with an empty temp dir). <code>preserve_insertion_order = false</code> and fewer threads help but do not fix it.</li>
+<li>
+<strong>In-memory duckdb connections never offload to disk at all</strong> — <code>SET temp_directory</code> on <code>dbConnect(duckdb())</code> is a no-op for operator spill. File-backed (<code>dbdir = &lt;file&gt;</code>) is required for any spilling.</li>
+<li>The structure that works at any scale: <strong>hash-shard by a column inside the group key</strong> (e.g. <code>hash(STATION_NUMBER) % K = k</code>, K = <code>ceiling(input_rows / shard_rows)</code>), one aggregation pass per shard, each writing its own ordered output file. A key never crosses shards, so dedup stays exact; memory scales 1/K. Extra passes cost scan time only — per-pass aggregate state is what OOMs, so when in doubt shard smaller. (water-temp-bc#23)</li>
+<li>
+<strong>Local runs at the same duckdb <code>memory_limit</code>/<code>threads</code> do NOT validate a constrained runner.</strong> 10M-row shards passed a Mac at the exact 4 GB / 2-thread settings but OOM’d the real 7 GB GHA runner (partition 46 squeaked through in 94s, 47 died 15s in) — abundant physical RAM masks how tight duckdb’s accounting runs at its internal limit. Only the real runner is the real test; size shards with margin (water-temp-bc ships 6M), and treat a near-timeout/near-limit pass as a failure to fix, not a pass. (water-temp-bc#23 run 29675228557, fixed in PR #25)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="nzcharna-is-true--non-empty-checks-silently-pass-na">
+<code>nzchar(NA)</code> is TRUE — non-empty checks silently pass NA<a class="anchor" aria-label="anchor" href="#nzcharna-is-true--non-empty-checks-silently-pass-na"></a></h3>
+<ul><li>
+<code>nzchar(NA)</code> returns <code>TRUE</code>, so the natural “is this cell filled in” test — <code>all(nzchar(trimws(x)))</code> — waves through a column full of <code>NA</code>. <code>trimws(NA)</code> is <code>NA</code>, and <code><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar()</a></code> of that is <code>TRUE</code> unless you pass <code>keepNA = TRUE</code>.</li>
+<li>Use an explicit guard: <code>filled &lt;- function(x) !is.na(x) &amp; nzchar(trimws(x))</code>. Same trap in reverse for <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv()</a></code>, which yields <code>""</code> for an empty field but <code>NA</code> for a literal <code>NA</code> — so a file can fail one check and pass the other for the same visual blank.</li>
+<li>Bites hardest in validators, where the whole point is catching a half-authored row. (link#233, 2026-08: a dictionary contract test asserting every row carried a description would have passed on an entirely NA column.)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="test-fixtures-must-mirror-production-column-types-not-just-shapes">Test fixtures must mirror production column TYPES, not just shapes<a class="anchor" aria-label="anchor" href="#test-fixtures-must-mirror-production-column-types-not-just-shapes"></a></h3>
+<ul><li>A fixture-green suite can hide type bugs that only real data exposes: water-temp-bc#23’s fixtures had <code>Grade</code> as string when production has double, so a <code>coalesce(Grade, '')</code> sentinel inside the dedup ordering passed all 27 tests and broke on first contact with real data.</li>
+<li>When writing fixtures for a pipeline over an existing dataset, print the real schema (<code>arrow::open_dataset(...)$schema</code>) and copy the types verbatim. Any type-sensitive expression (coalesce sentinels, casts, comparisons) is only tested if the fixture types match.</li>
+</ul></div>
 </div>
 <div class="section level2">
 <h2 id="general">General<a class="anchor" aria-label="anchor" href="#general"></a></h2>
+<div class="section level3">
+<h3 id="two-agent-sessions-must-not-share-one-git-working-tree--give-each-a-worktree">Two agent sessions must not share one git working tree — give each a worktree<a class="anchor" aria-label="anchor" href="#two-agent-sessions-must-not-share-one-git-working-tree--give-each-a-worktree"></a></h3>
+<ul><li><p>A git working tree has exactly <strong>one</strong> checked-out branch. When two concurrent Claude sessions operate in the same directory, either can <code>git checkout</code> out from under the other <strong>mid-edit</strong>. The victim’s uncommitted work stays on disk but is now sitting on the <em>other</em> session’s branch — so a later <code>git add</code>/<code>commit</code> silently lands it on the wrong branch, and a <code>--delete-branch</code> merge can strand it entirely.</p></li>
+<li><p>Symptoms: an <code>Edit</code> fails with “File does not exist” for a file you just wrote (their branch doesn’t have it); <code>git branch --show-current</code> returns a branch you never created; your new files show as untracked on someone else’s feature branch; <code>planning/active/</code> suddenly empty.</p></li>
+<li><p>Caught three times in one session (2026-07, floodplains): twice mid-implementation, and once while running a <code>--public-clean</code> scrub — the scrub committed to a parallel session’s feature branch instead of <code>main</code>, which would have flipped the repo public with an <strong>un-scrubbed <code>main</code></strong>. That third one is the dangerous class: the safety work (<code>.claude/visibility</code>, stripped internal conventions) sat on a branch nobody was about to merge.</p></li>
+<li><p><strong>Prevention:</strong> one worktree per session — <code>git worktree add ../&lt;repo&gt;-&lt;task&gt; -b &lt;branch&gt;</code>. Each session gets its own directory and its own checked-out branch; no contention.</p></li>
+<li>
+<p><strong>Detection (cheap; do it before any commit, merge, or visibility flip):</strong> assert the branch is what you think it is, not just that the tree is clean.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="bu">[</span> <span class="st">"</span><span class="va">$(</span><span class="fu">git</span> branch <span class="at">--show-current</span><span class="va">)</span><span class="st">"</span> <span class="ot">=</span> <span class="st">"</span><span class="va">$EXPECTED_BRANCH</span><span class="st">"</span> <span class="bu">]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"WRONG BRANCH"</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span></code></pre></div>
+</li>
+<li><p><strong>Recovery:</strong> back up the touched files first (<code>cp</code> to a scratch dir, <code>git diff &gt; x.diff</code>), confirm the other branch’s changes don’t overlap yours (<code>git diff --name-only main..their-branch</code>), then <code>git checkout &lt;your-branch&gt;</code> — uncommitted changes carry across cleanly when there is no overlap. Commit <strong>and push</strong> immediately; an unpushed branch is what gets stranded. If you already committed onto their branch, restore their pointer with <code>git branch -f &lt;their-branch&gt; &lt;their-last-sha&gt;</code> (your commit stays reachable via reflog).</p></li>
+</ul></div>
 <div class="section level3">
 <h3 id="adopting-existing-config">Adopting Existing Config<a class="anchor" aria-label="anchor" href="#adopting-existing-config"></a></h3>
 <p>When importing config from one location into a canonical one (legacy <code>~/.bash_profile</code> → dotfiles repo, old script’s env → repo, another project’s <code>settings.json</code> → soul):</p>
@@ -850,6 +1103,36 @@ registry JSON                 registry list
 <li>Testing only on a host where the artifact already exists hits <strong>only the warm no-op</strong> — which cannot catch any cold-path bug: missing-directory, a derivation that returns empty, a pipefail abort before the write, wrong permissions, a flush that never runs. The warm path’s job is literally to do nothing, so a green warm test proves almost nothing about onboarding.</li>
 <li>Every fresh host runs the <strong>cold</strong> path — that’s the one onboarding depends on. Test it deliberately: back up + remove the artifact, run cold, assert it was created correctly, then re-run to confirm the warm no-op. (Caught 2026-06-23 on rtj#75: the resolver-writer’s first test plan only ran the warm path on a host that already had <code>/etc/resolver/&lt;suffix&gt;</code>; a Plan-agent review flagged that the cold path — the one every new host takes — was untested. Fixed by <code>sudo rm</code>-ing the file and running cold before close.)</li>
 <li>Generalizes beyond shell: any “ensure X exists / converge to desired state” operation — Terraform resources, migrations, package installs — wants the from-absent path tested, not just the already-converged re-run.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a-round-trip-through-your-own-reader-proves-nothing-about-interop">A round-trip through your own reader proves nothing about interop<a class="anchor" aria-label="anchor" href="#a-round-trip-through-your-own-reader-proves-nothing-about-interop"></a></h3>
+<ul><li>When code writes a format some <strong>other</strong> program consumes — a database table, a config file, an export another tool imports — a test that writes then reads it back with your own reader validates only that you are self-consistent. It cannot detect that the real consumer rejects what you wrote.</li>
+<li>Symptom when wrong: every test green, the artifact byte-perfect on inspection, and the feature silently does nothing in production. Failures on the consumer’s side are often <strong>silent by design</strong> — a lookup that matches nothing returns “no result”, not an error.</li>
+<li>Get the real consumer into the loop, even if awkward: run it in a container, shell out to its CLI, gate the test on the tool being installed and skip otherwise. Then keep a cheap structural assertion alongside for CI, so the invariant is still guarded when the heavy test skips.</li>
+<li>Best ground truth is <strong>the consumer’s own output</strong>: have it write the artifact once, then diff yours against it. That surfaces required fields no documentation mentions.</li>
+<li>(rfp#17, 2026-08: <code>layer_styles</code> rows were written with <code>f_table_schema</code> NULL. QGIS looks a style up with an equality match passing <code>""</code>, and <code>NULL = ''</code> is never true in SQL, so every row was invisible — <code>loadDefaultStyle()</code> returned FALSE, layers drew with default symbols, nothing logged. The rows round-tripped perfectly through DBI, so the whole suite was green. Found only by asking QGIS in a container, then bisecting against a row QGIS wrote itself.)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="mocking-the-transport-means-the-request-is-never-built">Mocking the transport means the request is never built<a class="anchor" aria-label="anchor" href="#mocking-the-transport-means-the-request-is-never-built"></a></h3>
+<ul><li>A network client mocked at its HTTP boundary — <code>local_mocked_bindings(.do_http = ...)</code>, <code>responses</code>, <code>nock</code>, a stubbed <code>fetch</code> — gives excellent coverage of <em>response</em> handling and <strong>zero</strong> coverage of the request. Status codes, retries, backoff, parse errors, partial bodies: all testable. Method, headers, content type, and body encoding: never exercised, because no test that stubs the transport constructs one.</li>
+<li>The gap is invisible in the usual way. The suite is green, the code reads correctly, and the first real call fails with a status that looks like the <em>server’s</em> problem — a 400 or a 406 reads as a bad query or a rate limit long before it reads as “we sent the wrong content type”.</li>
+<li>Sibling of the interop rule above, one level lower: that one is about what a consumer reads from your artifact, this one is about whether the request ever reaches the consumer at all.</li>
+<li>Fix pattern: make the wire format a <strong>pure function</strong> and assert it offline — <code>build_body(query)</code> returning a string, tested for its prefix, for a round-trip back through the decoder to the original input, and for no unescaped metacharacters surviving. Cheap, no network, and it guards the exact thing the mocks cannot.</li>
+<li>Verify the real encoding once against the live service and record the result, because the wrong choice is often the more obvious-looking API. (rfp#168, 2026-08: <code><a href="https://jeroen.r-universe.dev/curl/reference/handle.html" class="external-link">curl::handle_setform()</a></code> reads like the way to send a form and sends <code>multipart/form-data</code>; the Overpass API answered <strong>400</strong> on every endpoint, having answered <strong>406</strong> to a raw body. Only <code>data=</code> url-encoded via <code>postfields</code> returns <strong>200</strong>. 130 tests passed while this was broken, and more of the same kind would not have helped.)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="a-fixture-set-that-cannot-reach-the-failure-mode-is-not-validation">A fixture set that cannot reach the failure mode is not validation<a class="anchor" aria-label="anchor" href="#a-fixture-set-that-cannot-reach-the-failure-mode-is-not-validation"></a></h3>
+<ul><li>Hand-picked fixtures test the cases you thought of. If every one of them is structurally incapable of triggering the bug class you are fixing, a green run means nothing — and it is <em>more</em> dangerous than no test, because it licenses the claim “validated”.</li>
+<li>Before declaring a fix verified, ask what the fixtures have in common and whether that shared property is the very thing the bug depends on. If it is, the set has a hole no amount of additions to it will close.</li>
+<li>Prefer a <strong>global structural invariant</strong> over more examples. Properties like antisymmetry, transitivity, “every node reaches a terminal”, or a conservation total sweep the whole domain and cannot be gamed by fixture choice.</li>
+<li>(link#227 / fresh#214, 2026-08: a watershed drainage-closure fix was declared validated on 8 hydrology fixtures. All 8 compared groups with <em>differing</em> stream codes — the bug only manifests between groups sharing one code, so the set could not have caught it. The very next case tried, the Fraser, dropped the group the entire basin drains through. What actually earned the claim was a transitivity sweep: 0 violations across 3,537 triples, plus 0 cycles and every group reaching an outlet.)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="canonicalize-serialized-documents-before-diffing-them">Canonicalize serialized documents before diffing them<a class="anchor" aria-label="anchor" href="#canonicalize-serialized-documents-before-diffing-them"></a></h3>
+<ul><li>XML and JSON emitters are free to vary attribute order, whitespace, and regenerated ids without changing meaning. Comparing two such documents raw reports differences that are not differences — and the noise scales with document size, so it looks like a real signal.</li>
+<li>Normalize first: C14N for XML (<code>ET.canonicalize(strip_text=True)</code> sorts attributes), key-sorted dumps for JSON, and mask any regenerated identifiers (uuids, timestamps, generator version stamps).</li>
+<li>Then narrow the mask deliberately. Every field you normalize away is a field the comparison can no longer catch, so name each one and why — a mask that quietly grows turns a drift guard into decoration.</li>
+<li>(rfp#17, 2026-08: comparing two QGIS templates raw said 5 of 43 shared layers still matched, which read as severe drift and argued for restructuring how styles were stored. Canonicalized — attributes sorted, symbol uuids masked — it was <strong>46 of 47</strong>. The templates had not drifted at all; the difference was attribute order between two QGIS builds. The naive number nearly bought an architecture change nobody needed.)</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-staleness">Documentation Staleness<a class="anchor" aria-label="anchor" href="#documentation-staleness"></a></h3>
@@ -942,207 +1225,104 @@ registry JSON                 registry list
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]</code></pre>
 <p>Strong success criteria let you loop independently. Weak criteria (“make it work”) require constant clarification.</p>
+</div>
+<div class="section level2">
+<h2 id="id_5-subagents-are-evidence-not-dependencies">5. Subagents Are Evidence, Not Dependencies<a class="anchor" aria-label="anchor" href="#id_5-subagents-are-evidence-not-dependencies"></a></h2>
+<p><strong>Don’t block on one. Don’t trust its status. Verify its claims in both directions.</strong></p>
+<div class="section level3">
+<h3 id="dont-block">Don’t block<a class="anchor" aria-label="anchor" href="#dont-block"></a></h3>
+<p>Spawn a background subagent, then keep working on the lowest-risk part of the task — scaffolding, data files, tests. When findings arrive, treat them as a review of landed work rather than a precondition for starting it.</p>
+<p>If a result genuinely must precede the next step, run it synchronously (<code>run_in_background: false</code>) so the blocking is explicit and visible.</p>
+<p>Three observed cases where waiting would have been the expensive choice:</p>
+<ul><li>A research agent spawned 5 children and deadlocked for <strong>~3 hours</strong>, still reporting as “running”. The user caught it, not the agent.</li>
+<li>A <code>Plan</code> agent asked to review a <code>task_plan.md</code> <em>before the baseline commit</em> returned after the issue was implemented, reviewed, merged and tagged.</li>
+<li>The same pattern on a later issue: findings arrived after all four phases had shipped. Because the work had not waited, this cost nothing — three findings were still new and landed as follow-up commits.</li>
+</ul><p>That last one is the shape to aim for. Concurrent review is not a degraded version of blocking review; it is often better, because the reviewer reads real code instead of a plan.</p>
+</div>
+<div class="section level3">
+<h3 id="dont-trust-status">Don’t trust status<a class="anchor" aria-label="anchor" href="#dont-trust-status"></a></h3>
+<p><strong>Never report an agent as “still running” without evidence.</strong> Agent status and <code>TaskList</code> have both been observed to be wrong — <code>TaskList</code> reported “No tasks found” for an agent that was alive and later replied. Check the output file’s mtime before claiming progress, and say what you checked.</p>
+</div>
+<div class="section level3">
+<h3 id="verify-claims-in-both-directions">Verify claims, in both directions<a class="anchor" aria-label="anchor" href="#verify-claims-in-both-directions"></a></h3>
+<p>Subagent output is evidence, not verdict. Both failure modes are real:</p>
+<ul><li>
+<strong>Acting on a wrong finding.</strong> One labelled BLOCKER — “<code>glue()</code> will choke on the literal braces in this fragment” — was disproved by a 30-second probe, because glue does not re-parse interpolated values. Acting on it would have meant rewriting a working generator.</li>
+<li>
+<strong>Dismissing a late review wholesale.</strong> In that same review 2 of 9 findings were real, including a dead link. In a later one, a finding that a <code>path|layername=</code> check would delete KML/GPX layers was correct, and was confirmed against 207 real datasources before the fix landed.</li>
+</ul><p>The rule that separates them: <strong>cheap probe first, then act.</strong> Reproduce the claim before you fix it, and before you dismiss it. A finding you cannot reproduce is a finding you do not yet understand.</p>
 <p><strong>These guidelines are working if:</strong> fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.</p>
 </div>
 </div>
+</div>
 <div class="section level1">
-<h1 id="new-graph-environment-conventions">New Graph Environment Conventions<a class="anchor" aria-label="anchor" href="#new-graph-environment-conventions"></a></h1>
-<p>Core patterns for professional, efficient workflows across New Graph Environment repositories.</p>
+<h1 id="pkgdown-publishing">pkgdown Publishing<a class="anchor" aria-label="anchor" href="#pkgdown-publishing"></a></h1>
+<p>What a pkgdown deploy puts on the public internet, and the two ways that has already gone wrong.</p>
 <div class="section level2">
-<h2 id="ecosystem-overview">Ecosystem Overview<a class="anchor" aria-label="anchor" href="#ecosystem-overview"></a></h2>
-<p>Six repos form the governance and operations layer across all New Graph Environment work:</p>
-<table class="table"><colgroup><col width="25%"><col width="37%"><col width="37%"></colgroup><thead><tr><th>Repo</th>
-<th>Purpose</th>
-<th>Analogy</th>
-</tr></thead><tbody><tr><td><a href="https://github.com/NewGraphEnvironment/compass" class="external-link">compass</a></td>
-<td>Ethics, values, guiding principles</td>
-<td>The “why”</td>
-</tr><tr><td><a href="https://github.com/NewGraphEnvironment/soul" class="external-link">soul</a></td>
-<td>Standards, skills, conventions for LLM agents</td>
-<td>The “how”</td>
-</tr><tr><td><a href="https://github.com/NewGraphEnvironment/compost" class="external-link">compost</a></td>
-<td>Communications templates, email workflows, contact management</td>
-<td>The “who”</td>
-</tr><tr><td>
-<a href="https://github.com/NewGraphEnvironment/rtj" class="external-link">rtj</a> (formerly awshak)</td>
-<td>Infrastructure as Code, deployment</td>
-<td>The “where”</td>
-</tr><tr><td><a href="https://github.com/NewGraphEnvironment/gq" class="external-link">gq</a></td>
-<td>Cartographic style management across QGIS, tmap, leaflet, web</td>
-<td>The “look”</td>
-</tr><tr><td><a href="https://github.com/NewGraphEnvironment/crate" class="external-link">crate</a></td>
-<td>Data governance: canonical schemas, data dictionary, QC rules (scoping; normalization functions are Year 2+)</td>
-<td>The “what”</td>
-</tr></tbody></table><p><strong>Adaptive management:</strong> Conventions evolve from real project work, not theory. When a pattern is learned or refined during project work, propagate it back to soul so all projects benefit. The <code>/claude-md-init</code> skill builds each project’s <code>CLAUDE.md</code> from soul conventions.</p>
-<p><strong>Cross-references:</strong> <a href="https://github.com/NewGraphEnvironment/sred" class="external-link">sred</a> tracks R&amp;D activities across repos. Compost is the centralized communications workflow — all email drafts, contact registry, and external outreach are authored there, not in individual project repos.</p>
-</div>
-<div class="section level2">
-<h2 id="three-layer-repo-architecture">Three-Layer Repo Architecture<a class="anchor" aria-label="anchor" href="#three-layer-repo-architecture"></a></h2>
-<p>Repos live in one of three layers, distinguished by audience and what context they carry:</p>
-<table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>Layer</th>
-<th>Role</th>
-<th>Examples</th>
-</tr></thead><tbody><tr><td><strong>Public — tools</strong></td>
-<td>Atomic, reusable, no NGE-specific context</td>
-<td>R packages (<code>mc</code>, <code>crate</code>, <code>fresh</code>, <code>drift</code>, <code>flooded</code>, <code>gq</code>, <code>link</code>), <code>bcfishpass</code>, <code>fwapg</code>, STAC catalogs, post-publication reports</td>
-</tr><tr><td><strong>Private — coordination</strong></td>
-<td>How tools compose into NGE workflows. The competitive moat.</td>
-<td>
-<code>compost</code> (uses <code>mc</code>), <code>rfp</code> (uses <code>fresh</code>/<code>link</code>/etc.), <code>rtj</code> (uses <code>crate</code>, deploys), <code>fish_passage_template_reporting</code>, all proposals (never public)</td>
-</tr><tr><td><strong>Private — governance</strong></td>
-<td>Strategy, values, conventions, R&amp;D</td>
-<td>
-<code>soul</code>, <code>logic</code>, <code>compass</code>, <code>sred</code>
-</td>
-</tr></tbody></table><p><strong>Rule:</strong> tools don’t know about each other or about NGE. Coordination repos know how to use tools. <code>mc/CLAUDE.md</code> does not know <code>compost</code> exists; <code>compost/CLAUDE.md</code> knows “for email use <code>mc</code>.”</p>
-<p><strong>Publication flip:</strong> when a private repo flips public (e.g., <code>crate</code> once <code>link</code> requires it; reports on publication), three things happen in the same commit: removed from comms peer list, <code>comms/</code> directory purged, <code>CLAUDE.md</code> scrubbed to public-safe form. Use <code>/claude-md-init --public-clean</code> for the scrub.</p>
-<p><strong>Per-repo classification</strong> is recorded in <code>.claude/visibility</code> (one line: <code>public</code> or <code>internal</code>; default <code>internal</code> if missing). Soul conventions carry <code>visibility:</code> frontmatter (<code>public-safe</code> or <code>internal</code>); <code>/claude-md-init</code> filter skips internal-only conventions when repo is marked public.</p>
-<p>Strategic call recorded in <code>logic/comms/soul/20260428_public_vs_internal_repo_architecture.md</code>.</p>
-</div>
-<div class="section level2">
-<h2 id="issue-workflow">Issue Workflow<a class="anchor" aria-label="anchor" href="#issue-workflow"></a></h2>
+<h2 id="a-pkgdown-site-publishes-every-root-level-markdown-file">A pkgdown site publishes every root-level markdown file<a class="anchor" aria-label="anchor" href="#a-pkgdown-site-publishes-every-root-level-markdown-file"></a></h2>
+<p><code>pkgdown:::package_mds()</code> renders <strong>every</strong> <code>.md</code> in the package root except a hardcoded allowlist — <code>README</code>, <code>LICENSE</code>, <code>NEWS</code>, and two GitHub templates. There is <strong>no config option to exclude a file</strong>.</p>
+<p>So <code>CLAUDE.md</code> gets published. So would <code>INTERNAL.md</code>, <code>NOTES.md</code>, or a PWF <code>task_plan.md</code> left at the root.</p>
+<p><strong>Repo visibility does not protect you.</strong> GitHub Pages serves publicly regardless of whether the repo is private, and there is no private Pages mode below Enterprise Cloud. A private repo with a pkgdown deploy has public docs.</p>
+<p>Measured 2026-08-23: <code>CLAUDE.html</code> was live on six NGE sites. On <code>rfp</code> and <code>gq</code> — both private repos, so their <code>CLAUDE.md</code> legitimately carried the internal-only conventions — that put the SR&amp;ED section on the public web: claim structure, field code, fiscal year, and the consultant by name.</p>
+<p>The visibility filter was working correctly the whole time. It rests on an assumption pkgdown breaks: that a private repo’s <code>CLAUDE.md</code> stays private.</p>
 <div class="section level3">
-<h3 id="before-creating-an-issue-non-negotiable">Before Creating an Issue (non-negotiable)<a class="anchor" aria-label="anchor" href="#before-creating-an-issue-non-negotiable"></a></h3>
+<h3 id="remove-it-before-the-build-not-after">Remove it before the build, not after<a class="anchor" aria-label="anchor" href="#remove-it-before-the-build-not-after"></a></h3>
+<p>There are three copies, not one:</p>
+<table class="table"><thead><tr><th>file</th>
+<th>what it is</th>
+</tr></thead><tbody><tr><td><code>CLAUDE.html</code></td>
+<td>the rendered page</td>
+</tr><tr><td><code>CLAUDE.md</code></td>
+<td>a <strong>verbatim copy of the source</strong>, served as-is</td>
+</tr><tr><td><code>search.json</code></td>
+<td>the full-text index, containing the text</td>
+</tr></tbody></table><p>Deleting <code>docs/CLAUDE.html</code> after the build leaves the other two. It looks like a fix and achieves nothing. Remove the file from the CI checkout <strong>before</strong> <code>build_site()</code> runs:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Keep internal notes out of the published site</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="at">  </span><span class="fu">run</span><span class="kw">:</span><span class="at"> rm -f CLAUDE.md</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="gate-on-a-declared-allowlist">Gate on a declared allowlist<a class="anchor" aria-label="anchor" href="#gate-on-a-declared-allowlist"></a></h3>
+<p>Each repo states which extra root pages it <em>intends</em> to publish. Anything else fails the build, so a new root markdown file cannot leak silently:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Fail if an unexpected page reached the site</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="fu">  run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>    allowed="404 authors index LICENSE LICENSE-text"   # + declared extras</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>    ...</span></code></pre></div>
+<p>Add to <code>allowed</code> only after deciding the page should be public. <code>link</code> publishes <code>NOTICE</code> and <code>RUNBOOK</code> deliberately — it is a public repo and both are genuine documentation. That is the decision the allowlist is meant to record.</p>
+<p>Test the gate against <strong>both</strong> known answers before shipping it: it must exit non-zero on a site that does contain the file, and zero on one that does not. A guard that only ever returns one value is indistinguishable from a broken one.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="deploy-with-clean-true">Deploy with <code>clean: true</code>
+<a class="anchor" aria-label="anchor" href="#deploy-with-clean-true"></a></h2>
+<p><code>JamesIves/github-pages-deploy-action</code> defaults matter here. With <code>clean: false</code>, the action <strong>never deletes</strong> — every file ever deployed stays on <code>gh-pages</code> forever, whether or not the source still produces it.</p>
+<p>Two consequences, both observed:</p>
+<ul><li>Removing a file from the repo does <strong>not</strong> unpublish it. Measured on <code>gq</code>: <code>task_plan.html</code>, <code>progress.html</code> and <code>findings.html</code> were still returning 200 long after the PWF documents had been moved out of the root.</li>
+<li>A leak cannot be fixed by fixing the build. The stale copies need a separate explicit purge, which is a step people forget.</li>
+</ul><p><code>clean: true</code> makes the deployed site equal to what the build produced, so removing a file from source removes it from the web on the next deploy. That is the property you want, and it makes the site auditable.</p>
+<div class="section level3">
+<h3 id="check-before-flipping-it">Check before flipping it<a class="anchor" aria-label="anchor" href="#check-before-flipping-it"></a></h3>
+<p><code>clean: true</code> deletes anything on <code>gh-pages</code> not present in <code>docs/</code>. Confirm none of these exist first:</p>
+<ul><li>
+<strong><code>CNAME</code></strong> — a custom domain file would be deleted and the domain would break. (NGE repos have none; the domain comes from the org site repo, and project sites inherit it as subpaths.)</li>
+<li>
+<strong><code>dev/</code></strong> — versioned docs from <code>development: mode: devel</code>, if the deploying build is not the dev one.</li>
+<li>
+<strong>hand-added assets</strong> not produced by the build. Favicons and web manifests under <code>pkgdown/favicon/</code> <em>are</em> produced by the build and are safe.</li>
+</ul><p>Use <code>clean-exclude</code> for anything that must survive.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="ex">gh</span> api <span class="st">"repos/OWNER/REPO/contents?ref=gh-pages"</span> <span class="at">--jq</span> <span class="st">'.[] | "\(.type) \(.name)"'</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="removing-something-already-published">Removing something already published<a class="anchor" aria-label="anchor" href="#removing-something-already-published"></a></h2>
 <ol style="list-style-type: decimal"><li>
-<strong>Check for duplicates:</strong> <code>gh issue list --state open --search "&lt;keywords&gt;"</code> – search before creating</li>
+<strong>Stop generating it</strong> — the pre-build removal above.</li>
 <li>
-<strong>One issue, one concern.</strong> Keep focused.</li>
-</ol><p>SRED cross-refs go in <strong>PR bodies only</strong> (via <code>/gh-pr-push</code>), not in issues or commits. PRs aggregate commits and are the merge unit; per-issue and per-commit SRED tags add noise without adding traceability.</p>
-</div>
-<div class="section level3">
-<h3 id="professional-issue-writing">Professional Issue Writing<a class="anchor" aria-label="anchor" href="#professional-issue-writing"></a></h3>
-<p>Write issues with clear technical focus:</p>
-<ul><li>
-<strong>Use normal technical language</strong> in titles and descriptions</li>
+<strong>Remove the deployed copy</strong> — automatic once <code>clean: true</code> is in; otherwise an explicit purge.</li>
 <li>
-<strong>Focus on the problem and solution</strong> approach</li>
-<li>
-<strong>Add tracking links at the end</strong> (e.g., <code>Relates to Owner/repo#N</code>)</li>
-</ul><div class="section level4">
-<h4 id="client-aware-tone">Client-aware tone<a class="anchor" aria-label="anchor" href="#client-aware-tone"></a></h4>
-<p>Issues, PR descriptions, and commit messages are client-visible deliverables, not internal notes.</p>
-<p>Avoid in these artifacts: - Framing work as unsolicited or unpaid (“not assigned by a client”) - Self-justifying adjectives (“defensible”, “rigorous”) — show, don’t claim - Internal workflow meta (PWF refs, SRED xrefs, planning context) - Performative effort language (“attempts were unsuccessful”) — state factual current state</p>
-<p><strong>Integrity-preserving ≠ self-effacing.</strong> Factual, not performatively humble.</p>
-<p><strong>Scope:</strong> repo artifacts (issues, PRs, commits, reports). Does not apply to internal planning docs, CLAUDE.md, or chat.</p>
-<p><strong>Issue body structure:</strong></p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">## Problem</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>&lt;what's wrong or missing&gt;</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="fu">## Proposed Solution</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">approach</span><span class="dt">&gt;</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>Relates to #<span class="dt">&lt;</span><span class="kw">local</span><span class="dt">&gt;</span></span></code></pre></div>
+<strong>De-index</strong> — a Search Console removal request per property, <em>after</em> the URL 404s.</li>
+</ol><p>Do <strong>not</strong> add a <code>robots.txt</code> block first. Blocking crawl prevents crawlers from seeing the 404, which keeps stale search entries alive longer than doing nothing.</p>
+<p><code>gh-pages</code> history is not a problem the way normal git history is: on a private repo the branch is not publicly browsable, and only the currently-served content is public. Deleting the file genuinely ends the exposure — no history rewriting.</p>
 </div>
-<div class="section level4">
-<h4 id="infrastructure-references">Infrastructure references<a class="anchor" aria-label="anchor" href="#infrastructure-references"></a></h4>
-<p>Use <strong>tailnet hostnames</strong> (<code>cypher</code>, <code>m1</code>, <code>openclaw</code>) in issue and PR bodies, not public IPs. Within NGE infrastructure, those hostnames are how scripts and operators address machines anyway; the public IP is an implementation detail that belongs in gitignored <code>*.tfvars</code> and the Tailscale admin panel.</p>
-<p>Public IPs in issues are appropriate only when the IP itself is the subject — reserved-IP migrations, DNS records, firewall rules that key on a specific IP. For everything else, use a placeholder like <code>&lt;cypher_public_ip&gt;</code> if the shape of the value matters at all.</p>
-<p>Aggregation is the risk: any single IP in a private repo is fine, but issue bodies tend to collect IP + hostname + service description + access path into a coherent attack-surface map. Tailnet hostnames keep the map terse.</p>
-</div>
-</div>
-<div class="section level3">
-<h3 id="github-issue-creation---always-use-files">GitHub Issue Creation - Always Use Files<a class="anchor" aria-label="anchor" href="#github-issue-creation---always-use-files"></a></h3>
-<p>The <code>gh issue create</code> command with heredoc syntax fails repeatedly with EOF errors. ALWAYS use <code>--body-file</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> /tmp/issue_body.md <span class="op">&lt;&lt; 'EOF'</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="st">## Problem</span></span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="st">...</span></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a></span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="st">## Proposed Solution</span></span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="st">...</span></span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="op">EOF</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="ex">gh</span> issue create <span class="at">--title</span> <span class="st">"Brief technical title"</span> <span class="at">--body-file</span> /tmp/issue_body.md</span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="closing-issues">Closing Issues<a class="anchor" aria-label="anchor" href="#closing-issues"></a></h2>
-<p><strong>DO:</strong> Close issues via commit messages. The commit IS the closure and the documentation.</p>
-<pre><code>Fix broken DEM path in loading pipeline
-
-Update hardcoded path to use config-driven resolution.
-
-Fixes #20
-Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
-<p><strong>DON’T:</strong> Close issues with <code>gh issue close</code>. This breaks the audit trail — there’s no linked diff showing what changed.</p>
-<ul><li>
-<code>Fixes #N</code> or <code>Closes #N</code> — auto-closes and links the commit to the issue</li>
-<li>
-<code>Relates to #N</code> — partial progress, does not close</li>
-<li>Always close issues when work is complete. Don’t leave stale open issues.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="commit-quality">Commit Quality<a class="anchor" aria-label="anchor" href="#commit-quality"></a></h2>
-<p>Write clear, informative commit messages:</p>
-<pre><code>Brief description (50 chars or less)
-
-Detailed explanation of changes and impact.
-
-Fixes #&lt;issue&gt; (or Relates to #&lt;issue&gt;)
-
-Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
-<p><strong>When to commit:</strong> - Logical, atomic units of work - Working state (tests pass) - Clear description of changes</p>
-<p><strong>What to avoid:</strong> - “WIP” or “temp” commits in main branch - Combining unrelated changes - Vague messages like “fixes” or “updates”</p>
-</div>
-<div class="section level2">
-<h2 id="llm-agent-conventions">LLM Agent Conventions<a class="anchor" aria-label="anchor" href="#llm-agent-conventions"></a></h2>
-<p>Rules learned from real project sessions. These apply across all repos.</p>
-<ul><li>
-<strong>Install missing packages, don’t workaround</strong> — if a package is needed, ask the user to install it (e.g. <code>pak::pak("pkg")</code>). Don’t write degraded fallback code to avoid the dependency.</li>
-<li>
-<strong>Never hardcode extractable data</strong> — if coordinates, station names, or metadata can be pulled from an API or database at runtime, do that. Don’t hardcode values that have a programmatic source.</li>
-<li>
-<strong>Close issues via commits, not <code>gh issue close</code></strong> — see Closing Issues above.</li>
-<li>
-<strong>Cite primary sources</strong> — see references conventions.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="naming-conventions">Naming Conventions<a class="anchor" aria-label="anchor" href="#naming-conventions"></a></h2>
-<p><strong>Pattern: <code>noun_verb-detail</code></strong> – noun first, verb second across all naming:</p>
-<table class="table"><thead><tr><th>What</th>
-<th>Example</th>
-</tr></thead><tbody><tr><td>Skills</td>
-<td>
-<code>claude-md-init</code>, <code>gh-issue-create</code>, <code>planning-update</code>
-</td>
-</tr><tr><td>Scripts</td>
-<td>
-<code>stac_register-baseline.sh</code>, <code>stac_register-pypgstac.sh</code>
-</td>
-</tr><tr><td>Logs</td>
-<td><code>20260209_stac_register-baseline_stac-dem-bc.txt</code></td>
-</tr><tr><td>Log format</td>
-<td><code>yyyymmdd_noun_verb-detail_target.ext</code></td>
-</tr></tbody></table><p>Scripts and logs live together: <code>scripts/&lt;module&gt;/logs/</code></p>
-<div class="section level3">
-<h3 id="which-logs-to-commit">Which logs to commit<a class="anchor" aria-label="anchor" href="#which-logs-to-commit"></a></h3>
-<p>Logs are R&amp;D evidence — but only the curated ones. Distinguish two classes:</p>
-<ul><li>
-<strong>Evidence logs</strong> (commit): the dated, conventionally-named runs at the top of a <code>logs/</code> dir (<code>yyyymmdd_noun_verb-detail_target.ext</code>). One benchmark/timing/run log per intentional run. These are committed to the <strong>default branch</strong> — git gives free versioning and commit-provenance (the log sits next to the change that produced it), and committed logs are discoverable cross-machine via the GitHub API without cloning.</li>
-<li>
-<strong>Bulk run-output</strong> (gitignore): archives, per-shard/per-watershed dumps, aborted/offline reruns, and other machine-generated iteration output. Put these under a gitignored subdir (e.g. <code>logs/runs/</code>, <code>logs/archive/</code>) so they never bloat the repo.</li>
-</ul><p>Rules of thumb: if you’d hand it to an auditor as proof of an experiment, commit it. If it’s hundreds of files a pipeline emitted, gitignore it. Don’t reach for S3 for text logs — git is the right home; external object storage only earns its place for large binaries. Logs that aren’t committed to the default branch are invisible to other machines and to evidence tooling — so commit evidence logs <strong>before</strong> moving machines, or it’s stranded.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="projects-vs-milestones">Projects vs Milestones<a class="anchor" aria-label="anchor" href="#projects-vs-milestones"></a></h2>
-<ul><li>
-<strong>Projects</strong> = daily cross-repo tracking (always add to relevant project)</li>
-<li>
-<strong>Milestones</strong> = iteration boundaries (only for release/claim prep)</li>
-<li>Don’t double-track unless there’s a reason</li>
-</ul><table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Content</th>
-<th>Project</th>
-</tr></thead><tbody><tr><td>R&amp;D, experiments, SRED-related</td>
-<td><strong>SRED R&amp;D Tracking (#8)</strong></td>
-</tr><tr><td>Data storage, sqlite, postgres, pipelines</td>
-<td><strong>Data Architecture (#9)</strong></td>
-</tr><tr><td>Fish passage field/reporting</td>
-<td><strong>Fish Passage 2025 (#6)</strong></td>
-</tr><tr><td>Restoration planning</td>
-<td><strong>Aquatic Restoration Planning (#5)</strong></td>
-</tr><tr><td>QGIS, Mergin, field forms</td>
-<td><strong>Collaborative GIS (#3)</strong></td>
-</tr></tbody></table></div>
 </div>
 <div class="section level1">
 <h1 id="planning-conventions">Planning Conventions<a class="anchor" aria-label="anchor" href="#planning-conventions"></a></h1>
@@ -1154,10 +1334,9 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 </div>
 <div class="section level2">
 <h2 id="the-workflow">The Workflow<a class="anchor" aria-label="anchor" href="#the-workflow"></a></h2>
-<ol style="list-style-type: decimal"><li>
-<strong>Explore first</strong> — Enter plan mode (read-only). Read code, trace paths, understand the problem before proposing anything.</li>
+<ol style="list-style-type: decimal"><li><p><strong>Explore first</strong> — Enter plan mode (read-only). Read code, trace paths, understand the problem before proposing anything. When the work codifies a pattern that already exists in multiple places (reference implementations across repos), read <strong>every</strong> reference in full, not just the canonical one — variation across references surfaces patches before v0.1 instead of as churn later (soul#52: reading all 4 references preempted 5 of the 7 fixes a dry-run would have found). Don’t substitute Explore-agent summaries for direct reads; agents sometimes report existing files as absent.</p></li>
 <li>
-<strong>Plan to files</strong> — Write the plan into 3 files in <code>planning/active/</code>:
+<p><strong>Plan to files</strong> — Write the plan into 3 files in <code>planning/active/</code>:</p>
 <ul><li>
 <code>task_plan.md</code> — Phases with checkbox tasks</li>
 <li>
@@ -1166,15 +1345,15 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <code>progress.md</code> — Session log with timestamps and commit refs</li>
 </ul></li>
 <li>
-<strong>Plan-review with the Plan agent before committing the plan</strong> — After scaffolding <code>task_plan.md</code> but BEFORE the baseline commit, spawn the Plan subagent (<code>Agent({subagent_type: "Plan", prompt: "..."}</code>) and ask it to critically review the task_plan against the issue body + actual codebase. Categorize findings as Blocker / Gap / Ordering / Assumption / Scope / Acceptance. Address each before committing. The agent reads files fresh — it catches what you miss when you’ve been thinking about the design too long. Real example: caught 21 issues including hardcoded literals across 4 files not listed in the plan, untested DB column mismatches, unfixable test-literal-string assertions, and a baseline-cache-shadow that would have produced a 6-second no-op run. Cost: ~5 min agent. Saves: hours of mid-implementation rework.</li>
-<li>
-<strong>Commit the plan</strong> — After Plan-agent review + fixes. This is the baseline.</li>
-<li>
-<strong>Work in atomic commits</strong> — Each commit bundles code changes WITH checkbox updates in the planning files. The diff shows both what was done and the checkbox marking it done.</li>
-<li>
-<strong>Code check before commit</strong> — Run <code>/code-check</code> on staged diffs before committing. Don’t mark a task done until the diff passes review.</li>
-<li>
-<strong>Archive when complete</strong> — Move <code>planning/active/</code> to <code>planning/archive/</code> via <code>/planning-archive</code>. Write a README.md in the archive directory with a one-paragraph outcome summary and closing commit/PR ref — future sessions scan these to catch up fast.</li>
+<p><strong>Plan-review with the Plan agent — concurrently, not as a gate</strong> — Once <code>task_plan.md</code> is scaffolded, spawn the Plan subagent (<code>Agent({subagent_type: "Plan", prompt: "..."}</code>) and ask it to critically review the task_plan against the issue body + actual codebase. Categorize findings as Blocker / Gap / Ordering / Assumption / Scope / Acceptance. The agent reads files fresh — it catches what you miss when you’ve been thinking about the design too long. Real example: caught 21 issues including hardcoded literals across 4 files not listed in the plan, untested DB column mismatches, and a baseline-cache-shadow that would have produced a 6-second no-op run.</p>
+<p><strong>Do not wait for it.</strong> Spawn, then start the lowest-risk phase. Background agents have repeatedly returned late — in one case after the entire issue had shipped — so treating the review as a precondition stalls the work for as long as the agent takes (see <code>karpathy.md</code> §5). Fold findings in whenever they land: pre-baseline they edit the plan; mid-implementation they become follow-up commits. A review that arrives after the code is written is not wasted — the reviewer reads real code instead of a plan, which is how one late review still contributed three fixes that no earlier reading had found. If you genuinely cannot proceed without the result, run it with <code>run_in_background: false</code> so the blocking is explicit.</p>
+<p>Verify before acting, in both directions. Findings have been confidently wrong (a “BLOCKER” disproved by a 30-second probe) and confidently right about things nobody suspected. Reproduce the claim first.</p>
+</li>
+<li><p><strong>Lock naming before the baseline</strong> — If naming feedback surfaces during planning (legacy filename, inconsistency with an existing file family), fold the rename into the convention + task_plan BEFORE the baseline commit, not as a follow-up. Pre-baseline it’s free; retrofitting after implementation cascades (soul#52: <code>build_exec_pdf.R</code> → <code>run_pagedown_exec_summary.R</code> locked in pre-baseline meant zero downstream rework).</p></li>
+<li><p><strong>Commit the plan</strong> — After Plan-agent review + fixes. This is the baseline.</p></li>
+<li><p><strong>Work in atomic commits</strong> — Each commit bundles code changes WITH checkbox updates in the planning files. The diff shows both what was done and the checkbox marking it done.</p></li>
+<li><p><strong>Code check before commit</strong> — Run <code>/code-check</code> on staged diffs before committing. Don’t mark a task done until the diff passes review.</p></li>
+<li><p><strong>Archive when complete</strong> — Move <code>planning/active/</code> to <code>planning/archive/</code> via <code>/planning-archive</code>. Write a README.md in the archive directory with a one-paragraph outcome summary and closing commit/PR ref — future sessions scan these to catch up fast.</p></li>
 </ol></div>
 <div class="section level2">
 <h2 id="atomic-commits-critical">Atomic Commits (Critical)<a class="anchor" aria-label="anchor" href="#atomic-commits-critical"></a></h2>
@@ -1186,33 +1365,33 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <div class="section level3">
 <h3 id="task_planmd">task_plan.md<a class="anchor" aria-label="anchor" href="#task_planmd"></a></h3>
 <p>Phases with checkboxes. This is the core tracking file.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu"># Task Plan</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">## Phase 1: [Name]</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Another task</span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="fu">## Phase 2: [Name]</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu"># Task Plan</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="fu">## Phase 1: [Name]</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Another task</span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a><span class="fu">## Phase 2: [Name]</span></span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Task description</span></code></pre></div>
 <p>Mark tasks done as they’re completed: <code>- [x] Task description</code></p>
 </div>
 <div class="section level3">
 <h3 id="findingsmd">findings.md<a class="anchor" aria-label="anchor" href="#findingsmd"></a></h3>
 <p>Append-only research log. Discoveries, technical analysis, things learned.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu"># Findings</span></span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">## [Topic]</span></span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">[</span><span class="ot">What was found, with source/date</span><span class="co">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu"># Findings</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a><span class="fu">## [Topic]</span></span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a><span class="co">[</span><span class="ot">What was found, with source/date</span><span class="co">]</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="progressmd">progress.md<a class="anchor" aria-label="anchor" href="#progressmd"></a></h3>
 <p>Session entries with commit references.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu"># Progress</span></span>
-<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">## Session YYYY-MM-DD</span></span>
-<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="ss">- </span>Completed: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span>
-<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="ss">- </span>Commits: <span class="co">[</span><span class="ot">refs</span><span class="co">]</span></span>
-<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="ss">- </span>Next: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu"># Progress</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a><span class="fu">## Session YYYY-MM-DD</span></span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="ss">- </span>Completed: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a><span class="ss">- </span>Commits: <span class="co">[</span><span class="ot">refs</span><span class="co">]</span></span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a><span class="ss">- </span>Next: <span class="co">[</span><span class="ot">items</span><span class="co">]</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1244,10 +1423,11 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <ul><li><p>tidyverse style guide: snake_case, pipe operators (<code>|&gt;</code> or <code>%&gt;%</code>)</p></li>
 <li><p>Match existing patterns in each codebase</p></li>
 <li><p>Use <code>pak</code> for package installation (not <code>install.packages</code>)</p></li>
+<li><p>Prefer <code>fs::</code> helpers over base R for filesystem path operations in build scripts and scaffolds: <code><a href="https://fs.r-lib.org/reference/create.html" class="external-link">fs::dir_create()</a></code> (creates parents by default, no <code>recursive</code>/<code>showWarnings</code> fiddliness), <code><a href="https://fs.r-lib.org/reference/path.html" class="external-link">fs::path()</a></code>, <code><a href="https://fs.r-lib.org/reference/delete.html" class="external-link">fs::file_delete()</a></code>, <code><a href="https://fs.r-lib.org/reference/file_access.html" class="external-link">fs::file_exists()</a></code>, <code><a href="https://fs.r-lib.org/reference/path_file.html" class="external-link">fs::path_file()</a></code>. Avoids cross-platform separator issues and silent no-ops on empty paths.</p></li>
 <li><p>Prefix column name vectors with <code>cols_</code> for discoverability in the environment pane: <code>cols_all</code>, <code>cols_carry</code>, <code>cols_split</code>, <code>cols_writable</code>. Same principle for other grouped vectors (<code>params_</code>, <code>tbl_</code>, etc.)</p></li>
 <li>
 <p>For SQL DDL+INSERT pairs that share a schema, use a single named vector as the source of truth. Both <code>CREATE TABLE</code> and <code>INSERT (cols) SELECT cols</code> derive their column lists from the same <code>cols_*</code> vector. Avoids drift between table shape and write projection — when columns change, you edit one place. Example:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cols_streams</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  id_segment           <span class="op">=</span> <span class="st">"integer NOT NULL"</span>,</span>
 <span>  watershed_group_code <span class="op">=</span> <span class="st">"varchar(4) NOT NULL"</span>,</span>
@@ -1282,7 +1462,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <p>This gives one PR that contains all commits — a single SRED cross-reference covers the entire body of work. Individual commits within the branch close their respective function issues with <code>Fixes #N</code>.</p>
 </div>
 <div class="section level3">
-<h3 id="closing-issues-1">Closing issues<a class="anchor" aria-label="anchor" href="#closing-issues-1"></a></h3>
+<h3 id="closing-issues">Closing issues<a class="anchor" aria-label="anchor" href="#closing-issues"></a></h3>
 <p>Close function issues via commit messages — see Closing Issues in newgraph conventions.</p>
 </div>
 </div>
@@ -1295,7 +1475,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <li><p>Tests must pass before closing the function’s issue</p></li>
 <li>
 <p>Always grep for errors in the same command as the test run to avoid running twice:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test()'</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">"(FAIL|ERROR|PASS)"</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-5</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test()'</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">"(FAIL|ERROR|PASS)"</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-5</span></span></code></pre></div>
 <p>For error context: <code>grep -E "(ERROR:|FAIL )" -A 10 | head -25</code></p>
 </li>
 </ul><div class="section level3">
@@ -1339,7 +1519,7 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <p>Run <code>lintr::lint_package()</code> before committing R package code. Fix all warnings — every lint should be worth fixing.</p>
 <div class="section level3">
 <h3 id="recommended-lintr-config">Recommended .lintr config<a class="anchor" aria-label="anchor" href="#recommended-lintr-config"></a></h3>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linters</span><span class="op">:</span> <span class="fu">linters_with_defaults</span><span class="op">(</span></span>
 <span>    <span class="fu">line_length_linter</span><span class="op">(</span><span class="fl">120</span><span class="op">)</span>,</span>
 <span>    <span class="fu">object_name_linter</span><span class="op">(</span>styles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"snake_case"</span>, <span class="st">"dotted.case"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -1377,18 +1557,18 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <div class="section level3">
 <h3 id="branch-protection">Branch protection<a class="anchor" aria-label="anchor" href="#branch-protection"></a></h3>
 <p>Protect main from deletion and force pushes:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="ex">gh</span> api repos/OWNER/REPO/rulesets <span class="at">--method</span> POST <span class="at">--input</span> <span class="at">-</span> <span class="op">&lt;&lt;'EOF'</span></span>
-<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="st">{</span></span>
-<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="st">  "name": "Protect main",</span></span>
-<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="st">  "target": "branch",</span></span>
-<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a><span class="st">  "enforcement": "active",</span></span>
-<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a><span class="st">  "bypass_actors": [</span></span>
-<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a><span class="st">    { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }</span></span>
-<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a><span class="st">  ],</span></span>
-<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a><span class="st">  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },</span></span>
-<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a><span class="st">  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" } ]</span></span>
-<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="ex">gh</span> api repos/OWNER/REPO/rulesets <span class="at">--method</span> POST <span class="at">--input</span> <span class="at">-</span> <span class="op">&lt;&lt;'EOF'</span></span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb36-3"><a href="#cb36-3" tabindex="-1"></a><span class="st">  "name": "Protect main",</span></span>
+<span id="cb36-4"><a href="#cb36-4" tabindex="-1"></a><span class="st">  "target": "branch",</span></span>
+<span id="cb36-5"><a href="#cb36-5" tabindex="-1"></a><span class="st">  "enforcement": "active",</span></span>
+<span id="cb36-6"><a href="#cb36-6" tabindex="-1"></a><span class="st">  "bypass_actors": [</span></span>
+<span id="cb36-7"><a href="#cb36-7" tabindex="-1"></a><span class="st">    { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }</span></span>
+<span id="cb36-8"><a href="#cb36-8" tabindex="-1"></a><span class="st">  ],</span></span>
+<span id="cb36-9"><a href="#cb36-9" tabindex="-1"></a><span class="st">  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },</span></span>
+<span id="cb36-10"><a href="#cb36-10" tabindex="-1"></a><span class="st">  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" } ]</span></span>
+<span id="cb36-11"><a href="#cb36-11" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb36-12"><a href="#cb36-12" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="scaffold-checklist">Scaffold checklist<a class="anchor" aria-label="anchor" href="#scaffold-checklist"></a></h3>
@@ -1474,11 +1654,11 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <h2 id="in-reports-bookdown">In Reports (bookdown)<a class="anchor" aria-label="anchor" href="#in-reports-bookdown"></a></h2>
 <div class="section level3">
 <h3 id="bibliography-generation">Bibliography generation<a class="anchor" aria-label="anchor" href="#bibliography-generation"></a></h3>
-<div class="sourceCode" id="cb29"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># index.Rmd — dynamic bib from Zotero via Better BibTeX</span></span>
-<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a><span class="fu">bibliography</span><span class="kw">:</span><span class="at"> </span><span class="st">"`r rbbt::bbt_write_bib('references.bib', overwrite = TRUE)`"</span></span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="co"># index.Rmd — dynamic bib from Zotero via Better BibTeX</span></span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a><span class="fu">bibliography</span><span class="kw">:</span><span class="at"> </span><span class="st">"`r rbbt::bbt_write_bib('references.bib', overwrite = TRUE)`"</span></span></code></pre></div>
 <p><code>rbbt</code> pulls from BBT, which syncs with Zotero. Edit references in Zotero → rebuild report → bibliography updates.</p>
 <p><strong>Library targeting:</strong> rbbt must know which Zotero library to search. This is set globally in <code>~/.Rprofile</code>:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># default library — NewGraphEnvironment group (libraryID 9, group 4733734)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>rbbt.default.library_id <span class="op">=</span> <span class="fl">9</span><span class="op">)</span></span></code></pre></div>
 <p>Without this option, rbbt searches only the personal library (libraryID 1) and won’t find group library references. The library IDs map to Zotero’s internal numbering — use <code>/zotero-lookup</code> with <code>SELECT DISTINCT libraryID FROM citationkey</code> against the BBT database to discover available libraries.</p>
@@ -1536,43 +1716,6 @@ Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;</code></pre>
 <li>NEVER cite specific numbers without verifying from the source PDF via ragnar search</li>
 <li>NEVER paraphrase equations — copy exact notation and cite page/section</li>
 </ul></div>
-</div>
-</div>
-<div class="section level1">
-<h1 id="sred-conventions">SRED Conventions<a class="anchor" aria-label="anchor" href="#sred-conventions"></a></h1>
-<p>How SR&amp;ED tracking integrates with New Graph Environment’s development workflows.</p>
-<div class="section level2">
-<h2 id="the-claim-one-project">The Claim: One Project<a class="anchor" aria-label="anchor" href="#the-claim-one-project"></a></h2>
-<p>All SRED-eligible work across NGE falls under a <strong>single continuous project</strong>:</p>
-<blockquote>
-<p><strong>Dynamic GIS-based Data Processing and Reporting Framework</strong></p>
-</blockquote>
-<ul><li>
-<strong>Field:</strong> Software Engineering (2.02.09)</li>
-<li>
-<strong>Start date:</strong> May 2022</li>
-<li>
-<strong>Fiscal year:</strong> May 1 – April 30</li>
-<li>
-<strong>Consultant:</strong> Boast Capital (prepares final technical report)</li>
-</ul><p><strong>Do not fragment work into separate claims.</strong> Each fiscal year’s work is structured as iterations within this one project. Internal tracking (experiment numbers in <code>sred</code>) maps to iterations — Boast assembles the final narrative.</p>
-</div>
-<div class="section level2">
-<h2 id="tagging-work-for-sred">Tagging Work for SRED<a class="anchor" aria-label="anchor" href="#tagging-work-for-sred"></a></h2>
-<div class="section level3">
-<h3 id="prs-single-enforcement-point">PRs (single enforcement point)<a class="anchor" aria-label="anchor" href="#prs-single-enforcement-point"></a></h3>
-<p>SRED cross-references (<code>Relates to NewGraphEnvironment/sred#N</code>) go in <strong>PR body templates only</strong> — not in issue bodies, commit messages, or any other surface. The <code>/gh-pr-push</code> skill is the single enforcement point. PRs aggregate commits and are the merge unit, so per-issue and per-commit SRED tags only add noise.</p>
-</div>
-<div class="section level3">
-<h3 id="time-entries-rolex">Time entries (rolex)<a class="anchor" aria-label="anchor" href="#time-entries-rolex"></a></h3>
-<p>Tag hours with <code>sred_ref</code> field linking to the relevant <code>sred</code> issue number.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="what-qualifies-as-sred">What Qualifies as SRED<a class="anchor" aria-label="anchor" href="#what-qualifies-as-sred"></a></h2>
-<p><strong>Eligible (systematic investigation to overcome technological uncertainty):</strong> - Building tools/functions that don’t exist in standard practice - Prototyping new integrations between systems (GIS ↔︎ reporting ↔︎ field collection) - Testing whether an approach works and documenting why it did/didn’t - Iterating on failed approaches with new hypotheses</p>
-<p><strong>Not eligible:</strong> - Standard configuration of known tools - Routine bug fixes in working systems - Writing reports using the framework (that’s service delivery)</p>
-<p><strong>The test:</strong> “Did we try something we weren’t sure would work, and did we learn something from the attempt?” If yes, it’s likely eligible.</p>
 </div>
 </div>
 
