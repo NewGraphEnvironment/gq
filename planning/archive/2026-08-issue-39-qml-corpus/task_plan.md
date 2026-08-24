@@ -99,23 +99,23 @@ repoints its builder at gq and deletes the duplicate.
       `inst/`. Under the 5 MB threshold, but verify rather than assume
 - [x] README + CLAUDE.md — the registry-sources list has no `inst/styles/` entry;
       add the corpus and `gq_style_qml()` to the translator table
-- [ ] `NEWS.md` + `DESCRIPTION` 0.3.0 → **0.4.0** (new export) as the **final**
+- [x] `NEWS.md` + `DESCRIPTION` 0.3.0 → **0.4.0** (new export) as the **final**
       commit
 
 ## Phase 5 — Reconcile upstream
 
-- [ ] Edit **gq#39**'s body in place: premise superseded by rfp#174 Phase A,
+- [x] Edit **gq#39**'s body in place: premise superseded by rfp#174 Phase A,
       layout is shared+override not per-template, rfp retains its copy
-- [ ] File **rfp**: `vector/osm.trail.qml` is an unindexed leftover, and the
+- [x] File **rfp**: `vector/osm.trail.qml` is an unindexed leftover, and the
       store guard walks index → file only so it cannot see one
-- [ ] File **rfp**: repoint `data-raw/qgs/build_template.R` at gq's corpus and
+- [x] File **rfp**: repoint `data-raw/qgs/build_template.R` at gq's corpus and
       delete `inst/extdata/styles/` (the deferred half of this decision)
 
 ## Validation
 
-- [ ] `devtools::test()` — 104 existing pass, 0 fail, plus the new file
-- [ ] `lintr::lint_package()` clean on changed files, against the `HEAD` baseline
-- [ ] `devtools::check()` no new ERROR/WARNING
-- [ ] `/code-check` clean on each commit
-- [ ] PWF checkboxes match landed work
-- [ ] `/planning-archive`, then `/gh-pr-push`
+- [x] `devtools::test()` — 104 existing pass, 0 fail, plus the new file
+- [x] `lintr::lint_package()` clean on changed files, against the `HEAD` baseline
+- [x] `devtools::check()` no new ERROR/WARNING
+- [x] `/code-check` clean on each commit
+- [x] PWF checkboxes match landed work
+- [x] `/planning-archive`, then `/gh-pr-push`

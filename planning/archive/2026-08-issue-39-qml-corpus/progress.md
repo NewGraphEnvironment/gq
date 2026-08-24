@@ -51,3 +51,8 @@
   assumed. Installed size 8.6 MB, reported INFO not NOTE outside `--as-cran`.
 - Found, not fixed (out of scope): `.claude/` and `gq.Rproj` ship in the tarball
   on main too — `.Rbuildignore` excludes neither.
+- **Phase 5 done** — #39's body reconciled in place (premise superseded, layout
+  corrected, what-shipped recorded). Filed rfp#187 (unindexed `osm.trail.qml`,
+  guard walks one direction) and rfp#188 (read the store from gq, delete rfp's
+  copy). The vendoring script's declared exception now cites rfp#187.
+- Released 0.4.0 — new export, so minor. Bumped as the final commit.

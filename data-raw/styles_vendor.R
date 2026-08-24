@@ -123,8 +123,8 @@ orphans_known <- c(
   # by rfp#171 (7caeeeb, 2026-08-22) one day before rfp#174 gave the store an
   # index. Once spliced into both templates the generator re-extracted it as the
   # indexed trails.qml, which is what gq vendors; this one is the superseded
-  # input. Not slug-shaped either ("osm.trail", not "osm_trail"). Tracked
-  # upstream — see the rfp issue filed alongside this script.
+  # input. Not slug-shaped either ("osm.trail", not "osm_trail"). Tracked as
+  # rfp#187 — drop this entry once that lands.
   "vector/osm.trail.qml"
 )
 orphans <- setdiff(setdiff(on_disk, rel), orphans_known)
