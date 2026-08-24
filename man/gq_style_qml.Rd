@@ -12,7 +12,8 @@ gq_style_qml(layer_key, template = NULL)
 
 \item{template}{Optional project template (e.g. \code{"bcfishpass_mobile"}).
 When supplied, a template-specific override wins over the shared style.
-When \code{NULL} (default) the shared style is returned.}
+Must name a template \code{\link[=gq_templates]{gq_templates()}} knows. When \code{NULL} (default) the
+shared style is returned.}
 }
 \value{
 A length-one character path to a \code{.qml} file.
@@ -36,7 +37,10 @@ handing back a path lets the caller copy it, read it, or write it into a
 Styles are shared across project templates unless a template genuinely
 diverges — measured upstream, 3 layers of 53 do. Passing \code{template} returns
 that template's override when one exists and the shared style otherwise, so
-naming a template is always safe.
+naming a valid template is always safe. An unknown template name errors
+rather than falling back, since a silent fallback would hand back the shared
+style on exactly the layers where an override exists because the shared one
+is wrong for that template.
 }
 \examples{
 # the QGIS-native style for lakes

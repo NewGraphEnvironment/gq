@@ -1,0 +1,50 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+name: R-CMD-check.yaml
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: check-${{ github.event_name != 'pull_request' || github.run_id }}
+      cancel-in-progress: true
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      # The registry and the QML corpus are two extractions of the same
+      # upstream styles, and the whole point of shipping both is that they
+      # cannot drift apart silently. Every guard that enforces that -- index
+      # integrity in both directions, the slugifier agreement, the positional
+      # <flags> assertion -- lived only on a developer's machine until this
+      # workflow existed, because pkgdown was the repo's only CI and it runs no
+      # tests.
+      #
+      # The byte-identity check against rfp still skips here: rfp is private and
+      # unavailable to this runner. That is why the structural assertions beside
+      # it do not depend on rfp -- they are what runs unattended.
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'

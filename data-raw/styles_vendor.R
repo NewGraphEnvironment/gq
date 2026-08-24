@@ -143,39 +143,71 @@ if (length(stale) > 0) {
           paste(stale, collapse = ", "))
 }
 
-# --- raster + services: no index, so guard the filenames instead --------------
+# --- raster + services: no index, so resolve against the template roster ------
 #
-# These carry no index.csv, so the filename IS the key. Globbing is safe here
-# only because every stem is asserted slug-stable below — which is exactly the
-# check osm.trail would have failed.
-unindexed <- do.call(rbind, lapply(c("raster", "services"), function(kind) {
-  files <- Sys.glob(file.path(src, kind, "*.qml"))
-  if (length(files) == 0) {
-    stop("No .qml in ", kind, "/", call. = FALSE)
-  }
-  data.frame(
-    layer_key = stem(files),
-    layer     = NA_character_,   # display name is not recorded upstream
-    template  = "*",
-    scope     = "shared",
-    kind      = kind,
-    rel       = file.path(kind, basename(files)),
-    stringsAsFactors = FALSE
-  )
-}))
-unindexed$kind[unindexed$kind == "services"] <- "service"
-
-unstable <- unindexed$layer_key[
-  normalize_layer_name(unindexed$layer_key) != unindexed$layer_key
-]
-if (length(unstable) > 0) {
+# These carry no index.csv, so an earlier draft globbed the directories and
+# asserted each stem was slug-stable. That check catches an osm.trail, but it
+# cannot catch a stray file that IS slug-shaped — and two were already getting
+# through. Resolve against rfp's roster of what the templates actually contain,
+# which is the same "enumerate from a manifest" rule the vector side follows.
+#
+# The roster lives in rfp's data-raw, which is .Rbuildignore'd, so vendoring
+# needs a source checkout rather than an installed rfp. That is already true in
+# spirit — the installed copy is routinely behind — so require it outright
+# instead of silently emitting a different index depending on the path taken.
+roster_path <- file.path(dirname(dirname(dirname(src))),
+                         "data-raw", "qgs", "roster", "template_layers.csv")
+if (!file.exists(roster_path)) {
   stop(
-    "Filename is not a stable key: ", paste(unstable, collapse = ", "),
-    "\nThese directories have no index, so the filename is the only key. ",
-    "Rename upstream to its normalize_layer_name() form.",
+    "Template roster not found: ", roster_path,
+    "\nrfp ships data-raw only in a source checkout, and the roster is what ",
+    "names the raster and service layers. Set RFP_STYLES_DIR to a checkout's ",
+    "inst/extdata/styles.",
     call. = FALSE
   )
 }
+roster <- utils::read.csv(roster_path, stringsAsFactors = FALSE,
+                          strip.white = FALSE)
+roster <- unique(roster[roster$kind %in% c("raster", "service"),
+                        c("name", "kind")])
+names(roster)[names(roster) == "name"] <- "layer"
+roster$layer_key <- normalize_layer_name(roster$layer)
+
+unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
+  kind <- if (dir_name == "services") "service" else dir_name
+  want <- roster[roster$kind == kind, , drop = FALSE]
+  if (nrow(want) == 0) stop("Roster names no ", kind, " layers", call. = FALSE)
+
+  files <- file.path(src, dir_name, paste0(want$layer_key, ".qml"))
+  gone <- files[!file.exists(files)]
+  if (length(gone) > 0) {
+    stop("Roster names ", kind, " layers with no QML: ",
+         paste(basename(gone), collapse = ", "), call. = FALSE)
+  }
+
+  # Reported rather than fatal: rfp legitimately ships raster styles the
+  # templates do not use — dem_hillshade and dem_turbo back rfp_raster_styles(),
+  # whose renderer/companion/stretch dimension gq vendors none of. They are also
+  # the only files in the store that are QGIS-authored sidecars rather than
+  # lifted <maplayer> blocks, which is why they alone open with
+  # <map-layer-style-manager> instead of <flags>. Not gq's to ship.
+  extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
+                   want$layer_key)
+  if (length(extra) > 0) {
+    message("skipping ", kind, " style(s) no template uses: ",
+            paste(extra, collapse = ", "))
+  }
+
+  data.frame(
+    layer_key = want$layer_key,
+    layer     = want$layer,
+    template  = "*",
+    scope     = "shared",
+    kind      = kind,
+    rel       = file.path(dir_name, paste0(want$layer_key, ".qml")),
+    stringsAsFactors = FALSE
+  )
+}))
 
 # --- assemble ----------------------------------------------------------------
 vector_rows <- data.frame(
@@ -189,10 +221,24 @@ vector_rows <- data.frame(
 )
 corpus <- rbind(vector_rows, unindexed)
 
-clash <- intersect(unindexed$layer_key, vector_rows$layer_key)
-if (length(clash) > 0) {
-  stop("A raster/service key collides with a vector key: ",
-       paste(clash, collapse = ", "), call. = FALSE)
+# On the ASSEMBLED corpus, not on the vector index. An earlier draft checked
+# only vector-vs-unindexed, so a duplicate WITHIN raster+services would have
+# passed here and surfaced instead at call time, in a consumer's session, as
+# gq_style_qml()'s "expected exactly one shared style".
+clash <- corpus[duplicated(corpus[c("layer_key", "template")]) |
+                  duplicated(corpus[c("layer_key", "template")],
+                             fromLast = TRUE), ]
+if (nrow(clash) > 0) {
+  stop("Duplicate (layer_key, template) across kinds: ",
+       paste(unique(clash$layer_key), collapse = ", "), call. = FALSE)
+}
+
+# Every row is now named, so the guard that pins gq's key rule against rfp's
+# covers the whole corpus rather than the vector subset.
+if (any(is.na(corpus$layer))) {
+  stop("Rows with no layer name: ",
+       paste(corpus$layer_key[is.na(corpus$layer)], collapse = ", "),
+       call. = FALSE)
 }
 
 # --- write -------------------------------------------------------------------

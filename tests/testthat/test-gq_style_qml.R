@@ -32,19 +32,24 @@ test_that("index keys are the same normalization the registry uses", {
   # QML: gq's normalize_layer_name() and rfp's slugify(). They do today, on all
   # 53 layer names including the one that begins with a space. Nothing enforces
   # that they keep agreeing, so pin it rather than assume it.
+  #
+  # Covers EVERY row, which is the point. An earlier cut scoped past 9 rows the
+  # vendoring script left unnamed — a guard silently narrowed to a subset gives
+  # the same green signal while the rest drifts. Resolving those names against
+  # rfp's template roster is what let this cover the whole corpus.
   idx <- read_styles_index()
-  named <- idx[!is.na(idx$layer), , drop = FALSE]
-  expect_gt(nrow(named), 50)
-  expect_equal(normalize_layer_name(named$layer), named$layer_key)
+  expect_false(any(is.na(idx$layer)))
+  expect_equal(normalize_layer_name(idx$layer), idx$layer_key)
 })
 
-test_that("raster and service filenames are stable keys", {
-  # Those directories carry no index upstream, so the filename IS the key.
-  # This is the assertion vector/osm.trail.qml would have failed.
+test_that("the corpus holds only styles the templates actually use", {
+  # rfp ships two raster styles no template references — dem_hillshade and
+  # dem_turbo, which back rfp_raster_styles() and carry a
+  # renderer/companion/stretch dimension gq vendors none of. Vendoring globbed
+  # the directory at first and took them; it resolves against rfp's roster now.
   idx <- read_styles_index()
-  unnamed <- idx[is.na(idx$layer), , drop = FALSE]
-  expect_setequal(unique(unnamed$kind), c("raster", "service"))
-  expect_equal(normalize_layer_name(unnamed$layer_key), unnamed$layer_key)
+  expect_false(any(c("dem_hillshade", "dem_turbo") %in% idx$layer_key))
+  expect_true("habitat_lateral" %in% idx$layer_key)
 })
 
 test_that("no key is claimed twice for one template", {
@@ -62,6 +67,7 @@ test_that("every QML is a QGIS style document with no source binding", {
     system.file("styles", styles_rel(idx[i, ]), package = "gq")
   }, character(1))
   bound <- character(0)
+  starts <- character(0)
   for (p in paths) {
     doc <- xml2::read_xml(p)
     expect_equal(xml2::xml_name(xml2::xml_root(doc)), "qgis")
@@ -69,9 +75,18 @@ test_that("every QML is a QGIS style document with no source binding", {
       doc, "/qgis/datasource | /qgis/layername | /qgis/id | /qgis/provider"
     )
     if (length(src) > 0) bound <- c(bound, basename(p))
+    starts <- c(starts, xml2::xml_name(xml2::xml_children(doc)[[1]]))
   }
   expect_equal(length(bound), 0,
                info = paste("Source-bound:", paste(bound, collapse = ", ")))
+
+  # The absence check above passes on all 60 files and would keep passing
+  # through an rfp#130-class regression, where a source tag LEAKS IN rather
+  # than a known one appearing. rfp's real assertion is positional — the style
+  # block starts at <flags> — because the lift copies from the first non-source
+  # tag to the end, so anything left over shows up as a different first child.
+  # That is the guard with teeth; the absence check alone is close to vacuous.
+  expect_equal(unique(starts), "flags")
 })
 
 
@@ -112,9 +127,18 @@ test_that("a template override wins, and naming a template is always safe", {
   ))
 })
 
-test_that("a layer with no override ignores the template argument", {
+test_that("a layer with no override ignores a valid template argument", {
   expect_equal(gq_style_qml("lake"), gq_style_qml("lake", "bcfishpass_mobile"))
-  expect_equal(gq_style_qml("lake"), gq_style_qml("lake", "no_such_template"))
+  expect_equal(gq_style_qml("lake"), gq_style_qml("lake", "bcrestoration_mobile"))
+})
+
+test_that("an unknown template errors rather than falling back to shared", {
+  # The dangerous direction. A typo used to return the shared style, and it did
+  # so on precisely the 3 layers where an override exists BECAUSE the shared
+  # style is wrong for that template -- a plausible wrong file, no signal.
+  expect_error(gq_style_qml("land_ownership", "bcfishpass_moble"),
+               "Unknown template")
+  expect_error(gq_style_qml("lake", "no_such_template"), "Unknown template")
 })
 
 test_that("raster and service styles resolve", {

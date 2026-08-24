@@ -1,8 +1,8 @@
 # gq 0.4.0
 
 - **The QGIS-native styles now ship alongside the registry.**
-  `inst/styles/` carries 62 QML files — 50 shared vector styles, 3 per-template
-  overrides, 3 rasters, 6 services — and `gq_style_qml(layer_key, template)`
+  `inst/styles/` carries 60 QML files — 50 shared vector styles, 3 per-template
+  overrides, 1 raster, 6 services — and `gq_style_qml(layer_key, template)`
   resolves a key to one.
 
   The registry models roughly 20 symbol properties and a single symbol layer,

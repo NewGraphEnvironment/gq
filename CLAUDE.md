@@ -201,7 +201,7 @@ read the bytes QGIS wrote without gq re-serializing them.
 - `vector/<layer_key>.qml` — 50 shared vector styles
 - `vector/overrides/<template>/<layer_key>.qml` — the 3 layers whose symbology
   genuinely differs between templates; everything else is shared
-- `raster/`, `services/` — 3 rasters, 6 WMS/xyz basemaps
+- `raster/`, `services/` — 1 raster, 6 WMS/xyz basemaps
 - `index.csv` — `layer_key,layer,template,scope,kind`, quoted (layer names carry
   commas and one begins with a space)
 

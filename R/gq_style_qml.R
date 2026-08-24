@@ -65,13 +65,17 @@ styles_rel <- function(row) {
 #' Styles are shared across project templates unless a template genuinely
 #' diverges — measured upstream, 3 layers of 53 do. Passing `template` returns
 #' that template's override when one exists and the shared style otherwise, so
-#' naming a template is always safe.
+#' naming a valid template is always safe. An unknown template name errors
+#' rather than falling back, since a silent fallback would hand back the shared
+#' style on exactly the layers where an override exists because the shared one
+#' is wrong for that template.
 #'
 #' @param layer_key Layer key, as used by [gq_groups()] and the registry (e.g.
 #'   `"lake"`). See [gq_groups()] for the roster.
 #' @param template Optional project template (e.g. `"bcfishpass_mobile"`).
 #'   When supplied, a template-specific override wins over the shared style.
-#'   When `NULL` (default) the shared style is returned.
+#'   Must name a template [gq_templates()] knows. When `NULL` (default) the
+#'   shared style is returned.
 #'
 #' @return A length-one character path to a `.qml` file.
 #'
@@ -131,10 +135,20 @@ gq_style_qml <- function(layer_key, template = NULL) {
     )
   }
 
-  # Override first, shared as the fallback — so naming a template is always safe
-  # even for the majority of layers that have no template-specific style.
+  # Override first, shared as the fallback — so naming a template is safe for
+  # the majority of layers that have no template-specific style.
+  #
+  # But only for a template that EXISTS. Falling back silently on an unknown
+  # name means a typo returns the shared style, and it does so on exactly the
+  # layers where an override exists because the shared style is wrong for that
+  # template — the caller gets a plausible file and no signal. Validate instead.
   row <- NULL
   if (!is.null(template)) {
+    known <- unique(gq_templates()$template)
+    if (!template %in% known) {
+      stop("Unknown template '", template, "'. Known: ",
+           paste(known, collapse = ", "), call. = FALSE)
+    }
     ovr <- hits[hits$scope == "override" & hits$template == template, ,
                 drop = FALSE]
     if (nrow(ovr) == 1L) row <- ovr

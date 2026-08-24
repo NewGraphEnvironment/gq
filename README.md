@@ -84,7 +84,7 @@ gq_style_qml("land_ownership", template = "bcfishpass_mobile")
 | **Templates** | Project-level compositions — which groups belong to which QGIS project (`bcfishpass_mobile`, `bcrestoration_mobile`). Project-assembly tools read templates to decide which layers belong in a new field project. |
 | **Themes** | Per-layer visibility presets, extracted from the templates (e.g. `High Detail - Crossings`, `Land Tenure`). Keyed by template as well as theme, because the same theme name carries different content in different templates. Drives QGIS map themes and is exportable as QWC2 web-map visibility config. |
 | **xref_layers** | Cross-reference table mapping registry keys to source-system layer names (BC Data Catalogue WMS layers, fwapg views, internal pgsql schemas) so consumers can look up the underlying data when they want it. |
-| **QML corpus** | The same styles in QGIS's own format, shipped under `inst/styles/`. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. 50 shared vector styles, 3 per-template overrides, 3 rasters, 6 services. |
+| **QML corpus** | The same styles in QGIS's own format, shipped under `inst/styles/`. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. 50 shared vector styles, 3 per-template overrides, 1 raster, 6 services. |
 
 ## Producer ⇄ consumer
 
