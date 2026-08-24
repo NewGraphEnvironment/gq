@@ -44,7 +44,22 @@ jobs:
       # The byte-identity check against rfp still skips here: rfp is private and
       # unavailable to this runner. That is why the structural assertions beside
       # it do not depend on rfp -- they are what runs unattended.
+      # error-on "error", not the action's default of "warning".
+      #
+      # main already carries two WARNINGs that predate this workflow -- em
+      # dashes in three string literals (roxygen comments are exempt, code is
+      # not), and five demo datasets with no roxygen in R/data.R. Neither is a
+      # correctness problem and neither belongs to the change that added CI, so
+      # defaulting to warning would land a check that is red on arrival and
+      # that nobody can make green. A gate everyone learns to ignore is worse
+      # than no gate.
+      #
+      # This still fails on what the workflow exists for: a test failure is an
+      # ERROR in `checking tests`, so every corpus guard gates the build.
+      # Tighten to "warning" once #51 clears the two, and the gate gets
+      # strictly stronger rather than being relaxed by default.
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+          error-on: '"error"'
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'

@@ -96,3 +96,19 @@ the assembled corpus.
 workflow at all — pkgdown was the only CI, and it runs no tests. Every guard
 here lived on one machine. `.github/workflows/R-CMD-check.yaml` now runs them on
 every PR, which is what makes the rest durable.
+
+### The new workflow failed on its first run, as designed
+
+Not on anything in this branch. The tests passed on the runner — 390 pass, 0
+fail, 1 skip (the byte-identity guard, since rfp is private and unavailable
+there, which is exactly why the structural assertions beside it do not depend on
+it). The build failed on `R CMD check found WARNINGs`, and both warnings predate
+the branch: em dashes in three string literals, and five demo datasets with no
+roxygen.
+
+Adding CI to a repo that never had it surfaces its debt all at once. Fixing that
+debt inside #39 would have grown the change into unrelated files; leaving the
+check red would have trained everyone to ignore it. So the gate is pinned at
+`error-on: "error"` — a test failure is still an ERROR in `checking tests`, so
+every corpus guard gates the build — and the two warnings are tracked in #51,
+which also owns removing the pin.
