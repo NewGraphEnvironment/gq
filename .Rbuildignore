@@ -7,7 +7,6 @@
 ^dev$
 ^python$
 ^scripts$
-^styles$
 ^planning$
 ^registry$
 ^data-raw$

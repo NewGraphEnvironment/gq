@@ -41,3 +41,13 @@
   branch, fires in isolation.
 - `lintr` clean on all three new files.
 - Next: Phase 4 — build and docs
+- **Phase 4 (docs)** — README, CLAUDE.md; removed the dead `styles/qml/.gitkeep`
+  placeholder and the now-orphaned `^styles$` from `.Rbuildignore`.
+- Verified in the built tarball rather than in the config: 62 QMLs + index ship,
+  no `planning/` or `CLAUDE.md` leak, 2.9 MB.
+- `R CMD check`: 0 errors, 2 warnings, 2 notes — **all four pre-existing**
+  (non-ASCII in `gq_qgs_extract.R`/`gq_reg.R`, undocumented `data/` objects,
+  `.claude/` and `gq.Rproj` shipping). Confirmed against main rather than
+  assumed. Installed size 8.6 MB, reported INFO not NOTE outside `--as-cran`.
+- Found, not fixed (out of scope): `.claude/` and `gq.Rproj` ship in the tarball
+  on main too — `.Rbuildignore` excludes neither.

@@ -93,11 +93,11 @@ repoints its builder at gq and deletes the duplicate.
 
 ## Phase 4 — Build and docs
 
-- [ ] Delete `styles/qml/.gitkeep` and the now-dead `^styles$` from
+- [x] Delete `styles/qml/.gitkeep` and the now-dead `^styles$` from
       `.Rbuildignore`
-- [ ] Confirm `R CMD check` installed-size NOTE: gq goes ~166 KB → ~3.6 MB of
+- [x] Confirm `R CMD check` installed-size NOTE: gq goes ~166 KB → ~3.6 MB of
       `inst/`. Under the 5 MB threshold, but verify rather than assume
-- [ ] README + CLAUDE.md — the registry-sources list has no `inst/styles/` entry;
+- [x] README + CLAUDE.md — the registry-sources list has no `inst/styles/` entry;
       add the corpus and `gq_style_qml()` to the translator table
 - [ ] `NEWS.md` + `DESCRIPTION` 0.3.0 → **0.4.0** (new export) as the **final**
       commit
