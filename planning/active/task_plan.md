@@ -22,14 +22,14 @@ groups appearing only as `<checked-group-nodes>` UI state.
 
 ## Phase 1 — Shared normalizer
 
-- [ ] Point `gq_qgs_extract()` at the existing `normalize_layer_name()`
+- [x] Point `gq_qgs_extract()` at the existing `normalize_layer_name()`
       (`R/gq_style.R:104`) instead of its byte-identical inline copy at
       `R/gq_qgs_extract.R:57-58`. Do **not** create a new helper — that would be
       a third home for one rule
-- [ ] Preserve the rule exactly: `sub("^_|_$", …)` is `sub`, not `gsub`, so only
+- [x] Preserve the rule exactly: `sub("^_|_$", …)` is `sub`, not `gsub`, so only
       the first boundary underscore is stripped. "Tidying" it to `gsub` changes
       keys
-- [ ] Add a `normalize_layer_name()` unit test covering leading, trailing and
+- [x] Add a `normalize_layer_name()` unit test covering leading, trailing and
       doubled separators. No current test would catch a regression — the
       extractor fixture's layer names (`Lakes`, `Streams`, `Crossings`, `Roads`)
       are all clean

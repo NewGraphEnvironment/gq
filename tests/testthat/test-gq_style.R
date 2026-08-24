@@ -140,3 +140,36 @@ test_that("gq_style includes radii for classified points", {
   sty <- gq_style(reg, "xing")
   expect_equal(sty$classification$radii, c(BARRIER = 3, PASSABLE = 3))
 })
+
+
+# --- normalize_layer_name -----------------------------------------------------
+# Shared by gq_style()'s name lookup and gq_qgs_extract()'s key generation, so a
+# change here silently re-keys the registry. The extractor fixture's layer names
+# are all clean, which is why these cases are pinned explicitly.
+
+test_that("normalize_layer_name lowercases and collapses separators", {
+  expect_equal(normalize_layer_name("Provincial Park"), "provincial_park")
+  expect_equal(normalize_layer_name("Crossings - PSCIS assessment"),
+               "crossings_pscis_assessment")
+  expect_equal(normalize_layer_name("Roads,Railways,Pipelines"),
+               "roads_railways_pipelines")
+})
+
+test_that("normalize_layer_name trims whitespace before normalizing", {
+  # QGIS layer trees carry names with a leading space (e.g. " Form PSCIS")
+  expect_equal(normalize_layer_name(" Form PSCIS"), "form_pscis")
+  expect_equal(normalize_layer_name("lake  "), "lake")
+})
+
+test_that("normalize_layer_name strips one boundary underscore, not both", {
+  # sub() with an alternation, not gsub() — only the FIRST boundary match goes.
+  # Pinned because "tidying" this to gsub() would re-key every affected layer.
+  expect_equal(normalize_layer_name("_foo_"), "foo_")
+  expect_equal(normalize_layer_name("-lake"), "lake")
+  expect_equal(normalize_layer_name("lake-"), "lake")
+})
+
+test_that("normalize_layer_name is idempotent on an already-clean key", {
+  expect_equal(normalize_layer_name("habitat_lateral"), "habitat_lateral")
+  expect_equal(normalize_layer_name("bec_zone"), "bec_zone")
+})

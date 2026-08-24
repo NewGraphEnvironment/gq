@@ -54,8 +54,7 @@ gq_qgs_extract <- function(path) {
     )
 
     # make a clean key from the layer name
-    layer_key <- tolower(gsub("[^a-zA-Z0-9]+", "_", trimws(layer_name)))
-    layer_key <- sub("^_|_$", "", layer_key)
+    layer_key <- normalize_layer_name(layer_name)
 
     renderer <- xml2::xml_find_first(layer_node, ".//renderer-v2")
     if (is.na(renderer)) next
