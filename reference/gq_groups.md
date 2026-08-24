@@ -91,6 +91,7 @@ gq_groups()
 #> 59           Base - misc           <NA>
 #> 60           Base - misc           <NA>
 #> 61           Base - misc           <NA>
+#> 62           Base - misc           <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -146,13 +147,14 @@ gq_groups()
 #> 52                                fire_perimeters_current     1         wms
 #> 53                                   frep_rip2021_mar2022     2         wms
 #> 54                                       orthophoto_tiles     1      bcdata
-#> 55                                              utm_zones     1      bcdata
-#> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
-#> 57                     terrain_mapping_project_boundaries     3      bcdata
-#> 58                                        esri_world_topo     4         wms
-#> 59                                            bing_aerial     5         wms
-#> 60                                         esri_satellite     6         wms
-#> 61                                       google_satellite     7         wms
+#> 55                                        habitat_lateral     1       local
+#> 56                                              utm_zones     2      bcdata
+#> 57 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
+#> 58                     terrain_mapping_project_boundaries     4      bcdata
+#> 59                                        esri_world_topo     5         wms
+#> 60                                            bing_aerial     6         wms
+#> 61                                         esri_satellite     7         wms
+#> 62                                       google_satellite     8         wms
 
 # With style registry info joined
 reg <- gq_reg_main()
@@ -219,6 +221,7 @@ gq_groups(registry = reg)
 #> 59           Base - misc           <NA>
 #> 60           Base - misc           <NA>
 #> 61           Base - misc           <NA>
+#> 62           Base - misc           <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -274,13 +277,14 @@ gq_groups(registry = reg)
 #> 52                                fire_perimeters_current     1         wms
 #> 53                                   frep_rip2021_mar2022     2         wms
 #> 54                                       orthophoto_tiles     1      bcdata
-#> 55                                              utm_zones     1      bcdata
-#> 56 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
-#> 57                     terrain_mapping_project_boundaries     3      bcdata
-#> 58                                        esri_world_topo     4         wms
-#> 59                                            bing_aerial     5         wms
-#> 60                                         esri_satellite     6         wms
-#> 61                                       google_satellite     7         wms
+#> 55                                        habitat_lateral     1       local
+#> 56                                              utm_zones     2      bcdata
+#> 57 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
+#> 58                     terrain_mapping_project_boundaries     4      bcdata
+#> 59                                        esri_world_topo     5         wms
+#> 60                                            bing_aerial     6         wms
+#> 61                                         esri_satellite     7         wms
+#> 62                                       google_satellite     8         wms
 #>                                                    source_layer    type
 #> 1                    whse_basemapping.fwa_watershed_groups_poly polygon
 #> 2            whse_legal_admin_boundaries.abms_municipalities_sp polygon
@@ -336,11 +340,12 @@ gq_groups(registry = reg)
 #> 52                                                         <NA>    <NA>
 #> 53                                                         <NA>   point
 #> 54        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly polygon
-#> 55                           whse_basemapping.utmg_utm_zones_sp polygon
-#> 56         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon
-#> 57      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon
-#> 58                                                         <NA>    <NA>
+#> 55                                                         <NA>    <NA>
+#> 56                           whse_basemapping.utmg_utm_zones_sp polygon
+#> 57         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon
+#> 58      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon
 #> 59                                                         <NA>    <NA>
 #> 60                                                         <NA>    <NA>
 #> 61                                                         <NA>    <NA>
+#> 62                                                         <NA>    <NA>
 ```

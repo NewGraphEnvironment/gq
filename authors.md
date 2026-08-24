@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/NewGraphEnvironment/gq/blob/main/DESCRIPTION)
 
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
-Targets*. R package version 0.2.1,
+Targets*. R package version 0.3.0,
 <https://github.com/NewGraphEnvironment/gq>.
 
     @Manual{,
       title = {gq: Cartographic Style Management Across Rendering Targets},
       author = {Allan Irvine},
       year = {2026},
-      note = {R package version 0.2.1},
+      note = {R package version 0.3.0},
       url = {https://github.com/NewGraphEnvironment/gq},
     }

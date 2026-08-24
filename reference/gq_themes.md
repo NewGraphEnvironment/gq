@@ -1,36 +1,61 @@
 # List all visibility themes
 
-Returns a data.frame of all themes defined in the registry, showing
-which groups are visible or hidden in each theme.
+Returns the theme roster extracted from the QGIS templates: which layers
+each template's map themes show or hide.
 
 ## Usage
 
 ``` r
-gq_themes()
+gq_themes(template = NULL)
 ```
+
+## Arguments
+
+- template:
+
+  Character. Optional template name to restrict to, e.g.
+  `"bcfishpass_mobile"`. Default `NULL` returns every template.
 
 ## Value
 
-A data.frame with columns: theme, group, visible.
+A data.frame with columns: template, theme, layer_key, visible.
+
+## Details
+
+Themes are recorded per layer because that is how QGIS stores them — a
+`<visibility-preset>` enumerates each layer it governs with an explicit
+visible flag. The same theme name can therefore carry different content
+in different templates, which is why `template` is part of the key
+rather than a filter applied afterwards.
+
+A theme governs only the layers it names. Templates carry more layers
+than any one theme lists, so a returned set is partial: a layer absent
+from a theme is not "hidden by" it, it is simply unmanaged and keeps
+whatever state it had.
 
 ## Examples
 
 ``` r
-gq_themes()
-#>            theme                 group visible
-#> 1     Field View                 Forms    TRUE
-#> 2     Field View               Basemap    TRUE
-#> 3     Field View             Crossings   FALSE
-#> 4     Field View               Streams   FALSE
-#> 5     Field View  Other Point Features   FALSE
-#> 6     Field View Roads/Rails/Pipelines   FALSE
-#> 7  Analysis View                 Forms    TRUE
-#> 8  Analysis View             Crossings    TRUE
-#> 9  Analysis View               Streams    TRUE
-#> 10 Analysis View               Basemap    TRUE
-#> 11 Analysis View  Other Point Features    TRUE
-#> 12 Analysis View Roads/Rails/Pipelines    TRUE
-#> 13      UAV View                 Forms   FALSE
-#> 14      UAV View               Basemap    TRUE
-#> 15      UAV View             Crossings   FALSE
+# every theme in every template
+head(gq_themes())
+#>            template                   theme                        layer_key
+#> 1 bcfishpass_mobile High Detail - Crossings bcfishobs_fiss_fish_observations
+#> 2 bcfishpass_mobile High Detail - Crossings                      conservancy
+#> 3 bcfishpass_mobile High Detail - Crossings               crossings_modelled
+#> 4 bcfishpass_mobile High Detail - Crossings       crossings_pscis_assessment
+#> 5 bcfishpass_mobile High Detail - Crossings                  esri_world_topo
+#> 6 bcfishpass_mobile High Detail - Crossings             first_nation_reserve
+#>   visible
+#> 1    TRUE
+#> 2    TRUE
+#> 3    TRUE
+#> 4    TRUE
+#> 5   FALSE
+#> 6    TRUE
+
+# which themes a template ships
+unique(gq_themes("bcrestoration_mobile")$theme)
+#> [1] "High Detail - Crossings"       "Land Tenure"                  
+#> [3] "Low Detail - Bull Trout Model" "Low Detail - Salmon Model"    
+#> [5] "Low Detail - Steelhead Model" 
 ```

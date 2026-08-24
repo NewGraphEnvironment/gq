@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,8 +123,8 @@ QGIS Project (.qgs / .qgz)                 │
 <span><span class="va">gl_style</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_mapgl_style.html">gq_mapgl_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compose a project from groups + themes (drives QGIS project assembly + QWC2 visibility presets)</span></span>
-<span><span class="fu"><a href="reference/gq_themes.html">gq_themes</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># available visibility presets</span></span>
-<span><span class="fu"><a href="reference/gq_group_layers.html">gq_group_layers</a></span><span class="op">(</span><span class="st">"fish_passage_pscis"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/gq_themes.html">gq_themes</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># the theme roster, per template</span></span>
+<span><span class="fu"><a href="reference/gq_group_layers.html">gq_group_layers</a></span><span class="op">(</span><span class="st">"Crossings"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/gq_template_layers.html">gq_template_layers</a></span><span class="op">(</span><span class="st">"bcrestoration_mobile"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -146,7 +146,7 @@ QGIS Project (.qgs / .qgz)                 │
 </tr>
 <tr>
 <td><strong>Groups</strong></td>
-<td>Named bundles of layers with nesting + z-order (e.g. <code>fish_passage_pscis</code>, <code>restoration_riparian</code>). Drives QGIS legend tree and front-end layer pickers. 12 canonical groups; 53 layer keys mapped.</td>
+<td>Named bundles of layers with nesting + z-order (e.g. <code>Crossings</code>, <code>Streams</code>, <code>Base - misc</code>). Drives QGIS legend tree and front-end layer pickers. 11 groups; 62 layer rows.</td>
 </tr>
 <tr>
 <td><strong>Templates</strong></td>
@@ -154,7 +154,7 @@ QGIS Project (.qgs / .qgz)                 │
 </tr>
 <tr>
 <td><strong>Themes</strong></td>
-<td>Visibility presets within a project (e.g. “habitat”, “barriers”, “all”). Drives QGIS map themes and is exportable as QWC2 web-map visibility config.</td>
+<td>Per-layer visibility presets, extracted from the templates (e.g. <code>High Detail - Crossings</code>, <code>Land Tenure</code>). Keyed by template as well as theme, because the same theme name carries different content in different templates. Drives QGIS map themes and is exportable as QWC2 web-map visibility config.</td>
 </tr>
 <tr>
 <td><strong>xref_layers</strong></td>
@@ -223,7 +223,7 @@ QGIS Project (.qgs / .qgz)                 │
 <li>
 <a href="vignettes/gq-intro.Rmd"><code>gq-intro</code></a> — registry concepts, the four registries shipped with the package, name-based lookup.</li>
 <li>
-<a href="vignettes/gq-tmap-composition.Rmd"><code>gq-tmap-composition</code></a> — composing a full tmap from groups + themes.</li>
+<a href="vignettes/gq-tmap-composition.Rmd"><code>gq-tmap-composition</code></a> — composing a full tmap from the registry.</li>
 </ul>
 </div>
 <div class="section level2">

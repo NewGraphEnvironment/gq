@@ -42,8 +42,8 @@
   : Resolve template to layers
 - [`gq_templates()`](https://newgraphenvironment.github.io/gq/reference/gq_templates.md)
   : List all project templates
-- [`gq_theme_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_theme_groups.md)
-  : Get group visibility for a theme
+- [`gq_theme_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_theme_layers.md)
+  : Get layer visibility for a theme
 - [`gq_themes()`](https://newgraphenvironment.github.io/gq/reference/gq_themes.md)
   : List all visibility themes
 - [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)

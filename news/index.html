@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,16 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="gq-030">gq 0.3.0<a class="anchor" aria-label="anchor" href="#gq-030"></a></h2>
+<ul><li>
+<p><strong>Themes describe what the templates actually ship.</strong> <code>themes.csv</code> named three themes — <em>Field View</em>, <em>Analysis View</em>, <em>UAV View</em> — that exist in no template, at a granularity QGIS does not use. It is now extracted from the templates by <code>data-raw/reg_extract_themes.R</code> as <code>template,theme,layer_key,visible</code>: 232 rows over the 9 themes the two templates carry.</p>
+<p><code>template</code> is part of the key rather than a filter, because the same theme name carries different content in different templates — <code>High Detail - Crossings</code> shows 27 layers in <code>bcfishpass_mobile</code> and 0 in <code>bcrestoration_mobile</code>.</p>
+</li>
+<li><p><strong>Breaking:</strong> <code>gq_theme_groups()</code> is replaced by <code>gq_theme_layers(theme, template = NULL)</code>. Group-granular rows could not express a theme that discriminates within a group, which is what QGIS themes do. <code><a href="../reference/gq_themes.html">gq_themes()</a></code> gains a <code>template</code> argument and returns the four-column frame.</p></li>
+<li><p><code>habitat_lateral</code> joins <code>groups.csv</code>. It is a raster, so the vector-only <code><a href="../reference/gq_qgs_extract.html">gq_qgs_extract()</a></code> never saw it, yet every theme in both templates references it.</p></li>
+<li><p><code><a href="../reference/gq_qgs_extract.html">gq_qgs_extract()</a></code> now uses the same <code>normalize_layer_name()</code> helper as name-based lookup instead of its own copy of the rule.</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="gq-021">gq 0.2.1<a class="anchor" aria-label="anchor" href="#gq-021"></a></h2>
 <ul><li>The four xyz basemaps (<code>esri_world_topo</code>, <code>bing_aerial</code>, <code>esri_satellite</code>, <code>google_satellite</code>) join the roster in <code>Base - misc</code>. They were modelled nowhere before — baked into the upstream templates only — while the two data services in <code>Web Mapping Services</code> were already here. Measured against the templates rather than assumed: the six remote layers do <strong>not</strong> share a group.</li>
 </ul></div>
@@ -52,7 +62,7 @@
 <h2 class="pkg-version" data-toc-text="0.1.0" id="gq-010">gq 0.1.0<a class="anchor" aria-label="anchor" href="#gq-010"></a></h2>
 <p>First release.</p>
 <ul><li><p>Capture the QGIS dash pattern on classified line layers (<a href="https://github.com/NewGraphEnvironment/gq/issues/32" class="external-link">#32</a>). The extractor previously dropped per-class line style, so dashed classes (e.g. the <code>;INTERMITTENT</code> stream classes in <code>streams_salmon</code>) came out solid. <code><a href="../reference/gq_style.html">gq_style()</a></code> now surfaces a per-class <code>dashes</code> vector, <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code> returns it, and <code><a href="../reference/gq_mapgl_style.html">gq_mapgl_style()</a></code> consumes the exact pattern. The raw QGIS value is stored so each backend renders it as it can (mapgl uses the exact <code>line-dasharray</code>; tmap maps to <code>lty</code>).</p></li>
-<li><p>Add groups, templates, and themes composition layer (<a href="https://github.com/NewGraphEnvironment/gq/issues/28" class="external-link">#28</a>). Three CSVs in <code>inst/registry/</code> model how layers compose into QGIS projects — group membership with nesting and z-order, project templates, and visibility themes. Seven new functions: <code><a href="../reference/gq_groups.html">gq_groups()</a></code>, <code><a href="../reference/gq_group_layers.html">gq_group_layers()</a></code>, <code><a href="../reference/gq_templates.html">gq_templates()</a></code>, <code><a href="../reference/gq_template_groups.html">gq_template_groups()</a></code>, <code><a href="../reference/gq_template_layers.html">gq_template_layers()</a></code>, <code><a href="../reference/gq_themes.html">gq_themes()</a></code>, <code><a href="../reference/gq_theme_groups.html">gq_theme_groups()</a></code>. All 53 registry layer keys mapped to 12 canonical groups.</p></li>
+<li><p>Add groups, templates, and themes composition layer (<a href="https://github.com/NewGraphEnvironment/gq/issues/28" class="external-link">#28</a>). Three CSVs in <code>inst/registry/</code> model how layers compose into QGIS projects — group membership with nesting and z-order, project templates, and visibility themes. Seven new functions: <code><a href="../reference/gq_groups.html">gq_groups()</a></code>, <code><a href="../reference/gq_group_layers.html">gq_group_layers()</a></code>, <code><a href="../reference/gq_templates.html">gq_templates()</a></code>, <code><a href="../reference/gq_template_groups.html">gq_template_groups()</a></code>, <code><a href="../reference/gq_template_layers.html">gq_template_layers()</a></code>, <code><a href="../reference/gq_themes.html">gq_themes()</a></code>, <code>gq_theme_groups()</code>. All 53 registry layer keys mapped to 12 canonical groups.</p></li>
 <li><p>Add <code><a href="../reference/gq_style.html">gq_style()</a></code> — backend-agnostic style resolver with name-based registry lookup. Accepts layer names like <code>"lake"</code> or <code>"Crossings - PSCIS assessment"</code>, normalizes to registry keys, returns plain lists of colors, widths, and classification info. No tmap/mapgl dependency.</p></li>
 <li><p><code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> and <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code> now accept name-based lookup: <code>gq_tmap_style(reg, "lake")</code> instead of <code>gq_tmap_style(reg$layers$lake)</code>. Classified layers return full <code><a href="https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html" class="external-link">tm_scale_categorical()</a></code> wiring — no manual color extraction needed. Backwards compatible with object-based calls.</p></li>
 <li><p>Add Neexdzii Kwa subbasin datasets: habitat, crossings, fish observations, falls.</p></li>
