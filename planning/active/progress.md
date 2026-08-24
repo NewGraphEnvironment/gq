@@ -21,3 +21,12 @@
   53 index rows, so the schema needs no styleName-style discriminator. The 3
   doubled keys are exactly the shared+override pairs.
 - Next: Phase 2 — `gq_style_qml()`
+- **Phase 2 done** — `R/gq_style_qml.R`: `gq_style_qml(layer_key, template)`
+  plus `@noRd` `read_styles_index()` / `styles_path()` / `styles_rel()`.
+  Location is derived from scope rather than stored, so the index cannot
+  disagree with the layout.
+- Near-miss suggestions rank by `adist()`, not `agrep()`. agrep's max.distance
+  is a fraction of the *pattern*, so a short key matched loosely into long ones
+  and buried the answer — "lakes" suggested `habitat_lateral` before `lake`.
+- `devtools::run_examples()` executes the whole `@examples` block.
+- Next: Phase 3 — guards

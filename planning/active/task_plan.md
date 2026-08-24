@@ -65,17 +65,17 @@ repoints its builder at gq and deletes the duplicate.
 
 ## Phase 2 — Accessor
 
-- [ ] `read_styles_index()` in `R/gq_style_qml.R`, `@noRd`, mirroring
+- [x] `read_styles_index()` in `R/gq_style_qml.R`, `@noRd`, mirroring
       `read_groups_csv()` (`R/gq_groups.R:5-25`) exactly — `system.file()`,
       abort on `""`
-- [ ] `gq_style_qml(layer_key, template = NULL)` returns a **path**. This is a
+- [x] `gq_style_qml(layer_key, template = NULL)` returns a **path**. This is a
       new return shape for gq — every existing export returns a list or a
       data.frame — so say so in the roxygen
-- [ ] Precedence override-then-shared when `template` is given, shared only when
+- [x] Precedence override-then-shared when `template` is given, shared only when
       it is not
-- [ ] Error on an unknown key, naming near-misses. Returning `NA_character_`
+- [x] Error on an unknown key, naming near-misses. Returning `NA_character_`
       silently is the trap; a lookup that finds nothing must say so
-- [ ] Runnable `@examples` reading a real shipped key, and `devtools::document()`
+- [x] Runnable `@examples` reading a real shipped key, and `devtools::document()`
 
 ## Phase 3 — Guards
 
