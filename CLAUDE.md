@@ -1051,6 +1051,12 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - Then narrow the mask deliberately. Every field you normalize away is a field the comparison can no longer catch, so name each one and why — a mask that quietly grows turns a drift guard into decoration.
 - (rfp#17, 2026-08: comparing two QGIS templates raw said 5 of 43 shared layers still matched, which read as severe drift and argued for restructuring how styles were stored. Canonicalized — attributes sorted, symbol uuids masked — it was **46 of 47**. The templates had not drifted at all; the difference was attribute order between two QGIS builds. The naive number nearly bought an architecture change nobody needed.)
 
+### A verification command can be shadowed by a shell function or alias
+- The shell is initialized from the user's profile, so `diff`, `grep`, `ls`, `cat` and friends may resolve to a wrapper rather than the binary you assume. Measured 2026-08-24 in gq: `diff` was a shell **function** delegating to `git diff`, so `diff -q a b` — a byte-comparison in an idempotency check — died on ``unknown switch `q' `` and the step reported **NOT IDEMPOTENT** for two files that were in fact identical.
+- That direction is survivable because it is loud. The dangerous one is a wrapper that exits 0 on a comparison it never performed, which reads as "verified".
+- For anything whose output you are about to treat as evidence, bypass the lookup: `command diff`, `\diff`, or a tool with no common wrapper — `cmp -s` for byte-equality, `md5` / `sha256sum` for a value you can print. Printing the digest beats printing a verdict: it stays checkable after the fact.
+- `type <cmd>` tells you what you actually have. Worth running the first time a verification step returns something surprising, before believing the surprise.
+
 ### Documentation Staleness
 - Moving/renaming scripts: update CLAUDE.md, READMEs, usage comments
 - New variables: update .tfvars.example
@@ -1423,6 +1429,28 @@ planning/
 ```
 
 If `planning/` doesn't exist in the repo, run `/planning-init` first.
+
+**`planning/active/` must be tracked, not gitignored.** The atomic-commit rule
+above requires each commit to carry its own checkbox flip in `task_plan.md`; an
+ignored `active/` drops it silently, so `git log -- planning/` shows archives
+appearing fully-formed with no history behind them. In-flight PWF also stops
+surviving a move between machines.
+
+The failure is quiet in both directions. `git add planning/` reports nothing and
+exits 0 on an ignored path, and files tracked *before* the rule existed keep
+being tracked — including through a `git mv` into the ignored directory. So a
+repo can look like it is working right up until the first genuinely new PWF file,
+which simply never appears in a commit.
+
+Check rather than assume:
+
+```bash
+git check-ignore -v planning/active/task_plan.md   # expect no output
+```
+
+Found 2026-08-24 in gq, where the rule dated from the scaffold commit and the
+#17 files had only survived because they predated their move into that
+directory. gq and roli were the only 2 of 32 repos carrying it; roli still does.
 
 ## Skills
 
