@@ -95,15 +95,15 @@ tree red at `tests/testthat/test-gq_groups.R:122,123,127-136`, which the
       that vignette has no theme reference. Fix the claim, not the vignette
 - [x] `CLAUDE.md:175-181` registry-sources list omits `groups.csv`,
       `templates.csv`, `themes.csv` entirely
-- [ ] `NEWS.md` 0.3.0 section; `DESCRIPTION` 0.2.1 → 0.3.0 as the **final**
+- [x] `NEWS.md` 0.3.0 section; `DESCRIPTION` 0.2.1 → 0.3.0 as the **final**
       commit of the branch
 
 ## Validation
 
-- [ ] `devtools::test()` — record the pre-change baseline first, then compare
-- [ ] `lintr::lint_package()` clean on changed files
-- [ ] `devtools::check()` no new ERROR/WARNING
-- [ ] `/code-check` clean on each commit
-- [ ] Re-running `reg_extract_themes.R` is idempotent against a pinned rfp
-- [ ] PWF checkboxes match landed work
+- [x] `devtools::test()` — record the pre-change baseline first, then compare
+- [x] `lintr::lint_package()` clean on changed files
+- [x] `devtools::check()` no new ERROR/WARNING
+- [x] `/code-check` clean on each commit
+- [x] Re-running `reg_extract_themes.R` is idempotent against a pinned rfp
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive`, then `/gh-pr-push`
