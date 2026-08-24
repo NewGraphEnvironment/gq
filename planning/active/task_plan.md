@@ -79,15 +79,15 @@ repoints its builder at gq and deletes the duplicate.
 
 ## Phase 3 — Guards
 
-- [ ] Index integrity **in both directions** — every row resolves to a file, and
+- [x] Index integrity **in both directions** — every row resolves to a file, and
       every file has a row. This is the rfp gap; gq should not inherit it
-- [ ] `normalize_layer_name(index$layer)` equals `index$layer_key` for every row
+- [x] `normalize_layer_name(index$layer)` equals `index$layer_key` for every row
       — pins the two-slugifier agreement measured above
-- [ ] Every vendored QML parses as XML, roots at `<qgis>`, and carries no source
+- [x] Every vendored QML parses as XML, roots at `<qgis>`, and carries no source
       binding (`datasource`, `layername`, `id` absent). Cheap, structural, runs
       without rfp
-- [ ] Override precedence resolves; unknown key errors
-- [ ] Byte-identity against rfp's store, under `skip_if_not_installed("rfp")` —
+- [x] Override precedence resolves; unknown key errors
+- [x] Byte-identity against rfp's store, under `skip_if_not_installed("rfp")` —
       the drift guard proper, skipped where rfp is absent, which is why the
       structural assertions above stand alongside it
 

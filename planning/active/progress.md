@@ -30,3 +30,14 @@
   and buried the answer — "lakes" suggested `habitat_lateral` before `lake`.
 - `devtools::run_examples()` executes the whole `@examples` block.
 - Next: Phase 3 — guards
+- **Phase 3 done** — `tests/testthat/test-gq_style_qml.R`, 101 assertions.
+  Suite 390 pass / 0 fail.
+- The drift test failed first time against the INSTALLED rfp (0.25.1, 3 raster
+  QMLs, no store) and reported 59 false drifts. That is the installed-vs-source
+  trap `reg_extract_themes.R` already warns about; the test now takes
+  `RFP_STYLES_DIR` first and skips when upstream predates rfp#174. Verified both
+  answers: skips on installed, 101 pass against the checkout.
+- `WARN 1` in `test-gq_registry_read.R:25` is baseline — untouched by this
+  branch, fires in isolation.
+- `lintr` clean on all three new files.
+- Next: Phase 4 — build and docs
