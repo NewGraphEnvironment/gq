@@ -183,6 +183,34 @@ from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
 **QGIS extraction:**
 - `gq_qgs_extract(path)` — parse .qgs XML → registry JSON (no PyQGIS needed)
 
+**QGIS-native styles:**
+- `gq_style_qml(layer_key, template)` — path to a layer's QML
+
+The registry is the cross-backend abstraction: it models the ~20 symbol
+properties and single symbol layer tmap and mapgl can render, of the up-to-73
+and up-to-5 a `.qgs` carries. The QML corpus is the same styles in QGIS's own
+form, lossless — multi-layer symbols, casing and overlay, labelling, per-class
+dash. Registry for tmap and mapgl; QML for anything speaking to QGIS (Desktop,
+Mergin, QGIS Server / QWC2, a `layer_styles` table).
+
+Unlike every other export it returns a **file path**, so a caller can copy or
+read the bytes QGIS wrote without gq re-serializing them.
+
+#### QML corpus (`inst/styles/`)
+
+- `vector/<layer_key>.qml` — 50 shared vector styles
+- `vector/overrides/<template>/<layer_key>.qml` — the 3 layers whose symbology
+  genuinely differs between templates; everything else is shared
+- `raster/`, `services/` — 1 raster, 6 WMS/xyz basemaps
+- `index.csv` — `layer_key,layer,template,scope,kind`, quoted (layer names carry
+  commas and one begins with a space)
+
+Vendored from rfp's committed store by `data-raw/styles_vendor.R`. gq does not
+lift QML from a `.qgs` itself: that boundary is positional rather than a filter,
+so the source-tag list must be complete rather than merely correct, and it is
+pinned upstream by a QGIS-container oracle. Two copies of that rule would be one
+too many.
+
 #### Registry sources (`inst/registry/`)
 
 - `reg_main.json` — master merged registry (single source of truth)
