@@ -27,8 +27,10 @@ Thumbs.db
 # which is the wrong answer for a public repo.
 !.claude/visibility
 
-# Planning (gitignored by default, archive explicitly)
-planning/active/
+# Planning is tracked, active and archive both. The PWF convention requires
+# each commit to carry its own checkbox flip in planning/active/task_plan.md,
+# so `git log -- planning/` tells the full story; an ignored active/ makes that
+# impossible and does not survive a move between machines.
 docs
 inst/doc
 /doc/

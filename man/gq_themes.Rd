@@ -4,16 +4,36 @@
 \alias{gq_themes}
 \title{List all visibility themes}
 \usage{
-gq_themes()
+gq_themes(template = NULL)
+}
+\arguments{
+\item{template}{Character. Optional template name to restrict to, e.g.
+\code{"bcfishpass_mobile"}. Default \code{NULL} returns every template.}
 }
 \value{
-A data.frame with columns: theme, group, visible.
+A data.frame with columns: template, theme, layer_key, visible.
 }
 \description{
-Returns a data.frame of all themes defined in the registry, showing
-which groups are visible or hidden in each theme.
+Returns the theme roster extracted from the QGIS templates: which layers each
+template's map themes show or hide.
+}
+\details{
+Themes are recorded per layer because that is how QGIS stores them — a
+\verb{<visibility-preset>} enumerates each layer it governs with an explicit
+visible flag. The same theme name can therefore carry different content in
+different templates, which is why \code{template} is part of the key rather than a
+filter applied afterwards.
+
+A theme governs only the layers it names. Templates carry more layers than
+any one theme lists, so a returned set is partial: a layer absent from a
+theme is not "hidden by" it, it is simply unmanaged and keeps whatever state
+it had.
 }
 \examples{
-gq_themes()
+# every theme in every template
+head(gq_themes())
+
+# which themes a template ships
+unique(gq_themes("bcrestoration_mobile")$theme)
 
 }

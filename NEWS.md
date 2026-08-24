@@ -1,3 +1,30 @@
+# gq 0.3.0
+
+- **Themes describe what the templates actually ship.** `themes.csv` named three
+  themes — *Field View*, *Analysis View*, *UAV View* — that exist in no
+  template, at a granularity QGIS does not use. It is now extracted from the
+  templates by `data-raw/reg_extract_themes.R` as
+  `template,theme,layer_key,visible`: 232 rows over the 9 themes the two
+  templates carry.
+
+  `template` is part of the key rather than a filter, because the same theme
+  name carries different content in different templates — `High Detail -
+  Crossings` shows 27 layers in `bcfishpass_mobile` and 0 in
+  `bcrestoration_mobile`.
+
+- **Breaking:** `gq_theme_groups()` is replaced by
+  `gq_theme_layers(theme, template = NULL)`. Group-granular rows could not
+  express a theme that discriminates within a group, which is what QGIS themes
+  do. `gq_themes()` gains a `template` argument and returns the four-column
+  frame.
+
+- `habitat_lateral` joins `groups.csv`. It is a raster, so the vector-only
+  `gq_qgs_extract()` never saw it, yet every theme in both templates references
+  it.
+
+- `gq_qgs_extract()` now uses the same `normalize_layer_name()` helper as
+  name-based lookup instead of its own copy of the rule.
+
 # gq 0.2.1
 
 - The four xyz basemaps (`esri_world_topo`, `bing_aerial`, `esri_satellite`,

@@ -116,26 +116,66 @@ test_that("bcrestoration_mobile has Floodplain and Restoration groups", {
 
 # --- themes -------------------------------------------------------------------
 
-test_that("gq_themes returns all themes", {
+test_that("gq_themes returns the layer-granular roster", {
   df <- gq_themes()
   expect_s3_class(df, "data.frame")
-  expect_true(all(c("theme", "group", "visible") %in% names(df)))
-  expect_true("Field View" %in% df$theme)
+  expect_true(all(c("template", "theme", "layer_key", "visible") %in% names(df)))
   expect_type(df$visible, "logical")
+  expect_false(any(is.na(df$visible)))
 })
 
-test_that("gq_theme_groups returns correct visibility", {
-  df <- gq_theme_groups("Field View")
-  expect_true(all(df$theme == "Field View"))
-  # Forms should be visible in Field View
-  forms_row <- df[df$group == "Forms", ]
-  expect_true(forms_row$visible)
-  # Crossings should be hidden
-  crossings_row <- df[df$group == "Crossings", ]
-  expect_false(crossings_row$visible)
+test_that("gq_themes names only themes the templates ship", {
+  df <- gq_themes()
+  expect_true("High Detail - Crossings" %in% df$theme)
+  # the roster used to name three themes that exist in no template
+  expect_false(any(c("Field View", "Analysis View", "UAV View") %in% df$theme))
 })
 
-test_that("gq_theme_groups returns empty for unknown theme", {
-  df <- gq_theme_groups("Nonexistent Theme")
-  expect_equal(nrow(df), 0)
+test_that("gq_themes filters by template, and Land Tenure is restoration-only", {
+  expect_equal(unique(gq_themes("bcfishpass_mobile")$template),
+               "bcfishpass_mobile")
+  expect_false("Land Tenure" %in% gq_themes("bcfishpass_mobile")$theme)
+  expect_true("Land Tenure" %in% gq_themes("bcrestoration_mobile")$theme)
+})
+
+test_that("one theme name carries different content per template", {
+  # The case the old group-granular schema could not represent, and the reason
+  # `template` is part of the key rather than a filter.
+  xing <- gq_theme_layers("High Detail - Crossings")
+  expect_setequal(unique(xing$template),
+                  c("bcfishpass_mobile", "bcrestoration_mobile"))
+  visible_by_template <- tapply(xing$visible, xing$template, sum)
+  expect_gt(visible_by_template[["bcfishpass_mobile"]], 0)
+  expect_equal(visible_by_template[["bcrestoration_mobile"]], 0)
+})
+
+test_that("gq_theme_layers without template concatenates both templates", {
+  # Documented behaviour: the caller checks the template column, or passes it.
+  both <- gq_theme_layers("High Detail - Crossings")
+  one <- gq_theme_layers("High Detail - Crossings",
+                         template = "bcfishpass_mobile")
+  expect_gt(nrow(both), nrow(one))
+  expect_equal(unique(one$template), "bcfishpass_mobile")
+})
+
+test_that("gq_theme_layers returns empty for unknown theme", {
+  expect_equal(nrow(gq_theme_layers("Nonexistent Theme")), 0)
+})
+
+test_that("every theme layer_key exists in groups.csv", {
+  # Mirror of the registry-keys integrity test above. A theme naming a layer the
+  # roster does not carry is the dangling reference the extraction script aborts
+  # on; this pins it for the committed data too.
+  missing <- setdiff(unique(gq_themes()$layer_key), unique(gq_groups()$layer_key))
+  expect_equal(
+    length(missing), 0,
+    info = paste("Missing from groups.csv:", paste(missing, collapse = ", "))
+  )
+})
+
+test_that("parse_visible rejects values it cannot interpret", {
+  expect_equal(parse_visible(c("true", "false")), c(TRUE, FALSE))
+  expect_equal(parse_visible(c(TRUE, FALSE)), c(TRUE, FALSE))
+  expect_error(parse_visible(c("true", "1")), "must be true or false")
+  expect_error(parse_visible(c("yes", "no")), "must be true or false")
 })

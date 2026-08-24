@@ -66,8 +66,8 @@ tmap::tm_shape(lakes_sf) +
 gl_style <- gq_mapgl_style(reg, "crossings_pscis_assessment")
 
 # Compose a project from groups + themes (drives QGIS project assembly + QWC2 visibility presets)
-gq_themes()            # available visibility presets
-gq_group_layers("fish_passage_pscis")
+gq_themes()            # the theme roster, per template
+gq_group_layers("Crossings")
 gq_template_layers("bcrestoration_mobile")
 ```
 
@@ -76,9 +76,9 @@ gq_template_layers("bcrestoration_mobile")
 | Concept | What it is |
 |---|---|
 | **Registry** | The canonical JSON — per-layer styling (color, opacity, stroke, mark, font, label, classification breaks). Shipped under `inst/registry/`; one per QGIS project family (`reg_qgis_restoration`, `reg_qgis_fishpassage`) plus a merged `reg_main.json` master. |
-| **Groups** | Named bundles of layers with nesting + z-order (e.g. `fish_passage_pscis`, `restoration_riparian`). Drives QGIS legend tree and front-end layer pickers. 12 canonical groups; 53 layer keys mapped. |
+| **Groups** | Named bundles of layers with nesting + z-order (e.g. `Crossings`, `Streams`, `Base - misc`). Drives QGIS legend tree and front-end layer pickers. 11 groups; 62 layer rows. |
 | **Templates** | Project-level compositions — which groups belong to which QGIS project (`bcfishpass_mobile`, `bcrestoration_mobile`). Project-assembly tools read templates to decide which layers belong in a new field project. |
-| **Themes** | Visibility presets within a project (e.g. "habitat", "barriers", "all"). Drives QGIS map themes and is exportable as QWC2 web-map visibility config. |
+| **Themes** | Per-layer visibility presets, extracted from the templates (e.g. `High Detail - Crossings`, `Land Tenure`). Keyed by template as well as theme, because the same theme name carries different content in different templates. Drives QGIS map themes and is exportable as QWC2 web-map visibility config. |
 | **xref_layers** | Cross-reference table mapping registry keys to source-system layer names (BC Data Catalogue WMS layers, fwapg views, internal pgsql schemas) so consumers can look up the underlying data when they want it. |
 
 ## Producer ⇄ consumer
@@ -107,7 +107,7 @@ The long-term direction is [OGC API Styles](https://ogcapi.ogc.org/styles/) — 
 ## Vignettes
 
 - [`gq-intro`](vignettes/gq-intro.Rmd) — registry concepts, the four registries shipped with the package, name-based lookup.
-- [`gq-tmap-composition`](vignettes/gq-tmap-composition.Rmd) — composing a full tmap from groups + themes.
+- [`gq-tmap-composition`](vignettes/gq-tmap-composition.Rmd) — composing a full tmap from the registry.
 
 ## License
 

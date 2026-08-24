@@ -1,16 +1,233 @@
-theme,group,visible
-Field View,Forms,true
-Field View,Basemap,true
-Field View,Crossings,false
-Field View,Streams,false
-Field View,Other Point Features,false
-Field View,Roads/Rails/Pipelines,false
-Analysis View,Forms,true
-Analysis View,Crossings,true
-Analysis View,Streams,true
-Analysis View,Basemap,true
-Analysis View,Other Point Features,true
-Analysis View,Roads/Rails/Pipelines,true
-UAV View,Forms,false
-UAV View,Basemap,true
-UAV View,Crossings,false
+template,theme,layer_key,visible
+bcfishpass_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,true
+bcfishpass_mobile,High Detail - Crossings,conservancy,true
+bcfishpass_mobile,High Detail - Crossings,crossings_modelled,true
+bcfishpass_mobile,High Detail - Crossings,crossings_pscis_assessment,true
+bcfishpass_mobile,High Detail - Crossings,esri_world_topo,false
+bcfishpass_mobile,High Detail - Crossings,first_nation_reserve,true
+bcfishpass_mobile,High Detail - Crossings,fiss_obstacles,true
+bcfishpass_mobile,High Detail - Crossings,fiss_stream_sample_sites,true
+bcfishpass_mobile,High Detail - Crossings,form_fiss_site,true
+bcfishpass_mobile,High Detail - Crossings,form_pscis,true
+bcfishpass_mobile,High Detail - Crossings,habitat_lateral,true
+bcfishpass_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,true
+bcfishpass_mobile,High Detail - Crossings,lake,true
+bcfishpass_mobile,High Detail - Crossings,manmade_waterbodies,true
+bcfishpass_mobile,High Detail - Crossings,moti_culverts,true
+bcfishpass_mobile,High Detail - Crossings,municipalities,true
+bcfishpass_mobile,High Detail - Crossings,pipeline_installed,true
+bcfishpass_mobile,High Detail - Crossings,pipeline_permit,true
+bcfishpass_mobile,High Detail - Crossings,provincial_park,true
+bcfishpass_mobile,High Detail - Crossings,railway,true
+bcfishpass_mobile,High Detail - Crossings,roads_dra,true
+bcfishpass_mobile,High Detail - Crossings,roads_ften,true
+bcfishpass_mobile,High Detail - Crossings,stream_labels,true
+bcfishpass_mobile,High Detail - Crossings,streams_all,true
+bcfishpass_mobile,High Detail - Crossings,streams_salmon,true
+bcfishpass_mobile,High Detail - Crossings,transmission_line,true
+bcfishpass_mobile,High Detail - Crossings,watershed_group_boundary,true
+bcfishpass_mobile,High Detail - Crossings,wetland,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Bull Trout Model,conservancy,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,esri_world_topo,false
+bcfishpass_mobile,Low Detail - Bull Trout Model,first_nation_reserve,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,fiss_obstacles,false
+bcfishpass_mobile,Low Detail - Bull Trout Model,fiss_stream_sample_sites,false
+bcfishpass_mobile,Low Detail - Bull Trout Model,form_fiss_site,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,habitat_lateral,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,lake,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,manmade_waterbodies,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,moti_major_structures,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,municipalities,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,pipeline_permit,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,provincial_park,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,railway,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,roads_dra,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,roads_ften,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,stream_labels,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,streams_all,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,streams_bt,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,transmission_line,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,watershed_group_boundary,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,wetland,true
+bcfishpass_mobile,Low Detail - Salmon Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Salmon Model,conservancy,true
+bcfishpass_mobile,Low Detail - Salmon Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Salmon Model,esri_world_topo,false
+bcfishpass_mobile,Low Detail - Salmon Model,first_nation_reserve,true
+bcfishpass_mobile,Low Detail - Salmon Model,fiss_obstacles,false
+bcfishpass_mobile,Low Detail - Salmon Model,fiss_stream_sample_sites,false
+bcfishpass_mobile,Low Detail - Salmon Model,form_fiss_site,true
+bcfishpass_mobile,Low Detail - Salmon Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Salmon Model,habitat_lateral,true
+bcfishpass_mobile,Low Detail - Salmon Model,lake,true
+bcfishpass_mobile,Low Detail - Salmon Model,manmade_waterbodies,true
+bcfishpass_mobile,Low Detail - Salmon Model,moti_major_structures,true
+bcfishpass_mobile,Low Detail - Salmon Model,municipalities,true
+bcfishpass_mobile,Low Detail - Salmon Model,pipeline_permit,true
+bcfishpass_mobile,Low Detail - Salmon Model,provincial_park,true
+bcfishpass_mobile,Low Detail - Salmon Model,railway,true
+bcfishpass_mobile,Low Detail - Salmon Model,roads_dra,true
+bcfishpass_mobile,Low Detail - Salmon Model,roads_ften,true
+bcfishpass_mobile,Low Detail - Salmon Model,stream_labels,true
+bcfishpass_mobile,Low Detail - Salmon Model,streams_all,true
+bcfishpass_mobile,Low Detail - Salmon Model,streams_salmon,true
+bcfishpass_mobile,Low Detail - Salmon Model,transmission_line,true
+bcfishpass_mobile,Low Detail - Salmon Model,watershed_group_boundary,true
+bcfishpass_mobile,Low Detail - Salmon Model,wetland,true
+bcfishpass_mobile,Low Detail - Steelhead Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Steelhead Model,conservancy,true
+bcfishpass_mobile,Low Detail - Steelhead Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Steelhead Model,esri_world_topo,false
+bcfishpass_mobile,Low Detail - Steelhead Model,first_nation_reserve,true
+bcfishpass_mobile,Low Detail - Steelhead Model,fiss_obstacles,false
+bcfishpass_mobile,Low Detail - Steelhead Model,fiss_stream_sample_sites,false
+bcfishpass_mobile,Low Detail - Steelhead Model,form_fiss_site,true
+bcfishpass_mobile,Low Detail - Steelhead Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Steelhead Model,habitat_lateral,true
+bcfishpass_mobile,Low Detail - Steelhead Model,lake,true
+bcfishpass_mobile,Low Detail - Steelhead Model,manmade_waterbodies,true
+bcfishpass_mobile,Low Detail - Steelhead Model,moti_major_structures,true
+bcfishpass_mobile,Low Detail - Steelhead Model,municipalities,true
+bcfishpass_mobile,Low Detail - Steelhead Model,pipeline_permit,true
+bcfishpass_mobile,Low Detail - Steelhead Model,provincial_park,true
+bcfishpass_mobile,Low Detail - Steelhead Model,railway,true
+bcfishpass_mobile,Low Detail - Steelhead Model,roads_dra,true
+bcfishpass_mobile,Low Detail - Steelhead Model,roads_ften,true
+bcfishpass_mobile,Low Detail - Steelhead Model,stream_labels,true
+bcfishpass_mobile,Low Detail - Steelhead Model,streams_all,true
+bcfishpass_mobile,Low Detail - Steelhead Model,streams_st,true
+bcfishpass_mobile,Low Detail - Steelhead Model,transmission_line,true
+bcfishpass_mobile,Low Detail - Steelhead Model,watershed_group_boundary,true
+bcfishpass_mobile,Low Detail - Steelhead Model,wetland,true
+bcrestoration_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,High Detail - Crossings,conservancy,false
+bcrestoration_mobile,High Detail - Crossings,crossings_modelled,false
+bcrestoration_mobile,High Detail - Crossings,crossings_pscis_assessment,false
+bcrestoration_mobile,High Detail - Crossings,esri_world_topo,false
+bcrestoration_mobile,High Detail - Crossings,first_nation_reserve,false
+bcrestoration_mobile,High Detail - Crossings,fiss_obstacles,false
+bcrestoration_mobile,High Detail - Crossings,fiss_stream_sample_sites,false
+bcrestoration_mobile,High Detail - Crossings,form_fiss_site,false
+bcrestoration_mobile,High Detail - Crossings,form_pscis,false
+bcrestoration_mobile,High Detail - Crossings,habitat_lateral,false
+bcrestoration_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,false
+bcrestoration_mobile,High Detail - Crossings,lake,false
+bcrestoration_mobile,High Detail - Crossings,manmade_waterbodies,false
+bcrestoration_mobile,High Detail - Crossings,moti_culverts,false
+bcrestoration_mobile,High Detail - Crossings,municipalities,false
+bcrestoration_mobile,High Detail - Crossings,pipeline_installed,false
+bcrestoration_mobile,High Detail - Crossings,pipeline_permit,false
+bcrestoration_mobile,High Detail - Crossings,provincial_park,false
+bcrestoration_mobile,High Detail - Crossings,railway,false
+bcrestoration_mobile,High Detail - Crossings,roads_dra,false
+bcrestoration_mobile,High Detail - Crossings,roads_ften,false
+bcrestoration_mobile,High Detail - Crossings,stream_labels,false
+bcrestoration_mobile,High Detail - Crossings,streams_all,false
+bcrestoration_mobile,High Detail - Crossings,streams_salmon,false
+bcrestoration_mobile,High Detail - Crossings,transmission_line,false
+bcrestoration_mobile,High Detail - Crossings,watershed_group_boundary,false
+bcrestoration_mobile,High Detail - Crossings,wetland,false
+bcrestoration_mobile,Land Tenure,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Land Tenure,conservancy,true
+bcrestoration_mobile,Land Tenure,esri_world_topo,false
+bcrestoration_mobile,Land Tenure,first_nation_reserve,true
+bcrestoration_mobile,Land Tenure,fiss_obstacles,false
+bcrestoration_mobile,Land Tenure,fiss_stream_sample_sites,false
+bcrestoration_mobile,Land Tenure,floodplains,true
+bcrestoration_mobile,Land Tenure,form_fiss_site,true
+bcrestoration_mobile,Land Tenure,form_pscis,true
+bcrestoration_mobile,Land Tenure,habitat_lateral,true
+bcrestoration_mobile,Land Tenure,lake,true
+bcrestoration_mobile,Land Tenure,land_ownership,true
+bcrestoration_mobile,Land Tenure,manmade_waterbodies,true
+bcrestoration_mobile,Land Tenure,municipalities,true
+bcrestoration_mobile,Land Tenure,pipeline_permit,true
+bcrestoration_mobile,Land Tenure,provincial_park,true
+bcrestoration_mobile,Land Tenure,railway,true
+bcrestoration_mobile,Land Tenure,range_tenure,true
+bcrestoration_mobile,Land Tenure,roads_dra,true
+bcrestoration_mobile,Land Tenure,roads_ften,true
+bcrestoration_mobile,Land Tenure,stream_labels,true
+bcrestoration_mobile,Land Tenure,streams_all,true
+bcrestoration_mobile,Land Tenure,streams_st,true
+bcrestoration_mobile,Land Tenure,transmission_line,true
+bcrestoration_mobile,Land Tenure,watershed_group_boundary,true
+bcrestoration_mobile,Land Tenure,wetland,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Bull Trout Model,conservancy,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,esri_world_topo,false
+bcrestoration_mobile,Low Detail - Bull Trout Model,first_nation_reserve,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,fiss_obstacles,false
+bcrestoration_mobile,Low Detail - Bull Trout Model,fiss_stream_sample_sites,false
+bcrestoration_mobile,Low Detail - Bull Trout Model,form_fiss_site,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,habitat_lateral,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,lake,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,manmade_waterbodies,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,moti_major_structures,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,municipalities,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,pipeline_permit,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,provincial_park,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,railway,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,roads_dra,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,roads_ften,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,stream_labels,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,streams_all,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,streams_bt,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,transmission_line,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,watershed_group_boundary,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,wetland,true
+bcrestoration_mobile,Low Detail - Salmon Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Salmon Model,conservancy,true
+bcrestoration_mobile,Low Detail - Salmon Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Salmon Model,esri_world_topo,false
+bcrestoration_mobile,Low Detail - Salmon Model,first_nation_reserve,true
+bcrestoration_mobile,Low Detail - Salmon Model,fiss_obstacles,false
+bcrestoration_mobile,Low Detail - Salmon Model,fiss_stream_sample_sites,false
+bcrestoration_mobile,Low Detail - Salmon Model,form_fiss_site,true
+bcrestoration_mobile,Low Detail - Salmon Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Salmon Model,habitat_lateral,true
+bcrestoration_mobile,Low Detail - Salmon Model,lake,true
+bcrestoration_mobile,Low Detail - Salmon Model,manmade_waterbodies,true
+bcrestoration_mobile,Low Detail - Salmon Model,moti_major_structures,true
+bcrestoration_mobile,Low Detail - Salmon Model,municipalities,true
+bcrestoration_mobile,Low Detail - Salmon Model,pipeline_permit,true
+bcrestoration_mobile,Low Detail - Salmon Model,provincial_park,true
+bcrestoration_mobile,Low Detail - Salmon Model,railway,true
+bcrestoration_mobile,Low Detail - Salmon Model,roads_dra,true
+bcrestoration_mobile,Low Detail - Salmon Model,roads_ften,true
+bcrestoration_mobile,Low Detail - Salmon Model,stream_labels,true
+bcrestoration_mobile,Low Detail - Salmon Model,streams_all,true
+bcrestoration_mobile,Low Detail - Salmon Model,streams_salmon,true
+bcrestoration_mobile,Low Detail - Salmon Model,transmission_line,true
+bcrestoration_mobile,Low Detail - Salmon Model,watershed_group_boundary,true
+bcrestoration_mobile,Low Detail - Salmon Model,wetland,true
+bcrestoration_mobile,Low Detail - Steelhead Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Steelhead Model,conservancy,true
+bcrestoration_mobile,Low Detail - Steelhead Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Steelhead Model,esri_world_topo,false
+bcrestoration_mobile,Low Detail - Steelhead Model,first_nation_reserve,true
+bcrestoration_mobile,Low Detail - Steelhead Model,fiss_obstacles,false
+bcrestoration_mobile,Low Detail - Steelhead Model,fiss_stream_sample_sites,false
+bcrestoration_mobile,Low Detail - Steelhead Model,form_fiss_site,true
+bcrestoration_mobile,Low Detail - Steelhead Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Steelhead Model,habitat_lateral,true
+bcrestoration_mobile,Low Detail - Steelhead Model,lake,true
+bcrestoration_mobile,Low Detail - Steelhead Model,manmade_waterbodies,true
+bcrestoration_mobile,Low Detail - Steelhead Model,moti_major_structures,true
+bcrestoration_mobile,Low Detail - Steelhead Model,municipalities,true
+bcrestoration_mobile,Low Detail - Steelhead Model,pipeline_permit,true
+bcrestoration_mobile,Low Detail - Steelhead Model,provincial_park,true
+bcrestoration_mobile,Low Detail - Steelhead Model,railway,true
+bcrestoration_mobile,Low Detail - Steelhead Model,roads_dra,true
+bcrestoration_mobile,Low Detail - Steelhead Model,roads_ften,true
+bcrestoration_mobile,Low Detail - Steelhead Model,stream_labels,true
+bcrestoration_mobile,Low Detail - Steelhead Model,streams_all,true
+bcrestoration_mobile,Low Detail - Steelhead Model,streams_st,true
+bcrestoration_mobile,Low Detail - Steelhead Model,transmission_line,true
+bcrestoration_mobile,Low Detail - Steelhead Model,watershed_group_boundary,true
+bcrestoration_mobile,Low Detail - Steelhead Model,wetland,true

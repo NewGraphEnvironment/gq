@@ -24,6 +24,30 @@ read_themes_csv <- function() {
   utils::read.csv(path, stringsAsFactors = FALSE, na.strings = c("", "NA"))
 }
 
+#' Coerce a visible column to logical, refusing anything ambiguous
+#'
+#' read.csv() already type-converts a column of bare true/false, so a bare
+#' as.logical() here was a no-op that looked like a guard. Anything it could not
+#' parse — `1`/`0`, `yes`/`no`, a typo — became NA silently, and an NA visible
+#' flag reads downstream as "not visible" rather than as an error.
+#' @noRd
+parse_visible <- function(x) {
+  if (is.logical(x)) {
+    return(x)
+  }
+  out <- ifelse(tolower(trimws(x)) == "true", TRUE,
+                ifelse(tolower(trimws(x)) == "false", FALSE, NA))
+  bad <- is.na(out) & !is.na(x)
+  if (any(bad)) {
+    stop(
+      "themes.csv: 'visible' must be true or false, got: ",
+      paste(unique(x[bad]), collapse = ", "),
+      call. = FALSE
+    )
+  }
+  out
+}
+
 
 # --- Group functions ----------------------------------------------------------
 
@@ -191,36 +215,68 @@ gq_template_layers <- function(template, registry = NULL) {
 
 #' List all visibility themes
 #'
-#' Returns a data.frame of all themes defined in the registry, showing
-#' which groups are visible or hidden in each theme.
+#' Returns the theme roster extracted from the QGIS templates: which layers each
+#' template's map themes show or hide.
 #'
-#' @return A data.frame with columns: theme, group, visible.
+#' Themes are recorded per layer because that is how QGIS stores them — a
+#' `<visibility-preset>` enumerates each layer it governs with an explicit
+#' visible flag. The same theme name can therefore carry different content in
+#' different templates, which is why `template` is part of the key rather than a
+#' filter applied afterwards.
+#'
+#' A theme governs only the layers it names. Templates carry more layers than
+#' any one theme lists, so a returned set is partial: a layer absent from a
+#' theme is not "hidden by" it, it is simply unmanaged and keeps whatever state
+#' it had.
+#'
+#' @param template Character. Optional template name to restrict to, e.g.
+#'   `"bcfishpass_mobile"`. Default `NULL` returns every template.
+#' @return A data.frame with columns: template, theme, layer_key, visible.
 #'
 #' @examples
-#' gq_themes()
+#' # every theme in every template
+#' head(gq_themes())
+#'
+#' # which themes a template ships
+#' unique(gq_themes("bcrestoration_mobile")$theme)
 #'
 #' @export
-gq_themes <- function() {
+gq_themes <- function(template = NULL) {
   df <- read_themes_csv()
-  df$visible <- as.logical(df$visible)
+  df$visible <- parse_visible(df$visible)
+  if (!is.null(template)) {
+    df <- df[df$template == template, , drop = FALSE]
+    rownames(df) <- NULL
+  }
   df
 }
 
 
-#' Get group visibility for a theme
+#' Get layer visibility for a theme
 #'
-#' Returns which groups are visible or hidden for a given theme.
+#' Returns which layers a theme shows or hides.
 #'
-#' @param theme Character. Theme name (e.g., `"Field View"`).
-#' @return A data.frame with columns: theme, group, visible.
-#'   Returns empty data.frame if theme not found.
+#' Without `template`, a theme name that ships in more than one template returns
+#' every template's rows concatenated — check the `template` column, or pass it,
+#' when you want one project's answer. `High Detail - Crossings` is the live
+#' example: it ships in both templates with materially different content.
+#'
+#' @param theme Character. Theme name, e.g. `"High Detail - Crossings"`.
+#' @param template Character. Optional template name to restrict to.
+#' @return A data.frame with columns: template, theme, layer_key, visible.
+#'   Returns an empty data.frame if the theme is not found.
 #'
 #' @examples
-#' gq_theme_groups("Field View")
+#' # the same theme differs by template
+#' xing <- gq_theme_layers("High Detail - Crossings")
+#' tapply(xing$visible, xing$template, sum)
+#'
+#' # one template's answer
+#' head(gq_theme_layers("Land Tenure", template = "bcrestoration_mobile"))
 #'
 #' @export
-gq_theme_groups <- function(theme) {
-  df <- gq_themes()
+gq_theme_layers <- function(theme, template = NULL) {
+  df <- gq_themes(template = template)
   out <- df[df$theme == theme, , drop = FALSE]
   rownames(out) <- NULL
   out

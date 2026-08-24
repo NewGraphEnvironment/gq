@@ -152,11 +152,22 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 #### R Package (the package root IS the R package)
 
 **Registry functions:**
-- `gq_reg_main()` — load the master registry (53 layers, no arguments needed)
+- `gq_reg_main()` — load the master registry (54 layers, no arguments needed)
 - `gq_registry_read(path)` — read any registry JSON file
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
 - `gq_reg_merge(..., csv, priority)` — merge multiple registries
+
+**Composition functions (groups, templates, themes):**
+- `gq_groups(registry)` / `gq_group_layers(group, registry)` — group membership and z-order
+- `gq_templates()` / `gq_template_groups(template)` / `gq_template_layers(template, registry)` — project composition
+- `gq_themes(template)` — the theme roster, keyed `template,theme,layer_key,visible`
+- `gq_theme_layers(theme, template)` — which layers a theme shows or hides
+
+Themes are per-layer because QGIS stores them that way, and keyed by template
+because the same theme name carries different content in different templates
+(`High Detail - Crossings` shows 27 layers in bcfishpass, 0 in bcrestoration). A
+theme governs only the layers it names — absence means unmanaged, not hidden.
 
 **Style resolvers:**
 - `gq_style(reg, name, field)` — backend-agnostic style resolver (colors, widths, classification)
@@ -178,6 +189,11 @@ from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (47 layers)
 - `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source
+- `groups.csv` — layer group membership, nesting and z-order (62 rows, 11 groups)
+- `templates.csv` — which groups compose each QGIS project template
+- `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
+  (232 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
+- `xref_layers.csv` — prose cross-reference, read by humans not code
 
 #### Build script (`data-raw/reg_build_main.R`)
 
