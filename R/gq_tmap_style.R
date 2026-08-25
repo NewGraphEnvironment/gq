@@ -84,6 +84,27 @@ gq_tmap_classes <- function(layer_or_reg, name = NULL, field = NULL) {
 
 # --- tmap-specific internal helpers -----------------------------------------
 
+#' Build the categorical scale shared by all three geometry types
+#'
+#' `tm_scale_categorical()` matches `values` by **name** but `labels` by
+#' **position**, and derives its levels from the data. Supplying only
+#' `values` + `labels` therefore breaks the moment the data carries a subset
+#' of the registry's classes: tmap takes `labels[seq_along(levels)]`
+#' regardless of *which* classes are present, so a resource road rendered
+#' labelled "Freeway" (#53).
+#'
+#' Passing `levels` from the same ordered vector the labels came from makes the
+#' alignment structural — the two cannot drift, whatever the data holds. That is
+#' why this is a fix rather than an argument callers must remember to pass.
+#' `levels.drop` then keeps classes the data lacks out of a shown legend.
+#' @noRd
+tmap_scale_classified <- function(cls) {
+  tmap::tm_scale_categorical(
+    values = cls$values, labels = cls$labels,
+    levels = names(cls$values), levels.drop = TRUE
+  )
+}
+
 #' @noRd
 tmap_classified <- function(sty) {
   cls <- sty$classification
@@ -91,22 +112,16 @@ tmap_classified <- function(sty) {
 
   if (sty$type == "polygon") {
     args$fill <- cls$field
-    args$fill.scale <- tmap::tm_scale_categorical(
-      values = cls$values, labels = cls$labels
-    )
+    args$fill.scale <- tmap_scale_classified(cls)
     args$fill.legend <- tmap::tm_legend(show = FALSE)
   } else if (sty$type == "line") {
     args$col <- cls$field
-    args$col.scale <- tmap::tm_scale_categorical(
-      values = cls$values, labels = cls$labels
-    )
+    args$col.scale <- tmap_scale_classified(cls)
     args$col.legend <- tmap::tm_legend(show = FALSE)
     if (!is.null(cls$widths)) args$lwd <- unname(cls$widths[1])
   } else if (sty$type == "point") {
     args$fill <- cls$field
-    args$fill.scale <- tmap::tm_scale_categorical(
-      values = cls$values, labels = cls$labels
-    )
+    args$fill.scale <- tmap_scale_classified(cls)
     args$fill.legend <- tmap::tm_legend(show = FALSE)
     if (!is.null(cls$radii)) args$size <- unname(cls$radii[1]) / 3
   }

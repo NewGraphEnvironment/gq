@@ -76,11 +76,12 @@ Deliberately **not** doing: adding `present =`/`data =` to `gq_tmap_style()` or
 
 ## Phase 2 — Fix
 
-- [ ] `tmap_classified()` — add `levels` + `levels.drop` to all three geometry
-      branches (polygon `:94`, line `:100`, point `:107`)
-- [ ] Roxygen note on why `levels` is passed: labels align to it positionally,
+- [x] `tmap_classified()` — add `levels` + `levels.drop` to all three geometry
+      branches. Extracted `tmap_scale_classified()` rather than repeating the
+      call three times, since all three branches built an identical scale
+- [x] Roxygen note on why `levels` is passed: labels align to it positionally,
       so supplying both from one ordered source is what makes it correct
-- [ ] Confirm Phase 1 tests pass
+- [x] Confirm Phase 1 tests pass — FAIL 0 | PASS 726, lintr 0 on the changed file
 
 ## Phase 3 — Registry-wide invariant
 
@@ -113,7 +114,7 @@ alone, and 10 other layers carry classifications.
 
 ## Validation
 
-- [ ] `devtools::test()` — 527 existing pass, plus new
+- [x] `devtools::test()` — FAIL 0 | PASS 726
 - [ ] `lintr` clean on changed files, against the `HEAD` baseline
 - [ ] `devtools::check()` no new ERROR/WARNING/NOTE over main (main carries 2
       WARNINGs — gq#51)
