@@ -40,7 +40,10 @@
 #' @param asp Canvas aspect ratio (`fig.width / fig.height`). When supplied,
 #'   `height` is computed as `width * asp` so the inset renders square.
 #' @param margin Gap between the inset and the frame edge, as a fraction of the
-#'   device. The four-corner convention wants this equal for every element.
+#'   device width. The four-corner convention wants this equal for every
+#'   element, so when `asp` is supplied the vertical gap is derived from it the
+#'   same way `height` is — otherwise a single device fraction is 29% larger
+#'   horizontally than vertically on a 9x7 canvas.
 #'
 #' @return A list with `map` (a `tmap` object) and `viewport` (a
 #'   [grid::viewport()]). Print `map` into `viewport` after the main map.
@@ -59,9 +62,11 @@
 #' # bottom-right by default, and the viewport centre reflects the margin
 #' round(c(km$viewport$x, km$viewport$y), 3)
 #'
-#' # on a 9x7 canvas, asp keeps the inset square
+#' # on a 9x7 canvas, asp makes the inset square IN INCHES -- the viewport
+#' # fractions are not equal, because the device is not square
 #' sq <- gq_tmap_keymap(aoi, context, asp = 9 / 7)
-#' round(as.numeric(sq$viewport$width) / as.numeric(sq$viewport$height), 3)
+#' round(c(w_in = as.numeric(sq$viewport$width) * 9,
+#'         h_in = as.numeric(sq$viewport$height) * 7), 3)
 #'
 #' @export
 gq_tmap_keymap <- function(aoi, context, reg = NULL,
@@ -79,6 +84,13 @@ gq_tmap_keymap <- function(aoi, context, reg = NULL,
       stop("`asp` must be a single positive number", call. = FALSE)
     }
     height <- width * asp
+    margin_y <- margin * asp
+  } else {
+    margin_y <- margin
+  }
+  if (width + 2 * margin > 1 || height + 2 * margin_y > 1) {
+    stop("inset does not fit: width/height plus margins exceed the device",
+         call. = FALSE)
   }
 
   if (is.null(reg)) reg <- gq_reg_main()
@@ -108,7 +120,7 @@ gq_tmap_keymap <- function(aoi, context, reg = NULL,
     )
 
   list(map = map,
-       viewport = keymap_viewport(corner, width, height, margin))
+       viewport = keymap_viewport(corner, width, height, margin, margin_y))
 }
 
 
@@ -119,8 +131,12 @@ gq_tmap_keymap <- function(aoi, context, reg = NULL,
 #' numbers that all mean "bottom right, a bit in from the edge". Pure, so the
 #' arithmetic is testable without a device.
 #' @noRd
-keymap_viewport <- function(corner, width, height, margin) {
+keymap_viewport <- function(corner, width, height, margin, margin_y = margin) {
   x <- if (grepl("right", corner)) 1 - width / 2 - margin else width / 2 + margin
-  y <- if (grepl("top", corner)) 1 - height / 2 - margin else height / 2 + margin
+  y <- if (grepl("top", corner)) {
+    1 - height / 2 - margin_y
+  } else {
+    height / 2 + margin_y
+  }
   grid::viewport(x = x, y = y, width = width, height = height)
 }

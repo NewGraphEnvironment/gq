@@ -134,4 +134,3 @@ test_that("context defaults to neutral grey, not a registry green", {
     "tmap"
   )
 })
-

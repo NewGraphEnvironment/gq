@@ -19,7 +19,8 @@ gq_basemap_tiles(
 
 \item{zoom}{Tile zoom level.}
 
-\item{pad}{Fraction of the bbox width to buffer before requesting.}
+\item{pad}{Fraction of each bbox dimension to expand by before requesting.
+Applied to width and height independently.}
 
 \item{crs}{CRS to reproject tiles into. \code{NULL} keeps Web Mercator.}
 }

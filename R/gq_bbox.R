@@ -131,12 +131,13 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
 #' close enough to be mistaken for each other, so the distinction is an argument
 #' here rather than two functions a caller might pick between by accident.
 #'
-#' @param x An `sf` object, or `NULL`.
+#' @param x An `sf` or `sfc` object, or `NULL`.
 #' @param bbox A `bbox`, or anything [sf::st_as_sfc()] accepts.
 #' @param crop Cut geometries at the boundary instead of selecting whole
 #'   features that intersect it.
 #'
-#' @return An `sf` object with at least one row, or `NULL`.
+#' @return An object of the same class as `x` with at least one feature, or
+#'   `NULL`.
 #'
 #' @examplesIf requireNamespace("sf", quietly = TRUE)
 #' pts <- sf::st_as_sf(
@@ -155,7 +156,16 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
 #' @export
 gq_bbox_clip <- function(x, bbox, crop = FALSE) {
   if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required", call. = FALSE)
-  if (is.null(x) || nrow(x) == 0L) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  # nrow() on an sfc is NULL, which reaches `||` as NA and aborts with "missing
+  # value where TRUE/FALSE needed" -- naming neither the argument nor the type.
+  # st_filter() accepts sfc and the sibling gq_basemap_tiles() does too, so
+  # accept it here rather than only failing better.
+  n <- if (inherits(x, "sf")) nrow(x) else if (inherits(x, "sfc")) length(x) else
+    stop("`x` must be an sf or sfc object, or NULL", call. = FALSE)
+  if (n == 0L) {
     return(NULL)
   }
 
@@ -167,7 +177,8 @@ gq_bbox_clip <- function(x, bbox, crop = FALSE) {
     # through dplyr and errors with "dplyr is not installed" without it. gq
     # imports jsonlite and xml2 only, so the convenience wrapper would have made
     # dplyr a hard dependency of a two-line subset.
-    x[lengths(sf::st_intersects(x, box)) > 0L, , drop = FALSE]
+    keep <- lengths(sf::st_intersects(x, box)) > 0L
+    if (inherits(x, "sfc")) x[keep] else x[keep, , drop = FALSE]
   }
-  if (nrow(out) == 0L) NULL else out
+  if (length(sf::st_geometry(out)) == 0L) NULL else out
 }

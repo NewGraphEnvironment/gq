@@ -22,11 +22,16 @@ Returns breaks in kilometres, rounded to a 1/2/5 sequence so the bar reads
 cleanly at any extent.
 }
 \details{
-The whole bar is sized to \code{share} of the frame width — \emph{not} \code{share} per
-interval. Sizing per interval overruns the frame, at which point tmap reports
-"not all scale bar breaks could be plotted" and then silently drops every
-label but the last, which looks like a styling problem rather than a sizing
-one.
+The whole bar is sized to at most \code{share} of the frame width — \emph{not} \code{share}
+per interval. Sizing per interval overruns the frame, at which point tmap
+reports "not all scale bar breaks could be plotted" and then silently drops
+every label but the last, which looks like a styling problem rather than a
+sizing one.
+
+\code{share} is a \strong{bound}, not a target: the step is the largest 1/2/5 value that
+fits, so the bar is always at or under it. Rounding to the \emph{nearest} nice
+value instead overruns by up to 1.39x, which is the failure the bound exists
+to prevent.
 }
 \examples{
 \dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}

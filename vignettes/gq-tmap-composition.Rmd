@@ -113,18 +113,28 @@ with hillshade works well.
 # than by hand -- this data is lat/lon, so it fires here and would not in BC
 # Albers.
 bbox <- gq_bbox_aspect(neexdzii_wsd, asp = 7 / 9)
-bbox_sf <- st_as_sfc(bbox)
 
 positron <- gq_basemap_tiles(bbox, provider = "CartoDB.PositronNoLabels",
                              zoom = 10, pad = 0, crs = NULL)
 relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
                            zoom = 10, pad = 0, crs = NULL)
 
-# A relief tile service spans the full range, so the gamma operator suits it.
-# A hillshade derived from a DEM is far more contrasty and wants
-# `method = "weight"`, which caps how much brightness can be removed.
-basemap_stars <- gq_basemap_blend(positron, relief, method = "gamma",
-                                  gamma = 0.5)
+# gq_basemap_tiles() returns NULL on a failed fetch so the caller can draw an
+# unshaded map rather than lose the figure. Honour that here rather than only
+# documenting it -- a tile hiccup during a pkgdown build should not fail it.
+basemap_stars <- if (is.null(positron) || is.null(relief)) {
+  NULL
+} else {
+  # A relief tile service spans the full range, so the gamma operator suits it.
+  # A hillshade derived from a DEM is far more contrasty and wants
+  # `method = "weight"`, which caps how much brightness can be removed.
+  gq_basemap_blend(positron, relief, method = "gamma", gamma = 0.5)
+}
+
+# Now that the frame is known, drop anything outside it. gq_bbox_clip() returns
+# NULL rather than a zero-row object, which is what tm_shape() needs -- it
+# errors on an empty geometry set instead of skipping it.
+streams_display <- gq_bbox_clip(streams_display, bbox)
 ```
 
 ## Keymap inset
@@ -249,30 +259,21 @@ if (nrow(stream_labels) > 0) {
             options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
 }
 
-# Manual legends — all colors from gq_style()
-m <- m +
-tm_add_legend(
-  type = "polygons",
-  labels = c("Lake", "Wetland"),
-  fill = c(gq_style(reg, "lake")$fill$color,
-           gq_style(reg, "wetland")$fill$color)
-) +
-tm_add_legend(
-  type = "lines",
-  labels = c("Stream", road_leg_labels, "Railway"),
-  col = c(stream_sty$classification$values[[1]],
-          unname(road_leg_values), railway_sty$stroke$color),
-  lwd = c(0.5, rep(0.8, length(road_leg_values)), 0.8),
-  lty = c("solid", rep("solid", length(road_leg_values)), "twodash")
-) +
-tm_add_legend(
-  type = "symbols",
-  labels = c(xing_cls$labels, "Fish obs", "Falls"),
-  fill = c(unname(xing_cls$values),
-           fish_sty$mark$color, falls_sty$mark$color),
-  shape = c(21, 21, 21, 21, 24, 22),
-  size = c(0.4, 0.4, 0.4, 0.4, 0.35, 0.4)
+# Legends from the registry. gq_tmap_legend() partitions by geometry type,
+# expands classified layers to one entry per class, merges simple and classified
+# layers of the same type into one legend, and collapses classes that render
+# identically. `present` cuts road classes to the ones the data actually has.
+leg <- gq_tmap_legend(
+  reg,
+  c("Lake" = "lake", "Wetland" = "wetland", "Stream" = "streams_all",
+    "roads_dra", "Railway" = "railway",
+    "crossings_pscis_assessment",
+    "Fish obs" = "bcfishobs_fiss_fish_observations",
+    "Falls" = "fiss_obstacles"),
+  present = list(roads_dra = unique(neexdzii_roads$road_type))
 )
+
+m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
 
 # Layout: four-corner rule
 # - Legend: bottom-left
@@ -281,7 +282,8 @@ tm_add_legend(
 # - Keymap: bottom-right (via grid viewport)
 m <- m +
 tm_scalebar(
-  breaks = c(0, 2, 4, 6),
+  # gq_scale_breaks() needs metre units and says so, so project the bbox first
+  breaks = gq_scale_breaks(st_bbox(st_transform(st_as_sfc(bbox), 3005))),
   text.size = 0.5,
   position = c("center", "bottom"),
   margins = c(0, 0, 0, 0)
@@ -304,9 +306,10 @@ tm_layout(
 )
 
 print(m)
-print(keymap, vp = grid::viewport(
-  x = 0.86, y = 0.12, width = 0.25, height = 0.22
-))
+# gq_tmap_keymap() derives the viewport centre from the corner and margin, and
+# sizes the inset off the canvas aspect so it comes out square.
+km <- gq_tmap_keymap(neexdzii_wsd, neexdzii_bc, asp = 7 / 9)
+print(keymap, vp = km$viewport)
 ```
 
 Every color on this map traces back to `gq_reg_main()`:

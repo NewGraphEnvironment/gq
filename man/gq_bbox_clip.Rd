@@ -7,7 +7,7 @@
 gq_bbox_clip(x, bbox, crop = FALSE)
 }
 \arguments{
-\item{x}{An \code{sf} object, or \code{NULL}.}
+\item{x}{An \code{sf} or \code{sfc} object, or \code{NULL}.}
 
 \item{bbox}{A \code{bbox}, or anything \code{\link[sf:st_as_sfc]{sf::st_as_sfc()}} accepts.}
 
@@ -15,7 +15,8 @@ gq_bbox_clip(x, bbox, crop = FALSE)
 features that intersect it.}
 }
 \value{
-An \code{sf} object with at least one row, or \code{NULL}.
+An object of the same class as \code{x} with at least one feature, or
+\code{NULL}.
 }
 \description{
 \code{tmap::tm_shape()} errors with "subscript out of bounds" on an empty geometry

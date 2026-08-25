@@ -173,9 +173,76 @@ test_that("gq_tmap_legend works on the real registry", {
   leg <- gq_tmap_legend(reg, c("lake", "railway", "roads_dra"))
   expect_named(leg, c("polygons", "lines"))
   expect_equal(leg$polygons$labels, "Lake")
-  # railway plus every road class, in one lines group
-  expect_gt(length(leg$lines$labels), 20)
   expect_equal(leg$lines$labels[[1]], "Railway")
+
+  # roads_dra has 26 classes carrying 8 distinct appearances -- nine of them all
+  # reading "Resource/recreation/other" in one colour and width. A legend lists
+  # appearances, not source classes, so the group is railway + 8, not + 26.
+  expect_equal(length(leg$lines$labels), 9L)
+  expect_equal(anyDuplicated(leg$lines$labels), 0L)
+})
+
+test_that("rows that differ anywhere are kept, not collapsed", {
+  # The dedup must not merge two things a reader could tell apart.
+  same_label_diff_colour <- list(
+    type = "line",
+    classification = list(field = "f", classes = list(
+      A = list(color = "#111111", width = 1, label = "Road"),
+      B = list(color = "#222222", width = 1, label = "Road"),
+      C = list(color = "#222222", width = 1, label = "Road")
+    ))
+  )
+  leg <- gq_tmap_legend(mini(x = same_label_diff_colour), "x")
+  expect_equal(length(leg$lines$labels), 2L)      # B and C collapse, A stays
+  expect_equal(leg$lines$col, c("#111111", "#222222"))
+})
+
+test_that("layers that differ in which aesthetics they carry still render", {
+  # Found by rendering the vignette, not by the suite. `lake` has a stroke and
+  # `wetland` does not, so a legend naming both emitted col = c("#1f78b4", NA)
+  # and lwd = c(0.2, NA). tmap rejects that at draw time with "missing value
+  # where TRUE/FALSE needed", from inside its legend builder, naming nothing.
+  # Same shape as the lty case one aesthetic over.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  leg <- gq_tmap_legend(reg, c("lake", "wetland"))
+  expect_false(any(is.na(leg$polygons$col)))
+  expect_false(any(is.na(leg$polygons$lwd)))
+
+  pts <- sf::st_as_sf(data.frame(x = c(0, 1), y = c(0, 1)),
+                      coords = c("x", "y"), crs = 3005)
+  m <- tmap::tm_shape(pts) + tmap::tm_dots() +
+    do.call(tmap::tm_add_legend, leg$polygons)
+  f <- tempfile(fileext = ".png")
+  expect_no_error({
+    grDevices::png(f)
+    on.exit(grDevices::dev.off(), add = TRUE)
+    print(m)
+  })
+})
+
+test_that("a partly-dashed classified layer renders through tmap", {
+  # The gap 18 list-inspecting tests left open: dash_to_lty() returns NULL for
+  # an undashed class, so a layer with some dashed classes emitted
+  # lty = c(NA, ..., "dashed") and tm_add_legend() rejected the whole vector at
+  # DRAW time. Inspecting the structure could never see it -- the consumer has
+  # to be asked.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  pts <- sf::st_as_sf(data.frame(x = c(0, 1), y = c(0, 1)),
+                      coords = c("x", "y"), crs = 3005)
+  for (k in c("roads_dra", "streams_all")) {
+    leg <- gq_tmap_legend(reg, k)
+    expect_false(any(is.na(leg$lines$lty)))
+    m <- tmap::tm_shape(pts) + tmap::tm_dots() +
+      do.call(tmap::tm_add_legend, leg$lines)
+    f <- tempfile(fileext = ".png")
+    expect_no_error({
+      grDevices::png(f)
+      on.exit(grDevices::dev.off(), add = TRUE)
+      print(m)
+    })
+  }
 })
 
 test_that("classified point layers carry their per-class size", {
@@ -190,4 +257,3 @@ test_that("classified point layers carry their per-class size", {
   expect_length(leg$symbols$size, length(leg$symbols$labels))
   expect_true(all(leg$symbols$size > 0))
 })
-

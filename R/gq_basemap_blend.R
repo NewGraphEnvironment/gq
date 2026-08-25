@@ -129,7 +129,8 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #' @param bbox A `bbox`. Reprojected to EPSG:4326 for the request.
 #' @param provider A `maptiles` provider name.
 #' @param zoom Tile zoom level.
-#' @param pad Fraction of the bbox width to buffer before requesting.
+#' @param pad Fraction of each bbox dimension to expand by before requesting.
+#'   Applied to width and height independently.
 #' @param crs CRS to reproject tiles into. `NULL` keeps Web Mercator.
 #'
 #' @return A `SpatRaster`, or `NULL` if the request failed.

@@ -68,6 +68,16 @@ gq_tmap_legend <- function(reg, layers, present = NULL, field = NULL,
   if (length(layers) == 0L) {
     stop("`layers` must name at least one layer", call. = FALSE)
   }
+  # as.list(): `[[` on an ATOMIC vector with an unmatched name errors with
+  # "subscript out of bounds", where on a list it gives NULL. Both arguments are
+  # documented as named character vectors and are looked up per layer or per
+  # geometry type, so the documented usage failed whenever the vector did not
+  # name every one. `present` was already documented as a list, which is why it
+  # alone worked. Coerce once and all three behave alike.
+  if (!is.null(field)) field <- as.list(field)
+  if (!is.null(titles)) titles <- as.list(titles)
+  if (!is.null(present)) present <- as.list(present)
+
   keys <- unlist(layers, use.names = TRUE)
   labs <- names(keys)
   if (is.null(labs)) labs <- rep(NA_character_, length(keys))
@@ -92,6 +102,15 @@ gq_tmap_legend <- function(reg, layers, present = NULL, field = NULL,
   for (type in c("polygons", "lines", "symbols")) {
     rows <- Filter(function(e) identical(e$type, type), entries)
     if (length(rows) == 0L) next
+    # roads_dra expands to 26 classes carrying 8 distinct appearances -- nine
+    # rows all reading "Resource/recreation/other" in the same colour and width.
+    # A legend is a list of appearances, not of source classes, so collapse rows
+    # that are identical in every aesthetic. Anything that differs anywhere is
+    # kept, so this cannot merge two things a reader could tell apart.
+    rows <- rows[!duplicated(vapply(rows, function(r) {
+      paste(utils::capture.output(utils::str(r[order(names(r))])),
+            collapse = "|")
+    }, character(1)))]
     out[[type]] <- c(
       list(type = type),
       collect_legend(rows),
@@ -152,13 +171,17 @@ legend_entries <- function(sty, cls, key, label, present) {
   lapply(which(keep), function(j) {
     row <- list(type = type, label = unname(labs[[j]]))
     col <- unname(vals[[j]])
+    # No $stroke or $mark fallbacks here: gq_style() returns early for a
+    # classified layer, so its result carries `type` and `classification` and
+    # nothing else. Fallbacks to those fields were unreachable and read as live
+    # safety. The visible consequence is that a classified polygon swatch has no
+    # outline colour -- the registry does not record one per class.
     if (type == "polygons") {
       row$fill <- col
-      row$col <- sty$stroke$color
     } else if (type == "lines") {
       row$col <- col
-      row$lwd <- pick(cls$widths, j, sty$stroke$width)
-      row$lty <- dash_to_lty(pick(cls$dashes, j, sty$stroke$dash))
+      row$lwd <- pick(cls$widths, j)
+      row$lty <- dash_to_lty(pick(cls$dashes, j))
     } else {
       row$fill <- col
       # Per-class radius comes off gq_style()'s classification, which carries
@@ -167,7 +190,7 @@ legend_entries <- function(sty, cls, key, label, present) {
       # only layer that has one, and it is the central point layer of every
       # fish passage map -- so reading it from the wrong object dropped size
       # from the legend that needs it most and tmap substituted a default.
-      radius <- pick(sty$classification$radii, j, sty$mark$radius)
+      radius <- pick(sty$classification$radii, j)
       if (!is.null(radius)) row$size <- radius / 3
     }
     row
@@ -175,12 +198,37 @@ legend_entries <- function(sty, cls, key, label, present) {
 }
 
 
+#' Aesthetics with no meaningful "absent" value in a parallel vector
+#'
+#' A parallel vector has to be as long as the labels, so a property that only
+#' SOME rows carry cannot express the absence by being shorter. NA is not the
+#' way to say it either -- tmap rejects the whole vector at draw time with
+#' "missing value where TRUE/FALSE needed", from inside the legend builder and
+#' naming nothing.
+#'
+#' Two live cases, both mixing layers that are individually fine:
+#'   * `lty` -- `dash_to_lty()` gives NULL for an undashed class, so `roads_dra`
+#'     (16 of 26 undashed) produced `c(NA, ..., "dashed")`.
+#'   * `col` / `lwd` -- `lake` has a stroke and `wetland` does not, so any legend
+#'     naming both produced `c("#1f78b4", NA)`.
+#'
+#' The defaults are the "draw nothing visible" value for each aesthetic, which is
+#' what absence meant on the row that lacked it.
+#' @noRd
+legend_na_default <- list(lty = "solid", col = "#00000000", lwd = 0,
+                          fill = "#00000000", size = 0)
+
 #' Gather rows into the parallel vectors tm_add_legend() expects
 #'
 #' `tm_add_legend()` takes one vector per aesthetic, with item count set by the
 #' longest. A property absent from every row is dropped entirely rather than
 #' passed as NA, since tmap treats an explicit NA as "draw nothing" for some
 #' aesthetics and as a default for others.
+#'
+#' Where only SOME rows lack it, dropping is not available -- the vector has to
+#' be as long as the labels -- so a default is substituted for the aesthetics
+#' that have one. `roads_dra` is the live case: 16 of its 26 classes are
+#' undashed, which produced `lty = c(NA, ..., "dashed")` and a hard tmap error.
 #' @noRd
 collect_legend <- function(rows) {
   props <- setdiff(unique(unlist(lapply(rows, names))), "type")
@@ -200,7 +248,11 @@ collect_legend <- function(rows) {
            paste(which(long), collapse = ", "), call. = FALSE)
     }
 
-    if (all(vapply(vals, function(v) is.na(v), logical(1)))) next
+    na <- vapply(vals, function(v) is.na(v), logical(1))
+    if (all(na)) next
+    if (any(na) && !is.null(legend_na_default[[p]])) {
+      vals[na] <- legend_na_default[[p]]
+    }
     out[[p]] <- unlist(vals, use.names = FALSE)
   }
   names(out)[names(out) == "label"] <- "labels"

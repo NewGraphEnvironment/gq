@@ -149,45 +149,6 @@ test_that("gq_bbox_clip accepts an sfc box", {
 })
 
 
-# --- gq_scale_breaks ----------------------------------------------------------
-
-test_that("gq_scale_breaks returns n+1 breaks starting at zero", {
-  br <- gq_scale_breaks(bb_proj(w = 1e5))
-  expect_length(br, 4L)
-  expect_equal(br[[1]], 0)
-  expect_true(all(diff(br) == diff(br)[[1]]))
-})
-
-test_that("gq_scale_breaks lands on a 1/2/5 step", {
-  steps <- vapply(c(2e4, 5e4, 1e5, 4e5, 1e6), function(w) {
-    diff(gq_scale_breaks(bb_proj(w = w)))[[1]]
-  }, numeric(1))
-  mantissa <- steps / 10 ^ floor(log10(steps))
-  expect_true(all(mantissa %in% c(1, 2, 5)))
-})
-
-test_that("gq_scale_breaks keeps the bar within its share of the frame", {
-  # The constraint the `share` argument exists for. Overrun makes tmap drop
-  # every label but the last, silently.
-  for (w in c(2e4, 1e5, 4e5, 1e6)) {
-    br <- gq_scale_breaks(bb_proj(w = w))
-    span_km <- w / 1000
-    expect_lt(max(br) / span_km, 0.75)
-  }
-})
-
-test_that("gq_scale_breaks scales with n", {
-  expect_length(gq_scale_breaks(bb_proj(), n = 2), 3L)
-  expect_length(gq_scale_breaks(bb_proj(), n = 5), 6L)
-})
-
-test_that("gq_scale_breaks rejects bad arguments", {
-  expect_error(gq_scale_breaks(bb_proj(), n = 0), "positive")
-  expect_error(gq_scale_breaks(bb_proj(), share = 0), "in \\(0, 1\\]")
-  expect_error(gq_scale_breaks(bb_proj(), share = 2), "in \\(0, 1\\]")
-  expect_error(gq_scale_breaks(bb_proj(w = 0)), "zero or undefined")
-})
-
 test_that("gq_bbox_aspect warns and clamps rather than leaving the globe", {
   # st_as_sfc() accepts latitude 94 without complaint, so an out-of-range box
   # travels a long way before anything objects -- a tile request for it simply
@@ -203,4 +164,3 @@ test_that("gq_bbox_aspect warns and clamps rather than leaving the globe", {
   # a projected box has no such bounds and must not warn
   expect_silent(gq_bbox_aspect(bb_proj(w = 1e6, h = 1e4), asp = 0.5))
 })
-

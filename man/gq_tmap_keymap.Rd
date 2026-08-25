@@ -43,7 +43,10 @@ greens that leave a green AOI barely legible on top.}
 \code{height} is computed as \code{width * asp} so the inset renders square.}
 
 \item{margin}{Gap between the inset and the frame edge, as a fraction of the
-device. The four-corner convention wants this equal for every element.}
+device width. The four-corner convention wants this equal for every
+element, so when \code{asp} is supplied the vertical gap is derived from it the
+same way \code{height} is — otherwise a single device fraction is 29\% larger
+horizontally than vertically on a 9x7 canvas.}
 }
 \value{
 A list with \code{map} (a \code{tmap} object) and \code{viewport} (a
@@ -87,8 +90,10 @@ class(km$map)
 # bottom-right by default, and the viewport centre reflects the margin
 round(c(km$viewport$x, km$viewport$y), 3)
 
-# on a 9x7 canvas, asp keeps the inset square
+# on a 9x7 canvas, asp makes the inset square IN INCHES -- the viewport
+# fractions are not equal, because the device is not square
 sq <- gq_tmap_keymap(aoi, context, asp = 9 / 7)
-round(as.numeric(sq$viewport$width) / as.numeric(sq$viewport$height), 3)
+round(c(w_in = as.numeric(sq$viewport$width) * 9,
+        h_in = as.numeric(sq$viewport$height) * 7), 3)
 \dontshow{\}) # examplesIf}
 }
