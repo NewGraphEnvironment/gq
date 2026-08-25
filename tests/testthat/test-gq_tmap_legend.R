@@ -306,14 +306,47 @@ test_that("the whole-registry legend renders through tmap", {
 })
 
 test_that("the dedup key does not depend on str() display options", {
-  # The key was capture.output(str(...)) -- a display function. A line in
-  # someone's .Rprofile could change what this function returns, and the failure
-  # was a quiet merge rather than an error.
-  reg <- gq_reg_main()
-  before <- gq_tmap_legend(reg, "roads_dra")$lines
+  # Routed through a synthetic layer, not the registry. The first version of
+  # this test used roads_dra, whose widths (0.26 0.46 1.0348 1.3182) stay
+  # distinct even at one decimal and whose rows differ in colour anyway -- so it
+  # passed with the OLD, buggy str() key restored. Third time in this PR that a
+  # test and its fixture came apart.
+  #
+  # 1.32 / 1.34 isolates the option sensitivity specifically: the str() key gets
+  # it right at default options and merges it at digits.d = 1.
+  layer <- list(type = "line", classification = list(field = "f", classes = list(
+    A = list(color = "#484848", width = 1.32, label = "Road"),
+    B = list(color = "#484848", width = 1.34, label = "Road")
+  )))
+  before <- gq_tmap_legend(mini(x = layer), "x")$lines
+  expect_length(before$labels, 2L)
+
   old <- options(str = utils::strOptions(digits.d = 1))
   on.exit(options(old), add = TRUE)
-  expect_identical(gq_tmap_legend(reg, "roads_dra")$lines, before)
+  expect_identical(gq_tmap_legend(mini(x = layer), "x")$lines, before)
+})
+
+test_that("an aesthetic with no default is refused, not passed through as NA", {
+  # The guard that would have caught both earlier rounds by itself. `shape` is
+  # the near-term case: 15 registry layers already carry mark shapes that nothing
+  # translates yet, so the day tmap_point_args() emits one this fires instead of
+  # producing a legend tmap rejects at draw time.
+  rows <- list(
+    list(type = "symbols", label = "A", fill = "#111111", shape = 21),
+    list(type = "symbols", label = "B", fill = "#222222")
+  )
+  expect_error(collect_legend(rows), "no entry in `legend_na_default`")
+  expect_error(collect_legend(rows), "'shape'")
+})
+
+test_that("a non-scalar row reaches the guard that names it", {
+  # legend_key() runs first and used to die with "values must be length 1, but
+  # FUN(X[[1]]) result is length 2" -- naming neither the property nor the entry,
+  # and making collect_legend()'s message unreachable on the only path to it.
+  rows <- list(list(type = "lines", label = "A", lwd = c(1, 2)),
+               list(type = "lines", label = "B", lwd = 1))
+  expect_error(collect_legend(rows), "'lwd' is not length 1 for entry 1")
+  expect_silent(legend_key(rows[[1]]))
 })
 
 test_that("close-but-distinct widths are not merged", {

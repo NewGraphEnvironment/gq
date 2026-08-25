@@ -212,8 +212,14 @@ legend_key <- function(r) {
   r <- r[order(names(r))]
   paste(
     names(r),
-    vapply(r, function(v) paste0(typeof(v), ":", format(v, digits = 15)),
-           character(1)),
+    vapply(r, function(v) {
+      # collapse rather than vapply(character(1)): a non-scalar row must reach
+      # collect_legend()'s guard, which names the property and the entry. Dying
+      # here instead gave "values must be length 1, but FUN(X[[1]]) result is
+      # length 2" -- naming neither, and making the good message dead code.
+      paste0(typeof(v), ":", paste(format(v, digits = 15), collapse = ","))
+    }, character(1)),
+    sep = "\x1e",
     collapse = "\x1f"
   )
 }
@@ -276,7 +282,23 @@ collect_legend <- function(rows) {
 
     na <- vapply(vals, function(v) is.na(v), logical(1))
     if (all(na)) next
-    if (any(na) && !is.null(legend_na_default[[p]])) {
+    if (any(na)) {
+      # An aesthetic carried by only some rows and absent from `legend_na_default`
+      # used to pass its NA straight through to tm_add_legend(), which is exactly
+      # how this failed twice: first on `lty`, then on `fill_alpha`. The set
+      # difference is empty today, but nothing checked that -- it was two lists
+      # happening to agree, both edited three times.
+      #
+      # `shape` is the near case rather than a hypothetical: 15 registry layers
+      # already carry mark shapes that nothing translates yet, so the day
+      # tmap_point_args() emits one, a legend mixing a shaped layer with an
+      # unshaped one would have failed the same silent way.
+      if (is.null(legend_na_default[[p]])) {
+        stop("Legend property '", p, "' is missing on entry ",
+             paste(which(na), collapse = ", "),
+             " and has no entry in `legend_na_default`. Add one.",
+             call. = FALSE)
+      }
       vals[na] <- legend_na_default[[p]]
     }
     out[[p]] <- unlist(vals, use.names = FALSE)

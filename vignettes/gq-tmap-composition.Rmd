@@ -317,7 +317,10 @@ print(keymap, vp = km$viewport)
 
 Every color on this map traces back to `gq_reg_main()`:
 
-- **Simple layers** (lake, wetland, streams, railway) use `gq_tmap_style(reg, "name")` directly
+- **Simple layers** (lake, wetland) use `gq_tmap_style(reg, "name")` directly.
+  Streams and railway are drawn by hand because each needs something the registry
+  does not model — one class pulled out of a classified layer, and a white casing
+  over a black line
 - **Classified layers** (crossings, roads, habitat) use `do.call()` with `gq_tmap_style()` — classification field, colors, and labels all come from the registry
 - **The legend** is built by `gq_tmap_legend()` from the registry — it partitions
   by geometry type, expands classified layers, collapses classes that render
