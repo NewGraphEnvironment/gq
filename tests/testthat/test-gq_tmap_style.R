@@ -259,3 +259,95 @@ test_that("gq_tmap_style handles classified polygon layers", {
   expect_equal(args$fill, "zone")
   expect_s3_class(args$fill.scale, "tm_scale_categorical")
 })
+
+
+# --- #53: labels align to levels, not to the data's subset --------------------
+
+test_that("a classified layer whose data carries a subset draws its own labels", {
+  # tm_scale_categorical() matches colours by NAME and labels by POSITION, and
+  # tmap builds levels from the data. With 3 of 26 classes present it therefore
+  # took labels[1:3] regardless of which three, and a resource road rendered
+  # labelled "Freeway". No list-inspecting test could see this -- the wrong
+  # labels only exist inside tmap.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "roads_dra")
+  keys <- names(cls$values)
+
+  pick <- keys[c(20, 22, 24)]
+  truth <- unique(cls$labels[match(pick, keys)])
+  # Guard the fixture: if these three ever stop sharing one label, or stop
+  # sitting past the front of the registry order, the test stops exercising
+  # the bug and would pass for the wrong reason.
+  expect_length(truth, 1)
+  expect_false(truth %in% cls$labels[seq_along(pick)])
+
+  labs <- drawn_labels(render_classified(reg, "roads_dra", pick))
+
+  expect_gt(length(labs), 0)
+  expect_true(truth %in% labs)
+  expect_false(any(cls$labels[seq_along(pick)] %in% labs))
+})
+
+test_that("a classified subset draws without the label-recycling warning", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  pick <- names(gq_tmap_classes(reg, "roads_dra")$values)[c(20, 22, 24)]
+  expect_no_warning(drawn_labels(render_classified(reg, "roads_dra", pick)))
+})
+
+
+test_that("every classified registry layer draws only its data's own labels", {
+  # The invariant the roads_dra test above cannot establish on its own. A fix
+  # verified on one hand-picked layer is exactly the shape code-check.md warns
+  # about -- 10 other layers carry classifications, and a fixture set that
+  # cannot reach the failure mode is not validation.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers,
+                                   function(l) !is.null(l$classification),
+                                   logical(1))]
+  expect_gt(length(keys), 0)
+
+  discriminating <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    codes <- names(cls$values)
+    # Take from the BACK of registry order: positional recycling reads from the
+    # front, so a subset drawn from the front could match by coincidence.
+    pick <- utils::tail(codes, 3)
+    truth <- unique(cls$labels[match(pick, codes)])
+    positional <- unique(cls$labels[seq_along(pick)])
+
+    parts <- drawn_parts(render_classified(reg, k, pick))
+    drawn <- setdiff(parts$labels, "code")
+
+    expect_gt(length(drawn), 0)
+    expect_true(all(drawn %in% truth), info = k)
+    expect_true(all(toupper(unname(cls$values[pick])) %in% parts$colours),
+                info = k)
+
+    wrong <- setdiff(positional, truth)
+    if (length(wrong)) {
+      discriminating <- discriminating + 1L
+      expect_false(any(wrong %in% drawn), info = k)
+    }
+  }
+
+  # Without this the sweep could pass against the unfixed code: if no layer's
+  # positional labels differed from its true ones, every assertion above would
+  # hold either way and the sweep would prove nothing.
+  expect_gt(discriminating, 0)
+})
+
+test_that("no classified registry layer warns about label recycling", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers,
+                                   function(l) !is.null(l$classification),
+                                   logical(1))]
+  for (k in keys) {
+    pick <- utils::tail(names(gq_tmap_classes(reg, k)$values), 3)
+    expect_no_warning(drawn_parts(render_classified(reg, k, pick)))
+  }
+})
