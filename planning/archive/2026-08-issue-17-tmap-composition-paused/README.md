@@ -1,6 +1,15 @@
-# tmap composition helpers and vignette (#17) — PAUSED, not complete
+# tmap composition helpers and vignette (#17) — superseded
 
-Archived 2026-08-24 to free `planning/active/` for #46. **The issue remains open.**
+> **Resumed and completed the same day.** See
+> `../2026-08-issue-17-tmap-composition/` for the work that shipped in v0.5.0,
+> and its `review-52*.md` for three adversarial passes. #17 is closed.
+>
+> This directory is kept as the record of the paused state, because it is the
+> reason the resumed plan scoped six helpers rather than the two the issue
+> named — nothing here started, so the scope was set by measuring the
+> duplication instead. Everything below describes 2026-08-24, before that.
+
+Archived 2026-08-24 to free `planning/active/` for #46.
 
 ## What landed
 
