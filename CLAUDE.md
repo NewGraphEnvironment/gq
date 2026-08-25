@@ -180,6 +180,24 @@ The `field` parameter overrides the classification field name when data comes
 from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
 `barrier_result_code`). See `inst/registry/xref_layers.csv`.
 
+**Composition (tmap):**
+- `gq_bbox_aspect(x, asp)` — pad a bbox to a canvas aspect ratio
+- `gq_bbox_clip(x, bbox, crop)` — restrict to a bbox, `NULL` when empty
+- `gq_scale_breaks(bbox, n)` — scale bar breaks on a 1/2/5 step
+- `gq_basemap_tiles()` / `gq_basemap_blend()` — tiles, and relief multiply
+- `gq_tmap_legend(reg, layers)` — `tm_add_legend()` args from the registry
+- `gq_tmap_keymap(aoi, context)` — overview inset plus its viewport
+
+These encode the cartography conventions as defaults. Layout stays tmap's:
+4.4 handles ordering, grouping, stacking and placement better than a wrapper
+could, so `z` and `group_id` pass straight through `gq_tmap_legend()`.
+
+`gq_basemap_blend()` has two operators because the sources differ. A relief tile
+service spans the full range and suits `"gamma"`; a hillshade from a DEM is far
+more contrasty and wants `"weight"`, which caps how much brightness can be
+removed. They were believed to be one operator — one implementation says so in
+its own docs — and are not.
+
 **QGIS extraction:**
 - `gq_qgs_extract(path)` — parse .qgs XML → registry JSON (no PyQGIS needed)
 

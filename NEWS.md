@@ -1,3 +1,38 @@
+# gq 0.5.0
+
+- **Map composition, not just style translation.** Six helpers encode the
+  cartography conventions as defaults: `gq_bbox_aspect()`, `gq_bbox_clip()`,
+  `gq_scale_breaks()`, `gq_basemap_tiles()` / `gq_basemap_blend()`,
+  `gq_tmap_legend()` and `gq_tmap_keymap()`.
+
+  Each replaces three to five copies scattered across the reporting repos, the
+  package's own vignette and the cartography skill. Two of those copies
+  documented themselves as ports of this vignette, so the code had already made
+  the round trip out of gq and back.
+
+- Extracting them settled three disagreements the copies did not know they had.
+  `gq_bbox_aspect()` applies the latitude correction from the CRS rather than
+  hardcoding one answer — a projected copy and a geographic copy each had it
+  wrong for the other's input. `gq_basemap_blend()` ships two named operators,
+  because the gamma form suited to a relief tile service and the capped linear
+  form suited to a DEM hillshade were believed to be the same thing.
+  `gq_bbox_clip()` keeps selecting features distinct from cutting them, which
+  two near-identically named copies had blurred.
+
+- `gq_tmap_legend()` merges simple and classified layers into one legend per
+  geometry type and can cut classified entries to the values present in the
+  data. Layout is delegated to tmap 4.4's `z` / `group_id` / `tm_components()`
+  rather than reimplemented.
+
+- `gq_tmap_legend()` collapses rows that render identically, so `roads_dra`'s 26
+  classes become the 8 distinct appearances they actually draw as. A layer named
+  twice therefore yields one entry unless the labels differ — the label is part
+  of the key.
+
+- Verified against the fish passage reporting originals on real cached rasters:
+  identical bbox padding and scale breaks, and a bit-identical blend across
+  14.7 million cells.
+
 # gq 0.4.0
 
 - **The QGIS-native styles now ship alongside the registry.**
