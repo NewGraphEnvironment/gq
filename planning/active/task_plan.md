@@ -127,15 +127,15 @@ No network, no tmap, no Suggests. Fully testable.
 
 ## Phase 6 — Land it
 
-- [ ] `soul/skills/cartography/SKILL.md` — repoint its tmap blocks at the new
+- [x] `soul/skills/cartography/SKILL.md` — repoint its tmap blocks at the new
       helpers, and fix the drift found en route: `gq_reg_read_csv()` ×3 (real
       name `gq_reg_custom()`), `reg_csv_custom.csv` (real name `reg_custom.csv`),
       **seven phantom layer keys** that make the tmap legend block and script
       skeleton error today, and an unbalanced fence rendering 19 prose lines as
       R. Same phantom function in `soul/conventions/cartography.md:31`
-- [ ] `_pkgdown.yml` has no `reference:` index, so no entry needed — verify
-- [ ] README + CLAUDE.md: composition alongside the style translators
-- [ ] `NEWS.md` + `DESCRIPTION` 0.4.0 → **0.5.0** as the final commit
+- [x] `_pkgdown.yml` has no `reference:` index, so no entry needed — verify
+- [x] README + CLAUDE.md: composition alongside the style translators
+- [x] `NEWS.md` + `DESCRIPTION` 0.4.0 → **0.5.0** as the final commit
 - [ ] Close #17. Note on #14 what remains (#18, #19, and the `inst/assets/logo.png`
       line is stale — `inst/logo/nge_icon_200.png` already ships and the vignette
       already uses it)
