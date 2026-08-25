@@ -60,16 +60,16 @@ are already in Suggests and unused by gq's code today.
 
 No network, no tmap, no Suggests. Fully testable.
 
-- [ ] `R/gq_bbox.R` — `gq_bbox_aspect(x, asp, margin = 0.02)`: pad a bbox to a
+- [x] `R/gq_bbox.R` — `gq_bbox_aspect(x, asp, margin = 0.02)`: pad a bbox to a
       target aspect ratio. Branch on `sf::st_is_longlat()` for the `cos(lat)`
       correction rather than taking it as an argument — the two existing copies
       differ on exactly this and neither knew it was conditional
-- [ ] `gq_bbox_clip(x, bbox)` — clip and return **NULL, not a zero-row frame**.
+- [x] `gq_bbox_clip(x, bbox)` — clip and return **NULL, not a zero-row frame**.
       Reconciles four spellings; the rationale (tmap errors on empty geometry)
       goes in the roxygen, since every copy carries that comment
-- [ ] `R/gq_scale_breaks.R` — `gq_scale_breaks(bbox, n = 3)`, from
+- [x] `R/gq_scale_breaks.R` — `gq_scale_breaks(bbox, n = 3)`, from
       `lfpr_scale_breaks()` (`0420:486-492`)
-- [ ] Tests for all three against hand-built bboxes, both CRS branches
+- [x] Tests for all three against hand-built bboxes, both CRS branches
 
 ## Phase 2 — Basemap blend
 
