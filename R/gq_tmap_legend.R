@@ -107,10 +107,7 @@ gq_tmap_legend <- function(reg, layers, present = NULL, field = NULL,
     # A legend is a list of appearances, not of source classes, so collapse rows
     # that are identical in every aesthetic. Anything that differs anywhere is
     # kept, so this cannot merge two things a reader could tell apart.
-    rows <- rows[!duplicated(vapply(rows, function(r) {
-      paste(utils::capture.output(utils::str(r[order(names(r))])),
-            collapse = "|")
-    }, character(1)))]
+    rows <- rows[!duplicated(vapply(rows, legend_key, character(1)))]
     out[[type]] <- c(
       list(type = type),
       collect_legend(rows),
@@ -198,6 +195,29 @@ legend_entries <- function(sty, cls, key, label, present) {
 }
 
 
+#' A dedup key built from values rather than from their display
+#'
+#' An earlier version keyed on `capture.output(str(...))`, which is a *display*
+#' function: it rounds numerics to 3 significant digits, truncates at 128
+#' characters, and honours `options(str = ...)`. So `lwd` 1.2345 and 1.2349
+#' collided, and a line in someone's `.Rprofile` could change what this function
+#' returns. Neither fires on the current registry, but a quiet merge is the wrong
+#' failure to leave latent.
+#'
+#' `format(digits = 15)` keeps full precision, and the type prefix keeps `1L`
+#' distinct from `1.0` -- which matters because a row that lacks a property must
+#' never merge with one that has it at the default.
+#' @noRd
+legend_key <- function(r) {
+  r <- r[order(names(r))]
+  paste(
+    names(r),
+    vapply(r, function(v) paste0(typeof(v), ":", format(v, digits = 15)),
+           character(1)),
+    collapse = "\x1f"
+  )
+}
+
 #' Aesthetics with no meaningful "absent" value in a parallel vector
 #'
 #' A parallel vector has to be as long as the labels, so a property that only
@@ -211,12 +231,18 @@ legend_entries <- function(sty, cls, key, label, present) {
 #'     (16 of 26 undashed) produced `c(NA, ..., "dashed")`.
 #'   * `col` / `lwd` -- `lake` has a stroke and `wetland` does not, so any legend
 #'     naming both produced `c("#1f78b4", NA)`.
+#'   * `fill_alpha` / `col_alpha` -- every CLASSIFIED polygon lacks them, because
+#'     `gq_style()` returns early and there is no `$fill` to read opacity from.
+#'     So any legend combining a classified polygon with an ordinary one -- most
+#'     real maps -- produced `c(0.7, NA)`. 26 of the 45 polygon rows in a
+#'     whole-registry legend.
 #'
-#' The defaults are the "draw nothing visible" value for each aesthetic, which is
-#' what absence meant on the row that lacked it.
+#' The defaults are the "draw nothing visible" value for each aesthetic, except
+#' the opacities, where absence means fully opaque rather than invisible.
 #' @noRd
 legend_na_default <- list(lty = "solid", col = "#00000000", lwd = 0,
-                          fill = "#00000000", size = 0)
+                          fill = "#00000000", size = 0,
+                          fill_alpha = 1, col_alpha = 1)
 
 #' Gather rows into the parallel vectors tm_add_legend() expects
 #'

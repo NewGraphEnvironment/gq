@@ -177,12 +177,6 @@ railway_sty <- gq_style(reg, "railway")
 fish_sty <- gq_style(reg, "bcfishobs_fiss_fish_observations")
 falls_sty <- gq_style(reg, "fiss_obstacles")
 lake_sty <- gq_style(reg, "lake")
-xing_cls <- gq_style(reg, "crossings_pscis_assessment")$classification
-# Road legend: only types present in the data
-road_cls <- gq_style(reg, "roads_dra")$classification
-road_in <- names(road_cls$values) %in% unique(neexdzii_roads$road_type)
-road_leg_values <- road_cls$values[road_in]
-road_leg_labels <- road_cls$labels[road_in]
 
 # Polygon layers — do.call() with gq_tmap_style() directly
 m <- tm_shape(basemap_stars) +
@@ -200,11 +194,17 @@ m <- m +
 tm_shape(neexdzii_habitat) +
   do.call(tm_lines, gq_tmap_style(reg, "streams_salmon", field = "mapping_code"))
 
-# Base streams on top of habitat — simple style, width scaled up for display
+# Base streams on top of habitat — simple style, width scaled up for display.
+# gq_bbox_clip() returns NULL when nothing survives the frame, so test for it
+# rather than handing tm_shape() an empty geometry set — the same guard the
+# basemap uses above, and the one the file already applies to railway and falls.
+if (!is.null(streams_display)) {
+  m <- m +
+    tm_shape(streams_display) +
+    tm_lines(col = stream_sty$classification$values[[1]],
+             lwd = stream_sty$classification$widths[[1]] * 2)
+}
 m <- m +
-tm_shape(streams_display) +
-  tm_lines(col = stream_sty$classification$values[[1]],
-           lwd = stream_sty$classification$widths[[1]] * 2) +
 tm_shape(neexdzii_lakes) +
   do.call(tm_polygons, gq_tmap_style(reg, "lake"))
 
@@ -306,8 +306,11 @@ tm_layout(
 )
 
 print(m)
-# gq_tmap_keymap() derives the viewport centre from the corner and margin, and
-# sizes the inset off the canvas aspect so it comes out square.
+# gq_tmap_keymap() supplies the PLACEMENT here, not the map: it derives the
+# viewport centre from the corner and margin and sizes it off the canvas aspect,
+# which is the arithmetic every hand-rolled inset hardcodes. Its own two-layer
+# map is discarded in favour of `keymap` above, which carries a third layer
+# (watershed groups) that the (aoi, context) signature cannot express.
 km <- gq_tmap_keymap(neexdzii_wsd, neexdzii_bc, asp = 7 / 9)
 print(keymap, vp = km$viewport)
 ```
@@ -316,4 +319,7 @@ Every color on this map traces back to `gq_reg_main()`:
 
 - **Simple layers** (lake, wetland, streams, railway) use `gq_tmap_style(reg, "name")` directly
 - **Classified layers** (crossings, roads, habitat) use `do.call()` with `gq_tmap_style()` — classification field, colors, and labels all come from the registry
-- **Legend colors** use `gq_style()` — change a color in the registry, every element updates
+- **The legend** is built by `gq_tmap_legend()` from the registry — it partitions
+  by geometry type, expands classified layers, collapses classes that render
+  identically, and cuts road classes to the ones present in the data. Change a
+  colour in the registry and every element updates

@@ -19,9 +19,11 @@ test_that("gq_scale_breaks lands on a 1/2/5 step", {
   expect_true(all(mantissa %in% c(1, 2, 5)))
 })
 
-test_that("gq_scale_breaks keeps the bar within its share of the frame", {
-  # The constraint the `share` argument exists for. Overrun makes tmap drop
-  # every label but the last, silently.
+test_that("gq_scale_breaks stays well inside the frame at representative widths", {
+  # A smoke test on four widths, not the guard -- the guard is the sweep below,
+  # which asserts `share` itself. This one asserted 0.75 against a share of 0.35
+  # while carrying the comment claiming to enforce it, and could not have caught
+  # the 1.39x overrun it was named for.
   for (w in c(2e4, 1e5, 4e5, 1e6)) {
     br <- gq_scale_breaks(bb_proj(w = w))
     span_km <- w / 1000

@@ -24,6 +24,11 @@
   data. Layout is delegated to tmap 4.4's `z` / `group_id` / `tm_components()`
   rather than reimplemented.
 
+- `gq_tmap_legend()` collapses rows that render identically, so `roads_dra`'s 26
+  classes become the 8 distinct appearances they actually draw as. A layer named
+  twice therefore yields one entry unless the labels differ — the label is part
+  of the key.
+
 - Verified against the fish passage reporting originals on real cached rasters:
   identical bbox padding and scale breaks, and a bit-identical blend across
   14.7 million cells.

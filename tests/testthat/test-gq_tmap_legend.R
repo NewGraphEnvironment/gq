@@ -257,3 +257,71 @@ test_that("classified point layers carry their per-class size", {
   expect_length(leg$symbols$size, length(leg$symbols$labels))
   expect_true(all(leg$symbols$size > 0))
 })
+
+test_that("every registry layer, and all of them at once, produce no NA", {
+  # The test that would have caught the fill_alpha gap, and the only shape that
+  # covers an aesthetic nobody thought to name. Every other test in this file
+  # picks layers by hand, so it can only find what was already suspected.
+  #
+  # "Some rows have it and some do not" IS the failure condition, so checking
+  # for NA is sufficient and needs no graphics device.
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)
+
+  for (k in keys) {
+    leg <- gq_tmap_legend(reg, k)
+    for (g in leg) {
+      bad <- vapply(g[setdiff(names(g), "type")],
+                    function(v) any(is.na(v)), logical(1))
+      expect_false(any(bad), info = paste(k, paste(names(bad)[bad], collapse = ", ")))
+    }
+  }
+
+  # and every layer together, which is where mixed-aesthetic rows meet
+  leg <- gq_tmap_legend(reg, keys)
+  for (g in leg) {
+    bad <- vapply(g[setdiff(names(g), "type")],
+                  function(v) any(is.na(v)), logical(1))
+    expect_false(any(bad), info = paste(names(bad)[bad], collapse = ", "))
+  }
+})
+
+test_that("the whole-registry legend renders through tmap", {
+  # The consumer check for the sweep above. gq_tmap_legend(reg, c("lake",
+  # "fire_severity")) inspected fine and failed at draw time with the identical
+  # message the NA-default fix was written to remove.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  pts <- sf::st_as_sf(data.frame(x = c(0, 1), y = c(0, 1)),
+                      coords = c("x", "y"), crs = 3005)
+  leg <- gq_tmap_legend(reg, names(reg$layers))
+  m <- Reduce(`+`, c(list(tmap::tm_shape(pts) + tmap::tm_dots()),
+                     lapply(leg, function(x) do.call(tmap::tm_add_legend, x))))
+  f <- tempfile(fileext = ".png")
+  expect_no_error({
+    grDevices::png(f)
+    on.exit(grDevices::dev.off(), add = TRUE)
+    print(m)
+  })
+})
+
+test_that("the dedup key does not depend on str() display options", {
+  # The key was capture.output(str(...)) -- a display function. A line in
+  # someone's .Rprofile could change what this function returns, and the failure
+  # was a quiet merge rather than an error.
+  reg <- gq_reg_main()
+  before <- gq_tmap_legend(reg, "roads_dra")$lines
+  old <- options(str = utils::strOptions(digits.d = 1))
+  on.exit(options(old), add = TRUE)
+  expect_identical(gq_tmap_legend(reg, "roads_dra")$lines, before)
+})
+
+test_that("close-but-distinct widths are not merged", {
+  # str() rounded numerics to 3 significant digits, so 1.2345 and 1.2349 keyed
+  # identically. No registry layer trips it today; the point is that it cannot.
+  layer <- list(type = "line", classification = list(field = "f", classes = list(
+    A = list(color = "#484848", width = 1.2345, label = "Road"),
+    B = list(color = "#484848", width = 1.2349, label = "Road")
+  )))
+  expect_equal(length(gq_tmap_legend(mini(x = layer), "x")$lines$labels), 2L)
+})
