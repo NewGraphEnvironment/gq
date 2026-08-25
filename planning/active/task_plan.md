@@ -73,13 +73,13 @@ No network, no tmap, no Suggests. Fully testable.
 
 ## Phase 2 — Basemap blend
 
-- [ ] `R/gq_basemap_blend.R` — `gq_basemap_blend(bbox, provider_base, provider_relief, zoom, gamma = 0.5, as_stars = TRUE)`
-- [ ] Split the arithmetic into an `@noRd` pure core taking two rasters, so the
+- [x] `R/gq_basemap_blend.R` — `gq_basemap_blend(bbox, provider_base, provider_relief, zoom, gamma = 0.5, as_stars = TRUE)`
+- [x] Split the arithmetic into an `@noRd` pure core taking two rasters, so the
       blend is testable on a synthetic `terra::rast()` **with no network**. The
       fetch wrapper is the thin part
-- [ ] `requireNamespace()` guards for `maptiles`, `terra`, `stars` — the first
+- [x] `requireNamespace()` guards for `maptiles`, `terra`, `stars` — the first
       Suggests-guarded function in the package
-- [ ] Tests: pure core unguarded; the fetch path `skip_if_not_installed()` and
+- [x] Tests: pure core unguarded; the fetch path `skip_if_not_installed()` and
       skipped offline. **First use of `skip_if_not_installed()` in this suite**
 
 ## Phase 3 — Legend

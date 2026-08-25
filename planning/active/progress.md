@@ -27,3 +27,18 @@
 - `gq_bbox_clip()` keeps select-vs-cut distinguishable (`crop=`), tested on a
   line crossing the boundary where the two give lengths 10 and 1.
 - Next: Phase 2 — basemap blend
+- **Phase 2 done** — `R/gq_basemap_blend.R`: `gq_basemap_blend()` +
+  `gq_basemap_tiles()`, with the arithmetic in an `@noRd` `blend_multiply()`
+  testable on synthetic rasters. 18 assertions, no network.
+- **The four blend copies are not the same arithmetic**, contrary to what
+  fraser's `lfpr_basemap_blend()` docstring asserts ("the same operator as the
+  vignette; only the relief source differs"). The vignette and SKILL.md use
+  `base * relief^0.5` — a gamma. fraser uses `base * (1 - 0.35*(1 - relief))` —
+  a linear cap, because its relief is a DEM hillshade rather than a tile
+  service and is far more contrasty. Both ship, both named, both tested to
+  differ (141 vs 165 out of 200 at mid-grey).
+- Relief scale is detected, not assumed: `terra::shade()` returns 0-1 and a tile
+  service returns 0-255, and treating one as the other either blackens the map
+  or does nothing.
+- First `skip_if_not_installed()` in this suite, as expected.
+- Next: Phase 3 — legend
