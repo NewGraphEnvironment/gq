@@ -135,6 +135,14 @@ gq_bbox_clip <- function(x, bbox, crop = FALSE) {
   }
 
   box <- if (inherits(bbox, "sfc")) bbox else sf::st_as_sfc(bbox)
-  out <- if (crop) suppressWarnings(sf::st_crop(x, box)) else sf::st_filter(x, box)
+  out <- if (crop) {
+    suppressWarnings(sf::st_crop(x, box))
+  } else {
+    # Indexing on st_intersects() rather than sf::st_filter(), which dispatches
+    # through dplyr and errors with "dplyr is not installed" without it. gq
+    # imports jsonlite and xml2 only, so the convenience wrapper would have made
+    # dplyr a hard dependency of a two-line subset.
+    x[lengths(sf::st_intersects(x, box)) > 0L, , drop = FALSE]
+  }
   if (nrow(out) == 0L) NULL else out
 }

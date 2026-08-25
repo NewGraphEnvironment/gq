@@ -90,3 +90,12 @@
 - Vignette basemap chunk rewritten onto the helpers and verified end to end:
   tiles fetch, blend yields a 3-band stars, tmap renders it.
 - Next: Phase 6 — docs, skill drift, release
+- **`R CMD check` caught a real bug the 527-pass suite could not.**
+  `sf::st_filter()` dispatches through **dplyr**, which gq does not depend on —
+  Imports is `jsonlite` and `xml2`. My session had dplyr attached so everything
+  passed; the check environment gave `FAIL 4` plus a failing example.
+  Replaced with `x[lengths(sf::st_intersects(x, box)) > 0L, , drop = FALSE]`,
+  which is what `st_filter()` does anyway, and re-verified under
+  `Rscript --vanilla` with dplyr absent.
+- This is the class of defect the `R-CMD-check` workflow added in #50 exists
+  for: a Suggests-or-absent dependency that a developer's warm session hides.
