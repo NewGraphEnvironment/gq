@@ -105,9 +105,16 @@ alone, and 10 other layers carry classifications.
 
 ## Phase 4 — Restore the bug
 
-- [ ] Namespace-patch `tmap_classified()` back to the unfixed call, re-run
+- [x] Namespace-patch `tmap_scale_classified()` back to the unfixed call, re-run
       Phases 1 and 3, confirm they fail, restore. Per `code-check.md` — a test
-      nobody has seen fail is decoration
+      nobody has seen fail is decoration. **34 failures** across `roads_dra`,
+      `roads_ften`, `bec_zone`, `land_ownership`, `crossings_pscis_assessment`
+      and more; 0 errors, so every failure is an assertion firing rather than
+      the harness breaking
+- [x] Assert the patch took before trusting the result (`identical(body(...))`)
+      — a restore-the-bug run that silently failed to patch would report green
+      and read as proof
+- [x] Restore: patch was in-memory only, `git status` clean, FAIL 0 | PASS 782
 
 ## Phase 5 — Land it
 
