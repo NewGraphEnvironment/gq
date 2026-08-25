@@ -37,6 +37,12 @@ The branch is taken from the CRS rather than offered as an argument,
 because the two implementations this replaces each hardcoded one answer and
 neither knew the other case existed. A bbox with an unknown CRS is treated as
 projected — the coordinates are all that is known, so use them as given.
+
+The correction uses the mid-latitude, so it is exact only there. Over a box a
+few degrees tall that is immaterial; over one spanning tens of degrees it is
+not — \code{cos()} runs from 0.71 to 0.34 between 45N and 70N — and no single
+scalar can be right for the whole extent. Project the data before framing it
+if the extent is that large, which is what a map at that scale wants anyway.
 }
 
 \examples{

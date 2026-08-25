@@ -180,9 +180,20 @@ collect_legend <- function(rows) {
   out <- list()
   for (p in props) {
     vals <- lapply(rows, function(r) if (is.null(r[[p]])) NA else r[[p]])
-    if (all(vapply(vals, function(v) length(v) == 1L && is.na(v), logical(1)))) {
-      next
+
+    # Refuse a non-scalar rather than flatten it. unlist() would splice the
+    # extra elements in and shift every later entry against its label, giving a
+    # legend that is wrong rather than absent -- and the equal-length check a
+    # caller might write downstream passes, because every vector is longer by
+    # the same amount. Every registry property is scalar today, so nothing built
+    # from a registry can trip this; it guards hand-built rows.
+    long <- vapply(vals, length, integer(1)) != 1L
+    if (any(long)) {
+      stop("Legend property '", p, "' is not length 1 for entry ",
+           paste(which(long), collapse = ", "), call. = FALSE)
     }
+
+    if (all(vapply(vals, function(v) is.na(v), logical(1)))) next
     out[[p]] <- unlist(vals, use.names = FALSE)
   }
   names(out)[names(out) == "label"] <- "labels"

@@ -116,3 +116,19 @@ test_that("gq_basemap_blend returns stars for tm_rgb, SpatRaster otherwise", {
                   "SpatRaster")
   expect_s3_class(gq_basemap_blend(base, relief, as_stars = TRUE), "stars")
 })
+
+test_that("an all-NA relief errors rather than blanking the map", {
+  # minmax() on all-NA gives -Inf, which would pick the 0-1 scale and return an
+  # all-NA basemap: a blank figure with no error anywhere. A relief layer that
+  # is entirely missing is a broken input, not a shading choice.
+  skip_if_no_terra()
+  expect_error(
+    blend_multiply(r_const(200), r_const(NA_real_), "weight", 0.5, 0.35),
+    "no finite values"
+  )
+  # an explicit relief_max still bypasses detection
+  expect_silent(
+    blend_multiply(r_const(200), r_const(128), "weight", 0.5, 0.35,
+                   relief_max = 255)
+  )
+})

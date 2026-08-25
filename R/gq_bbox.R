@@ -21,6 +21,12 @@
 #' neither knew the other case existed. A bbox with an unknown CRS is treated as
 #' projected — the coordinates are all that is known, so use them as given.
 #'
+#' The correction uses the mid-latitude, so it is exact only there. Over a box a
+#' few degrees tall that is immaterial; over one spanning tens of degrees it is
+#' not — `cos()` runs from 0.71 to 0.34 between 45N and 70N — and no single
+#' scalar can be right for the whole extent. Project the data before framing it
+#' if the extent is that large, which is what a map at that scale wants anyway.
+#'
 #' @param x An `sf`/`sfc` object or a `bbox`.
 #' @param asp Target width/height, i.e. `fig.width / fig.height`.
 #' @param margin Fraction of each dimension added on all sides so features do

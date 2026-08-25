@@ -93,7 +93,14 @@ blend_multiply <- function(base, relief, method, gamma, weight,
   # range does not reach its nominal maximum.
   if (is.null(relief_max)) {
     rng <- terra::minmax(relief)
-    relief_max <- if (isTRUE(max(rng, na.rm = TRUE) > 1)) 255 else 1
+    top <- suppressWarnings(max(rng, na.rm = TRUE))
+    # An all-NA relief gives -Inf here, which would silently pick the 0-1 scale
+    # and hand back an all-NA basemap -- a blank map with no error. A relief
+    # layer that is entirely missing is a broken input, not a shading choice.
+    if (!is.finite(top)) {
+      stop("`relief` has no finite values", call. = FALSE)
+    }
+    relief_max <- if (top > 1) 255 else 1
   }
 
   r <- terra::clamp(relief / relief_max, 0, 1)

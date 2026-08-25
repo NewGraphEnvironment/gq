@@ -117,6 +117,19 @@ test_that("parallel vectors are equal length across aesthetics", {
   }
 })
 
+test_that("a non-scalar legend property is refused, not flattened", {
+  # Found by probing rather than by the suite: unlist() would splice the extra
+  # element in and shift every later entry against its label. The equal-length
+  # assertion above does not catch it, because every vector grows by the same
+  # amount. Nothing built from a registry can reach this -- every registry
+  # property is scalar -- which is exactly why the fixtures missed it.
+  rows <- list(
+    list(type = "lines", label = "A", col = "#111111", lwd = 1),
+    list(type = "lines", label = "B", col = c("#222222", "#333333"), lwd = 2)
+  )
+  expect_error(collect_legend(rows), "not length 1")
+})
+
 test_that("an aesthetic absent from every row is dropped, not passed as NA", {
   # tmap reads an explicit NA as "draw nothing" for some aesthetics, so an
   # all-NA vector is not the same as omitting the argument.
