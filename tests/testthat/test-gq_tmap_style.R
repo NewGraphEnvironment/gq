@@ -259,3 +259,39 @@ test_that("gq_tmap_style handles classified polygon layers", {
   expect_equal(args$fill, "zone")
   expect_s3_class(args$fill.scale, "tm_scale_categorical")
 })
+
+
+# --- #53: labels align to levels, not to the data's subset --------------------
+
+test_that("a classified layer whose data carries a subset draws its own labels", {
+  # tm_scale_categorical() matches colours by NAME and labels by POSITION, and
+  # tmap builds levels from the data. With 3 of 26 classes present it therefore
+  # took labels[1:3] regardless of which three, and a resource road rendered
+  # labelled "Freeway". No list-inspecting test could see this -- the wrong
+  # labels only exist inside tmap.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "roads_dra")
+  keys <- names(cls$values)
+
+  pick <- keys[c(20, 22, 24)]
+  truth <- unique(cls$labels[match(pick, keys)])
+  # Guard the fixture: if these three ever stop sharing one label, or stop
+  # sitting past the front of the registry order, the test stops exercising
+  # the bug and would pass for the wrong reason.
+  expect_length(truth, 1)
+  expect_false(truth %in% cls$labels[seq_along(pick)])
+
+  labs <- drawn_labels(render_classified(reg, "roads_dra", pick))
+
+  expect_gt(length(labs), 0)
+  expect_true(truth %in% labs)
+  expect_false(any(cls$labels[seq_along(pick)] %in% labs))
+})
+
+test_that("a classified subset draws without the label-recycling warning", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  pick <- names(gq_tmap_classes(reg, "roads_dra")$values)[c(20, 22, 24)]
+  expect_no_warning(drawn_labels(render_classified(reg, "roads_dra", pick)))
+})

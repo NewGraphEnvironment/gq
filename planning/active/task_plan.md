@@ -62,15 +62,17 @@ Deliberately **not** doing: adding `present =`/`data =` to `gq_tmap_style()` or
 
 ## Phase 1 — Failing test first
 
-- [ ] Add a `drawn_labels()` test helper: render via `tmap::tmap_grob()`, walk
+- [x] Add a `drawn_labels()` test helper: render via `tmap::tmap_grob()`, walk
       the grob tree, collect `text` grob labels. This is the interop readback
       the issue asks for — 18 existing legend tests inspect our own list and
       none could have caught this (`code-check.md`, "a round-trip through your
       own reader proves nothing")
-- [ ] Test: `roads_dra` with `RU`/`RRD`/`RRC` draws only
+- [x] Test: `roads_dra` with `RU`/`RRD`/`RRC` draws only
       `Resource/recreation/other`
-- [ ] Test: that path emits no `labels do not have the same length` warning
-- [ ] Confirm both fail against current `R/gq_tmap_style.R`
+- [x] Test: that path emits no `labels do not have the same length` warning
+- [x] Confirm both fail against current `R/gq_tmap_style.R` — 3 failures, and
+      the two fixture guards passed, so the test reaches the bug rather than
+      passing for the wrong reason
 
 ## Phase 2 — Fix
 
