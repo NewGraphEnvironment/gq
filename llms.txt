@@ -82,6 +82,14 @@ gq_template_layers("bcrestoration_mobile")
 # QGIS-native style — the full QML, for anything that speaks to QGIS
 gq_style_qml("lake")
 gq_style_qml("land_ownership", template = "bcfishpass_mobile")
+
+# Composition — bbox padding, basemap blending, legends, keymap insets
+bbox <- gq_bbox_aspect(aoi_sf, asp = 7 / 9)
+basemap <- gq_basemap_blend(
+  gq_basemap_tiles(bbox, "CartoDB.PositronNoLabels"),
+  gq_basemap_tiles(bbox, "Esri.WorldShadedRelief")
+)
+leg <- gq_tmap_legend(reg, c("lake", "railway", "roads_dra"))
 ```
 
 ## Concepts
@@ -137,7 +145,8 @@ Active issues track the in-flight scope:
 - **Shiny layer picker** module so projects can be assembled
   interactively from the registry
   ([\#22](https://github.com/NewGraphEnvironment/gq/issues/22))
-- **`gq_tmap_legend()`** helper — pending tmap upstream review
+- **[`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)**
+  helper — pending tmap upstream review
   ([\#27](https://github.com/NewGraphEnvironment/gq/issues/27))
 
 The long-term direction is [OGC API
@@ -173,6 +182,15 @@ MIT (see [`LICENSE`](https://newgraphenvironment.github.io/gq/LICENSE)).
   : Bittner Creek stream network
 - [`bittner_wsd`](https://newgraphenvironment.github.io/gq/reference/bittner_wsd.md)
   : Bittner Creek watershed boundary
+- [`gq_basemap_blend()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_blend.md)
+  : Multiply a basemap by a relief layer
+- [`gq_basemap_tiles()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_tiles.md)
+  : Fetch basemap tiles for a bounding box
+- [`gq_bbox_aspect()`](https://newgraphenvironment.github.io/gq/reference/gq_bbox_aspect.md)
+  : Pad a bounding box to a target aspect ratio
+- [`gq_bbox_clip()`](https://newgraphenvironment.github.io/gq/reference/gq_bbox_clip.md)
+  : Restrict features to a bounding box, returning NULL when nothing is
+  left
 - [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
   : Get layers in a group
 - [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)
@@ -193,6 +211,8 @@ MIT (see [`LICENSE`](https://newgraphenvironment.github.io/gq/LICENSE)).
   : Read a gq style registry from JSON (alias)
 - [`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md)
   : Read a gq style registry from JSON
+- [`gq_scale_breaks()`](https://newgraphenvironment.github.io/gq/reference/gq_scale_breaks.md)
+  : Scale bar breaks appropriate to a map extent
 - [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
   : Get backend-agnostic style for a registry layer
 - [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
@@ -209,6 +229,10 @@ MIT (see [`LICENSE`](https://newgraphenvironment.github.io/gq/LICENSE)).
   : List all visibility themes
 - [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
   : Get classification info for tmap scale functions
+- [`gq_tmap_keymap()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_keymap.md)
+  : Build an overview keymap and the viewport to place it in
+- [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
+  : Build tmap legend arguments from registry layers
 - [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
   : Translate a registry layer style to tmap v4 arguments
 - [`neexdzii_bc`](https://newgraphenvironment.github.io/gq/reference/neexdzii_bc.md)

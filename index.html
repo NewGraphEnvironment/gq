@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -129,7 +129,15 @@ QGIS Project (.qgs / .qgz)                 │
 <span></span>
 <span><span class="co"># QGIS-native style — the full QML, for anything that speaks to QGIS</span></span>
 <span><span class="fu"><a href="reference/gq_style_qml.html">gq_style_qml</a></span><span class="op">(</span><span class="st">"lake"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/gq_style_qml.html">gq_style_qml</a></span><span class="op">(</span><span class="st">"land_ownership"</span>, template <span class="op">=</span> <span class="st">"bcfishpass_mobile"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/gq_style_qml.html">gq_style_qml</a></span><span class="op">(</span><span class="st">"land_ownership"</span>, template <span class="op">=</span> <span class="st">"bcfishpass_mobile"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Composition — bbox padding, basemap blending, legends, keymap insets</span></span>
+<span><span class="va">bbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_bbox_aspect.html">gq_bbox_aspect</a></span><span class="op">(</span><span class="va">aoi_sf</span>, asp <span class="op">=</span> <span class="fl">7</span> <span class="op">/</span> <span class="fl">9</span><span class="op">)</span></span>
+<span><span class="va">basemap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_basemap_blend.html">gq_basemap_blend</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, <span class="st">"CartoDB.PositronNoLabels"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, <span class="st">"Esri.WorldShadedRelief"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">leg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_tmap_legend.html">gq_tmap_legend</a></span><span class="op">(</span><span class="va">reg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lake"</span>, <span class="st">"railway"</span>, <span class="st">"roads_dra"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="concepts">Concepts<a class="anchor" aria-label="anchor" href="#concepts"></a>
@@ -221,7 +229,7 @@ QGIS Project (.qgs / .qgz)                 │
 <li>
 <strong>Shiny layer picker</strong> module so projects can be assembled interactively from the registry (<a href="https://github.com/NewGraphEnvironment/gq/issues/22" class="external-link">#22</a>)</li>
 <li>
-<strong><code>gq_tmap_legend()</code></strong> helper — pending tmap upstream review (<a href="https://github.com/NewGraphEnvironment/gq/issues/27" class="external-link">#27</a>)</li>
+<strong><code><a href="reference/gq_tmap_legend.html">gq_tmap_legend()</a></code></strong> helper — pending tmap upstream review (<a href="https://github.com/NewGraphEnvironment/gq/issues/27" class="external-link">#27</a>)</li>
 </ul>
 <p>The long-term direction is <a href="https://ogcapi.ogc.org/styles/" class="external-link">OGC API Styles</a> — once the spec is widely adopted by GIS tooling, the canonical registry becomes a server endpoint and the per-target translators become thin client wrappers.</p>
 </div>

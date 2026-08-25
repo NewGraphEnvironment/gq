@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,17 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="gq-050">gq 0.5.0<a class="anchor" aria-label="anchor" href="#gq-050"></a></h2>
+<ul><li>
+<p><strong>Map composition, not just style translation.</strong> Six helpers encode the cartography conventions as defaults: <code><a href="../reference/gq_bbox_aspect.html">gq_bbox_aspect()</a></code>, <code><a href="../reference/gq_bbox_clip.html">gq_bbox_clip()</a></code>, <code><a href="../reference/gq_scale_breaks.html">gq_scale_breaks()</a></code>, <code><a href="../reference/gq_basemap_tiles.html">gq_basemap_tiles()</a></code> / <code><a href="../reference/gq_basemap_blend.html">gq_basemap_blend()</a></code>, <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> and <code><a href="../reference/gq_tmap_keymap.html">gq_tmap_keymap()</a></code>.</p>
+<p>Each replaces three to five copies scattered across the reporting repos, the package’s own vignette and the cartography skill. Two of those copies documented themselves as ports of this vignette, so the code had already made the round trip out of gq and back.</p>
+</li>
+<li><p>Extracting them settled three disagreements the copies did not know they had. <code><a href="../reference/gq_bbox_aspect.html">gq_bbox_aspect()</a></code> applies the latitude correction from the CRS rather than hardcoding one answer — a projected copy and a geographic copy each had it wrong for the other’s input. <code><a href="../reference/gq_basemap_blend.html">gq_basemap_blend()</a></code> ships two named operators, because the gamma form suited to a relief tile service and the capped linear form suited to a DEM hillshade were believed to be the same thing. <code><a href="../reference/gq_bbox_clip.html">gq_bbox_clip()</a></code> keeps selecting features distinct from cutting them, which two near-identically named copies had blurred.</p></li>
+<li><p><code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> merges simple and classified layers into one legend per geometry type and can cut classified entries to the values present in the data. Layout is delegated to tmap 4.4’s <code>z</code> / <code>group_id</code> / <code><a href="https://r-tmap.github.io/tmap/reference/tm_components.html" class="external-link">tm_components()</a></code> rather than reimplemented.</p></li>
+<li><p><code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> collapses rows that render identically, so <code>roads_dra</code>’s 26 classes become the 8 distinct appearances they actually draw as. A layer named twice therefore yields one entry unless the labels differ — the label is part of the key.</p></li>
+<li><p>Verified against the fish passage reporting originals on real cached rasters: identical bbox padding and scale breaks, and a bit-identical blend across 14.7 million cells.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="gq-040">gq 0.4.0<a class="anchor" aria-label="anchor" href="#gq-040"></a></h2>
 <ul><li>

@@ -14,6 +14,15 @@
   : Bittner Creek stream network
 - [`bittner_wsd`](https://newgraphenvironment.github.io/gq/reference/bittner_wsd.md)
   : Bittner Creek watershed boundary
+- [`gq_basemap_blend()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_blend.md)
+  : Multiply a basemap by a relief layer
+- [`gq_basemap_tiles()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_tiles.md)
+  : Fetch basemap tiles for a bounding box
+- [`gq_bbox_aspect()`](https://newgraphenvironment.github.io/gq/reference/gq_bbox_aspect.md)
+  : Pad a bounding box to a target aspect ratio
+- [`gq_bbox_clip()`](https://newgraphenvironment.github.io/gq/reference/gq_bbox_clip.md)
+  : Restrict features to a bounding box, returning NULL when nothing is
+  left
 - [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
   : Get layers in a group
 - [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)
@@ -34,6 +43,8 @@
   : Read a gq style registry from JSON (alias)
 - [`gq_registry_read()`](https://newgraphenvironment.github.io/gq/reference/gq_registry_read.md)
   : Read a gq style registry from JSON
+- [`gq_scale_breaks()`](https://newgraphenvironment.github.io/gq/reference/gq_scale_breaks.md)
+  : Scale bar breaks appropriate to a map extent
 - [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
   : Get backend-agnostic style for a registry layer
 - [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
@@ -50,6 +61,10 @@
   : List all visibility themes
 - [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
   : Get classification info for tmap scale functions
+- [`gq_tmap_keymap()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_keymap.md)
+  : Build an overview keymap and the viewport to place it in
+- [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
+  : Build tmap legend arguments from registry layers
 - [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
   : Translate a registry layer style to tmap v4 arguments
 - [`neexdzii_bc`](https://newgraphenvironment.github.io/gq/reference/neexdzii_bc.md)

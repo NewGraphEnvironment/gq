@@ -224,47 +224,35 @@ blended with hillshade works well.
 
 ``` r
 
-# Compute bbox that matches the canvas aspect ratio (7:9) to fill the page
-bbox <- st_bbox(neexdzii_wsd)
-target_asp <- 7 / 9  # fig.width / fig.height
-dx <- bbox["xmax"] - bbox["xmin"]
-dy <- bbox["ymax"] - bbox["ymin"]
-# Approximate aspect ratio correction for latitude
-lat_mid <- (bbox["ymin"] + bbox["ymax"]) / 2
-cos_lat <- cos(lat_mid * pi / 180)
-geo_asp <- (dx * cos_lat) / dy
+# Pad the bbox to the canvas aspect ratio (7:9) so the map fills the page. The
+# latitude correction a geographic CRS needs is applied from the CRS rather
+# than by hand -- this data is lat/lon, so it fires here and would not in BC
+# Albers.
+bbox <- gq_bbox_aspect(neexdzii_wsd, asp = 7 / 9)
 
-if (geo_asp > target_asp) {
-  # Too wide — expand height
-  new_dy <- (dx * cos_lat) / target_asp
-  pad <- (new_dy - dy) / 2
-  bbox["ymin"] <- bbox["ymin"] - pad
-  bbox["ymax"] <- bbox["ymax"] + pad
+positron <- gq_basemap_tiles(bbox, provider = "CartoDB.PositronNoLabels",
+                             zoom = 10, pad = 0, crs = NULL)
+relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
+                           zoom = 10, pad = 0, crs = NULL)
+
+# gq_basemap_tiles() returns NULL on a failed fetch so the caller can draw an
+# unshaded map rather than lose the figure. Honour that here rather than only
+# documenting it -- a tile hiccup during a pkgdown build should not fail it.
+basemap_stars <- if (is.null(positron) || is.null(relief)) {
+  NULL
 } else {
-  # Too tall — expand width
-  new_dx <- (dy * target_asp) / cos_lat
-  pad <- (new_dx - dx) / 2
-  bbox["xmin"] <- bbox["xmin"] - pad
-  bbox["xmax"] <- bbox["xmax"] + pad
+  # A relief tile service spans the full range, so the gamma operator suits it.
+  # A hillshade derived from a DEM is far more contrasty and wants
+  # `method = "weight"`, which caps how much brightness can be removed.
+  gq_basemap_blend(positron, relief, method = "gamma", gamma = 0.5)
 }
-# Small margin so features don't touch the frame
-y_pad <- (bbox["ymax"] - bbox["ymin"]) * 0.02
-x_pad <- (bbox["xmax"] - bbox["xmin"]) * 0.02
-bbox["ymin"] <- bbox["ymin"] - y_pad
-bbox["ymax"] <- bbox["ymax"] + y_pad
-bbox["xmin"] <- bbox["xmin"] - x_pad
-bbox["xmax"] <- bbox["xmax"] + x_pad
-bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
 
-positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels",
-                      zoom = 10, crop = TRUE)
-relief <- get_tiles(bbox_sf, provider = "Esri.WorldShadedRelief",
-                    zoom = 10, crop = TRUE)
-relief_rs <- terra::resample(relief, positron)
-p_n <- positron / 255
-r_g <- terra::mean(relief_rs) / 255
-blended <- terra::clamp(p_n * (r_g ^ 0.5) * 255, lower = 0, upper = 255)
-basemap_stars <- stars::st_as_stars(blended)
+# Now that the frame is known, drop anything outside it. gq_bbox_clip() returns
+# NULL rather than a zero-row object, which is what tm_shape() needs -- it
+# errors on an empty geometry set instead of skipping it.
+streams_display <- gq_bbox_clip(streams_display, bbox)
+#> although coordinates are longitude/latitude, st_intersects assumes that they
+#> are planar
 ```
 
 ## Keymap inset
@@ -312,12 +300,6 @@ railway_sty <- gq_style(reg, "railway")
 fish_sty <- gq_style(reg, "bcfishobs_fiss_fish_observations")
 falls_sty <- gq_style(reg, "fiss_obstacles")
 lake_sty <- gq_style(reg, "lake")
-xing_cls <- gq_style(reg, "crossings_pscis_assessment")$classification
-# Road legend: only types present in the data
-road_cls <- gq_style(reg, "roads_dra")$classification
-road_in <- names(road_cls$values) %in% unique(neexdzii_roads$road_type)
-road_leg_values <- road_cls$values[road_in]
-road_leg_labels <- road_cls$labels[road_in]
 
 # Polygon layers — do.call() with gq_tmap_style() directly
 m <- tm_shape(basemap_stars) +
@@ -335,11 +317,17 @@ m <- m +
 tm_shape(neexdzii_habitat) +
   do.call(tm_lines, gq_tmap_style(reg, "streams_salmon", field = "mapping_code"))
 
-# Base streams on top of habitat — simple style, width scaled up for display
+# Base streams on top of habitat — simple style, width scaled up for display.
+# gq_bbox_clip() returns NULL when nothing survives the frame, so test for it
+# rather than handing tm_shape() an empty geometry set — the same guard the
+# basemap uses above, and the one the file already applies to railway and falls.
+if (!is.null(streams_display)) {
+  m <- m +
+    tm_shape(streams_display) +
+    tm_lines(col = stream_sty$classification$values[[1]],
+             lwd = stream_sty$classification$widths[[1]] * 2)
+}
 m <- m +
-tm_shape(streams_display) +
-  tm_lines(col = stream_sty$classification$values[[1]],
-           lwd = stream_sty$classification$widths[[1]] * 2) +
 tm_shape(neexdzii_lakes) +
   do.call(tm_polygons, gq_tmap_style(reg, "lake"))
 
@@ -394,30 +382,21 @@ if (nrow(stream_labels) > 0) {
             options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
 }
 
-# Manual legends — all colors from gq_style()
-m <- m +
-tm_add_legend(
-  type = "polygons",
-  labels = c("Lake", "Wetland"),
-  fill = c(gq_style(reg, "lake")$fill$color,
-           gq_style(reg, "wetland")$fill$color)
-) +
-tm_add_legend(
-  type = "lines",
-  labels = c("Stream", road_leg_labels, "Railway"),
-  col = c(stream_sty$classification$values[[1]],
-          unname(road_leg_values), railway_sty$stroke$color),
-  lwd = c(0.5, rep(0.8, length(road_leg_values)), 0.8),
-  lty = c("solid", rep("solid", length(road_leg_values)), "twodash")
-) +
-tm_add_legend(
-  type = "symbols",
-  labels = c(xing_cls$labels, "Fish obs", "Falls"),
-  fill = c(unname(xing_cls$values),
-           fish_sty$mark$color, falls_sty$mark$color),
-  shape = c(21, 21, 21, 21, 24, 22),
-  size = c(0.4, 0.4, 0.4, 0.4, 0.35, 0.4)
+# Legends from the registry. gq_tmap_legend() partitions by geometry type,
+# expands classified layers to one entry per class, merges simple and classified
+# layers of the same type into one legend, and collapses classes that render
+# identically. `present` cuts road classes to the ones the data actually has.
+leg <- gq_tmap_legend(
+  reg,
+  c("Lake" = "lake", "Wetland" = "wetland", "Stream" = "streams_all",
+    "roads_dra", "Railway" = "railway",
+    "crossings_pscis_assessment",
+    "Fish obs" = "bcfishobs_fiss_fish_observations",
+    "Falls" = "fiss_obstacles"),
+  present = list(roads_dra = unique(neexdzii_roads$road_type))
 )
+
+m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
 
 # Layout: four-corner rule
 # - Legend: bottom-left
@@ -426,7 +405,8 @@ tm_add_legend(
 # - Keymap: bottom-right (via grid viewport)
 m <- m +
 tm_scalebar(
-  breaks = c(0, 2, 4, 6),
+  # gq_scale_breaks() needs metre units and says so, so project the bbox first
+  breaks = gq_scale_breaks(st_bbox(st_transform(st_as_sfc(bbox), 3005))),
   text.size = 0.5,
   position = c("center", "bottom"),
   margins = c(0, 0, 0, 0)
@@ -451,9 +431,13 @@ tm_layout(
 print(m)
 #> Warning: labels do not have the same length as levels, so they are repeated
 #> Warning: labels do not have the same length as levels, so they are repeated
-print(keymap, vp = grid::viewport(
-  x = 0.86, y = 0.12, width = 0.25, height = 0.22
-))
+# gq_tmap_keymap() supplies the PLACEMENT here, not the map: it derives the
+# viewport centre from the corner and margin and sizes it off the canvas aspect,
+# which is the arithmetic every hand-rolled inset hardcodes. Its own two-layer
+# map is discarded in favour of `keymap` above, which carries a third layer
+# (watershed groups) that the (aoi, context) signature cannot express.
+km <- gq_tmap_keymap(neexdzii_wsd, neexdzii_bc, asp = 7 / 9)
+print(keymap, vp = km$viewport)
 ```
 
 ![Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish
@@ -464,12 +448,17 @@ registry](gq-tmap-composition_files/figure-html/map-composition-1.png)
 Every color on this map traces back to
 [`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md):
 
-- **Simple layers** (lake, wetland, streams, railway) use
-  `gq_tmap_style(reg, "name")` directly
+- **Simple layers** (lake, wetland) use `gq_tmap_style(reg, "name")`
+  directly. Streams and railway are drawn by hand because each needs
+  something the registry does not model — one class pulled out of a
+  classified layer, and a white casing over a black line
 - **Classified layers** (crossings, roads, habitat) use
   [`do.call()`](https://rdrr.io/r/base/do.call.html) with
   [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
   — classification field, colors, and labels all come from the registry
-- **Legend colors** use
-  [`gq_style()`](https://newgraphenvironment.github.io/gq/reference/gq_style.md)
-  — change a color in the registry, every element updates
+- **The legend** is built by
+  [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
+  from the registry — it partitions by geometry type, expands classified
+  layers, collapses classes that render identically, and cuts road
+  classes to the ones present in the data. Change a colour in the
+  registry and every element updates

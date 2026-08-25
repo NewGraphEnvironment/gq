@@ -82,6 +82,14 @@ gq_template_layers("bcrestoration_mobile")
 # QGIS-native style — the full QML, for anything that speaks to QGIS
 gq_style_qml("lake")
 gq_style_qml("land_ownership", template = "bcfishpass_mobile")
+
+# Composition — bbox padding, basemap blending, legends, keymap insets
+bbox <- gq_bbox_aspect(aoi_sf, asp = 7 / 9)
+basemap <- gq_basemap_blend(
+  gq_basemap_tiles(bbox, "CartoDB.PositronNoLabels"),
+  gq_basemap_tiles(bbox, "Esri.WorldShadedRelief")
+)
+leg <- gq_tmap_legend(reg, c("lake", "railway", "roads_dra"))
 ```
 
 ## Concepts
@@ -137,7 +145,8 @@ Active issues track the in-flight scope:
 - **Shiny layer picker** module so projects can be assembled
   interactively from the registry
   ([\#22](https://github.com/NewGraphEnvironment/gq/issues/22))
-- **`gq_tmap_legend()`** helper — pending tmap upstream review
+- **[`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)**
+  helper — pending tmap upstream review
   ([\#27](https://github.com/NewGraphEnvironment/gq/issues/27))
 
 The long-term direction is [OGC API
