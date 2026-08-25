@@ -83,7 +83,10 @@ gq_basemap_blend <- function(base, relief, method = c("gamma", "weight"),
 blend_multiply <- function(base, relief, method, gamma, weight,
                            relief_max = NULL) {
   if (terra::nlyr(relief) > 1L) relief <- terra::mean(relief)
-  if (!identical(dim(relief)[1:2], dim(base)[1:2])) {
+  # compareGeom(), not dim(): two rasters can share nrow/ncol and have unrelated
+  # extents or CRSs, in which case skipping the resample makes the multiply fail
+  # from deep inside terra with a message about neither of these rasters.
+  if (!isTRUE(terra::compareGeom(relief, base, stopOnError = FALSE))) {
     relief <- terra::resample(relief, base, method = "bilinear")
   }
 
@@ -147,7 +150,19 @@ gq_basemap_tiles <- function(bbox, provider = "CartoDB.PositronNoLabels",
 
   box <- if (inherits(bbox, "sfc")) bbox else sf::st_as_sfc(bbox)
   bb <- sf::st_bbox(box)
-  padded <- sf::st_buffer(box, (bb[["xmax"]] - bb[["xmin"]]) * pad)
+
+  # Expand the bbox arithmetically rather than with st_buffer(). Under s2 -- on
+  # by default, and gq does not turn it off -- a buffer distance on a lon/lat
+  # geometry is read as METRES, so a 0.1-degree pad widens the box by about
+  # 0.04 degrees instead of 0.2. Measured on a 1-degree box: 1.041 out, 1.2
+  # expected. Padding the coordinates has no such ambiguity in either CRS.
+  dx <- (bb[["xmax"]] - bb[["xmin"]]) * pad
+  dy <- (bb[["ymax"]] - bb[["ymin"]]) * pad
+  bb[["xmin"]] <- bb[["xmin"]] - dx
+  bb[["xmax"]] <- bb[["xmax"]] + dx
+  bb[["ymin"]] <- bb[["ymin"]] - dy
+  bb[["ymax"]] <- bb[["ymax"]] + dy
+  padded <- sf::st_as_sfc(bb)
 
   tiles <- try(
     maptiles::get_tiles(sf::st_transform(padded, 4326), provider = provider,
@@ -162,6 +177,7 @@ gq_basemap_tiles <- function(bbox, provider = "CartoDB.PositronNoLabels",
     return(NULL)
   }
   if (is.null(crs)) return(tiles)
-  terra::project(tiles, paste0("EPSG:", sf::st_crs(crs)$epsg),
-                 method = "bilinear")
+  # WKT rather than paste0("EPSG:", $epsg): a CRS with no authority code gives
+  # NA there, and "EPSG:NA" reaches terra as a parse error.
+  terra::project(tiles, sf::st_crs(crs)$wkt, method = "bilinear")
 }

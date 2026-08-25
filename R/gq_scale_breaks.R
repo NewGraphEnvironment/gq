@@ -16,7 +16,7 @@
 #'
 #' @return A numeric vector of length `n + 1`, starting at 0, in kilometres.
 #'
-#' @examples
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
 #' bb <- sf::st_bbox(
 #'   c(xmin = 1e6, ymin = 9e5, xmax = 1.1e6, ymax = 1e6),
 #'   crs = 3005
@@ -31,7 +31,7 @@
 #' @export
 gq_scale_breaks <- function(bbox, n = 3, share = 0.35) {
   if (!inherits(bbox, "bbox")) {
-    if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required")
+    if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required", call. = FALSE)
     bbox <- sf::st_bbox(bbox)
   }
   if (!is.numeric(n) || length(n) != 1L || is.na(n) || n < 1) {

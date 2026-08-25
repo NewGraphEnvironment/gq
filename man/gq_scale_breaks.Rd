@@ -29,6 +29,7 @@ label but the last, which looks like a styling problem rather than a sizing
 one.
 }
 \examples{
+\dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 bb <- sf::st_bbox(
   c(xmin = 1e6, ymin = 9e5, xmax = 1.1e6, ymax = 1e6),
   crs = 3005
@@ -39,5 +40,5 @@ gq_scale_breaks(bb)
 wide <- bb
 wide[["xmax"]] <- wide[["xmin"]] + 400000
 gq_scale_breaks(wide)
-
+\dontshow{\}) # examplesIf}
 }

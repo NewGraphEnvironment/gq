@@ -24,9 +24,9 @@ test each one. Returning \code{NULL} rather than a zero-row object lets the call
 write \verb{if (!is.null(x))} once instead of checking \code{nrow()} at every use.
 }
 \section{Selecting versus cutting}{
-\code{crop = FALSE} (the default) keeps whole features that touch the box, via
-\code{\link[sf:st_join]{sf::st_filter()}}. \code{crop = TRUE} truncates geometries at the boundary, via
-\code{\link[sf:st_crop]{sf::st_crop()}}.
+\code{crop = FALSE} (the default) keeps whole features that touch the box,
+selecting on \code{\link[sf:geos_binary_pred]{sf::st_intersects()}}. \code{crop = TRUE} truncates geometries at the
+boundary, via \code{\link[sf:st_crop]{sf::st_crop()}}.
 
 These are genuinely different maps: a stream leaving the frame is drawn to
 its end under the default and stops at the edge under \code{crop = TRUE}. Both
@@ -36,6 +36,7 @@ here rather than two functions a caller might pick between by accident.
 }
 
 \examples{
+\dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 pts <- sf::st_as_sf(
   data.frame(x = c(0, 10), y = c(0, 10)),
   coords = c("x", "y"), crs = 3005
@@ -48,5 +49,5 @@ nrow(gq_bbox_clip(pts, bb))
 far <- sf::st_bbox(c(xmin = 100, ymin = 100, xmax = 101, ymax = 101),
                    crs = 3005)
 is.null(gq_bbox_clip(pts, far))
-
+\dontshow{\}) # examplesIf}
 }

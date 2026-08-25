@@ -99,3 +99,39 @@ test_that("gq_tmap_keymap rejects an unknown corner", {
   skip_if_not_installed("tmap")
   expect_error(gq_tmap_keymap(aoi(), context(), corner = "middle"), "arg")
 })
+
+test_that("asp makes the inset square on a non-square canvas", {
+  # width and height are device fractions, so equal-looking numbers give a
+  # lopsided inset. On the 9x7 canvas the fish passage maps use, the default
+  # 0.25/0.22 is 1.14 wide-to-tall; fraser derived height from the canvas
+  # aspect for exactly this reason.
+  skip_if_not_installed("tmap")
+  sq <- gq_tmap_keymap(aoi(), context(), asp = 9 / 7)
+  expect_equal(as.numeric(sq$viewport$height),
+               as.numeric(sq$viewport$width) * 9 / 7)
+
+  flat <- gq_tmap_keymap(aoi(), context())
+  expect_false(isTRUE(all.equal(
+    as.numeric(flat$viewport$width) / as.numeric(flat$viewport$height), 1
+  )))
+})
+
+test_that("gq_tmap_keymap validates asp", {
+  skip_if_not_installed("tmap")
+  expect_error(gq_tmap_keymap(aoi(), context(), asp = 0), "positive")
+  expect_error(gq_tmap_keymap(aoi(), context(), asp = c(1, 2)), "positive")
+})
+
+test_that("context defaults to neutral grey, not a registry green", {
+  # provincial_park (#639b5f) under watershed_group_boundary (#85b66f) is
+  # green on green -- the AOI barely reads. The context is a backdrop.
+  skip_if_not_installed("tmap")
+  expect_silent(km <- gq_tmap_keymap(aoi(), context()))
+  expect_s3_class(km$map, "tmap")
+  # naming a layer still works
+  expect_s3_class(
+    gq_tmap_keymap(aoi(), context(), context_layer = "provincial_park")$map,
+    "tmap"
+  )
+})
+

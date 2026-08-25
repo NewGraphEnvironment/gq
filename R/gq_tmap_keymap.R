@@ -16,14 +16,29 @@
 #' are not the margin they look like. `corner` and `margin` compute them, so
 #' moving a keymap between corners does not mean re-deriving them by eye.
 #'
+#' # Sizing
+#'
+#' `width` and `height` are fractions of the *device*, so on a non-square canvas
+#' equal fractions do not give a square inset. Pass `asp` — the canvas
+#' width/height — and the height is derived so the inset comes out square. On
+#' the 9x7 canvas the fish passage maps use, the alternative is an inset 1.46
+#' times wider than tall.
+#'
 #' @param aoi The area of interest — the thing being located.
-#' @param context Wider context, drawn beneath. A province or basin outline.
+#' @param context Wider context, drawn beneath.
 #' @param reg A registry for the fill and stroke colours. Defaults to
 #'   [gq_reg_main()]. The copies this replaces all hardcode hex here, including
 #'   one that takes a registry argument and then does not use it.
-#' @param aoi_layer,context_layer Registry keys supplying the two styles.
+#' @param aoi_layer Registry key supplying the AOI style.
+#' @param context_layer Registry key supplying the context style, or `NULL` for
+#'   a neutral grey. Grey is the default because the context is a backdrop: the
+#'   registry has no province-outline layer, and the nearest candidates are
+#'   greens that leave a green AOI barely legible on top.
 #' @param corner Which corner to place the inset in.
-#' @param width,height Size as a fraction of the device.
+#' @param width Width as a fraction of the device.
+#' @param height Height as a fraction of the device. Ignored when `asp` is given.
+#' @param asp Canvas aspect ratio (`fig.width / fig.height`). When supplied,
+#'   `height` is computed as `width * asp` so the inset renders square.
 #' @param margin Gap between the inset and the frame edge, as a fraction of the
 #'   device. The four-corner convention wants this equal for every element.
 #'
@@ -44,28 +59,48 @@
 #' # bottom-right by default, and the viewport centre reflects the margin
 #' round(c(km$viewport$x, km$viewport$y), 3)
 #'
+#' # on a 9x7 canvas, asp keeps the inset square
+#' sq <- gq_tmap_keymap(aoi, context, asp = 9 / 7)
+#' round(as.numeric(sq$viewport$width) / as.numeric(sq$viewport$height), 3)
+#'
 #' @export
 gq_tmap_keymap <- function(aoi, context, reg = NULL,
                            aoi_layer = "watershed_group_boundary",
-                           context_layer = "provincial_park",
+                           context_layer = NULL,
                            corner = c("bottomright", "bottomleft",
                                       "topright", "topleft"),
-                           width = 0.25, height = 0.22, margin = 0.03) {
+                           width = 0.25, height = 0.22, asp = NULL,
+                           margin = 0.03) {
   if (!requireNamespace("tmap", quietly = TRUE)) stop("tmap is required")
   if (!requireNamespace("grid", quietly = TRUE)) stop("grid is required")
   corner <- match.arg(corner)
+  if (!is.null(asp)) {
+    if (!is.numeric(asp) || length(asp) != 1L || is.na(asp) || asp <= 0) {
+      stop("`asp` must be a single positive number", call. = FALSE)
+    }
+    height <- width * asp
+  }
 
   if (is.null(reg)) reg <- gq_reg_main()
-  ctx <- gq_style(reg, context_layer)
   area <- gq_style(reg, aoi_layer)
+  ctx <- if (is.null(context_layer)) {
+    list(fill = list(color = "#e8e8e8"), stroke = list(color = "#999999"))
+  } else {
+    gq_style(reg, context_layer)
+  }
 
+  # fill_alpha carried through rather than dropped: the registry stores opacity
+  # on the fill, and an inset that ignores it cannot reproduce a semi-transparent
+  # AOI over its context -- which is how every existing copy draws it.
   map <- tmap::tm_shape(context) +
     tmap::tm_polygons(
-      fill = ctx$fill$color, col = ctx$stroke$color, lwd = 0.5
+      fill = ctx$fill$color, fill_alpha = ctx$fill$opacity %||% 1,
+      col = ctx$stroke$color, lwd = 0.5
     ) +
     tmap::tm_shape(aoi) +
     tmap::tm_polygons(
-      fill = area$fill$color, col = area$stroke$color, lwd = 0.6
+      fill = area$fill$color, fill_alpha = area$fill$opacity %||% 1,
+      col = area$stroke$color, lwd = 0.6
     ) +
     tmap::tm_layout(
       frame = TRUE, bg.color = "white",

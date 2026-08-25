@@ -76,7 +76,21 @@ unbalanced fence rendering nineteen lines of prose as R.
 ## Deferred, filed not forgotten
 
 - **Rewriting fraser's `0420` onto these helpers** — its own PR, because fraser
-  installs gq from GitHub and these had to land first. When it happens: do not
+  installs gq from GitHub and these had to land first.
+
+  The plan's "delete the local copies" **over-promised**, and the keymap is
+  where. `lfpr_keymap_survey()` is ~130 lines carrying context waterbodies,
+  streams, roads and railway, classified habitat lines, a two-part ring+core
+  crossing symbol, staggered paired labels, road-name-on-longest-segment, eDNA
+  points and its own scalebar. `gq_tmap_keymap()`'s `(aoi, context, reg)`
+  signature expresses the vignette's three-layer inset and nothing more. It also
+  places the inset *over* the map, while fraser puts it in a legend panel
+  outside the frame — one default cannot serve both. Expect that one to stay
+  local, thinned rather than deleted. `gq_basemap_blend()` likewise does not
+  crop to frame or return NULL on an absent basemap, so fraser's wrapper keeps
+  those guards.
+
+  When it happens: do not
   port `lfpr_grob_north()`, `lfpr_convergence()` or `lfpr_label_mapping_code()`
   (all defined, never called), drop the unused `label_max_modelled` formal, and
   fix the roxygen documenting a `@param extent` that does not exist.

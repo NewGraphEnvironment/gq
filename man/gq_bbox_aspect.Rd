@@ -46,6 +46,7 @@ if the extent is that large, which is what a map at that scale wants anyway.
 }
 
 \examples{
+\dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 bb <- sf::st_bbox(
   c(xmin = 1e6, ymin = 9e5, xmax = 1.1e6, ymax = 1e6),
   crs = 3005
@@ -54,5 +55,5 @@ out <- gq_bbox_aspect(bb, asp = 7 / 9)
 
 # the padded box carries the ratio that was asked for
 round(unname((out["xmax"] - out["xmin"]) / (out["ymax"] - out["ymin"])), 4)
-
+\dontshow{\}) # examplesIf}
 }

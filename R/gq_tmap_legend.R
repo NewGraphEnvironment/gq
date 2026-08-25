@@ -109,8 +109,9 @@ gq_tmap_legend <- function(reg, layers, present = NULL, field = NULL,
 #' classified expansion can be tested without building a whole legend.
 #'
 #' `sty` is a [gq_style()] result and `cls` a [gq_tmap_classes()] result or
-#' `NULL`. The classification is passed in already flattened rather than read
-#' off `sty$classification`, which is the nested per-class form.
+#' `NULL`. Both are needed: `cls` carries `widths` and `dashes`,
+#' `sty$classification` carries `radii` and `shapes`, and neither is a superset
+#' of the other.
 #' @noRd
 legend_entries <- function(sty, cls, key, label, present) {
   type <- switch(if (is.null(sty$type)) "" else sty$type,
@@ -160,7 +161,13 @@ legend_entries <- function(sty, cls, key, label, present) {
       row$lty <- dash_to_lty(pick(cls$dashes, j, sty$stroke$dash))
     } else {
       row$fill <- col
-      radius <- pick(cls$radii, j, sty$mark$radius)
+      # Per-class radius comes off gq_style()'s classification, which carries
+      # `radii` (and `shapes`); gq_tmap_classes() returns only
+      # field/values/labels/widths/dashes. crossings_pscis_assessment is the
+      # only layer that has one, and it is the central point layer of every
+      # fish passage map -- so reading it from the wrong object dropped size
+      # from the legend that needs it most and tmap substituted a default.
+      radius <- pick(sty$classification$radii, j, sty$mark$radius)
       if (!is.null(radius)) row$size <- radius / 3
     }
     row

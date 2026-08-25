@@ -35,7 +35,7 @@
 #'
 #' @return A `bbox` with the same CRS as `x`.
 #'
-#' @examples
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
 #' bb <- sf::st_bbox(
 #'   c(xmin = 1e6, ymin = 9e5, xmax = 1.1e6, ymax = 1e6),
 #'   crs = 3005
@@ -47,7 +47,7 @@
 #'
 #' @export
 gq_bbox_aspect <- function(x, asp, margin = 0.02) {
-  if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required")
+  if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required", call. = FALSE)
   if (!is.numeric(asp) || length(asp) != 1L || is.na(asp) || asp <= 0) {
     stop("`asp` must be a single positive number", call. = FALSE)
   }
@@ -89,6 +89,25 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
   bb[["xmax"]] <- bb[["xmax"]] + mx
   bb[["ymin"]] <- bb[["ymin"]] - my
   bb[["ymax"]] <- bb[["ymax"]] + my
+
+  # Padding a geographic box near a pole or the antimeridian walks the
+  # coordinates out of range. st_as_sfc() accepts them without complaint, so the
+  # result travels a long way before anything objects -- a tile request for
+  # latitude 94 returns nothing rather than erroring. Warn and clamp: a caller
+  # who asked for an aspect ratio that does not fit on the globe should hear
+  # about it, and should still get a usable box.
+  if (isTRUE(sf::st_is_longlat(bb))) {
+    out <- c(bb[["ymin"]] < -90, bb[["ymax"]] > 90,
+             bb[["xmin"]] < -180, bb[["xmax"]] > 180)
+    if (any(out)) {
+      warning("aspect padding ran past the CRS bounds; clamping. The result ",
+              "will not carry the requested ratio.", call. = FALSE)
+      bb[["ymin"]] <- max(bb[["ymin"]], -90)
+      bb[["ymax"]] <- min(bb[["ymax"]], 90)
+      bb[["xmin"]] <- max(bb[["xmin"]], -180)
+      bb[["xmax"]] <- min(bb[["xmax"]], 180)
+    }
+  }
   bb
 }
 
@@ -102,9 +121,9 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
 #'
 #' # Selecting versus cutting
 #'
-#' `crop = FALSE` (the default) keeps whole features that touch the box, via
-#' [sf::st_filter()]. `crop = TRUE` truncates geometries at the boundary, via
-#' [sf::st_crop()].
+#' `crop = FALSE` (the default) keeps whole features that touch the box,
+#' selecting on [sf::st_intersects()]. `crop = TRUE` truncates geometries at the
+#' boundary, via [sf::st_crop()].
 #'
 #' These are genuinely different maps: a stream leaving the frame is drawn to
 #' its end under the default and stops at the edge under `crop = TRUE`. Both
@@ -119,7 +138,7 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
 #'
 #' @return An `sf` object with at least one row, or `NULL`.
 #'
-#' @examples
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
 #' pts <- sf::st_as_sf(
 #'   data.frame(x = c(0, 10), y = c(0, 10)),
 #'   coords = c("x", "y"), crs = 3005
@@ -135,7 +154,7 @@ gq_bbox_aspect <- function(x, asp, margin = 0.02) {
 #'
 #' @export
 gq_bbox_clip <- function(x, bbox, crop = FALSE) {
-  if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required")
+  if (!requireNamespace("sf", quietly = TRUE)) stop("sf is required", call. = FALSE)
   if (is.null(x) || nrow(x) == 0L) {
     return(NULL)
   }

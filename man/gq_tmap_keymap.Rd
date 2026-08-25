@@ -9,27 +9,38 @@ gq_tmap_keymap(
   context,
   reg = NULL,
   aoi_layer = "watershed_group_boundary",
-  context_layer = "provincial_park",
+  context_layer = NULL,
   corner = c("bottomright", "bottomleft", "topright", "topleft"),
   width = 0.25,
   height = 0.22,
+  asp = NULL,
   margin = 0.03
 )
 }
 \arguments{
 \item{aoi}{The area of interest — the thing being located.}
 
-\item{context}{Wider context, drawn beneath. A province or basin outline.}
+\item{context}{Wider context, drawn beneath.}
 
 \item{reg}{A registry for the fill and stroke colours. Defaults to
 \code{\link[=gq_reg_main]{gq_reg_main()}}. The copies this replaces all hardcode hex here, including
 one that takes a registry argument and then does not use it.}
 
-\item{aoi_layer, context_layer}{Registry keys supplying the two styles.}
+\item{aoi_layer}{Registry key supplying the AOI style.}
+
+\item{context_layer}{Registry key supplying the context style, or \code{NULL} for
+a neutral grey. Grey is the default because the context is a backdrop: the
+registry has no province-outline layer, and the nearest candidates are
+greens that leave a green AOI barely legible on top.}
 
 \item{corner}{Which corner to place the inset in.}
 
-\item{width, height}{Size as a fraction of the device.}
+\item{width}{Width as a fraction of the device.}
+
+\item{height}{Height as a fraction of the device. Ignored when \code{asp} is given.}
+
+\item{asp}{Canvas aspect ratio (\code{fig.width / fig.height}). When supplied,
+\code{height} is computed as \code{width * asp} so the inset renders square.}
 
 \item{margin}{Gap between the inset and the frame edge, as a fraction of the
 device. The four-corner convention wants this equal for every element.}
@@ -53,6 +64,14 @@ are not the margin they look like. \code{corner} and \code{margin} compute them,
 moving a keymap between corners does not mean re-deriving them by eye.
 }
 
+\section{Sizing}{
+\code{width} and \code{height} are fractions of the \emph{device}, so on a non-square canvas
+equal fractions do not give a square inset. Pass \code{asp} — the canvas
+width/height — and the height is derived so the inset comes out square. On
+the 9x7 canvas the fish passage maps use, the alternative is an inset 1.46
+times wider than tall.
+}
+
 \examples{
 \dontshow{if (requireNamespace("tmap", quietly = TRUE) && requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 aoi <- sf::st_as_sfc(sf::st_bbox(
@@ -67,5 +86,9 @@ class(km$map)
 
 # bottom-right by default, and the viewport centre reflects the margin
 round(c(km$viewport$x, km$viewport$y), 3)
+
+# on a 9x7 canvas, asp keeps the inset square
+sq <- gq_tmap_keymap(aoi, context, asp = 9 / 7)
+round(as.numeric(sq$viewport$width) / as.numeric(sq$viewport$height), 3)
 \dontshow{\}) # examplesIf}
 }

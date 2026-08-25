@@ -177,3 +177,17 @@ test_that("gq_tmap_legend works on the real registry", {
   expect_gt(length(leg$lines$labels), 20)
   expect_equal(leg$lines$labels[[1]], "Railway")
 })
+
+test_that("classified point layers carry their per-class size", {
+  # crossings_pscis_assessment is the only registry layer with a per-class
+  # radius, and it is the central point layer of every fish passage map. The
+  # radius lives on the NESTED classification; gq_tmap_classes() does not
+  # return it, so reading it from there dropped size entirely and tmap
+  # silently substituted a default.
+  reg <- gq_reg_main()
+  leg <- gq_tmap_legend(reg, "crossings_pscis_assessment")
+  expect_true("size" %in% names(leg$symbols))
+  expect_length(leg$symbols$size, length(leg$symbols$labels))
+  expect_true(all(leg$symbols$size > 0))
+})
+

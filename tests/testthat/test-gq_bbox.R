@@ -187,3 +187,20 @@ test_that("gq_scale_breaks rejects bad arguments", {
   expect_error(gq_scale_breaks(bb_proj(), share = 2), "in \\(0, 1\\]")
   expect_error(gq_scale_breaks(bb_proj(w = 0)), "zero or undefined")
 })
+
+test_that("gq_bbox_aspect warns and clamps rather than leaving the globe", {
+  # st_as_sfc() accepts latitude 94 without complaint, so an out-of-range box
+  # travels a long way before anything objects -- a tile request for it simply
+  # returns nothing.
+  # Must be a case that pads the Y axis: a wide, short box at high latitude,
+  # where cos(lat) makes the ground ratio large and the height has to grow.
+  polar <- sf::st_bbox(c(xmin = -170, ymin = 85, xmax = -70, ymax = 86),
+                       crs = 4326)
+  expect_warning(out <- gq_bbox_aspect(polar, asp = 0.5), "past the CRS")
+  expect_lte(out[["ymax"]], 90)
+  expect_gte(out[["ymin"]], -90)
+
+  # a projected box has no such bounds and must not warn
+  expect_silent(gq_bbox_aspect(bb_proj(w = 1e6, h = 1e4), asp = 0.5))
+})
+
