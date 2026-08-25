@@ -295,3 +295,59 @@ test_that("a classified subset draws without the label-recycling warning", {
   pick <- names(gq_tmap_classes(reg, "roads_dra")$values)[c(20, 22, 24)]
   expect_no_warning(drawn_labels(render_classified(reg, "roads_dra", pick)))
 })
+
+
+test_that("every classified registry layer draws only its data's own labels", {
+  # The invariant the roads_dra test above cannot establish on its own. A fix
+  # verified on one hand-picked layer is exactly the shape code-check.md warns
+  # about -- 10 other layers carry classifications, and a fixture set that
+  # cannot reach the failure mode is not validation.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers,
+                                   function(l) !is.null(l$classification),
+                                   logical(1))]
+  expect_gt(length(keys), 0)
+
+  discriminating <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    codes <- names(cls$values)
+    # Take from the BACK of registry order: positional recycling reads from the
+    # front, so a subset drawn from the front could match by coincidence.
+    pick <- utils::tail(codes, 3)
+    truth <- unique(cls$labels[match(pick, codes)])
+    positional <- unique(cls$labels[seq_along(pick)])
+
+    parts <- drawn_parts(render_classified(reg, k, pick))
+    drawn <- setdiff(parts$labels, "code")
+
+    expect_gt(length(drawn), 0)
+    expect_true(all(drawn %in% truth), info = k)
+    expect_true(all(toupper(unname(cls$values[pick])) %in% parts$colours),
+                info = k)
+
+    wrong <- setdiff(positional, truth)
+    if (length(wrong)) {
+      discriminating <- discriminating + 1L
+      expect_false(any(wrong %in% drawn), info = k)
+    }
+  }
+
+  # Without this the sweep could pass against the unfixed code: if no layer's
+  # positional labels differed from its true ones, every assertion above would
+  # hold either way and the sweep would prove nothing.
+  expect_gt(discriminating, 0)
+})
+
+test_that("no classified registry layer warns about label recycling", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers,
+                                   function(l) !is.null(l$classification),
+                                   logical(1))]
+  for (k in keys) {
+    pick <- utils::tail(names(gq_tmap_classes(reg, k)$values), 3)
+    expect_no_warning(drawn_parts(render_classified(reg, k, pick)))
+  }
+})

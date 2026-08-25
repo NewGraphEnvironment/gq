@@ -123,3 +123,28 @@ corrected in the issue before merge, per the issue-editing convention:
 1. "as of v0.5.0 the legend is correct and the layer it describes is not" —
    backwards (Result 3)
 2. the proposed `present =` / `data =` API — unnecessary (Result 2)
+
+## Phase 3 — how much of the registry actually discriminates
+
+The sweep is only meaningful for layers whose positional labels differ from
+their true ones. Measured across all 11 classified layers, picking the last 3
+classes of each:
+
+| layer | classes | would have drawn |
+|---|---:|---|
+| `roads_dra` | 26 | Freeway, Highway |
+| `streams_bt` / `streams_salmon` / `streams_st` | 30 | Spawning; no known barriers (+2) |
+| `bec_zone` | 11 | SBS, ESSF, ICH |
+| `land_ownership` | 8 | Crown agency, Crown provincial, Federal |
+| `crossings_pscis_assessment` | 4 | Barrier |
+| `fire_severity` | 4 | High |
+| `roads_ften` | 4 | Forest service road |
+| `trails` | 4 | Trail |
+| `streams_all` | 13 | — (12 of 13 classes share the label "Stream") |
+
+**10 of 11 discriminate.** `crossings_pscis_assessment` is the one that matters
+most in practice — it is the central point layer of every fish passage map, and
+a passable crossing would have appeared in a shown legend as "Barrier".
+
+The sweep asserts this count is non-zero. Without that guard every assertion in
+it would hold against the unfixed code too, and the sweep would prove nothing.

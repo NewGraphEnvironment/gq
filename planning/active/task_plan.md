@@ -88,11 +88,20 @@ Deliberately **not** doing: adding `present =`/`data =` to `gq_tmap_style()` or
 Hand-picked fixtures cannot prove this class of fix — the probe used `roads_dra`
 alone, and 10 other layers carry classifications.
 
-- [ ] Sweep all 11 classified layers in `reg_main.json`. For each, render a
+- [x] Sweep all 11 classified layers in `reg_main.json`. For each, render a
       subset of its classes and assert every drawn label is a true label **for
-      those classes**, and that no recycling warning fires
-- [ ] Assert the drawn map is unchanged with the legend hidden (`max|diff| = 0`)
-      — the no-regression guarantee for every existing consumer
+      those classes**, and that no recycling warning fires. Subsets are taken
+      from the **back** of registry order, since positional recycling reads
+      from the front and a front subset could match by coincidence
+- [x] Assert the drawn **colours** match the registry for the picked classes —
+      replaces the planned pixel comparison. Pixels confound a label change
+      with legend re-layout (which misled three probes during planning) and
+      would have cost a `png` dependency; the grob tree carries the colours
+      directly and deterministically
+- [x] Guard the sweep against vacuity: assert at least one layer's positional
+      labels differ from its true ones, else the whole sweep would pass against
+      the unfixed code. **10 of 11 discriminate** — only `streams_all` cannot,
+      since 12 of its 13 classes share the label "Stream"
 
 ## Phase 4 — Restore the bug
 

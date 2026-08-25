@@ -5,27 +5,41 @@
 # colours by name but labels by POSITION, so a correct-looking list drew the
 # wrong labels. Reading the rendered grob tree is the only way to catch it.
 
-# Collect every text label tmap draws, in draw order.
+# Walk a rendered map once, returning both the text drawn and the colours used.
 #
 # tmap_grob() needs an open device, hence the png()/dev.off() dance. Legend
-# titles come back too (the field name) -- callers should test membership
-# rather than equality against the whole vector.
-drawn_labels <- function(m) {
+# titles come back among the labels (the field name), and the colours include
+# tmap's own frame and background -- callers should test membership rather than
+# equality against the whole vector.
+#
+# Colours are read from the grob tree rather than from rendered pixels
+# deliberately: pixel comparison confounds a label change with legend
+# re-layout, which sent three probes down the wrong path while investigating
+# #53. It also would have cost a png dependency for no gain.
+drawn_parts <- function(m) {
   f <- tempfile(fileext = ".png")
   grDevices::png(f)
   g <- suppressMessages(tmap::tmap_grob(m))
   grDevices::dev.off()
   unlink(f)
 
-  out <- character(0)
+  labels <- character(0)
+  colours <- character(0)
   walk <- function(x) {
-    if (inherits(x, "text")) out <<- c(out, as.character(x$label))
+    if (inherits(x, "text")) labels <<- c(labels, as.character(x$label))
+    if (!is.null(x$gp)) {
+      colours <<- c(colours, as.character(x$gp$col), as.character(x$gp$fill))
+    }
     if (!is.null(x$children)) for (ch in x$children) walk(ch)
   }
   walk(g)
+
+  keep <- function(x) unique(x[!is.na(x) & nzchar(x)])
   # nzchar(NA) is TRUE, so the is.na() term is load-bearing, not belt-and-braces.
-  unique(out[!is.na(out) & nzchar(out)])
+  list(labels = keep(labels), colours = toupper(keep(colours)))
 }
+
+drawn_labels <- function(m) drawn_parts(m)$labels
 
 # Minimal sf carrying one row per code, with geometry matching a layer type.
 geom_for <- function(type, codes, field) {
