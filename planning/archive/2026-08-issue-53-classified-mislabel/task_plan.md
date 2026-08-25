@@ -121,18 +121,22 @@ alone, and 10 other layers carry classifications.
 - [ ] Correct the **issue body** before merge: the legend-vs-layer claim is
       backwards, and the proposed API is unnecessary. Per the issue-editing
       convention — a premise disproved by measurement gets named, not quietly
-      dropped
-- [ ] Vignette: state why the two hardcoded `shape =` values stay (#16), per
-      the issue's own acceptance wording
-- [ ] `NEWS.md` + `DESCRIPTION` 0.5.0 → **0.5.1** (patch: bug fix, no API
+      dropped. **Deferred to `/gh-pr-merge` step 3b, which is the enforcement
+      point for exactly this**
+- [x] Vignette: state why the two hardcoded `shape =` values stay (#16), per
+      the issue's own acceptance wording. Also corrected two comments claiming
+      "shape and color from registry" above hardcoded shapes
+- [x] `NEWS.md` + `DESCRIPTION` 0.5.0 → **0.5.1** (patch: bug fix, no API
       change) as the final commit
-- [ ] `/planning-archive`, `/gh-pr-push`
+- [x] `/planning-archive`, `/gh-pr-push`
 
 ## Validation
 
-- [x] `devtools::test()` — FAIL 0 | PASS 726
-- [ ] `lintr` clean on changed files, against the `HEAD` baseline
-- [ ] `devtools::check()` no new ERROR/WARNING/NOTE over main (main carries 2
-      WARNINGs — gq#51)
-- [ ] `/code-check` per commit; PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `devtools::test()` — FAIL 0 | PASS 782
+- [x] `lintr` clean on changed files — 0 lints on `R/gq_tmap_style.R` and
+      `tests/testthat/helper-tmap_render.R`
+- [x] `devtools::check()` — 0 errors, 2 warnings, 2 notes. Same four as main
+      (non-ASCII in `gq_qgs*`, undocumented data objects, `.claude`, `gq.Rproj`),
+      all pre-existing and tracked in gq#51
+- [x] `/code-check` per commit; PWF checkboxes match landed work
+- [x] `/planning-archive` on completion
