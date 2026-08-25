@@ -238,14 +238,16 @@ tm_shape(neexdzii_crossings) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment",
                                   field = "barrier_status"))
 
-# Fish observations — shape and color from registry
+# Fish observations — color from the registry, shape by hand.
+# The registry carries a mark shape for 15 layers and nothing translates it
+# yet (#16), so shape stays hardcoded here until it does.
 if (nrow(neexdzii_fish_obs) > 0) {
   m <- m + tm_shape(neexdzii_fish_obs) +
     tm_symbols(shape = 24, fill = fish_sty$mark$color,
                col = fish_sty$mark$color, size = 0.12)
 }
 
-# Falls — shape and color from registry
+# Falls — color from the registry, shape by hand (see #16, as above)
 if (nrow(neexdzii_falls) > 0) {
   m <- m + tm_shape(neexdzii_falls) +
     tm_symbols(shape = 22, fill = falls_sty$mark$color,
@@ -321,7 +323,11 @@ Every color on this map traces back to `gq_reg_main()`:
   Streams and railway are drawn by hand because each needs something the registry
   does not model — one class pulled out of a classified layer, and a white casing
   over a black line
-- **Classified layers** (crossings, roads, habitat) use `do.call()` with `gq_tmap_style()` — classification field, colors, and labels all come from the registry
+- **Classified layers** (crossings, roads, habitat) use `do.call()` with
+  `gq_tmap_style()` — classification field, colors, and labels all come from the
+  registry. Labels follow the classes the data actually carries: the registry's
+  26 road classes are matched to the handful present rather than recycled
+  positionally over them (#53)
 - **The legend** is built by `gq_tmap_legend()` from the registry — it partitions
   by geometry type, expands classified layers, collapses classes that render
   identically, and cuts road classes to the ones present in the data. Change a

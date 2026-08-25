@@ -148,3 +148,20 @@ a passable crossing would have appeared in a shown legend as "Barrier".
 
 The sweep asserts this count is non-zero. Without that guard every assertion in
 it would hold against the unfixed code too, and the sweep would prove nothing.
+
+## The vignette's own data is the reproduction case
+
+`neexdzii_roads` carries 3 of the registry's 26 road classes:
+
+| | |
+|---|---|
+| codes present | `RA2`, `RH1`, `RLO` |
+| true labels | Arterial \| Highway \| Local |
+| drawn pre-fix | Freeway \| Highway |
+
+Three classes, two labels — an arterial and a local road both drew as something
+they are not, and one label was lost entirely. Rendered before and after with
+the namespace patch: the warning is present pre-fix and absent after.
+
+`crossings_pscis_assessment` in the same vignette has all 4 of its classes
+present, so it neither warned nor mislabeled — consistent with Result 4.
