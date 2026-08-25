@@ -58,3 +58,13 @@
   `tmap_line_args` resolve. That is the `exists(..., asNamespace())` diagnostic
   from `code-check.md`; it clears on reinstall.
 - Next: Phase 4 — keymap
+- **Phase 4 done** — `R/gq_tmap_keymap.R`. Suite at 527 pass / 0 fail.
+- The placement arithmetic is an `@noRd` pure function, so the corner maths is
+  tested without a graphics device. A viewport is positioned by its *centre*,
+  which is why every copy of this carries different-looking magic numbers that
+  all mean "bottom right, a bit in from the edge" — asserted directly: growing
+  the inset must not change its distance from the frame.
+- Colours come from the registry. All five existing copies hardcode hex here,
+  including `lfpr_keymap_survey()`, which takes `reg` as an argument and never
+  reads it.
+- Next: Phase 5 — prove it against fraser

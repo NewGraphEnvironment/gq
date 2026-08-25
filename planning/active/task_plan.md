@@ -95,14 +95,14 @@ No network, no tmap, no Suggests. Fully testable.
 
 ## Phase 4 — Keymap
 
-- [ ] `R/gq_tmap_keymap.R` — `gq_tmap_keymap(aoi, context, reg, ...)` returning
+- [x] `R/gq_tmap_keymap.R` — `gq_tmap_keymap(aoi, context, reg, ...)` returning
       the tmap object plus a `grid::viewport()` spec
-- [ ] Encode the placement rule as the default rather than the magic numbers
+- [x] Encode the placement rule as the default rather than the magic numbers
       every copy hardcodes: `x = 1 - width/2 - margin`, `y = height/2 + margin`
-- [ ] Colours from the registry. All five existing copies hardcode hex here —
+- [x] Colours from the registry. All five existing copies hardcode hex here —
       including `lfpr_keymap_survey()`, which duplicates registry rows verbatim
       while taking `reg` as an argument it never uses
-- [ ] Tests: structure of the returned object and viewport, no rendering
+- [x] Tests: structure of the returned object and viewport, no rendering
 
 ## Phase 5 — Prove it
 
