@@ -84,14 +84,14 @@ No network, no tmap, no Suggests. Fully testable.
 
 ## Phase 3 — Legend
 
-- [ ] `R/gq_tmap_legend.R` — `gq_tmap_legend(reg, layers, ...)` returning a list
+- [x] `R/gq_tmap_legend.R` — `gq_tmap_legend(reg, layers, ...)` returning a list
       of `tm_add_legend()` argument lists, one per geometry type
-- [ ] Auto-partition mixed layers into polygons / lines / symbols; merge simple
+- [x] Auto-partition mixed layers into polygons / lines / symbols; merge simple
       and classified layers into one entry set; filter classified values to
       those present in the data; title-case via the existing `to_title()`
-- [ ] Delegate ordering and stacking to `z` / `group_id` / `tm_components()`.
+- [x] Delegate ordering and stacking to `z` / `group_id` / `tm_components()`.
       **Do not reimplement layout** — that is the half tmap 4.4.1 now covers
-- [ ] Tests on hand-built registry lists, per `test-gq_mapgl_style.R` style
+- [x] Tests on hand-built registry lists, per `test-gq_mapgl_style.R` style
 
 ## Phase 4 — Keymap
 

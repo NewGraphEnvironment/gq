@@ -42,3 +42,19 @@
   or does nothing.
 - First `skip_if_not_installed()` in this suite, as expected.
 - Next: Phase 3 — legend
+- **Phase 3 done** — `R/gq_tmap_legend.R`. Suite at 491 pass / 0 fail.
+- Merges simple and classified layers into one group per geometry type, which
+  is the thing the hand-written pattern gets wrong: `railway` + `roads_dra`
+  becomes a single 27-entry `lines` legend rather than two calls.
+- Reads the *flattened* classification from `gq_tmap_classes()` rather than
+  `gq_style()$classification`, which is the nested per-class form. Getting that
+  backwards produced an empty legend, not an error.
+- Avoided the package's own `%||%` (`gq_qgs_extract.R:393`) — its `is.na()` test
+  errors on a vector, and several of these values are vectors.
+- An aesthetic absent from every row is dropped rather than passed as all-NA,
+  since tmap reads an explicit NA as "draw nothing" for some aesthetics.
+- `lintr` reports `dash_to_lty` unresolved. Artifact, not a defect: the
+  installed gq is **0.0.0.9000** and lacks it, while `to_title` and
+  `tmap_line_args` resolve. That is the `exists(..., asNamespace())` diagnostic
+  from `code-check.md`; it clears on reinstall.
+- Next: Phase 4 — keymap
