@@ -73,6 +73,36 @@ once in the conventions), a wrong bundled filename that failed *silently*
 because `system.file()` returns `""`, seven phantom registry layer keys, and an
 unbalanced fence rendering nineteen lines of prose as R.
 
+## The review that found what probing did not
+
+`review-52.md` in this directory is the adversarial review of the landed code —
+3 blockers, 6 gaps, 2 assumptions, 1 acceptance, 1 doc nit, every one
+reproduced. It is kept because two of its findings are the kind that recur.
+
+**The flagship path did not render.** `gq_tmap_legend()` emitted
+`lty = c(NA, …, "dashed")` for any classified line layer mixing dashed and
+undashed classes — `roads_dra`, `streams_all`, all three habitat families — and
+`tm_add_legend()` rejects that at draw time. Eighteen tests inspected the
+returned list; none handed it to tmap. That is `CLAUDE.md`'s *"a round-trip
+through your own reader proves nothing about interop"*, hit while the same
+document was open. Rendering the vignette then found the identical shape one
+aesthetic over: `lake` has a stroke, `wetland` does not, so `col = c(colour, NA)`.
+
+**Two of three per-layer arguments were broken by their own documentation.**
+`titles` and `field` were documented as named character vectors and looked up
+with `[[`, which on an atomic vector with an unmatched name errors instead of
+giving `NULL`. `present` was documented as a list and was therefore fine — the
+only reason anything worked.
+
+Also worth keeping: the `share` bound in `gq_scale_breaks()` was a target, not a
+bound, and its test could not have caught that twice over — threshold 0.75
+against a share of 0.35, and all four hand-picked widths happened to round down.
+Third instance in this PR of a fixture set that cannot reach the failure mode.
+
+Delivery note: this review arrived because the agent was told to **write to a
+file and report only the path**. Two earlier reviews in the same session were
+lost to message routing — one silently, one to a different session entirely.
+
 ## Deferred, filed not forgotten
 
 - **Rewriting fraser's `0420` onto these helpers** — its own PR, because fraser
