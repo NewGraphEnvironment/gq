@@ -120,10 +120,10 @@ gq_tmap_style(reg, "crossings_pscis_assessment")
 #> [1] NA
 #> 
 #> $levels
-#> NULL
+#> [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"  
 #> 
 #> $levels.drop
-#> [1] FALSE
+#> [1] TRUE
 #> 
 #> $labels
 #> [1] "Barrier"   "Passable"  "Potential" "Unknown"  
@@ -361,14 +361,16 @@ tm_shape(neexdzii_crossings) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment",
                                   field = "barrier_status"))
 
-# Fish observations — shape and color from registry
+# Fish observations — color from the registry, shape by hand.
+# The registry carries a mark shape for 15 layers and nothing translates it
+# yet (#16), so shape stays hardcoded here until it does.
 if (nrow(neexdzii_fish_obs) > 0) {
   m <- m + tm_shape(neexdzii_fish_obs) +
     tm_symbols(shape = 24, fill = fish_sty$mark$color,
                col = fish_sty$mark$color, size = 0.12)
 }
 
-# Falls — shape and color from registry
+# Falls — color from the registry, shape by hand (see #16, as above)
 if (nrow(neexdzii_falls) > 0) {
   m <- m + tm_shape(neexdzii_falls) +
     tm_symbols(shape = 22, fill = falls_sty$mark$color,
@@ -429,8 +431,6 @@ tm_layout(
 )
 
 print(m)
-#> Warning: labels do not have the same length as levels, so they are repeated
-#> Warning: labels do not have the same length as levels, so they are repeated
 # gq_tmap_keymap() supplies the PLACEMENT here, not the map: it derives the
 # viewport centre from the corner and margin and sizes it off the canvas aspect,
 # which is the arithmetic every hand-rolled inset hardcodes. Its own two-layer
@@ -455,7 +455,10 @@ Every color on this map traces back to
 - **Classified layers** (crossings, roads, habitat) use
   [`do.call()`](https://rdrr.io/r/base/do.call.html) with
   [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
-  — classification field, colors, and labels all come from the registry
+  — classification field, colors, and labels all come from the registry.
+  Labels follow the classes the data actually carries: the registry’s 26
+  road classes are matched to the handful present rather than recycled
+  positionally over them (#53)
 - **The legend** is built by
   [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
   from the registry — it partitions by geometry type, expands classified

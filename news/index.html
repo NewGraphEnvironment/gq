@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,14 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.1" id="gq-051">gq 0.5.1<a class="anchor" aria-label="anchor" href="#gq-051"></a></h2>
+<ul><li>
+<p><strong>Classified layers no longer mislabel when the data carries a subset of the registry’s classes.</strong> <code><a href="https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html" class="external-link">tm_scale_categorical()</a></code> matches colours by name but labels by position, and derives its levels from the data — so with 3 of 26 road classes present, tmap took the first three labels whichever classes those were. The package’s own vignette was an instance: its arterial, highway and local roads drew as “Freeway” and “Highway”.</p>
+<p><code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> now passes <code>levels</code> alongside <code>labels</code>, from the same ordered registry vector, so the two cannot drift whatever the data holds. No signature changed — there is nothing for callers to pass or remember.</p>
+<p>Scope was narrower than it first appeared: classified layers set <code>tm_legend(show = FALSE)</code>, and colours already matched by name, so the drawn map was never wrong. What changes is the warning on every classified draw, and the legend for anyone who turns it back on.</p>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="gq-050">gq 0.5.0<a class="anchor" aria-label="anchor" href="#gq-050"></a></h2>
 <ul><li>

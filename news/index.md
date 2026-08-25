@@ -1,5 +1,26 @@
 # Changelog
 
+## gq 0.5.1
+
+- **Classified layers no longer mislabel when the data carries a subset
+  of the registry’s classes.**
+  [`tm_scale_categorical()`](https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html)
+  matches colours by name but labels by position, and derives its levels
+  from the data — so with 3 of 26 road classes present, tmap took the
+  first three labels whichever classes those were. The package’s own
+  vignette was an instance: its arterial, highway and local roads drew
+  as “Freeway” and “Highway”.
+
+  [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
+  now passes `levels` alongside `labels`, from the same ordered registry
+  vector, so the two cannot drift whatever the data holds. No signature
+  changed — there is nothing for callers to pass or remember.
+
+  Scope was narrower than it first appeared: classified layers set
+  `tm_legend(show = FALSE)`, and colours already matched by name, so the
+  drawn map was never wrong. What changes is the warning on every
+  classified draw, and the legend for anyone who turns it back on.
+
 ## gq 0.5.0
 
 - **Map composition, not just style translation.** Six helpers encode

@@ -102,10 +102,10 @@ gq_tmap_style(reg, "road")
 #> [1] NA
 #> 
 #> $levels
-#> NULL
+#> [1] "highway"  "arterial"
 #> 
 #> $levels.drop
-#> [1] FALSE
+#> [1] TRUE
 #> 
 #> $labels
 #> [1] "Highway"  "Arterial"
@@ -190,10 +190,10 @@ gq_tmap_style(reg, "road", field = "my_road_type")
 #> [1] NA
 #> 
 #> $levels
-#> NULL
+#> [1] "highway"  "arterial"
 #> 
 #> $levels.drop
-#> [1] FALSE
+#> [1] TRUE
 #> 
 #> $labels
 #> [1] "Highway"  "Arterial"

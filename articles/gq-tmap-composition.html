@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -178,10 +178,10 @@ extraction needed.</p>
 <span><span class="co">#&gt; [1] NA</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $levels</span></span>
-<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $levels.drop</span></span>
-<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $labels</span></span>
 <span><span class="co">#&gt; [1] "Barrier"   "Passable"  "Potential" "Unknown"  </span></span>
@@ -411,14 +411,16 @@ labels last.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_dots</span>, <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span>,</span>
 <span>                                  field <span class="op">=</span> <span class="st">"barrier_status"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fish observations — shape and color from registry</span></span>
+<span><span class="co"># Fish observations — color from the registry, shape by hand.</span></span>
+<span><span class="co"># The registry carries a mark shape for 15 layers and nothing translates it</span></span>
+<span><span class="co"># yet (#16), so shape stays hardcoded here until it does.</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">neexdzii_fish_obs</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_fish_obs</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_symbols.html" class="external-link">tm_symbols</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">24</span>, fill <span class="op">=</span> <span class="va">fish_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>,</span>
 <span>               col <span class="op">=</span> <span class="va">fish_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>, size <span class="op">=</span> <span class="fl">0.12</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Falls — shape and color from registry</span></span>
+<span><span class="co"># Falls — color from the registry, shape by hand (see #16, as above)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">neexdzii_falls</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_falls</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_symbols.html" class="external-link">tm_symbols</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">22</span>, fill <span class="op">=</span> <span class="va">falls_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>,</span>
@@ -479,8 +481,6 @@ labels last.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: labels do not have the same length as levels, so they are repeated</span></span>
-<span><span class="co">#&gt; Warning: labels do not have the same length as levels, so they are repeated</span></span>
 <span><span class="co"># gq_tmap_keymap() supplies the PLACEMENT here, not the map: it derives the</span></span>
 <span><span class="co"># viewport centre from the corner and margin and sizes it off the canvas aspect,</span></span>
 <span><span class="co"># which is the arithmetic every hand-rolled inset hardcodes. Its own two-layer</span></span>
@@ -501,7 +501,10 @@ over a black line</li>
 <li>
 <strong>Classified layers</strong> (crossings, roads, habitat) use
 <code><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call()</a></code> with <code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> —
-classification field, colors, and labels all come from the registry</li>
+classification field, colors, and labels all come from the registry.
+Labels follow the classes the data actually carries: the registry’s 26
+road classes are matched to the handful present rather than recycled
+positionally over them (#53)</li>
 <li>
 <strong>The legend</strong> is built by
 <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> from the registry — it partitions by
