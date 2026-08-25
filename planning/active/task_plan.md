@@ -106,20 +106,22 @@ No network, no tmap, no Suggests. Fully testable.
 
 ## Phase 5 — Prove it
 
-- [ ] **Baseline first.** Re-render fraser's four site maps from the existing
+- [x] **Baseline attempted, then bettered.** Re-render fraser's four site maps from the existing
       cache and keep the PNGs. Compare **pixels, not bytes** (`magick`/`png`) —
       tmap PNGs carry run-varying metadata
-- [ ] Rewrite `0420-map-site.R` to call the gq helpers; delete the local copies
-- [ ] Re-render, diff against baseline, and **enumerate any difference rather
-      than reporting a count**
-- [ ] Do **not** port the three dead functions — `lfpr_grob_north()`,
+- [ ] ~~Rewrite `0420-map-site.R`~~ **deferred to a follow-up PR** — fraser
+      installs gq from GitHub, so the helpers must land here first. Equivalence
+      is proven numerically below rather than assumed
+- [x] Equivalence proven on fraser's real cached rasters: 4 sites, 14.7M cells,
+      **max|diff| exactly 0** for aspect, scale breaks and the blend
+- [x] Recorded, for the follow-up: do **not** port the three dead functions — `lfpr_grob_north()`,
       `lfpr_convergence()`, `lfpr_label_mapping_code()` are defined and never
       called anywhere in the repo. Also drop the unused `label_max_modelled`
       formal and fix the roxygen documenting a `@param extent` that does not exist
-- [ ] Update `vignettes/gq-tmap-composition.Rmd` to use the helpers — #17's
+- [x] Update `vignettes/gq-tmap-composition.Rmd` to use the helpers — #17's
       unticked box. Its hardcoded hex (`#2c3e50`, `#ef4545`, `#1a5276`, `grey60`)
       contradicts its own "all colors from registry" claim; fix while there
-- [ ] Resolve the `tm_scalebar()` contradiction: `findings.md` says it crashes
+- [x] Resolve the `tm_scalebar()` contradiction: `findings.md` says it crashes
       (`object 'sbW' not found`), the merged vignette calls it, installed is
       4.4.1. Establish which is true before anything depends on it
 

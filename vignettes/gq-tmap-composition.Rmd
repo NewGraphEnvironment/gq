@@ -108,47 +108,23 @@ own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels blended
 with hillshade works well.
 
 ```{r basemap}
-# Compute bbox that matches the canvas aspect ratio (7:9) to fill the page
-bbox <- st_bbox(neexdzii_wsd)
-target_asp <- 7 / 9  # fig.width / fig.height
-dx <- bbox["xmax"] - bbox["xmin"]
-dy <- bbox["ymax"] - bbox["ymin"]
-# Approximate aspect ratio correction for latitude
-lat_mid <- (bbox["ymin"] + bbox["ymax"]) / 2
-cos_lat <- cos(lat_mid * pi / 180)
-geo_asp <- (dx * cos_lat) / dy
+# Pad the bbox to the canvas aspect ratio (7:9) so the map fills the page. The
+# latitude correction a geographic CRS needs is applied from the CRS rather
+# than by hand -- this data is lat/lon, so it fires here and would not in BC
+# Albers.
+bbox <- gq_bbox_aspect(neexdzii_wsd, asp = 7 / 9)
+bbox_sf <- st_as_sfc(bbox)
 
-if (geo_asp > target_asp) {
-  # Too wide — expand height
-  new_dy <- (dx * cos_lat) / target_asp
-  pad <- (new_dy - dy) / 2
-  bbox["ymin"] <- bbox["ymin"] - pad
-  bbox["ymax"] <- bbox["ymax"] + pad
-} else {
-  # Too tall — expand width
-  new_dx <- (dy * target_asp) / cos_lat
-  pad <- (new_dx - dx) / 2
-  bbox["xmin"] <- bbox["xmin"] - pad
-  bbox["xmax"] <- bbox["xmax"] + pad
-}
-# Small margin so features don't touch the frame
-y_pad <- (bbox["ymax"] - bbox["ymin"]) * 0.02
-x_pad <- (bbox["xmax"] - bbox["xmin"]) * 0.02
-bbox["ymin"] <- bbox["ymin"] - y_pad
-bbox["ymax"] <- bbox["ymax"] + y_pad
-bbox["xmin"] <- bbox["xmin"] - x_pad
-bbox["xmax"] <- bbox["xmax"] + x_pad
-bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
+positron <- gq_basemap_tiles(bbox, provider = "CartoDB.PositronNoLabels",
+                             zoom = 10, pad = 0, crs = NULL)
+relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
+                           zoom = 10, pad = 0, crs = NULL)
 
-positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels",
-                      zoom = 10, crop = TRUE)
-relief <- get_tiles(bbox_sf, provider = "Esri.WorldShadedRelief",
-                    zoom = 10, crop = TRUE)
-relief_rs <- terra::resample(relief, positron)
-p_n <- positron / 255
-r_g <- terra::mean(relief_rs) / 255
-blended <- terra::clamp(p_n * (r_g ^ 0.5) * 255, lower = 0, upper = 255)
-basemap_stars <- stars::st_as_stars(blended)
+# A relief tile service spans the full range, so the gamma operator suits it.
+# A hillshade derived from a DEM is far more contrasty and wants
+# `method = "weight"`, which caps how much brightness can be removed.
+basemap_stars <- gq_basemap_blend(positron, relief, method = "gamma",
+                                  gamma = 0.5)
 ```
 
 ## Keymap inset

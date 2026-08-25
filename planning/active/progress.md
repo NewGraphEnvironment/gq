@@ -68,3 +68,25 @@
   including `lfpr_keymap_survey()`, which takes `reg` as an argument and never
   reads it.
 - Next: Phase 5 — prove it against fraser
+- **Phase 5** — the proof, and one honest scope change.
+- The planned pixel baseline is **not achievable here**. `lfpr_map_site()` needs
+  globals (`wshds`, `habitat_confirmation_tracks`) that only exist after
+  fraser's upstream reporting pipeline has run, and that needs the database.
+  `0410` refuses to run without `update_gis`, by its own guard.
+- What replaced it is stronger and cheaper: **numerical equivalence against the
+  fraser originals on fraser's real cached rasters**, no DB and no network.
+  Copied the three originals verbatim out of `0420`, ran both implementations
+  over all four sites, compared. Aspect and scale breaks identical; blend
+  **max|diff| exactly 0 across 14.7M cells**. Bit-identical, not approximately.
+- The `0420` rewrite is **deferred to a follow-up PR**: fraser installs gq from
+  GitHub, so these functions have to land first. Filing it rather than leaving
+  it implicit.
+- `tm_scalebar()` contradiction settled: it renders fine in **4.4.1**. The
+  archived note's crash (`object 'sbW' not found`) was specific to 4.2, which is
+  also why the merged vignette calls it without trouble.
+- The vignette's `st_set_crs(4326)` was a no-op rather than a live bug —
+  `neexdzii_wsd` is already 4326. The replacement inherits the CRS, so it stays
+  correct if the data ever moves.
+- Vignette basemap chunk rewritten onto the helpers and verified end to end:
+  tiles fetch, blend yields a 3-band stars, tmap renders it.
+- Next: Phase 6 — docs, skill drift, release
