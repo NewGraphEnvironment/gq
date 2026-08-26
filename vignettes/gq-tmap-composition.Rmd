@@ -32,7 +32,6 @@ via [fresh](https://github.com/NewGraphEnvironment/fresh).
 library(gq)
 library(sf)
 library(tmap)
-library(maptiles)
 
 sf_use_s2(FALSE)
 
@@ -101,11 +100,20 @@ lakes_named <- neexdzii_lakes[!is.na(neexdzii_lakes$gnis_name_1) &
                                 neexdzii_lakes$gnis_name_1 != "", ]
 ```
 
-## Basemap: Positron x hillshade blend
+## Basemap: gray canvas x hillshade blend
 
-Label-free raster basemap gives terrain relief without competing with our
-own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels blended
-with hillshade works well.
+A muted raster basemap gives terrain relief without competing with our own
+labels. At sub-watershed scale a gray canvas blended with hillshade works well.
+
+Note the zoom. `Esri.WorldGrayCanvas` carries faint place labels of its own,
+which appear as you zoom in — at `zoom = 10` over this area none are visible,
+at `zoom = 12` lake names are. If you raise the zoom, check the basemap is not
+competing with the labels you place yourself.
+
+Pick a **keyless** provider deliberately. This vignette used Carto's Positron
+until Carto made their basemaps key-only and began serving an "API KEY
+REQUIRED" watermark instead — which is a valid image, so nothing errored and
+the watermarked map shipped to the published site (gq#57).
 
 ```{r basemap}
 # Pad the bbox to the canvas aspect ratio (7:9) so the map fills the page. The
@@ -114,21 +122,28 @@ with hillshade works well.
 # Albers.
 bbox <- gq_bbox_aspect(neexdzii_wsd, asp = 7 / 9)
 
-positron <- gq_basemap_tiles(bbox, provider = "CartoDB.PositronNoLabels",
-                             zoom = 10, pad = 0, crs = NULL)
+canvas <- gq_basemap_tiles(bbox, provider = "Esri.WorldGrayCanvas",
+                           zoom = 10, pad = 0, crs = NULL)
 relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
                            zoom = 10, pad = 0, crs = NULL)
 
 # gq_basemap_tiles() returns NULL on a failed fetch so the caller can draw an
 # unshaded map rather than lose the figure. Honour that here rather than only
 # documenting it -- a tile hiccup during a pkgdown build should not fail it.
-basemap_stars <- if (is.null(positron) || is.null(relief)) {
+#
+# Build the whole LAYER conditionally, not just the data. tm_shape() rejects
+# NULL outright ("not a recognized/supported spatial data class"), so setting
+# the stars object to NULL and passing it on only moves the failure sixty lines
+# down -- the guard reads as if it works and does not. `NULL + tm_shape(...)`
+# composes fine, so an absent layer is the shape that actually holds.
+basemap <- if (is.null(canvas) || is.null(relief)) {
   NULL
 } else {
   # A relief tile service spans the full range, so the gamma operator suits it.
   # A hillshade derived from a DEM is far more contrasty and wants
   # `method = "weight"`, which caps how much brightness can be removed.
-  gq_basemap_blend(positron, relief, method = "gamma", gamma = 0.5)
+  tm_shape(gq_basemap_blend(canvas, relief, method = "gamma", gamma = 0.5)) +
+    tm_rgb()
 }
 
 # Now that the frame is known, drop anything outside it. gq_bbox_clip() returns
@@ -179,8 +194,7 @@ falls_sty <- gq_style(reg, "fiss_obstacles")
 lake_sty <- gq_style(reg, "lake")
 
 # Polygon layers — do.call() with gq_tmap_style() directly
-m <- tm_shape(basemap_stars) +
-  tm_rgb() +
+m <- basemap +
 tm_shape(bb_box) +
   tm_borders(lwd = 0, col = NA) +
 tm_shape(neexdzii_wsd) +

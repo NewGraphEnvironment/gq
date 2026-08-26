@@ -1,3 +1,43 @@
+# gq 0.7.0
+
+- **The default basemap provider changed, because the old one started serving a
+  watermark.** Carto made their basemaps key-only; without a key they return an
+  "API KEY REQUIRED" image. That image is a structurally valid PNG, so nothing
+  errored, and a watermarked map reached the published documentation site.
+  `gq_basemap_tiles()` now defaults to `Esri.WorldGrayCanvas` — keyless, and
+  verified clean over BC extents.
+
+  If you passed `provider` explicitly you are unaffected. If you relied on the
+  default, your basemap changes appearance: the gray canvas is flatter than
+  Positron, so a hillshade blend carries more of the terrain. In gq's own
+  vignettes the result is more legible, not less.
+
+- **New: a flat-tile warning.** A provider can answer HTTP 200 with an image
+  that is not a map. `gq_basemap_tiles()` now warns when a tile comes back as a
+  single flat colour — `Esri.WorldTerrain` does exactly this over parts of BC.
+  The tile is still returned, since a genuinely uniform extent (open ocean)
+  looks identical and dropping it would destroy valid data.
+
+  Watermarked tiles are deliberately *not* detected. Measured across zoom
+  levels, a clean tile and a watermarked one have indistinguishable dark-pixel
+  fractions, so any threshold would pass watermarks while looking like a check.
+  `?gq_basemap_tiles` carries the numbers and the reasoning.
+
+- **Fixed: the documented "a failed tile fetch costs the basemap, not the
+  figure" pattern never worked.** Both vignettes held a `NULL` raster and passed
+  it to `tm_shape()`, which rejects `NULL` outright — so the guard moved the
+  failure into map composition instead of preventing it. If you copied that
+  block, build the whole *layer* conditionally rather than the data:
+
+  ```r
+  basemap <- if (is.null(canvas) || is.null(relief)) NULL else
+    tm_shape(gq_basemap_blend(canvas, relief)) + tm_rgb()
+  m <- basemap + tm_shape(aoi) + ...
+  ```
+
+  `NULL + tm_shape(...)` composes correctly, so an absent layer is the shape
+  that holds.
+
 # gq 0.6.0
 
 - **Classified layers now render every aesthetic the registry defines, not just
