@@ -21,11 +21,13 @@ The registry carries a \code{shape} on every mark — \code{circle}, \code{squar
 #16 no renderer consumed it, so maps hardcoded their own marker codes.
 }
 \details{
-\code{star} maps to \code{pch = 8}, which draws a star but takes \strong{no fill} — R's
-fillable symbols (21–25) are circle, square, diamond, triangle-up and
-triangle-down, and none is a star. Substituting a filled circle would silently
-discard the distinction that made the layer a star in QGIS, so the unfillable
-code is returned instead and the caller sees an unfilled star.
+\code{star} maps to \code{pch = 8}, which draws a star with \strong{strokes only} and ignores
+\code{fill} entirely. R has no filled star — its fillable symbols (21–25) are
+circle, square, diamond, triangle-up and triangle-down. Substituting a filled
+circle would silently discard the distinction that made the layer a star in
+QGIS, so the unfillable code is returned and callers are expected to set \code{col}
+rather than \code{fill}; \code{\link[=gq_tmap_style]{gq_tmap_style()}} does this. Use
+\code{gq_symbol_fillable()} to ask.
 
 \code{mapgl} returns \code{NULL} for every shape. A MapLibre \code{circle} layer has no shape
 concept at all; anything else requires a \code{symbol} layer with an icon sprite,
@@ -35,7 +37,8 @@ rather than handing back a \code{pch} number the renderer cannot read.
 \examples{
 gq_symbol_shape("circle", "tmap")
 gq_symbol_shape("triangle", "tmap")
-gq_symbol_shape("star", "tmap")     # 8 -- drawn unfilled
+gq_symbol_shape("star", "tmap")       # 8 -- stroked, never filled
+gq_symbol_fillable("star")            # FALSE
 
 }
 \seealso{

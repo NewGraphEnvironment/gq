@@ -14,7 +14,8 @@ render.
 
 **The issue's stated premise is false and must be corrected at merge.** #16 says
 a registry radius of 2.4 "becomes nearly invisible" — symbols too *small*. The
-opposite is true: `radius / 3` draws them **69% oversized**. The premise died
+opposite is true: `radius / 3` draws them **27% oversized** (in ink; an early
+measurement said 69% and was reading the grob input). The premise died
 when the `/ 3` divisor was introduced.
 
 ## What measurement settled
@@ -144,19 +145,24 @@ was free all along. The map now passes all seven self-review checks.
 
 ## Phase 6 — Land it
 
-- [ ] Correct #16's body: the "nearly invisible" premise is false, and the
+- [x] Correct #16's body: the "nearly invisible" premise is false, and the
       measured conversion replaces the guessed one
-- [ ] `NEWS.md` + `DESCRIPTION` 0.7.0 → **0.8.0**. Minor: every point layer's
+- [x] `NEWS.md` + `DESCRIPTION` 0.7.0 → **0.8.0**. Minor: every point layer's
       rendered size changes, and two exports are added
-- [ ] Note what is still not done — mapgl cannot express shape on a `circle`
+- [x] Note what is still not done — mapgl cannot express shape on a `circle`
       layer (needs `symbol` + sprites), and `gq_mapgl_style()` has no
       classification branch, so per-class radius is tmap-only
-- [ ] `/planning-archive`, `/gh-pr-push`
+- [x] `/planning-archive`, `/gh-pr-push`
 
 ## Validation
 
-- [ ] `devtools::test()` — 849 passing plus new
-- [ ] `lintr` clean on changed files
-- [ ] `devtools::check()` no new ERROR/WARNING/NOTE (main carries 2+2, #51)
-- [ ] `/code-check` per commit; PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `devtools::test()` — **876 passing**, FAIL 0. Pre-existing WARN 1 unchanged
+- [x] `lintr` clean on changed files — 0 in `gq_symbol.R` after renaming the
+      constants to house snake_case. The `gq_symbol_*` "no visible global
+      function" warnings are the documented installed-vs-source artifact:
+      confirmed absent from the installed namespace while older exports are present
+- [x] `devtools::check()` — **caught a real regression**: 3 WARNINGs, not the
+      baseline 2. `withr::defer()` in the new test helper was an undeclared
+      dependency. Added to Suggests; back to 2+2
+- [x] `/code-check` per commit; PWF checkboxes match landed work
+- [x] `/planning-archive` on completion

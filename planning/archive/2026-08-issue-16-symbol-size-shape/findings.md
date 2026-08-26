@@ -6,7 +6,29 @@ Not from the issue. From looking at the rendered flagship map after #57 removed
 the watermark and asking whether the vignette was actually good. It was not: the
 crossings were burying the stream network and the habitat widths.
 
-## Measurements
+## CORRECTION — the first measurement was circular
+
+The table below was taken with a helper that read `pointsGrob$size` back off the
+grob. That returns the value tmap was *handed*, not the ink: R's graphics engine
+applies a per-`pch` factor the grob slot never records. Measured properly, off
+the rendered SVG primitives:
+
+| pch | shape | mm of ink per size unit |
+|---|---|---|
+| 21 | circle | **3.810** |
+| 22 | square | **3.376** |
+| 24 | triangle | **5.129** |
+| 8 | star | **5.390** |
+
+So `size = 1` draws a **3.81 mm** circle, not 5.08. Every figure below derived
+from 5.08 is wrong by that factor, including the headline: the old `/ 3` divisor
+drew a circle **27% oversized**, not 69%. Because base R normalises pch by area
+and QGIS by extent, the conversion also has to take the shape.
+
+Caught by the concurrent plan review, which measured the drawn primitive instead
+of the grob input. Left below as written so the error is legible.
+
+## Measurements (as first taken — see correction above)
 
 ### tmap `size` is a physical unit, canvas-independent
 

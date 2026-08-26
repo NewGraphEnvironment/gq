@@ -4,7 +4,12 @@
 \alias{gq_symbol_size}
 \title{Convert a registry symbol size to a rendering target's units}
 \usage{
-gq_symbol_size(radius, target = c("tmap", "mapgl"), scale = 1)
+gq_symbol_size(
+  radius,
+  target = c("tmap", "mapgl"),
+  shape = "circle",
+  scale = 1
+)
 }
 \arguments{
 \item{radius}{Registry size in millimetres. May be a named vector (a
@@ -13,6 +18,9 @@ defines no mark at all. Names are preserved, because
 \code{tm_scale_categorical()} matches values by name.}
 
 \item{target}{One of \code{"tmap"} or \code{"mapgl"}.}
+
+\item{shape}{Registry shape, for \code{target = "tmap"}. Defaults to \code{"circle"},
+which is what tmap itself draws when no shape is given.}
 
 \item{scale}{Uniform multiplier applied after conversion. The knob for a
 dense map that needs every symbol smaller — one number applied once,
@@ -27,22 +35,36 @@ A numeric vector in the target's units, or \code{NULL} if \code{radius} is
 The registry's \code{radius} field is a \strong{diameter}, in millimetres. The name is a
 misnomer inherited at extraction: \code{\link[=gq_qgs_extract]{gq_qgs_extract()}} reads the QGIS
 \code{SimpleMarker} option literally named \code{size} — the marker's overall extent —
-and stores it under \code{radius}. Treating it as a true radius would draw every
-symbol at twice its intended size.
+and stores it under \code{radius}. Every point QML in the corpus confirms it by
+carrying \code{scale_method = "diameter"} alongside.
 }
 \details{
-Each target measures symbols differently, so the conversion differs:
+Each target measures symbols differently:
 
 \describe{
-\item{\code{"tmap"}}{Divides by 5.08, the millimetres tmap draws per size unit.
-A 3 mm QGIS marker lands on the page as 3 mm. tmap's \code{size} is also a
-diameter, so no halving is involved.}
+\item{\code{"tmap"}}{Depends on \code{shape}. tmap sizes symbols in grid "lines"
+(5.08 mm), but R's graphics engine then applies a per-\code{pch} factor, and
+base R normalises those by \emph{area} where QGIS normalises by \emph{extent}. A
+circle draws 3.81 mm of ink per size unit, a square 3.38, a triangle
+5.13. Passing the wrong shape leaves the symbol 11–35\% out.}
 \item{\code{"mapgl"}}{MapLibre's \code{circle-radius} is a true \strong{radius}, in CSS
-pixels — so the value is halved and then converted at 96 px per inch.}
+pixels — so the value is halved and converted at 96 px per inch. \code{shape}
+does not apply: a MapLibre \code{circle} layer has only circles.}
 }
+
+A constant \code{circle-radius} is deliberate for mapgl, not a simplification: it
+holds a fixed screen size at every zoom, which is exactly QGIS marker
+semantics. An interpolated expression would be a departure from the registry,
+not a correction to it.
 }
 \examples{
-gq_symbol_size(3, "tmap")            # a 3 mm marker draws as 3 mm
+# A 3 mm circular marker, drawn as 3 mm of ink
+gq_symbol_size(3, "tmap")
+
+# The same millimetres as a square need a different size, because base R
+# normalises pch by area and QGIS by extent
+gq_symbol_size(3, "tmap", shape = "square")
+
 gq_symbol_size(3, "mapgl")           # circle-radius in CSS pixels
 gq_symbol_size(3, "tmap", scale = 0.5)
 

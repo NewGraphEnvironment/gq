@@ -68,32 +68,63 @@ drawn_gp <- function(m, what, grob_class = "polyline") {
   out
 }
 
-# Read the drawn diameter of point symbols, in millimetres.
+# Measure the DRAWN EXTENT of a point symbol, in millimetres.
 #
-# The size half of drawn_gp(), which reads gpar and so cannot see this: a point
-# symbol's size lives on the grob itself, not in gp. Returned in mm because that
-# is the unit the registry stores and the unit a reader can check against a
-# ruler -- an assertion in tmap's own size units would just restate the input.
+# Reads the rendered SVG primitives, not the grob. An earlier version of this
+# helper read `pointsGrob$size` and converted that to mm -- which returns the
+# value tmap was handed, one unit conversion later, and never looks at the ink.
+# It reported 5.08 mm for a symbol that draws 3.81 mm, because R's graphics
+# engine applies a per-pch factor (0.75 for a circle) that the grob slot does
+# not record. A whole conversion was built on that number.
 #
-# tmap's global `scale` option multiplies this, so a caller asserting an
-# absolute millimetre value must pin it (see local_tmap_scale below). Measured
-# 2026-08-26: scale = 2 doubles every symbol.
-drawn_pt_mm <- function(m, width = 7, height = 6) {
-  f <- tempfile(fileext = ".png")
-  grDevices::png(f, width = width, height = height, units = "in", res = 100)
-  g <- suppressMessages(tmap::tmap_grob(m))
+# So: ask the renderer what it drew. `<circle r=>`, `<rect width=>`,
+# `<polygon points=>` and `<line>` are in 1/72 in, exact, and dpi-free.
+#
+# tmap's global `scale` multiplies this, so a caller asserting an absolute
+# millimetre value must pin it (see local_tmap_scale below).
+drawn_symbol_mm <- function(m, kind = "circle", width = 7, height = 6) {
+  skip_if_not_installed("svglite")
+  f <- tempfile(fileext = ".svg")
+  svglite::svglite(f, width = width, height = height)
+  print(m)
   grDevices::dev.off()
+  txt <- paste(readLines(f, warn = FALSE), collapse = "")
   unlink(f)
 
-  out <- NULL
-  walk <- function(x) {
-    if (inherits(x, "points") && !is.null(x$size)) {
-      out <<- c(out, grid::convertUnit(x$size, "mm", valueOnly = TRUE)[1])
-    }
-    if (!is.null(x$children)) for (ch in x$children) walk(ch)
+  pt_mm <- function(x) x / 72 * 25.4
+  grab <- function(pat) regmatches(txt, gregexpr(pat, txt))[[1]]
+
+  if (kind == "circle") {
+    v <- as.numeric(sub(".*r=.([0-9.]+).*", "\\1",
+                        grab("<circle[^>]*r='[0-9.]+'")))
+    # The last circle is the symbol; earlier ones belong to map furniture.
+    return(pt_mm(2 * utils::tail(v, 1)))
   }
-  walk(g)
-  unique(round(out, 3))
+  if (kind == "square") {
+    v <- as.numeric(sub(".*width=.([0-9.]+).*", "\\1",
+                        grab("<rect[^>]*width='[0-9.]+'")))
+    # The frame and background are the large rects; the symbol is the smallest.
+    return(pt_mm(min(v)))
+  }
+  if (kind == "triangle") {
+    for (p in grab("points='[^']*'")) {
+      pp <- sub("points='([^']*)'", "\\1", p)
+      xy <- do.call(rbind, lapply(strsplit(trimws(strsplit(pp, " ")[[1]]), ","),
+                                  as.numeric))
+      xy <- xy[stats::complete.cases(xy), , drop = FALSE]
+      if (nrow(xy) == 3) return(pt_mm(diff(range(xy[, 1]))))
+    }
+    return(NA_real_)
+  }
+  if (kind == "star") {
+    ln <- grab("<line[^>]*x1='[0-9.-]+'[^>]*x2='[0-9.-]+'")
+    xs <- unlist(lapply(ln, function(l) {
+      c(as.numeric(sub(".*x1=.([0-9.-]+).*", "\\1", l)),
+        as.numeric(sub(".*x2=.([0-9.-]+).*", "\\1", l)))
+    }))
+    return(pt_mm(diff(range(xs))))
+  }
+  stop("unsupported kind: ", kind)
 }
 
 # Pin tmap's global scale for the duration of a test.

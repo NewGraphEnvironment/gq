@@ -1,6 +1,6 @@
 Package: gq
 Title: Cartographic Style Management Across Rendering Targets
-Version: 0.7.0
+Version: 0.8.0
 Date: 2026-08-26
 Authors@R: 
     person("Allan", "Irvine", , "al@newgraphenvironment.com", role = c("aut", "cre"),
@@ -24,9 +24,11 @@ Suggests:
     rmarkdown,
     sf,
     stars,
+    svglite,
     terra,
     testthat (>= 3.2.0),
-    tmap
+    tmap,
+    withr
 Config/testthat/edition: 3
 Depends:
     R (>= 4.1)

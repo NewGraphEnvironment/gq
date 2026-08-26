@@ -242,10 +242,19 @@ tmap_point_args <- function(sty) {
   if (!is.null(sty$mark)) {
     args$fill <- sty$mark$color
     if (!is.null(sty$mark$radius)) {
-      args$size <- gq_symbol_size(sty$mark$radius, "tmap")
+      # Shape is load-bearing here, not decoration: base R normalises pch by
+      # area and QGIS by extent, so the same millimetres need a different size
+      # for a square than for a circle.
+      args$size <- gq_symbol_size(sty$mark$radius, "tmap",
+                                  shape = sty$mark$shape)
     }
     shape <- gq_symbol_shape(sty$mark$shape, "tmap")
-    if (!is.null(shape)) args$shape <- shape
+    if (!is.null(shape)) {
+      args$shape <- shape
+      # pch 8 (star) is stroked, never filled. Setting only `fill` would hand
+      # the layer tmap's default outline and silently drop the registry colour.
+      if (!gq_symbol_fillable(sty$mark$shape)) args$col <- sty$mark$color
+    }
   }
   if (!is.null(sty$fill)) {
     args$fill <- sty$fill$color
