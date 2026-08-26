@@ -16,7 +16,10 @@ gq_basemap_tiles(
 \item{bbox}{A \code{bbox}. Reprojected to EPSG:4326 for the request.}
 
 \item{provider}{A \code{maptiles} provider name. Defaults to a keyless one --
-Carto's basemaps became key-only and now serve a watermark without one.}
+Carto's basemaps became key-only and now serve a watermark without one.
+The default carries faint place labels of its own that appear as you zoom
+in: none at \code{zoom = 10} over a BC watershed, lake names by \code{zoom = 12}.
+Worth a look if you are placing your own labels.}
 
 \item{zoom}{Tile zoom level.}
 

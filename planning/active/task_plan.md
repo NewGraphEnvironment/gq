@@ -73,8 +73,10 @@ guard added in Phase 2 does not protect it.
 
 - [x] Migrate to `gq_basemap_tiles()` + `gq_basemap_blend(method = "gamma", gamma = 0.5)`,
       matching the composition vignette's `NULL`-handling block
-- [x] Verify the rendered map is unchanged apart from the basemap provider — extent also
-      tightened, because the hand-padded degrees became `gq_bbox_aspect()`
+- [x] Verify the rendered map is unchanged apart from the basemap provider. Restated after
+      review: the extent changes *by construction* when hand-padded degrees become
+      `gq_bbox_aspect()`, so "unchanged" was unsatisfiable. What is checked instead: same AOI,
+      recomputed to the 7:6 canvas, no white bands
 
 ## Phase 5 — Verify by looking, not by exit code
 
@@ -105,3 +107,28 @@ visual.
 - [ ] `devtools::check()` no new ERROR/WARNING/NOTE (main carries 2+2, gq#51)
 - [ ] `/code-check` per commit; PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
+
+
+## Plan review (concurrent, folded in)
+
+See `review-57.md`. Twelve findings, all reproduced before being acted on. Two were blockers
+that would otherwise have shipped:
+
+- [x] **B1** — `terra::minmax()` defaults to `compute = FALSE` and returns `Inf`/`-Inf` for a
+      raster with no cached statistics, so `tile_is_flat()` called any file-backed raster flat.
+      It passed against maptiles only because `get_tiles(crop = TRUE)` computes min/max in
+      passing — correct by accident. Fixed with `compute = TRUE`
+- [x] **B2** — every fixture was built in memory, so none could reach B1. Added a file-backed
+      one; restoring the bug turns it red
+- [x] **B3** — `tm_shape(NULL)` errors, so the NULL-on-fetch-failure contract never worked and
+      Phase 4 was about to copy it into a second vignette. The whole *layer* is now conditional
+- [x] **G1** — offline assertion that the provider strings exist in maptiles
+- [x] **G2** — testthat pin raised to >= 3.2.0 for `local_mocked_bindings(.package=)`
+- [x] **A1** — my "label-free" claim was wrong and the soul skill was right: `WorldGrayCanvas`
+      shows lake names at zoom 12, none at zoom 10. Corrected in both vignettes and the roxygen
+- [x] **A2** — measured the default `zoom = 12` over three BC extents. It also surfaced that a
+      coastal extent is legitimately flat, so the false-positive path is real in gq's domain
+- [x] **S1** — the inventory stopped at the repo boundary. `soul/skills/cartography` still
+      shipped the keyless Carto snippet to every consumer repo. Updated
+- [x] **G3** — attribution is dropped; pre-existing, filed as #58 rather than scope-creeping
+- [x] **Ac3** — proper restore-the-bug check via namespace patch, not "cannot find function"

@@ -150,6 +150,9 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #' @param bbox A `bbox`. Reprojected to EPSG:4326 for the request.
 #' @param provider A `maptiles` provider name. Defaults to a keyless one --
 #'   Carto's basemaps became key-only and now serve a watermark without one.
+#'   The default carries faint place labels of its own that appear as you zoom
+#'   in: none at `zoom = 10` over a BC watershed, lake names by `zoom = 12`.
+#'   Worth a look if you are placing your own labels.
 #' @param zoom Tile zoom level.
 #' @param pad Fraction of each bbox dimension to expand by before requesting.
 #'   Applied to width and height independently.
@@ -222,12 +225,21 @@ gq_basemap_tiles <- function(bbox, provider = "Esri.WorldGrayCanvas",
 #' to arise legitimately. `minmax()` also does this in one pass, where pulling
 #' every cell through `values()` would not.
 #'
-#' An all-NA tile gives `NaN` from `minmax()`, which would make a bare
-#' `min == max` comparison return `NA` and error an `if()`. A tile with no data
-#' is as broken as a tile with one value, so it counts as flat.
+#' `compute = TRUE` is load-bearing, not a belt-and-braces default.
+#' `minmax()` otherwise reports only *cached* statistics, and returns
+#' `Inf`/`-Inf` for a raster that has none — which every file-backed raster is
+#' until something computes them. Without it this function calls a richly varied
+#' PNG flat, i.e. fails toward "always warn", which trains people to ignore the
+#' warning after two builds. It happens to work on a maptiles result because
+#' `get_tiles(crop = TRUE)` computes min/max on the way past; that is an
+#' accident of an upstream internal, not something to rely on.
+#'
+#' Having computed, a non-finite result means the tile genuinely has no data,
+#' which is as broken as one value. `NaN` also makes a bare `min == max` return
+#' `NA` and error an `if()`, so it needs handling either way.
 #' @noRd
 tile_is_flat <- function(x) {
-  mm <- suppressWarnings(terra::minmax(x))
+  mm <- suppressWarnings(terra::minmax(x, compute = TRUE))
   if (!all(is.finite(mm))) return(TRUE)
   all(mm[1, ] == mm[2, ])
 }

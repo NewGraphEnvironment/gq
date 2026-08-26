@@ -90,8 +90,10 @@ library(tmap)
 sf_use_s2(FALSE)
 
 # --- Basemap: gray canvas × hillshade blend ---
-# Label-free raster basemap gives terrain relief without competing labels.
-# We control all text ourselves via tm_text().
+# A muted raster basemap gives terrain relief without competing labels; we
+# control all text ourselves via tm_text(). Esri.WorldGrayCanvas does carry
+# faint place labels that appear as you zoom in -- none at zoom 10 here, lake
+# names by zoom 12.
 # See cartography skill for scale-based basemap selection guidelines.
 #
 # gq_basemap_tiles() does the padding a projected map needs, and returns NULL
@@ -104,10 +106,14 @@ canvas <- gq_basemap_tiles(bbox, provider = "Esri.WorldGrayCanvas",
 relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
                            zoom = 10, pad = 0, crs = NULL)
 
-basemap_stars <- if (is.null(canvas) || is.null(relief)) {
+# The whole LAYER is conditional, not just the data: tm_shape() rejects NULL,
+# so holding a NULL raster and passing it on would only move the failure into
+# the map composition below.
+basemap <- if (is.null(canvas) || is.null(relief)) {
   NULL
 } else {
-  gq_basemap_blend(canvas, relief, method = "gamma", gamma = 0.5)
+  tm_shape(gq_basemap_blend(canvas, relief, method = "gamma", gamma = 0.5)) +
+    tm_rgb()
 }
 
 # --- Data prep ---
@@ -138,8 +144,7 @@ pscis_cls <- gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
 
 # --- Map composition ---
-m <- tm_shape(basemap_stars) +
-  tm_rgb() +
+m <- basemap +
 tm_shape(bittner_wsd) +
   tm_polygons(fill = "#a8c8e0", fill_alpha = 0.4, col = "#2c3e50", lwd = 1.8) +
 tm_shape(bittner_lakes) +
