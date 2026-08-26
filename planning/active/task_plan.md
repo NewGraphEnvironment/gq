@@ -73,19 +73,23 @@ guard added in Phase 2 does not protect it.
 
 - [x] Migrate to `gq_basemap_tiles()` + `gq_basemap_blend(method = "gamma", gamma = 0.5)`,
       matching the composition vignette's `NULL`-handling block
-- [ ] Verify the rendered map is unchanged apart from the basemap provider
+- [x] Verify the rendered map is unchanged apart from the basemap provider — extent also
+      tightened, because the hand-padded degrees became `gq_bbox_aspect()`
 
 ## Phase 5 — Verify by looking, not by exit code
 
 The whole issue is a failure that passed every automatic check, so the acceptance test is
 visual.
 
-- [ ] Render both vignettes; extract the figures; **read them**
-- [ ] Confirm: no watermark text anywhere in either figure
-- [ ] Confirm the basemap still reads as terrain — `Esri.WorldGrayCanvas` is flatter than
-      Positron (sd 3.28 vs 15.91), so the hillshade blend is now carrying more of the texture.
-      If it reads as washed out, tune the blend rather than reverting the provider
-- [ ] Re-check against `cartography.md`'s self-review list, at minimum "map fills to frame"
+- [x] Render both vignettes; extract the figures; **read them**
+- [x] Confirm: no watermark text anywhere in either figure
+- [x] Confirm the basemap still reads as terrain — it reads *better*. The washed-out risk did
+      not materialise: with Positron's own grey removed, the hillshade carries the terrain and
+      relief is more legible than before. No blend tuning needed
+- [x] Re-check against `cartography.md`'s self-review list — map fills to frame in both. The
+      intro map's white side-bands are gone as a side effect of `gq_bbox_aspect()`. The
+      composition map still stacks legend and scale bar in the bottom-left quadrant, which
+      violates the four-corner rule — pre-existing, out of scope, needs its own issue
 
 ## Phase 6 — Land it
 
