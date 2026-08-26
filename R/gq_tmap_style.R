@@ -178,10 +178,10 @@ tmap_classified <- function(sty) {
     args$fill.legend <- tmap::tm_legend(show = FALSE)
     if (complete(cls$radii)) {
       args$size <- cls$field
-      args$size.scale <- tmap_scale_axis(cls, cls$radii / 3)
+      args$size.scale <- tmap_scale_axis(cls, gq_symbol_size(cls$radii, "tmap"))
       args$size.legend <- tmap::tm_legend(show = FALSE)
     } else if (!is.null(cls$radii)) {
-      args$size <- unname(cls$radii[1]) / 3
+      args$size <- gq_symbol_size(unname(cls$radii[1]), "tmap")
     }
   }
 
@@ -241,7 +241,11 @@ tmap_point_args <- function(sty) {
   args <- list()
   if (!is.null(sty$mark)) {
     args$fill <- sty$mark$color
-    if (!is.null(sty$mark$radius)) args$size <- sty$mark$radius / 3
+    if (!is.null(sty$mark$radius)) {
+      args$size <- gq_symbol_size(sty$mark$radius, "tmap")
+    }
+    shape <- gq_symbol_shape(sty$mark$shape, "tmap")
+    if (!is.null(shape)) args$shape <- shape
   }
   if (!is.null(sty$fill)) {
     args$fill <- sty$fill$color

@@ -88,24 +88,32 @@ text. `local_tmap_scale()` added to the helper.
 
 ## Phase 2 — The converters
 
-- [ ] `R/gq_symbol.R`: `gq_symbol_size()`, `gq_symbol_shape()`, exported
-- [ ] Constants named and documented with the measurement that produced them —
+- [x] `R/gq_symbol.R`: `gq_symbol_size()`, `gq_symbol_shape()`, exported
+- [x] Constants named and documented with the measurement that produced them —
       `5.08 mm` per tmap size unit, `96/25.4` px per mm. A bare `/ 5.08` in the
       body is the same unexplained magic number as `/ 3`
-- [ ] `star` has no fillable base-R `pch` (21–25 are circle/square/diamond/
+- [x] `star` has no fillable base-R `pch` (21–25 are circle/square/diamond/
       triangle-up/triangle-down). Decide and document: `8` renders a star but
       takes no fill. Do not silently substitute a circle
-- [ ] Roxygen states plainly that the registry's `radius` is a **diameter**
+- [x] Roxygen states plainly that the registry's `radius` is a **diameter**
 
 ## Phase 3 — Route every site through them
 
-- [ ] `gq_tmap_style.R:181,184,244` and `gq_tmap_legend.R:191` — all four
-- [ ] `gq_mapgl_style.R:86` — currently raw mm as pixel radius
-- [ ] `test-gq_tmap_style.R:66` pins the old divisor (`6/3 == 2`) and must
+- [x] `gq_tmap_style.R:181,184,244` and `gq_tmap_legend.R:191` — all four
+- [x] `gq_mapgl_style.R:86` — currently raw mm as pixel radius
+- [x] `test-gq_tmap_style.R:66` pins the old divisor (`6/3 == 2`) and must
       change; say in the commit why the old assertion was wrong
-- [ ] `test-gq_mapgl_style.R:38` asserts pass-through — same
-- [ ] Add shape to `tmap_point_args()`. **`test-gq_tmap_legend.R:330` guards
+- [x] `test-gq_mapgl_style.R:38` asserts pass-through — same
+- [x] Add shape to `tmap_point_args()`. **`test-gq_tmap_legend.R:330` guards
       against rows that mix shape-bearing and shapeless** — that guard will fire
+
+**The legend shape guard fired exactly as its own comment predicted**, and then
+its fixture rotted — it had picked `shape` *because* nothing supplied a default,
+and adding one expired that premise. Rewritten on `angle` with the premise
+asserted beside the property, per the negative-fixture-rot convention.
+
+Measured after routing: `fiss_obstacles` 2.0 mm → **2.00 mm**, fish obs
+2.4 → **2.40**, `town` 5.0 → **5.00**, `form_pscis` 6.6 → **6.60** with a star.
 
 ## Phase 4 — Vignettes drop their hand-tuned constants
 

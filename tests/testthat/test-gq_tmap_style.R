@@ -63,7 +63,12 @@ test_that("gq_tmap_style returns point args", {
   args <- gq_tmap_style(layer)
 
   expect_equal(args$fill, "#e74c3c")
-  expect_equal(args$size, 2)
+  # This asserted 2 until #16 -- radius 6 through the old `/ 3` divisor. That
+  # was pinning the bug: tmap draws 5.08 mm per size unit, so size 2 rendered
+  # the 6 mm QGIS marker at 10.16 mm, 69% oversized. A 6 mm marker must draw as
+  # 6 mm.
+  expect_equal(args$size, gq_symbol_size(6, "tmap"))
+  expect_equal(args$size * tmap_mm_per_size, 6)
 })
 
 test_that("gq_tmap_style handles stroke style none", {

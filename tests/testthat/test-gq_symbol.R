@@ -17,16 +17,16 @@ test_that("one tmap size unit is 5.08 mm, and that is measured not assumed", {
 
   # This is the constant gq_symbol_size() is built on. If tmap ever changes it,
   # this test names the cause instead of leaving every map subtly wrong.
-  expect_equal(drawn_pt_mm(m), TMAP_MM_PER_SIZE, tolerance = 0.01)
+  expect_equal(drawn_pt_mm(m), tmap_mm_per_size, tolerance = 0.01)
 
   # Canvas-independent -- which is what makes a fixed conversion correct rather
   # than a calibration that would have to know the figure dimensions.
-  expect_equal(drawn_pt_mm(m, width = 14, height = 12), TMAP_MM_PER_SIZE,
+  expect_equal(drawn_pt_mm(m, width = 14, height = 12), tmap_mm_per_size,
                tolerance = 0.01)
 
   # Linear in diameter, not area.
   m_half <- tmap::tm_shape(pts) + tmap::tm_symbols(size = 0.5)
-  expect_equal(drawn_pt_mm(m_half), TMAP_MM_PER_SIZE / 2, tolerance = 0.01)
+  expect_equal(drawn_pt_mm(m_half), tmap_mm_per_size / 2, tolerance = 0.01)
 })
 
 test_that("tmap's global scale multiplies the constant", {
@@ -40,7 +40,7 @@ test_that("tmap's global scale multiplies the constant", {
   m <- tmap::tm_shape(pts) + tmap::tm_symbols(size = 1)
 
   local_tmap_scale(2)
-  expect_equal(drawn_pt_mm(m), TMAP_MM_PER_SIZE * 2, tolerance = 0.02)
+  expect_equal(drawn_pt_mm(m), tmap_mm_per_size * 2, tolerance = 0.02)
 })
 
 test_that("gq_symbol_size converts millimetres to each target's units", {
@@ -52,7 +52,7 @@ test_that("gq_symbol_size converts millimetres to each target's units", {
   expect_equal(gq_symbol_size(2, "mapgl"), 2 / 2 * 96 / 25.4, tolerance = 1e-6)
 
   # A 3 mm QGIS marker must draw as 3 mm.
-  expect_equal(gq_symbol_size(3, "tmap") * TMAP_MM_PER_SIZE, 3,
+  expect_equal(gq_symbol_size(3, "tmap") * tmap_mm_per_size, 3,
                tolerance = 1e-6)
 })
 
