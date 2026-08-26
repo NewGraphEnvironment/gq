@@ -83,7 +83,12 @@ mapgl_point <- function(layer) {
 
   if (!is.null(layer$mark)) {
     paint[["circle-color"]] <- layer$mark$color
-    if (!is.null(layer$mark$radius)) paint[["circle-radius"]] <- layer$mark$radius
+    # circle-radius is a true radius in CSS pixels; the registry stores a
+    # diameter in millimetres. Passing it through raw made mapgl and tmap
+    # disagree by 3x, with neither matching QGIS (#16).
+    if (!is.null(layer$mark$radius)) {
+      paint[["circle-radius"]] <- gq_symbol_size(layer$mark$radius, "mapgl")
+    }
   }
 
   if (!is.null(layer$fill)) {

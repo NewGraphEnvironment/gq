@@ -188,7 +188,7 @@ legend_entries <- function(sty, cls, key, label, present) {
       # fish passage map -- so reading it from the wrong object dropped size
       # from the legend that needs it most and tmap substituted a default.
       radius <- pick(sty$classification$radii, j)
-      if (!is.null(radius)) row$size <- radius / 3
+      if (!is.null(radius)) row$size <- gq_symbol_size(radius, "tmap")
     }
     row
   })
@@ -248,7 +248,13 @@ legend_key <- function(r) {
 #' @noRd
 legend_na_default <- list(lty = "solid", col = "#00000000", lwd = 0,
                           fill = "#00000000", size = 0,
-                          fill_alpha = 1, col_alpha = 1)
+                          fill_alpha = 1, col_alpha = 1,
+                          # Since #16 the point layers carry their registry
+                          # shape, so a mixed legend has shape on the symbol
+                          # rows and not on the line and polygon ones. 21 is the
+                          # filled circle tmap would draw anyway, so the rows
+                          # that never had a shape keep the appearance they had.
+                          shape = 21)
 
 #' Gather rows into the parallel vectors tm_add_legend() expects
 #'

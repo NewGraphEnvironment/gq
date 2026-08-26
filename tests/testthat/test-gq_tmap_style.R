@@ -63,7 +63,12 @@ test_that("gq_tmap_style returns point args", {
   args <- gq_tmap_style(layer)
 
   expect_equal(args$fill, "#e74c3c")
-  expect_equal(args$size, 2)
+  # This asserted 2 until #16 -- radius 6 through the old `/ 3` divisor. That
+  # was pinning the bug: a circle draws 3.81 mm of ink per size unit, so size 2
+  # put the 6 mm QGIS marker on the page at 7.62 mm, 27% oversized. A 6 mm
+  # marker must draw as 6 mm.
+  expect_equal(args$size, gq_symbol_size(6, "tmap"))
+  expect_equal(args$size * 3.81, 6, tolerance = 1e-3)
 })
 
 test_that("gq_tmap_style handles stroke style none", {

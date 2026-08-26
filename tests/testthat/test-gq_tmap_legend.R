@@ -327,16 +327,26 @@ test_that("the dedup key does not depend on str() display options", {
 })
 
 test_that("an aesthetic with no default is refused, not passed through as NA", {
-  # The guard that would have caught both earlier rounds by itself. `shape` is
-  # the near-term case: 15 registry layers already carry mark shapes that nothing
-  # translates yet, so the day tmap_point_args() emits one this fires instead of
-  # producing a legend tmap rejects at draw time.
+  # This test used `shape` until #16, and it worked exactly as intended: the day
+  # tmap_point_args() started emitting one, this fired rather than letting a
+  # legend tmap rejects at draw time reach the renderer. `shape` then gained a
+  # `legend_na_default` entry, which expired the fixture's premise -- a
+  # negative-case fixture rots when the positive set grows.
+  #
+  # `angle` is the replacement: a real tm_symbols aesthetic gq does not yet
+  # default, so it is a plausible next addition rather than a strawman.
+  unhandled <- "angle"
+  # The premise, asserted beside the property. When someone adds a default for
+  # `angle`, this line fails and names the real cause instead of the assertion
+  # below failing and blaming the guard.
+  expect_null(legend_na_default[[unhandled]])
+
   rows <- list(
-    list(type = "symbols", label = "A", fill = "#111111", shape = 21),
+    list(type = "symbols", label = "A", fill = "#111111", angle = 45),
     list(type = "symbols", label = "B", fill = "#222222")
   )
   expect_error(collect_legend(rows), "no entry in `legend_na_default`")
-  expect_error(collect_legend(rows), "'shape'")
+  expect_error(collect_legend(rows), paste0("'", unhandled, "'"))
 })
 
 test_that("a non-scalar row reaches the guard that names it", {

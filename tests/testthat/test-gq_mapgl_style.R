@@ -35,7 +35,11 @@ test_that("gq_mapgl_style returns circle layer paint", {
 
   expect_equal(style$layer_type, "circle")
   expect_equal(style$paint[["circle-color"]], "#e74c3c")
-  expect_equal(style$paint[["circle-radius"]], 4)
+  # Asserted a raw pass-through of 4 until #16. The registry stores a DIAMETER
+  # in millimetres and MapLibre reads circle-radius as a RADIUS in CSS pixels,
+  # so passing it through unconverted made mapgl and tmap disagree by 3x with
+  # neither matching QGIS.
+  expect_equal(style$paint[["circle-radius"]], gq_symbol_size(4, "mapgl"))
   expect_equal(style$paint[["circle-opacity"]], 0.9)
 })
 
