@@ -65,17 +65,26 @@ Phase 5.
 
 ## Phase 1 — Failing tests first
 
-- [ ] Extend `helper-tmap_render.R` with a points-grob reader returning drawn
+- [x] Extend `helper-tmap_render.R` with a points-grob reader returning drawn
       **mm** (`convertUnit(x$size, "mm")`), the missing half of `drawn_gp()`
-- [ ] Pin the tmap constant by measurement, not by faith: assert `size = 1` draws
+- [x] Pin the tmap constant by measurement, not by faith: assert `size = 1` draws
       5.08 mm and is unchanged across two canvas sizes. If tmap ever changes
       this, that test names the cause
-- [ ] Assert a registry layer renders at its QGIS millimetre size: `fiss_obstacles`
-      (2 mm) and `bcfishobs_fiss_fish_observations` (2.4 mm)
-- [ ] `gq_symbol_size()` unit cases incl. `scale`, and `NULL`/`NA` radius —
+- [x] Assert a registry layer renders at its QGIS millimetre size: `fiss_obstacles`
+      (2 mm) and `bcfishobs_fiss_fish_observations` (2.4 mm) — measured on `main`
+      at **3.39 mm** and **4.06 mm**, i.e. 70% and 69% oversized
+- [x] `gq_symbol_size()` unit cases incl. `scale`, and `NULL`/`NA` radius —
       `crossings_pscis_modelled_dams` is `rule_based` with no `mark` at all
-- [ ] `gq_symbol_shape()` for all four registry values, both targets
-- [ ] Confirm every new test fails on current `main`
+- [x] `gq_symbol_shape()` for all four registry values, both targets
+- [x] Confirm every new test fails on current `main` — 9/9 fail; the two
+      end-to-end cases fail as *Failures* (rendered, wrong millimetres), not as
+      missing-function errors
+
+**Found while writing these:** `tmap_options(scale = )` multiplies the drawn
+size — `scale = 2` gives 10.16 mm. So 5.08 is the constant *at the default
+scale*, any absolute-millimetre assertion must pin it, and gq deliberately does
+not compensate: a caller scaling a whole map expects symbols to scale with the
+text. `local_tmap_scale()` added to the helper.
 
 ## Phase 2 — The converters
 

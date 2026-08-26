@@ -68,6 +68,43 @@ drawn_gp <- function(m, what, grob_class = "polyline") {
   out
 }
 
+# Read the drawn diameter of point symbols, in millimetres.
+#
+# The size half of drawn_gp(), which reads gpar and so cannot see this: a point
+# symbol's size lives on the grob itself, not in gp. Returned in mm because that
+# is the unit the registry stores and the unit a reader can check against a
+# ruler -- an assertion in tmap's own size units would just restate the input.
+#
+# tmap's global `scale` option multiplies this, so a caller asserting an
+# absolute millimetre value must pin it (see local_tmap_scale below). Measured
+# 2026-08-26: scale = 2 doubles every symbol.
+drawn_pt_mm <- function(m, width = 7, height = 6) {
+  f <- tempfile(fileext = ".png")
+  grDevices::png(f, width = width, height = height, units = "in", res = 100)
+  g <- suppressMessages(tmap::tmap_grob(m))
+  grDevices::dev.off()
+  unlink(f)
+
+  out <- NULL
+  walk <- function(x) {
+    if (inherits(x, "points") && !is.null(x$size)) {
+      out <<- c(out, grid::convertUnit(x$size, "mm", valueOnly = TRUE)[1])
+    }
+    if (!is.null(x$children)) for (ch in x$children) walk(ch)
+  }
+  walk(g)
+  unique(round(out, 3))
+}
+
+# Pin tmap's global scale for the duration of a test.
+#
+# Without this, a user's `tmap_options(scale = )` leaks into any test asserting
+# an absolute size and the failure looks like a broken conversion.
+local_tmap_scale <- function(scale = 1, envir = parent.frame()) {
+  old <- tmap::tmap_options(scale = scale)
+  withr::defer(tmap::tmap_options(old), envir = envir)
+}
+
 # Render a registry layer over the given codes with gq's own legend settings
 # left alone (classified layers hide their legend). Use this when reading
 # geometry gpar -- render_classified() forces the legend on, and legend keys are
