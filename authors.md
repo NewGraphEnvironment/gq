@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/NewGraphEnvironment/gq/blob/36-classified-layers-lose-non-colour-axes/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/NewGraphEnvironment/gq/blob/main/DESCRIPTION)
 
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
 Targets*. R package version 0.6.0,
