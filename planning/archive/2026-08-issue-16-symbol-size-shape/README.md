@@ -64,4 +64,13 @@ an undeclared dependency.
 not denser. The three salmon-habitat widths from v0.6.0 are legible for the
 first time.
 
-Commits `2f011d4`..`<release>`. PR #60.
+**All three functions are exported, deliberately.** The review argued for
+internal on API-surface grounds. Declined: the issue exists because *"every map
+manually guesses tmap `size` through trial and error"*, and a consumer project
+styling a layer the registry does not carry needs the same conversion. `scale`
+is a user-facing knob by design. The cost accepted is that the per-shape
+millimetre constants become a public contract — if tmap changes its `pch`
+factors the returned numbers change, which is true internally too, just less
+visible.
+
+Commits `2f011d4`..`9b495d8`, tagged v0.8.0. PR #60.
