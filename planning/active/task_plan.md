@@ -102,14 +102,14 @@ per-class vs scalar.
 
 ## Phase 2 — Fix
 
-- [ ] `tmap_classified()` — per-class `lwd`/`lty` for lines, `size` for points,
-      via the shared `tmap_axis()` helper
-- [ ] `R/gq_tmap_style.R:184` **existing test `expect_equal(args$lwd, 2)` pins
-      the bug** and must change: `mini_registry`'s `road` classes have widths
-      2.0 and 1.5, so `lwd` becomes the field name. Update it to assert the
-      scale, and say in the commit why the old assertion was wrong
-- [ ] Roxygen: `@return` currently promises tmap args; note which axes are now
-      per-class and the completeness rule for numeric ones
+- [x] `tmap_classified()` — per-class `lwd`/`lty` for lines, `size` for points,
+      via a shared `tmap_scale_axis()` helper, plus `class_ltys()` mapping
+      `dash_to_lty()`'s `NULL` to `"solid"` (the #52 trap in vector form)
+- [x] Existing test `expect_equal(args$lwd, 2)` pinned the bug and now asserts
+      the scale, with a comment recording what it used to assert and why that
+      was wrong. It was the **only** failure the fix caused
+- [x] Roxygen `@return` documents which axes are per-class, that `do.call()`
+      callers need no change, and the completeness rule for numeric axes
 
 ## Phase 3 — Registry-wide invariant
 

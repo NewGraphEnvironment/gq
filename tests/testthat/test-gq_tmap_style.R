@@ -183,7 +183,11 @@ test_that("gq_tmap_style returns classified args for categorized layers", {
   expect_equal(args$col, "road_type")
   expect_s3_class(args$col.scale, "tm_scale_categorical")
   expect_false(is.null(args$col.legend))
-  expect_equal(args$lwd, 2)
+  # This asserted `args$lwd == 2` until #36. mini_registry's road classes have
+  # widths 2.0 and 1.5, so that was pinning the bug: lwd collapsed to the first
+  # registry class and every road drew at 2. Width is now mapped like colour.
+  expect_equal(args$lwd, "road_type")
+  expect_s3_class(args$lwd.scale, "tm_scale_categorical")
 })
 
 test_that("gq_tmap_style field override works for classified layers", {

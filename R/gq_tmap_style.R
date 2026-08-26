@@ -7,6 +7,14 @@
 #' @inheritParams gq_style
 #' @return A named list of tmap arguments. Use with `do.call()`.
 #'
+#'   For a classified layer every aesthetic the registry defines is mapped
+#'   per class, not just colour: line `lwd` and `lty`, point `size`. Each is
+#'   returned as the classification field name plus a matching `.scale`, the
+#'   same shape `fill`/`col` already used, so `do.call()` callers need no
+#'   change. Numeric axes (`lwd`, `size`) fall back to a scalar when the
+#'   registry defines the value for only some classes, since a half-mapped
+#'   axis would invent a size for the gaps.
+#'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
 #' reg <- gq_registry_read(path)
@@ -105,10 +113,44 @@ tmap_scale_classified <- function(cls) {
   )
 }
 
+#' Map a non-colour aesthetic across the same classes as the colour scale
+#'
+#' Colour has always been per-class; width, dash and radius were collapsed to
+#' the *first registry class* and emitted as a scalar (#36). For the
+#' `mapping_code` layers that is severe: habitat use drives width and barrier
+#' status drives colour, so half the layer rendered correctly and half silently
+#' did not.
+#'
+#' `levels` comes from `names(cls$values)` so every axis is keyed on the one
+#' ordered class vector — the same property that makes the colour scale correct.
+#' @noRd
+tmap_scale_axis <- function(cls, v) {
+  tmap::tm_scale_categorical(
+    values = unname(v), levels = names(cls$values), levels.drop = TRUE
+  )
+}
+
+#' Per-class `lty`, with undashed classes made explicit
+#'
+#' [dash_to_lty()] returns `NULL` for an undashed class, which is right for a
+#' scalar and wrong for a vector: in #52 the `NULL`s collapsed to
+#' `c(NA, ..., "dashed")` and tmap rejected the whole vector at *draw* time,
+#' invisible to every structure-inspecting test. `NA` means "solid" here, so say
+#' so rather than leaving a hole.
+#' @noRd
+class_ltys <- function(dashes) {
+  vapply(dashes, function(d) dash_to_lty(d) %||% "solid", character(1))
+}
+
 #' @noRd
 tmap_classified <- function(sty) {
   cls <- sty$classification
   args <- list()
+
+  # A numeric axis is only mapped when every class has a value. A half-mapped
+  # width silently invents a size for the gaps; a documented scalar does not.
+  # gq_reg_custom() can produce a partial vector (#42), so this is reachable.
+  complete <- function(v) !is.null(v) && !anyNA(v)
 
   if (sty$type == "polygon") {
     args$fill <- cls$field
@@ -118,12 +160,29 @@ tmap_classified <- function(sty) {
     args$col <- cls$field
     args$col.scale <- tmap_scale_classified(cls)
     args$col.legend <- tmap::tm_legend(show = FALSE)
-    if (!is.null(cls$widths)) args$lwd <- unname(cls$widths[1])
+    if (complete(cls$widths)) {
+      args$lwd <- cls$field
+      args$lwd.scale <- tmap_scale_axis(cls, cls$widths)
+      args$lwd.legend <- tmap::tm_legend(show = FALSE)
+    } else if (!is.null(cls$widths)) {
+      args$lwd <- unname(cls$widths[1])
+    }
+    if (!is.null(cls$dashes)) {
+      args$lty <- cls$field
+      args$lty.scale <- tmap_scale_axis(cls, class_ltys(cls$dashes))
+      args$lty.legend <- tmap::tm_legend(show = FALSE)
+    }
   } else if (sty$type == "point") {
     args$fill <- cls$field
     args$fill.scale <- tmap_scale_classified(cls)
     args$fill.legend <- tmap::tm_legend(show = FALSE)
-    if (!is.null(cls$radii)) args$size <- unname(cls$radii[1]) / 3
+    if (complete(cls$radii)) {
+      args$size <- cls$field
+      args$size.scale <- tmap_scale_axis(cls, cls$radii / 3)
+      args$size.legend <- tmap::tm_legend(show = FALSE)
+    } else if (!is.null(cls$radii)) {
+      args$size <- unname(cls$radii[1]) / 3
+    }
   }
 
   args
