@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,16 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.0" id="gq-080">gq 0.8.0<a class="anchor" aria-label="anchor" href="#gq-080"></a></h2>
+<ul><li>
+<p><strong>Point symbols now render at the size the registry says.</strong> The mm-to-renderer conversion was a guessed constant in both backends — tmap divided by 3, mapgl divided by nothing — so the two disagreed by 3x and neither matched QGIS. Measured on the drawn ink, tmap was putting every marker on the page <strong>27% oversized</strong>.</p>
+<p>New <code><a href="../reference/gq_symbol_size.html">gq_symbol_size()</a></code> does the actual unit conversion, and it depends on the <strong>shape</strong>. tmap sizes symbols in grid “lines” (5.08 mm), but R’s graphics engine then applies a per-<code>pch</code> factor, and base R normalises those by <em>area</em> where QGIS normalises by <em>extent</em>. A circle draws 3.81 mm of ink per size unit, a square 3.38, a triangle 5.13 — so one divisor cannot serve them all. MapLibre’s <code>circle-radius</code> is a true radius in CSS pixels, so <code>mm / 2 * 96/25.4</code>.</p>
+<p><strong>Every point layer changes size.</strong> On gq’s own vignettes the crossings shrank 41% and stopped burying the stream network, while the falls doubled and the fish observations quadrupled to their true relative weight. A <code>scale</code> argument shrinks a whole map uniformly if you need that — one number, rather than the per-layer hand-tuning this replaces.</p>
+<p>Note the registry’s <code>radius</code> field is a <strong>diameter</strong>: <code><a href="../reference/gq_qgs_extract.html">gq_qgs_extract()</a></code> reads the QGIS <code>SimpleMarker</code> option named <code>size</code>, the marker’s overall extent, and stores it under a misleading name.</p>
+</li>
+<li><p><strong>New: <code><a href="../reference/gq_symbol_shape.html">gq_symbol_shape()</a></code>.</strong> The registry has carried a mark shape for 15 layers since extraction — circle, square, star, triangle — and nothing translated it, so maps hardcoded their own marker codes. <code>star</code> becomes <code>pch = 8</code>, which draws a star and takes no fill; a filled circle would have silently discarded the distinction. mapgl returns <code>NULL</code>, since a MapLibre <code>circle</code> layer has no shape concept.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.0" id="gq-070">gq 0.7.0<a class="anchor" aria-label="anchor" href="#gq-070"></a></h2>
 <ul><li>

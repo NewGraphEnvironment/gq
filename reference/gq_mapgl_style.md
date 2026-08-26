@@ -69,7 +69,7 @@ gq_mapgl_style(reg$layers$crossing)
 #> [1] "#e74c3c"
 #> 
 #> $paint$`circle-radius`
-#> [1] 4
+#> [1] 7.559055
 #> 
 #> $paint$`circle-opacity`
 #> [1] 0.9

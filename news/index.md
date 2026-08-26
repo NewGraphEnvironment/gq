@@ -1,5 +1,44 @@
 # Changelog
 
+## gq 0.8.0
+
+- **Point symbols now render at the size the registry says.** The
+  mm-to-renderer conversion was a guessed constant in both backends —
+  tmap divided by 3, mapgl divided by nothing — so the two disagreed by
+  3x and neither matched QGIS. Measured on the drawn ink, tmap was
+  putting every marker on the page **27% oversized**.
+
+  New
+  [`gq_symbol_size()`](https://newgraphenvironment.github.io/gq/reference/gq_symbol_size.md)
+  does the actual unit conversion, and it depends on the **shape**. tmap
+  sizes symbols in grid “lines” (5.08 mm), but R’s graphics engine then
+  applies a per-`pch` factor, and base R normalises those by *area*
+  where QGIS normalises by *extent*. A circle draws 3.81 mm of ink per
+  size unit, a square 3.38, a triangle 5.13 — so one divisor cannot
+  serve them all. MapLibre’s `circle-radius` is a true radius in CSS
+  pixels, so `mm / 2 * 96/25.4`.
+
+  **Every point layer changes size.** On gq’s own vignettes the
+  crossings shrank 41% and stopped burying the stream network, while the
+  falls doubled and the fish observations quadrupled to their true
+  relative weight. A `scale` argument shrinks a whole map uniformly if
+  you need that — one number, rather than the per-layer hand-tuning this
+  replaces.
+
+  Note the registry’s `radius` field is a **diameter**:
+  [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
+  reads the QGIS `SimpleMarker` option named `size`, the marker’s
+  overall extent, and stores it under a misleading name.
+
+- **New:
+  [`gq_symbol_shape()`](https://newgraphenvironment.github.io/gq/reference/gq_symbol_shape.md).**
+  The registry has carried a mark shape for 15 layers since extraction —
+  circle, square, star, triangle — and nothing translated it, so maps
+  hardcoded their own marker codes. `star` becomes `pch = 8`, which
+  draws a star and takes no fill; a filled circle would have silently
+  discarded the distinction. mapgl returns `NULL`, since a MapLibre
+  `circle` layer has no shape concept.
+
 ## gq 0.7.0
 
 - **The default basemap provider changed, because the old one started

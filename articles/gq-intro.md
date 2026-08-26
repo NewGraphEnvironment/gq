@@ -237,7 +237,11 @@ tm_shape(bittner_pscis) +
       labels = pscis_cls$labels
     ),
     fill.legend = tm_legend(show = FALSE),
-    size = 0.5,
+    # Size from the registry rather than by hand. This was 0.5 until #16, while
+    # the legend swatch below was 0.8 -- the same layer drawn at two different
+    # sizes, which is the per-map guessing gq_symbol_size() exists to end.
+    size = gq_symbol_size(reg$layers$crossings_pscis_assessment$
+                            classification$classes$BARRIER$radius, "tmap"),
     col = "white",
     lwd = 0.8
   ) +
@@ -247,8 +251,12 @@ tm_add_legend(
   labels = pscis_cls$labels,
   fill = pscis_cls$values,
   col = "white",
-  size = 0.8,
-  shape = 21,
+  # Same registry value as the map above, so the key matches what it describes.
+  size = gq_symbol_size(reg$layers$crossings_pscis_assessment$
+                          classification$classes$BARRIER$radius, "tmap"),
+  shape = gq_symbol_shape(
+    reg$layers$crossings_pscis_assessment$classification$classes$BARRIER$shape,
+    "tmap"),
   title = "PSCIS Crossings"
 ) +
 tm_add_legend(

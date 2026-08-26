@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -236,7 +236,7 @@ extraction needed.</p>
 <span><span class="co">#&gt; [1] 30</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $values</span></span>
-<span><span class="co">#&gt; [1] 1 1 1 1</span></span>
+<span><span class="co">#&gt; [1] 0.7874016 0.7874016 0.7874016 0.7874016</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $values.repeat</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
@@ -503,20 +503,22 @@ labels last.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_dots</span>, <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span>,</span>
 <span>                                  field <span class="op">=</span> <span class="st">"barrier_status"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fish observations — color from the registry, shape by hand.</span></span>
-<span><span class="co"># The registry carries a mark shape for 15 layers and nothing translates it</span></span>
-<span><span class="co"># yet (#16), so shape stays hardcoded here until it does.</span></span>
+<span><span class="co"># Fish observations — colour, size AND shape now all come from the registry.</span></span>
+<span><span class="co"># These two layers hardcoded `size` and `shape` until #16: the registry carries</span></span>
+<span><span class="co"># a mark shape for 15 layers that nothing translated, and its millimetre sizes</span></span>
+<span><span class="co"># converted through a guessed divisor, so every map hand-tuned its own numbers.</span></span>
+<span><span class="co"># `col` is still set to the fill colour to give the symbol a matching edge.</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">neexdzii_fish_obs</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">fish_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"bcfishobs_fiss_fish_observations"</span><span class="op">)</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_fish_obs</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_symbols.html" class="external-link">tm_symbols</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">24</span>, fill <span class="op">=</span> <span class="va">fish_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>,</span>
-<span>               col <span class="op">=</span> <span class="va">fish_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>, size <span class="op">=</span> <span class="fl">0.12</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_symbols</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fish_args</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="va">fish_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Falls — color from the registry, shape by hand (see #16, as above)</span></span>
+<span><span class="co"># Falls — same, straight from the registry</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">neexdzii_falls</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">falls_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"fiss_obstacles"</span><span class="op">)</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_falls</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_symbols.html" class="external-link">tm_symbols</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">22</span>, fill <span class="op">=</span> <span class="va">falls_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>,</span>
-<span>               col <span class="op">=</span> <span class="va">falls_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span>, size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_symbols</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">falls_args</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="va">falls_sty</span><span class="op">$</span><span class="va">mark</span><span class="op">$</span><span class="va">color</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Stream labels</span></span>
@@ -542,17 +544,23 @@ labels last.</p>
 <span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">`+`</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">leg</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_add_legend</span>, <span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Layout: four-corner rule</span></span>
-<span><span class="co"># - Legend: bottom-left</span></span>
-<span><span class="co"># - Logo: top-right</span></span>
-<span><span class="co"># - Scalebar: bottom-center</span></span>
-<span><span class="co"># - Keymap: bottom-right (via grid viewport)</span></span>
+<span><span class="co"># Layout: four-corner rule -- each element gets a corner of its own.</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># The scalebar sat at bottom-CENTRE until #16, which is not a corner: it is the</span></span>
+<span><span class="co"># gap between the bottom-left legend and the bottom-right keymap. That survived</span></span>
+<span><span class="co"># only while the legend was narrow. Once the symbols grew to their true registry</span></span>
+<span><span class="co"># sizes the legend got taller and wider, overlapped the bar and clipped its own</span></span>
+<span><span class="co"># last entry. Top-left was the free corner all along.</span></span>
+<span><span class="co"># - Legend:   bottom-left</span></span>
+<span><span class="co"># - Logo:     top-right</span></span>
+<span><span class="co"># - Scalebar: top-left</span></span>
+<span><span class="co"># - Keymap:   bottom-right (via grid viewport)</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_scalebar.html" class="external-link">tm_scalebar</a></span><span class="op">(</span></span>
 <span>  <span class="co"># gq_scale_breaks() needs metre units and says so, so project the bbox first</span></span>
 <span>  breaks <span class="op">=</span> <span class="fu"><a href="../reference/gq_scale_breaks.html">gq_scale_breaks</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sfc.html" class="external-link">st_as_sfc</a></span><span class="op">(</span><span class="va">bbox</span><span class="op">)</span>, <span class="fl">3005</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  text.size <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"center"</span>, <span class="st">"bottom"</span><span class="op">)</span>,</span>
+<span>  position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"top"</span><span class="op">)</span>,</span>
 <span>  margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_logo.html" class="external-link">tm_logo</a></span><span class="op">(</span><span class="va">logo_path</span>, position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"right"</span>, <span class="st">"top"</span><span class="op">)</span>, height <span class="op">=</span> <span class="fl">2.5</span>,</span>
