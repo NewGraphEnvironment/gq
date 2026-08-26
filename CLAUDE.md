@@ -456,6 +456,45 @@ Without this scan, post-merge workflow failures linger until someone (often the 
 
 The skill watches workflows triggered by a fresh merge in real time — that's the targeted catch. This convention is the backstop for failures that landed when no one was watching (merges via web UI, scheduled triggers, manually-triggered workflows).
 
+## A green run does not mean the site is current
+
+CI conclusion and published content are two different facts. Check the second one
+directly when it matters — the deploy commit, not the run status:
+
+```bash
+git fetch -q origin gh-pages && git log -1 --format='%s' FETCH_HEAD
+# "Deploying to gh-pages from @ owner/repo@<sha> 🚀"  <- is <sha> your HEAD?
+```
+
+GitHub can create a workflow run minutes after the push that triggered it, and
+out of order with a later push. Observed 2026-08-26 in `fly`: `7a7700c` built and
+deployed at 17:21, then its own *parent* `be77eca` had its run created at 17:22:52
+— twelve minutes after that push — and deployed over it. Both runs green, `gh run
+list` all success, published site one commit stale.
+
+Things that do **not** fix this, so don't reach for them:
+
+- `cancel-in-progress: true` — cancels an *overlapping* run. Here the runs never
+  overlapped (`created == started` on both, second created after first finished),
+  so there was nothing to cancel.
+- A `concurrency:` group — the r-lib pkgdown template already sets one at the job
+  level (`group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}`).
+  Grepping for a top-level `concurrency:` key misses it and invites a redundant
+  "fix". Serializing runs doesn't order events that arrive late.
+
+There is no workflow-side fix, because the reordering happens before the workflow
+exists. The remedy is detection: check the deploy provenance, and re-dispatch
+(`gh workflow run <file> --ref main`) if it's behind. Harmless when the stale
+commit changed nothing the site publishes — confirm via `.Rbuildignore` / `_pkgdown.yml`
+rather than assuming.
+
+## Don't use `gh run watch` to wait
+
+It polls hard enough to trip GitHub's *secondary* rate limit, which `gh api
+/rate_limit` does not report — every primary bucket reads full while calls return
+403. Retrying extends it. Poll sparsely with `gh run view <id> --json status,conclusion`,
+and prefer `git fetch` over the REST API for anything git can answer.
+
 
 # Code Check Conventions
 
@@ -507,6 +546,25 @@ Add new checks here when a bug class is discovered — they compound over time.
 - Generalizes past CI: any "verify N things" loop where the list is *computed*
   — files matched by a glob, rows returned by a query, hosts resolved from an
   inventory. If zero is a possible answer, zero needs its own branch.
+- **The mirror mistake: a boolean exit status collapses several distinct
+  outcomes into "not success".** `gh run watch --exit-status` is non-zero for
+  cancelled and skipped as well as failed, so a run GitHub *cancelled* gets
+  reported as a failure and sends someone to read a log that does not exist.
+  This is the safe direction — a false alarm rather than a false pass — but it
+  is still wrong, and crying wolf is how a guard stops being read.
+  ```bash
+  gh run watch "$RUN_ID" --interval 30 >/dev/null 2>&1
+  case "$(gh run view "$RUN_ID" --json conclusion -q .conclusion)" in
+    success)           ;;
+    cancelled|skipped) echo "⊘ superseded, not a failure" ;;
+    ""|null)           echo "⚠ could not read conclusion" ;;   # gh failed
+    *)                 echo "✗ failed" ;;
+  esac
+  ```
+  Prefer branching on the **reported outcome** over a pass/fail exit code
+  wherever the tool exposes one. Caught 2026-08-26 immediately after shipping
+  the rule above: `r-lib`'s check workflow sets `cancel-in-progress: true`, so a
+  second push to main minutes after a merge legitimately cancels the first run.
 
 ### git pathspec excludes: use the long form
 - `:!path` is short-form magic, and git keeps parsing magic characters after the
@@ -876,7 +934,55 @@ Configuration patterns and false-positive handling for the `gitleaks` pre-commit
 - The breakage hides: anyone with ANY ambient AWS credentials lists fine, so "anonymous access works" goes unverified for years. Caught 2026-07-18 (water-temp-bc#23 → rtj#187): anonymous `open_dataset()` had never worked on a bucket whose whole purpose was credential-less querying.
 - Review checks: for an open-data bucket, the policy needs BOTH statements (GetObject on `bucket/*`, ListBucket on `bucket`); acceptance-test anonymous access from a credential-stripped environment (`env -u AWS_ACCESS_KEY_ID ... AWS_CONFIG_FILE=/dev/null`). Note ListBucket makes the full key listing publicly enumerable — intended for open data, wrong for mixed-content buckets.
 
+## Spreadsheets
+
+### A stored value is not wrong just because the raw number looks wrong
+
+Before reporting that a spreadsheet value is off by a factor, check the cell's
+**number format**. A cell formatted `0.0%` multiplies by 100 for display: stored
+`0.028` renders as `2.8%`. Reading raw values with `readxl` and comparing them against
+what the column header implies will make correct data look 100x wrong.
+
+- `tidyxl::xlsx_formats(path)$local$numFmt[cell$local_format_id]` gives the format.
+- The header text is not the signal. A column headed `(%)` may legitimately store a
+  proportion, because the format supplies the percent.
+
+**Why:** this cost a full wrong turn in the fish data submission work — a formula
+`AVERAGE(...)/100` was reported as a provincial template defect, a correction notice to
+the ministry was drafted, and the "fix" would have shipped `280.0%` where `2.8%` was
+meant. Caught only because a human opened the file and looked at it.
+
+### Verify PDF links from the annotations, not the extracted text
+
+`pdftotext` returns anchor text, not the href. A link whose anchor reads "here" leaves
+no URL in the text layer, so grepping the text proves nothing either way. Extract the
+annotation instead:
+
+```bash
+qpdf --qdf --object-streams=disable in.pdf - | strings | grep -oE 'https?://[^ )>]*'
+```
+
+`pdftotext` also splits ligatures — "fish" comes out as " sh" — so a grep for any term
+containing `fi`, `fl` or `ffi` can report a false absence.
+
 ## R / Package Installation
+
+### Read-back shape must match write-back shape
+
+A script that reads a file, transforms it, and writes it **back to the same path** is
+idempotent only if the reader accepts the shape the writer produces. If it reads with
+`col_names = FALSE` expecting raw input but writes a parsed frame with headers, the
+second run parses its own output as data.
+
+The damage is worst when the file carries a join key. In the fish data pipeline a
+pit-tag merge re-derived `rowid` every run and wrote it back; a second run would have
+appended the same 53 tags again and renumbered the key joining tags to individual fish,
+silently shifting five prior years of records. A type error was the only thing that had
+prevented it.
+
+- Guard the merge on a natural key (`anti_join` on the id), not on run count.
+- Write back only when there is something new.
+- Test by running twice and diffing the file — `cmp` should report no change.
 
 ### `glue()` trims common leading whitespace
 - `glue::glue()` strips the common indentation of its input, so a template whose
@@ -1195,6 +1301,38 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - The tell is when the thing being changed is a **pattern people copy** rather than a function people call. Anything that has ever been pasted into documentation has an unbounded number of call sites, and the repo boundary is exactly where the search stops being meaningful.
 - Ask directly: *what do the downstream users actually read?* Often it is not the API docs. If the answer is a skill file, a README, or an onboarding doc, that file is a call site and belongs in the sweep.
 - (gq#57, 2026-08: the provider inventory was complete within gq — 9 lines, 6 files, verified twice. The consumer projects read `soul/skills/cartography`, which shipped its own hand-rolled snippet naming the broken provider and never called gq's function at all. Fixing gq alone would have left every downstream repo pointed at the watermark. Caught by a reviewer asking what consumers read, not by the grep.)
+
+### Measure the output, not the input you handed in
+- When you instrument something to find out what it *did*, check that the probe
+  reads downstream of the transformation. A probe that reads a value back from
+  the same object you populated is not a measurement — it is a round-trip
+  through your own assignment, and it agrees with you perfectly.
+- The failure is invisible because the number looks like data. It has units, it
+  varies when you vary the input, it is stable across repeats — everything a
+  real measurement does, except it never consulted the thing that transforms.
+- **Tells, in order of usefulness:**
+  - The result is *exactly* a constant you can derive from the input — no
+    rounding, no jitter. Real ink, real bytes and real timings are messy.
+  - The probe reads a field of an object you constructed or configured, rather
+    than an artifact the system emitted.
+  - Varying something you know matters (a shape, an encoding, a locale) does not
+    move the number.
+- **Fix: measure at the furthest downstream point you can reach** — the rendered
+  primitive, the bytes on the wire, the row as the consumer's own client reads
+  it. Prefer a format that is inspectable and exact: an SVG's `<circle r=>`
+  beats a rasterised pixel count, and a captured request body beats a mock's
+  recorded arguments.
+- Caught 2026-08-26 in gq#16, and only by a reviewer. A symbol-size conversion
+  was built on "tmap draws 5.08 mm per size unit", measured by reading
+  `pointsGrob$size` back off the grob — the value tmap had been *handed*. R's
+  graphics engine then applies a per-`pch` factor the grob slot never records, so
+  a circle actually draws **3.81 mm**. The fix shipped every symbol 25%
+  undersized *while documenting itself as exact*, which is worse than the bug it
+  replaced. 5.08 mm is 0.2 inch exactly — the roundness was the tell, and it read
+  as elegance instead.
+- Sibling of the interop rule below, one step earlier: that one is about whether
+  the consumer accepts what you wrote, this one about whether your ruler is
+  touching the object at all.
 
 ### A round-trip through your own reader proves nothing about interop
 - When code writes a format some **other** program consumes — a database table, a config file, an export another tool imports — a test that writes then reads it back with your own reader validates only that you are self-consistent. It cannot detect that the real consumer rejects what you wrote.
