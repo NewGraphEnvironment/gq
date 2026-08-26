@@ -30,13 +30,19 @@ is needed. Adding one now is speculative.
 `tests/testthat/test-gq_basemap_blend.R:1-2` claiming the fetch wrapper "is skipped by
 default". That comment describes an intention never implemented.
 
-- [ ] Offline: the degenerate-tile guard warns on a synthetic constant raster and is silent on
+- [x] Offline: the degenerate-tile guard warns on a synthetic constant raster and is silent on
       a varied one. Both known answers, no network
-- [ ] Offline: a legitimately uniform tile (all-ocean extent) is the guard's plausible false
+- [x] Offline: a legitimately uniform tile (all-ocean extent) is the guard's plausible false
       positive — assert the tile is still **returned**, not dropped
-- [ ] Network-gated (`skip_if_offline()`, `skip_on_cran()`): each provider gq recommends fetches
+- [x] Network-gated (`skip_if_offline()`, `skip_on_cran()`): each provider gq recommends fetches
       and is non-degenerate over a small fixed bbox
-- [ ] Confirm the new tests fail against current `main`
+- [x] Confirm the new tests fail against current `main` — 6/6 fail: four cannot find
+      `tile_is_flat()`, and the integration test reaches `gq_basemap_tiles()` through a mocked
+      transport and reports "Expected to throw a warning"
+
+Added a case the plan did not anticipate: **a solid colour whose bands differ** (0/0/255 —
+open ocean). Counting distinct numbers across the raster gives 2 and misses it. Flatness is a
+property of the pixel colour, so the comparison has to be min-vs-max *per band*.
 
 ## Phase 2 — The guard
 
