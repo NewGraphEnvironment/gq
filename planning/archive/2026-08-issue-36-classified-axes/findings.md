@@ -109,3 +109,17 @@ Distinct widths: `roads_dra` 4 across 26 classes; streams 3; `trails` 3;
 In #52 that produced `lty = c(NA, …, "dashed")` and tmap rejected the whole
 vector **at draw time**, invisible to 18 structure-inspecting tests. The vector
 form here must map `NULL` → `"solid"` explicitly.
+
+## Phase 5 — the vignette, measured against shipped data
+
+| layer | classes present | registry widths | drawn | drawn lty |
+|---|---:|---|---|---|
+| salmon habitat | 12 of 30 | 0.4, 1.0, 1.7 | 0.4, 1.0, 1.7 | dashed, solid |
+| `roads_dra` | 3 of 26 | 0.46, 1.035 | 0.46, 1.035 | solid |
+
+The call sites did not change — `do.call(tm_lines, gq_tmap_style(...))` is the
+same line it always was. Only what it draws changed.
+
+The `[[1]]` block at `gq-tmap-composition.Rmd:197-206` **is not** a workaround
+for this bug and stays: it deliberately draws base streams at one uniform
+colour and width, scaled `* 2` for display, on top of the classified habitat.

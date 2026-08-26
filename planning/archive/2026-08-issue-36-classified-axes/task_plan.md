@@ -131,24 +131,26 @@ per-class vs scalar.
 
 ## Phase 5 — Land it
 
-- [ ] File the `labels`-naming item as its own issue; note in #36 that item 3
-      was fixed by #54
-- [ ] Vignette: the salmon-habitat and roads lines now render correctly with no
-      change to the call — state that in the prose. Reassess whether the manual
-      `[[1]]` workaround at `:197-206` is still needed
-- [ ] `NEWS.md` + `DESCRIPTION` 0.5.1 → **0.6.0**. Minor, not patch: `args$lwd`
+- [x] Filed the `labels`-naming item as **#55**; #36's item 3 (unknown values)
+      confirmed already fixed by #54, to be noted when #36 closes
+- [x] Vignette prose updated. Verified against the shipped data: salmon habitat
+      draws widths 0.4/1.0/1.7 and both dash states, roads 0.46/1.035. The
+      `[[1]]` block at `:197-206` **stays** — it deliberately draws base streams
+      at one uniform width (note the `* 2` display scaling), so it is a choice
+      rather than a workaround
+- [x] `NEWS.md` + `DESCRIPTION` 0.5.1 → **0.6.0**. Minor, not patch: `args$lwd`
       changes from a number to a field name and the returned list gains
       `lwd.scale`/`lty`/`lty.scale`. `do.call()` callers are unaffected, but the
       documented output shape changes
-- [ ] `/planning-archive`, `/gh-pr-push`
+- [x] `/planning-archive`, `/gh-pr-push`
 
 ## Validation
 
-- [ ] `devtools::test()` — 782 existing pass, plus new
-- [ ] `lintr` clean on changed files
-- [ ] `devtools::check()` no new ERROR/WARNING/NOTE (main carries 2+2, gq#51)
-- [ ] `/code-check` per commit; PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `devtools::test()` — FAIL 0 | PASS 829
+- [x] `lintr` clean on changed files — 0 on `R/gq_tmap_style.R`
+- [x] `devtools::check()` — 0 errors, 2 warnings, 2 notes: identical to main (gq#51)
+- [x] `/code-check` per commit; PWF checkboxes match landed work
+- [x] `/planning-archive` on completion
 
 ## Verification
 

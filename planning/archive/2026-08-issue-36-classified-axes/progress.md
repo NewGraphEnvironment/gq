@@ -12,3 +12,14 @@
 - Verified the per-axis scale fix works per feature before committing to it
 - Created branch `36-classified-layers-lose-non-colour-axes` off main
 - Next: Phase 1 — failing tests
+
+## Session 2026-08-26 (continued)
+
+- Phase 1 `bfdc631` — drawn_gp() helper + 5 failing tests
+- Phase 2 `b11fc2e` — per-class lwd/lty/size via tmap_scale_axis()
+- Phase 3 `b7dae0a` — registry width sweep + map-vs-legend dash agreement
+- Phase 4 `dc963a0` — restore-the-bug, 27 failures / 0 errors
+- Phase 5 — vignette prose, NEWS + DESCRIPTION 0.5.1 → 0.6.0, #55 filed
+- Verified against shipped data: salmon habitat draws 0.4/1.0/1.7 and both dash
+  states; roads 0.46/1.035
+- FAIL 0 | PASS 829; check 0 errors, same 2 warnings + 2 notes as main
