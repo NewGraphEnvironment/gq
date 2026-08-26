@@ -1029,6 +1029,14 @@ Configuration patterns and false-positive handling for the `gitleaks` pre-commit
 ### terra: operator dispatch and edge cases in package code
 - **SpatRaster `%in%` is not dispatched when terra is *imported* (only when *attached*).** Inside a package (terra in `Imports`, used via `::`), `some_raster %in% vec` falls through to base `match()` and errors with `'match' requires vector arguments`. A `library(terra)` smoke test passes (attaching installs the S4 method), so the bug hides until package context. Use `terra::subst(x, from, to, others = ...)` or `terra::classify()` for code-set membership/masking instead of the `%in%` operator. Same trap for any operator terra defines via S4 that base also defines as an ordinary function. (drift#34)
 - **`terra::freq()` errors on an all-NA raster** (`replacement has length zero`) rather than returning a 0-row table. Any path that can yield an all-NA layer (an impossible filter, everything masked out) must guard: `f <- tryCatch(terra::freq(r), error = function(e) NULL)`, then treat `NULL`/0 rows as "no values". Don't assume the empty case gives `nrow(freq(r)) == 0`. (drift#34)
+- **`terra::minmax()` reports *cached* statistics, not computed ones.** It defaults to `compute = FALSE` and returns `Inf`/`-Inf` for any raster whose min/max have never been calculated — which is every file-backed raster until something touches it. A guard written on top of it therefore fires on real data:
+  ```r
+  r <- terra::rast("a_richly_varied_image.png")
+  terra::hasMinMax(r)              # FALSE FALSE FALSE FALSE
+  terra::minmax(r)                 # min Inf ... / max -Inf ...
+  terra::minmax(r, compute = TRUE) # min 0 0 0 0 / max 11 18 18 255
+  ```
+- The trap is that it *appears* to work, because plenty of upstream operations compute min/max as a side effect — `terra::crop()` does, so anything arriving via `maptiles::get_tiles(crop = TRUE)` has them. Correct by accident, through an internal that is not a contract. Pass `compute = TRUE`, and test the guard against a **file-backed** fixture: one built by `rast(vals = ...)` is in memory, has statistics cached, and cannot reach this. (gq#57, 2026-08 — a flat-tile detector called every file-backed raster flat, and the whole fixture set shared the one property that hid it.)
 
 ### sf: `st_join(largest = TRUE)` ignores the join predicate
 - `sf::st_join(x, y, join = predicate, largest = TRUE)` does **not** use `predicate` to decide matches — with `largest = TRUE`, sf runs `st_intersection(x, y)` and keeps the feature of greatest overlap area, so matching is *always* intersection-based regardless of what `join =` is set to. A function that exposes a configurable predicate AND a largest-overlap mode therefore silently mis-attributes when both are combined: pass `st_within` expecting containment, get anything that merely *overlaps*. Verify against sf source, not the argument list — the `join` arg is accepted and ignored, not rejected. Fix: abort when a non-default predicate is combined with the largest-overlap mode, rather than honouring one and dropping the other. (drift#42)
@@ -1146,6 +1154,15 @@ Configuration patterns and false-positive handling for the `gitleaks` pre-commit
   [ "$(git branch --show-current)" = "$EXPECTED_BRANCH" ] || { echo "WRONG BRANCH"; exit 1; }
   ```
 - **Recovery:** back up the touched files first (`cp` to a scratch dir, `git diff > x.diff`), confirm the other branch's changes don't overlap yours (`git diff --name-only main..their-branch`), then `git checkout <your-branch>` — uncommitted changes carry across cleanly when there is no overlap. Commit **and push** immediately; an unpushed branch is what gets stranded. If you already committed onto their branch, restore their pointer with `git branch -f <their-branch> <their-last-sha>` (your commit stays reachable via reflog).
+- **Recovery when their branch is already pushed, with an open PR:** do **not** rewrite it — `git branch -f` plus a force-push into a PR another session is working in trades your problem for theirs. Cherry-pick forward instead, through a throwaway worktree so their checkout is never disturbed:
+  ```bash
+  git worktree add -q /tmp/repo-main main
+  git -C /tmp/repo-main cherry-pick <your-sha>
+  git -C /tmp/repo-main push origin main
+  git worktree remove /tmp/repo-main
+  ```
+  Their PR now carries a commit whose content is already on main. That is harmless — git sees identical changes on both sides and merges cleanly — and verifiable before you rely on it: `git diff origin/main -- <the-file>` on their branch should be empty. The cost is one duplicated commit message in the log, which is cheaper than a contested force-push.
+- **The moment to use a worktree is when you are about to touch a second repo**, not after something goes wrong. Observed 2026-08-26 in gq#57: a fix in the primary repo needed a matching change in `soul`, and `soul`'s shared checkout had meanwhile been switched to a parallel session's feature branch. The commit landed in their open PR silently — `git push` reported success, because it was a perfectly valid push to a branch nobody had said was wrong.
 
 ### Adopting Existing Config
 
@@ -1161,6 +1178,23 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - Testing only on a host where the artifact already exists hits **only the warm no-op** — which cannot catch any cold-path bug: missing-directory, a derivation that returns empty, a pipefail abort before the write, wrong permissions, a flush that never runs. The warm path's job is literally to do nothing, so a green warm test proves almost nothing about onboarding.
 - Every fresh host runs the **cold** path — that's the one onboarding depends on. Test it deliberately: back up + remove the artifact, run cold, assert it was created correctly, then re-run to confirm the warm no-op. (Caught 2026-06-23 on rtj#75: the resolver-writer's first test plan only ran the warm path on a host that already had `/etc/resolver/<suffix>`; a Plan-agent review flagged that the cold path — the one every new host takes — was untested. Fixed by `sudo rm`-ing the file and running cold before close.)
 - Generalizes beyond shell: any "ensure X exists / converge to desired state" operation — Terraform resources, migrations, package installs — wants the from-absent path tested, not just the already-converged re-run.
+
+### A valid response is not a correct one — services fail in the shape of success
+- An external service can answer **HTTP 200 with a structurally perfect payload that is not the thing you asked for**: a placeholder image, an empty-but-well-formed JSON envelope, a "your trial expired" page served as the resource. Every cheap assertion passes — status code, content type, dimensions, CRS, band count, schema — because the shape is right and only the *meaning* is wrong.
+- This defeats the guard you already wrote. A fetch wrapper that returns `NULL` on failure never fires, because nothing failed. So the absence of an error is not evidence, and neither is a green suite: the artifact has to be **looked at**, or compared against something that knows what it should contain.
+- Measured 2026-08 in gq#57: Carto made their basemaps key-only and began serving an "API KEY REQUIRED" watermark image. It rendered through a vignette build, `R CMD check`, and a pkgdown deploy onto the public web, watermark and all. Found by a human asking how good the maps were, which meant opening the PNG.
+- **Do not reach for a content detector without measuring whether one can work.** The obvious fix — score the pixels, sniff the body — is often provably impossible, and shipping it is worse than shipping nothing because it *looks* like a check. Same measurement: the *watermarked* tile had **fewer** dark pixels (0.0068) than the *clean* one (0.0073), because the watermark is a small share of content and ordinary detail swamps it. No threshold separates them.
+- What does work:
+  - **Prefer providers/endpoints that cannot enter the degraded state** (keyless where key-only is the failure; a pinned version where "latest" can drift).
+  - **Detect the degenerate cases that are actually separable**, and only those. A single-colour image, a zero-row response, an empty archive — cheap, and no false negatives on the case you can measure.
+  - **A canary that runs on a human's machine**, not in CI, asserting the live service still returns something real. CI can only tell you the code still runs.
+- Note which direction each guard fails in, and prefer warning over discarding when a legitimate input is indistinguishable from a broken one — the cost of an unread warning is far below the cost of destroying valid data.
+
+### An inventory is only complete relative to a boundary — name the boundary
+- "I enumerated every call site" is a claim about a **search scope**, not about the world. A `grep -rn` over one repo is complete for that repo and says nothing about the copy of the same snippet living in a docs site, a house skill, a template, a wiki page, or another team's codebase. The enumeration can be flawless and the fix still incomplete.
+- The tell is when the thing being changed is a **pattern people copy** rather than a function people call. Anything that has ever been pasted into documentation has an unbounded number of call sites, and the repo boundary is exactly where the search stops being meaningful.
+- Ask directly: *what do the downstream users actually read?* Often it is not the API docs. If the answer is a skill file, a README, or an onboarding doc, that file is a call site and belongs in the sweep.
+- (gq#57, 2026-08: the provider inventory was complete within gq — 9 lines, 6 files, verified twice. The consumer projects read `soul/skills/cartography`, which shipped its own hand-rolled snippet naming the broken provider and never called gq's function at all. Fixing gq alone would have left every downstream repo pointed at the watermark. Caught by a reviewer asking what consumers read, not by the grep.)
 
 ### A round-trip through your own reader proves nothing about interop
 - When code writes a format some **other** program consumes — a database table, a config file, an export another tool imports — a test that writes then reads it back with your own reader validates only that you are self-consistent. It cannot detect that the real consumer rejects what you wrote.
@@ -1181,6 +1215,20 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - Before declaring a fix verified, ask what the fixtures have in common and whether that shared property is the very thing the bug depends on. If it is, the set has a hole no amount of additions to it will close.
 - Prefer a **global structural invariant** over more examples. Properties like antisymmetry, transitivity, "every node reaches a terminal", or a conservation total sweep the whole domain and cannot be gamed by fixture choice.
 - (link#227 / fresh#214, 2026-08: a watershed drainage-closure fix was declared validated on 8 hydrology fixtures. All 8 compared groups with *differing* stream codes — the bug only manifests between groups sharing one code, so the set could not have caught it. The very next case tried, the Fraser, dropped the group the entire basin drains through. What actually earned the claim was a transitivity sweep: 0 violations across 3,537 triples, plus 0 cycles and every group reaching an outlet.)
+
+### A negative-case fixture rots when the positive set grows
+- A test asserting "X is refused" has to pick a concrete X that nothing supplies. The moment someone adds support for that exact X — a new shipped resource, a new registry row, a new supported format — the assertion breaks, and it breaks in a way that reads as *the feature is wrong* rather than *the fixture is stale*.
+- The failure is loud, which is lucky. The dangerous variant is the same change landing where the test would still pass: a refusal test whose chosen X quietly becomes supported and whose assertion is on something looser than the refusal itself now passes for nothing.
+- Fix by **asserting the premise beside the assertion**, in the same test:
+  ```r
+  unshipped <- "EPSG:32609"
+  expect_false(nzchar(system.file("extdata", "srs",
+    paste0(gsub(":", "_", unshipped), ".xml"), package = "rfp")))   # <- the premise
+  expect_error(add_layer(qgs, crs = unshipped), "cannot be copied") # <- the property
+  ```
+  Then a future addition to the shipped set fails on the premise line, naming the real cause, instead of on the behaviour line, blaming the code under test.
+- The same shape applies to any "this input is unsupported" test: unsupported file extensions, unregistered layer types, unknown enum values. Ask what would have to become true for the chosen input to stop being unsupported, then assert it is still false.
+- (rfp#139, 2026-08: shipping an `EPSG_4326.xml` `<srs>` block so a tracking layer could carry a CRS no template used made that CRS resolvable from a package resolver's third tier — breaking a raster test that had picked EPSG:4326 precisely because nothing supplied it. The behaviour was correct in both directions; only the fixture's premise had expired.)
 
 ### Restore the bug and confirm the test fails
 - The rule above says a fixture that cannot reach the failure mode is worthless. This is the thirty-second check that tells you which kind you just wrote: **put the defect back, run the test, watch it go red.** A test that stays green against the code it was written to reject is decoration, and reading it will not tell you that — every case below looked correct on the page.
@@ -1389,6 +1437,32 @@ number or it does not get made.
 The same rule covers process state. `ps` and task-status listings have both been
 observed wrong; check the artifact (an output file's size, its mtime, the
 service's own API) rather than the wrapper.
+
+### The same blind spot picks the wrong waiting tool
+
+Not having a clock also makes a **chain of background sleeps** feel like
+waiting when it is not. Observed 2026-08 on the same session as the above:
+roughly a dozen `sleep 570; check` background tasks were spawned to wait out a
+55-minute test suite and then CI. Two consecutive foreground checks printed the
+*same minute* — no wall time had passed between them, because the sleeps run
+detached and the polling happened around them rather than after them. Every one
+of those tasks was waste, and killing them produced a batch of eleven
+exit-code-144 notifications that read like failures.
+
+Pick the instrument by how many answers you need:
+
+| you need | use |
+|---|---|
+| one notification when a condition becomes true | `Bash(run_in_background)` with an `until` loop that exits |
+| one per state change, ending on its own | `Monitor` with a command that emits and then exits |
+| a value you must have before the next step | a **foreground** call, so the blocking is explicit |
+
+A repeated `sleep N; grep` is right in none of them. **Tell: if you are about to
+spawn a second waiter for the same thing, the first one was the wrong shape.**
+
+A `Monitor` filter must also match the failure states, not just the success
+one — silence looks identical to "still running", so a watcher that greps only
+for the happy path stays quiet through a crash.
 
 ## 6. Subagents Are Evidence, Not Dependencies
 
@@ -1811,6 +1885,27 @@ Close function issues via commit messages — see Closing Issues in newgraph con
   If the input is empty (e.g. no warnings fired), the assertion succeeds
   vacuously and defeats the test. Always pair with
   `expect_gt(length(x), 0)` first when input may be empty.
+
+- **`skip_on_cran()` does not skip on GitHub Actions.** It skips when
+  `NOT_CRAN` is unset — and `devtools`, `usethis`'s check workflow and
+  `r-lib/actions` all set `NOT_CRAN=true`, precisely so your tests *do* run in
+  CI. So a network test guarded only by `skip_on_cran()` runs on every push,
+  and any upstream hiccup reddens the build for a reason unrelated to the
+  change under review.
+  - Use **`skip_on_ci()`** for a test that is meant for a human's machine — a
+    live canary against a third-party service, something slow, anything whose
+    failure needs a person to interpret it.
+  - `skip_if_offline()` is not a substitute: it tests whether the network is
+    reachable, not whether the *service* is behaving, and it calls
+    `skip_if_not_installed("curl")`, so add `curl` to Suggests or the guard
+    itself is what breaks.
+  - Caught 2026-08 in gq#57 by self-review: a comment claiming "skipped off-CI"
+    sat directly above code that did not skip off-CI. Read the guard, not the
+    comment above it.
+
+- **`local_mocked_bindings(.package = )` needs testthat >= 3.2.0.** A package
+  pinned at `testthat (>= 3.0.0)` errors rather than skipping on an older
+  install. Bump the pin when you first mock another package's binding.
 
 ## Examples and Vignettes
 
