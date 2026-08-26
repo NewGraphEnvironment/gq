@@ -46,23 +46,23 @@ property of the pixel colour, so the comparison has to be min-vs-max *per band*.
 
 ## Phase 2 — The guard
 
-- [ ] `gq_basemap_tiles()`: warn when a fetched tile has a single unique value across all bands
-- [ ] **Warn and return the tile — do not return `NULL`.** An all-ocean extent is legitimately
+- [x] `gq_basemap_tiles()`: warn when a fetched tile has a single unique value across all bands
+- [x] **Warn and return the tile — do not return `NULL`.** An all-ocean extent is legitimately
       uniform, so this has a real false-positive path; a warning makes it visible without
       destroying a valid basemap. The existing `NULL` contract stays for genuine fetch failure
-- [ ] Roxygen: state plainly that watermark/placeholder content is **not** detectable, with the
+- [x] Roxygen: state plainly that watermark/placeholder content is **not** detectable, with the
       z9-vs-z11 numbers. A future reader will otherwise assume it was an oversight
 
 ## Phase 3 — Provider swap, every call site
 
 Complete inventory — 2 strings, 9 lines, 6 files. Missing one ships a watermarked map.
 
-- [ ] `R/gq_basemap_blend.R:146` — the default
-- [ ] `vignettes/gq-tmap-composition.Rmd:117,119`
-- [ ] `vignettes/gq-intro.Rmd:104,105`
-- [ ] `README.md:80,81` — also passes the provider **positionally**; make it named
-- [ ] `man/gq_basemap_tiles.Rd:9` — regenerate via `devtools::document()`, never hand-edit
-- [ ] Roxygen example `R/gq_basemap_blend.R:138-143` uses the default; re-check after the swap
+- [x] `R/gq_basemap_blend.R:146` — the default
+- [x] `vignettes/gq-tmap-composition.Rmd:117,119`
+- [x] `vignettes/gq-intro.Rmd:104,105`
+- [x] `README.md:80,81` — also passes the provider **positionally**; make it named
+- [x] `man/gq_basemap_tiles.Rd:9` — regenerate via `devtools::document()`, never hand-edit
+- [x] Roxygen example `R/gq_basemap_blend.R:138-143` uses the default; re-check after the swap
 
 ## Phase 4 — Close the asymmetry in gq-intro.Rmd
 
@@ -71,7 +71,7 @@ directly with a hand-rolled gamma blend and hand-rolled degree padding. It there
 `NULL` contract and no failure guard**, so a tile hiccup hard-fails the vignette build, and any
 guard added in Phase 2 does not protect it.
 
-- [ ] Migrate to `gq_basemap_tiles()` + `gq_basemap_blend(method = "gamma", gamma = 0.5)`,
+- [x] Migrate to `gq_basemap_tiles()` + `gq_basemap_blend(method = "gamma", gamma = 0.5)`,
       matching the composition vignette's `NULL`-handling block
 - [ ] Verify the rendered map is unchanged apart from the basemap provider
 

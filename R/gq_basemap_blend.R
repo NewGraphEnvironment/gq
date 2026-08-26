@@ -126,14 +126,37 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #' so the rotated coverage still spans the frame. The rotation is a fixed
 #' angular effect, so it is proportionally *more* significant at small extents.
 #'
+#' @section Placeholder tiles:
+#' A tile server can answer HTTP 200 with a structurally valid image that is not
+#' a map. gq detects one such case and cannot detect the other.
+#'
+#' **Detected:** a tile of a single flat colour, which warns. `Esri.WorldTerrain`
+#' returns exactly this over parts of BC -- every pixel 254, fetched without
+#' error. The warning does not suppress the tile, because a genuinely uniform
+#' extent (open ocean) is indistinguishable from a broken one and dropping it
+#' would destroy valid data. `NULL` is still returned for a real fetch failure.
+#'
+#' **Not detected:** a watermarked tile, such as the "API KEY REQUIRED" image
+#' Carto now serves without a key. This is deliberate, not an oversight.
+#' Measured over one bbox at three zooms, the fraction of dark pixels was 0.0073
+#' for a *clean* tile and 0.0068 for a *watermarked* one -- the watermark is a
+#' small share of pixels and ordinary map content swamps it, so no threshold
+#' separates them. A detector built on that would pass watermarked tiles while
+#' looking like a check, which is worse than no check at all.
+#'
+#' The guard against that class is choosing keyless providers and looking at the
+#' rendered figure. See the live canary in `test-gq_basemap_tiles.R`.
+#'
 #' @param bbox A `bbox`. Reprojected to EPSG:4326 for the request.
-#' @param provider A `maptiles` provider name.
+#' @param provider A `maptiles` provider name. Defaults to a keyless one --
+#'   Carto's basemaps became key-only and now serve a watermark without one.
 #' @param zoom Tile zoom level.
 #' @param pad Fraction of each bbox dimension to expand by before requesting.
 #'   Applied to width and height independently.
 #' @param crs CRS to reproject tiles into. `NULL` keeps Web Mercator.
 #'
-#' @return A `SpatRaster`, or `NULL` if the request failed.
+#' @return A `SpatRaster`, or `NULL` if the request failed. A single-colour tile
+#'   warns but is still returned.
 #'
 #' @examplesIf interactive() && requireNamespace("maptiles", quietly = TRUE)
 #' bb <- sf::st_bbox(
@@ -143,7 +166,7 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #' tiles <- gq_basemap_tiles(bb, zoom = 11)
 #'
 #' @export
-gq_basemap_tiles <- function(bbox, provider = "CartoDB.PositronNoLabels",
+gq_basemap_tiles <- function(bbox, provider = "Esri.WorldGrayCanvas",
                              zoom = 12, pad = 0.10, crs = 3005) {
   if (!requireNamespace("maptiles", quietly = TRUE)) stop("maptiles is required")
   if (!requireNamespace("terra", quietly = TRUE)) stop("terra is required")
@@ -177,8 +200,34 @@ gq_basemap_tiles <- function(bbox, provider = "CartoDB.PositronNoLabels",
     warning("tile fetch failed for provider '", provider, "'", call. = FALSE)
     return(NULL)
   }
+  # Checked on what the server returned, before reprojection: fewer cells, and
+  # it is the server's answer we are judging. Warn rather than return NULL --
+  # see the note on the false-positive path in the roxygen block.
+  if (tile_is_flat(tiles)) {
+    warning("provider '", provider, "' returned a tile of a single colour ",
+            "at zoom ", zoom, ". Either the extent is genuinely uniform, or ",
+            "the provider is serving a placeholder.", call. = FALSE)
+  }
   if (is.null(crs)) return(tiles)
   # WKT rather than paste0("EPSG:", $epsg): a CRS with no authority code gives
   # NA there, and "EPSG:NA" reaches terra as a parse error.
   terra::project(tiles, sf::st_crs(crs)$wkt, method = "bilinear")
+}
+
+#' Is a fetched tile a single flat colour?
+#'
+#' Compares min to max **per band** rather than counting distinct values across
+#' the raster. Open ocean is `0/0/255` -- one flat colour but two distinct
+#' numbers -- so the value-counting version misses exactly the case most likely
+#' to arise legitimately. `minmax()` also does this in one pass, where pulling
+#' every cell through `values()` would not.
+#'
+#' An all-NA tile gives `NaN` from `minmax()`, which would make a bare
+#' `min == max` comparison return `NA` and error an `if()`. A tile with no data
+#' is as broken as a tile with one value, so it counts as flat.
+#' @noRd
+tile_is_flat <- function(x) {
+  mm <- suppressWarnings(terra::minmax(x))
+  if (!all(is.finite(mm))) return(TRUE)
+  all(mm[1, ] == mm[2, ])
 }

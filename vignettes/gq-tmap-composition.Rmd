@@ -32,7 +32,6 @@ via [fresh](https://github.com/NewGraphEnvironment/fresh).
 library(gq)
 library(sf)
 library(tmap)
-library(maptiles)
 
 sf_use_s2(FALSE)
 
@@ -101,11 +100,16 @@ lakes_named <- neexdzii_lakes[!is.na(neexdzii_lakes$gnis_name_1) &
                                 neexdzii_lakes$gnis_name_1 != "", ]
 ```
 
-## Basemap: Positron x hillshade blend
+## Basemap: gray canvas x hillshade blend
 
 Label-free raster basemap gives terrain relief without competing with our
-own labels. At sub-watershed scale (zoom 10+), Positron-NoLabels blended
-with hillshade works well.
+own labels. At sub-watershed scale (zoom 10+), a gray canvas blended with
+hillshade works well.
+
+Pick a **keyless** provider deliberately. This vignette used Carto's Positron
+until Carto made their basemaps key-only and began serving an "API KEY
+REQUIRED" watermark instead — which is a valid image, so nothing errored and
+the watermarked map shipped to the published site (gq#57).
 
 ```{r basemap}
 # Pad the bbox to the canvas aspect ratio (7:9) so the map fills the page. The
@@ -114,21 +118,21 @@ with hillshade works well.
 # Albers.
 bbox <- gq_bbox_aspect(neexdzii_wsd, asp = 7 / 9)
 
-positron <- gq_basemap_tiles(bbox, provider = "CartoDB.PositronNoLabels",
-                             zoom = 10, pad = 0, crs = NULL)
+canvas <- gq_basemap_tiles(bbox, provider = "Esri.WorldGrayCanvas",
+                           zoom = 10, pad = 0, crs = NULL)
 relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
                            zoom = 10, pad = 0, crs = NULL)
 
 # gq_basemap_tiles() returns NULL on a failed fetch so the caller can draw an
 # unshaded map rather than lose the figure. Honour that here rather than only
 # documenting it -- a tile hiccup during a pkgdown build should not fail it.
-basemap_stars <- if (is.null(positron) || is.null(relief)) {
+basemap_stars <- if (is.null(canvas) || is.null(relief)) {
   NULL
 } else {
   # A relief tile service spans the full range, so the gamma operator suits it.
   # A hillshade derived from a DEM is far more contrasty and wants
   # `method = "weight"`, which caps how much brightness can be removed.
-  gq_basemap_blend(positron, relief, method = "gamma", gamma = 0.5)
+  gq_basemap_blend(canvas, relief, method = "gamma", gamma = 0.5)
 }
 
 # Now that the frame is known, drop anything outside it. gq_bbox_clip() returns

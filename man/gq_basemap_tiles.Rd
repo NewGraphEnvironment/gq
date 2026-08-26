@@ -6,7 +6,7 @@
 \usage{
 gq_basemap_tiles(
   bbox,
-  provider = "CartoDB.PositronNoLabels",
+  provider = "Esri.WorldGrayCanvas",
   zoom = 12,
   pad = 0.1,
   crs = 3005
@@ -15,7 +15,8 @@ gq_basemap_tiles(
 \arguments{
 \item{bbox}{A \code{bbox}. Reprojected to EPSG:4326 for the request.}
 
-\item{provider}{A \code{maptiles} provider name.}
+\item{provider}{A \code{maptiles} provider name. Defaults to a keyless one --
+Carto's basemaps became key-only and now serve a watermark without one.}
 
 \item{zoom}{Tile zoom level.}
 
@@ -25,7 +26,8 @@ Applied to width and height independently.}
 \item{crs}{CRS to reproject tiles into. \code{NULL} keeps Web Mercator.}
 }
 \value{
-A \code{SpatRaster}, or \code{NULL} if the request failed.
+A \code{SpatRaster}, or \code{NULL} if the request failed. A single-colour tile
+warns but is still returned.
 }
 \description{
 Thin wrapper over \code{\link[maptiles:get_tiles]{maptiles::get_tiles()}} that adds the padding a projected
@@ -38,6 +40,29 @@ frame leaves empty white wedges in the corners. \code{pad} requests a larger are
 so the rotated coverage still spans the frame. The rotation is a fixed
 angular effect, so it is proportionally \emph{more} significant at small extents.
 }
+\section{Placeholder tiles}{
+
+A tile server can answer HTTP 200 with a structurally valid image that is not
+a map. gq detects one such case and cannot detect the other.
+
+\strong{Detected:} a tile of a single flat colour, which warns. \code{Esri.WorldTerrain}
+returns exactly this over parts of BC -- every pixel 254, fetched without
+error. The warning does not suppress the tile, because a genuinely uniform
+extent (open ocean) is indistinguishable from a broken one and dropping it
+would destroy valid data. \code{NULL} is still returned for a real fetch failure.
+
+\strong{Not detected:} a watermarked tile, such as the "API KEY REQUIRED" image
+Carto now serves without a key. This is deliberate, not an oversight.
+Measured over one bbox at three zooms, the fraction of dark pixels was 0.0073
+for a \emph{clean} tile and 0.0068 for a \emph{watermarked} one -- the watermark is a
+small share of pixels and ordinary map content swamps it, so no threshold
+separates them. A detector built on that would pass watermarked tiles while
+looking like a check, which is worse than no check at all.
+
+The guard against that class is choosing keyless providers and looking at the
+rendered figure. See the live canary in \code{test-gq_basemap_tiles.R}.
+}
+
 \examples{
 \dontshow{if (interactive() && requireNamespace("maptiles", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 bb <- sf::st_bbox(

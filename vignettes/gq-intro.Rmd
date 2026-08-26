@@ -87,27 +87,28 @@ Here's a study area map following New Graph cartographic conventions:
 
 ```{r tmap-study-area, fig.alt = "Study area map of Bittner Creek watershed near Prince George showing streams, lakes, roads, railway, and PSCIS crossings"}
 library(tmap)
-library(maptiles)
 sf_use_s2(FALSE)
 
-# --- Basemap: Positron-NoLabels × hillshade blend ---
+# --- Basemap: gray canvas × hillshade blend ---
 # Label-free raster basemap gives terrain relief without competing labels.
 # We control all text ourselves via tm_text().
 # See cartography skill for scale-based basemap selection guidelines.
-bbox <- st_bbox(bittner_wsd)
-bbox["xmin"] <- bbox["xmin"] - 0.03
-bbox["xmax"] <- bbox["xmax"] + 0.03
-bbox["ymin"] <- bbox["ymin"] - 0.015
-bbox["ymax"] <- bbox["ymax"] + 0.015
-bbox_sf <- st_as_sfc(bbox) |> st_set_crs(4326)
+#
+# gq_basemap_tiles() does the padding a projected map needs, and returns NULL
+# rather than erroring when a fetch fails -- so a tile hiccup costs the basemap,
+# not the whole figure. This chunk hand-rolled both until gq#57.
+bbox <- gq_bbox_aspect(bittner_wsd, asp = 7 / 6)
 
-positron <- get_tiles(bbox_sf, provider = "CartoDB.PositronNoLabels", zoom = 10, crop = TRUE)
-relief <- get_tiles(bbox_sf, provider = "Esri.WorldShadedRelief", zoom = 10, crop = TRUE)
-relief_rs <- terra::resample(relief, positron)
-p_n <- positron / 255
-r_g <- terra::mean(relief_rs) / 255
-blended <- terra::clamp(p_n * (r_g ^ 0.5) * 255, lower = 0, upper = 255)
-basemap_stars <- stars::st_as_stars(blended)
+canvas <- gq_basemap_tiles(bbox, provider = "Esri.WorldGrayCanvas",
+                           zoom = 10, pad = 0, crs = NULL)
+relief <- gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief",
+                           zoom = 10, pad = 0, crs = NULL)
+
+basemap_stars <- if (is.null(canvas) || is.null(relief)) {
+  NULL
+} else {
+  gq_basemap_blend(canvas, relief, method = "gamma", gamma = 0.5)
+}
 
 # --- Data prep ---
 streams_display <- bittner_streams[bittner_streams$stream_order >= 3, ]
