@@ -95,18 +95,24 @@ visual.
 
 ## Phase 6 — Land it
 
-- [ ] `NEWS.md` + `DESCRIPTION` 0.6.0 → **0.7.0**. Minor, not patch: the default value of an
-      exported function's argument changes, which alters output for callers who pass nothing
-- [ ] Note in the issue that `Esri.WorldTerrain` is blank over BC, so nobody adopts it next
-- [ ] `/planning-archive`, `/gh-pr-push`
+- [x] `NEWS.md` + `DESCRIPTION` 0.6.0 → **0.7.0**. Minor, not patch: the default value of an
+      exported function's argument changes, which alters output for callers who pass nothing.
+      Note: the bump landed inside the review-fix commit rather than standing alone, which is
+      the mid-branch churn the convention warns about — NEWS was completed afterwards
+- [x] Note in the issue that `Esri.WorldTerrain` is blank over BC — done by reconciling the
+      issue body, which also recorded that content-probing was disproved by measurement
+- [x] `/planning-archive`, `/gh-pr-push`
 
 ## Validation
 
-- [ ] `devtools::test()` — 829 existing pass, plus new
-- [ ] `lintr` clean on changed files
-- [ ] `devtools::check()` no new ERROR/WARNING/NOTE (main carries 2+2, gq#51)
-- [ ] `/code-check` per commit; PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `devtools::test()` — 849 passing, FAIL 0. Pre-existing WARN 1 / SKIP 1 unchanged
+- [x] `lintr` clean on changed files — 0 lints, same as baseline
+- [x] `devtools::check()` — 2 WARNINGs, 2 NOTEs, the exact pre-existing set (gq#51). The
+      non-ASCII warning names only `gq_qgs_extract.R` and `gq_reg.R`, neither touched here
+- [x] `/code-check` per commit; PWF checkboxes match landed work. Self-review caught the
+      canary running on CI: `skip_on_cran()` does not skip there, since devtools sets
+      NOT_CRAN=true, so a network hiccup would have reddened CI. `skip_on_ci()` added
+- [x] `/planning-archive` on completion
 
 
 ## Plan review (concurrent, folded in)

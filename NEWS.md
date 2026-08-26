@@ -23,6 +23,21 @@
   fractions, so any threshold would pass watermarks while looking like a check.
   `?gq_basemap_tiles` carries the numbers and the reasoning.
 
+- **Fixed: the documented "a failed tile fetch costs the basemap, not the
+  figure" pattern never worked.** Both vignettes held a `NULL` raster and passed
+  it to `tm_shape()`, which rejects `NULL` outright — so the guard moved the
+  failure into map composition instead of preventing it. If you copied that
+  block, build the whole *layer* conditionally rather than the data:
+
+  ```r
+  basemap <- if (is.null(canvas) || is.null(relief)) NULL else
+    tm_shape(gq_basemap_blend(canvas, relief)) + tm_rgb()
+  m <- basemap + tm_shape(aoi) + ...
+  ```
+
+  `NULL + tm_shape(...)` composes correctly, so an absent layer is the shape
+  that holds.
+
 # gq 0.6.0
 
 - **Classified layers now render every aesthetic the registry defines, not just
