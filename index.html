@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,8 +134,8 @@ QGIS Project (.qgs / .qgz)                 │
 <span><span class="co"># Composition — bbox padding, basemap blending, legends, keymap insets</span></span>
 <span><span class="va">bbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_bbox_aspect.html">gq_bbox_aspect</a></span><span class="op">(</span><span class="va">aoi_sf</span>, asp <span class="op">=</span> <span class="fl">7</span> <span class="op">/</span> <span class="fl">9</span><span class="op">)</span></span>
 <span><span class="va">basemap</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_basemap_blend.html">gq_basemap_blend</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, <span class="st">"CartoDB.PositronNoLabels"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, <span class="st">"Esri.WorldShadedRelief"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, provider <span class="op">=</span> <span class="st">"Esri.WorldGrayCanvas"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/gq_basemap_tiles.html">gq_basemap_tiles</a></span><span class="op">(</span><span class="va">bbox</span>, provider <span class="op">=</span> <span class="st">"Esri.WorldShadedRelief"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">leg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gq_tmap_legend.html">gq_tmap_legend</a></span><span class="op">(</span><span class="va">reg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lake"</span>, <span class="st">"railway"</span>, <span class="st">"roads_dra"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>

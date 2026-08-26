@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,25 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="gq-070">gq 0.7.0<a class="anchor" aria-label="anchor" href="#gq-070"></a></h2>
+<ul><li>
+<p><strong>The default basemap provider changed, because the old one started serving a watermark.</strong> Carto made their basemaps key-only; without a key they return an “API KEY REQUIRED” image. That image is a structurally valid PNG, so nothing errored, and a watermarked map reached the published documentation site. <code><a href="../reference/gq_basemap_tiles.html">gq_basemap_tiles()</a></code> now defaults to <code>Esri.WorldGrayCanvas</code> — keyless, and verified clean over BC extents.</p>
+<p>If you passed <code>provider</code> explicitly you are unaffected. If you relied on the default, your basemap changes appearance: the gray canvas is flatter than Positron, so a hillshade blend carries more of the terrain. In gq’s own vignettes the result is more legible, not less.</p>
+</li>
+<li>
+<p><strong>New: a flat-tile warning.</strong> A provider can answer HTTP 200 with an image that is not a map. <code><a href="../reference/gq_basemap_tiles.html">gq_basemap_tiles()</a></code> now warns when a tile comes back as a single flat colour — <code>Esri.WorldTerrain</code> does exactly this over parts of BC. The tile is still returned, since a genuinely uniform extent (open ocean) looks identical and dropping it would destroy valid data.</p>
+<p>Watermarked tiles are deliberately <em>not</em> detected. Measured across zoom levels, a clean tile and a watermarked one have indistinguishable dark-pixel fractions, so any threshold would pass watermarks while looking like a check. <code><a href="../reference/gq_basemap_tiles.html">?gq_basemap_tiles</a></code> carries the numbers and the reasoning.</p>
+</li>
+<li>
+<p><strong>Fixed: the documented “a failed tile fetch costs the basemap, not the figure” pattern never worked.</strong> Both vignettes held a <code>NULL</code> raster and passed it to <code><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape()</a></code>, which rejects <code>NULL</code> outright — so the guard moved the failure into map composition instead of preventing it. If you copied that block, build the whole <em>layer</em> conditionally rather than the data:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">basemap</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">canvas</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">relief</span><span class="op">)</span><span class="op">)</span> <span class="cn">NULL</span> <span class="kw">else</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="fu"><a href="../reference/gq_basemap_blend.html">gq_basemap_blend</a></span><span class="op">(</span><span class="va">canvas</span>, <span class="va">relief</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_rgb.html" class="external-link">tm_rgb</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">basemap</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">aoi</span><span class="op">)</span> <span class="op">+</span> <span class="va">...</span></span></code></pre></div>
+<p><code>NULL + tm_shape(...)</code> composes correctly, so an absent layer is the shape that holds.</p>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="gq-060">gq 0.6.0<a class="anchor" aria-label="anchor" href="#gq-060"></a></h2>
 <ul><li>
