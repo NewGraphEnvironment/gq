@@ -412,3 +412,64 @@ test_that("a classified point layer carries per-class size", {
   expect_equal(args$size, "code")
   expect_s3_class(args$size.scale, "tm_scale_categorical")
 })
+
+
+test_that("every classified layer draws each class at its registry width", {
+  # Per-feature, across the whole registry. The single-layer test above cannot
+  # establish this: 6 line layers carry widths and each loses a real axis.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers, function(l) {
+    identical(l$type, "line") && !is.null(l$classification)
+  }, logical(1))]
+  expect_gt(length(keys), 0)
+
+  spanning <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    if (is.null(cls$widths) || anyNA(cls$widths)) next
+    codes <- names(cls$values)
+    # One code per distinct width, so the check spans the axis rather than
+    # sampling one end of it.
+    pick <- codes[match(unique(cls$widths), cls$widths)]
+    if (length(unique(cls$widths)) > 1) spanning <- spanning + 1L
+
+    for (code in pick) {
+      got <- drawn_gp(tm_shape_classified(reg, k, code), "lwd")[1]
+      expect_equal(got, unname(cls$widths[[code]]), info = paste(k, code))
+    }
+  }
+
+  # Without a layer whose widths differ, every assertion above holds against the
+  # scalar-collapse code too and the sweep proves nothing.
+  expect_gt(spanning, 0)
+})
+
+test_that("map and legend agree on per-class dash", {
+  # gq_tmap_legend() has emitted per-class lty since #32 while the map never
+  # read cls$dashes at all, so the legend drew a dashed key beside a solid line.
+  # A test looking at either side alone cannot see a disagreement.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers, function(l) {
+    identical(l$type, "line") && !is.null(l$classification)
+  }, logical(1))]
+
+  checked <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    if (is.null(cls$dashes)) next
+    leg <- gq_tmap_legend(reg, k)$lines
+    codes <- names(cls$values)
+
+    for (code in codes[c(1, length(codes))]) {
+      j <- match(unname(cls$labels[match(code, codes)]), leg$labels)
+      if (is.na(j)) next
+      map_lty <- drawn_gp(tm_shape_classified(reg, k, code), "lty")[1]
+      leg_lty <- leg$lty[[j]]
+      expect_equal(map_lty, leg_lty, info = paste(k, code))
+      checked <- checked + 1L
+    }
+  }
+  expect_gt(checked, 0)
+})

@@ -113,13 +113,13 @@ per-class vs scalar.
 
 ## Phase 3 — Registry-wide invariant
 
-- [ ] Extend the #53 sweep: for every classified layer carrying widths, assert
-      the drawn width equals the registry width **for each class**, not that the
-      set matches
-- [ ] Assert map and legend now agree on dash — the disagreement this fixes is
+- [x] Sweep every classified **line** layer carrying complete widths: one code
+      per distinct width, asserting the drawn width equals the registry width
+      for that class
+- [x] Assert map and legend now agree on dash — the disagreement this fixes is
       invisible to any test that looks at only one of them
-- [ ] Guard against vacuity: assert at least one layer has >1 distinct width,
-      else the sweep passes against unfixed code
+- [x] Guard against vacuity: both sweeps assert a non-zero count of layers
+      actually exercised (`spanning`, `checked`)
 
 ## Phase 4 — Restore the bug
 
