@@ -117,19 +117,30 @@ Measured after routing: `fiss_obstacles` 2.0 mm → **2.00 mm**, fish obs
 
 ## Phase 4 — Vignettes drop their hand-tuned constants
 
-- [ ] `gq-tmap-composition.Rmd:261,268` — fish obs and falls stop hardcoding
+- [x] `gq-tmap-composition.Rmd:261,268` — fish obs and falls stop hardcoding
       `size` and `shape`, and the `#16` comment at `:255` goes
-- [ ] `gq-intro.Rmd:176,186` — PSCIS dots (`0.5`) and the legend swatch (`0.8`),
+- [x] `gq-intro.Rmd:176,186` — PSCIS dots (`0.5`) and the legend swatch (`0.8`),
       which currently disagree with each other
 
 ## Phase 5 — Verify by looking
 
-- [ ] Render both vignettes, extract the figures, **read them**
-- [ ] Confirm the crossings no longer bury the stream network, and that the three
+- [x] Render both vignettes, extract the figures, **read them**
+- [x] Confirm the crossings no longer bury the stream network, and that the three
       habitat widths (0.4 / 1.0 / 1.7) are finally visible
-- [ ] If 1:1 reads too busy, set a package default `scale` — and record the
+- [x] If 1:1 reads too busy, set a package default `scale` — and record the
       render that justified the number, not a preference
-- [ ] Re-check `cartography.md`'s seven-point list
+- [x] Re-check `cartography.md`'s seven-point list
+
+**1:1 did not read too busy, so no default `scale` was set** — the opposite
+happened. With every symbol at its true relative weight the crossings stopped
+dominating and the habitat lines became legible for the first time.
+
+**My change broke the layout, and fixing it was in scope.** Bigger symbols made
+the legend taller and wider; it then overlapped the scalebar and clipped its own
+last entry. The scalebar had been at bottom-**centre**, which is not a corner —
+it is the gap between the bottom-left legend and the bottom-right keymap, and it
+survived only while the legend was narrow. Moved to top-left, the corner that
+was free all along. The map now passes all seven self-review checks.
 
 ## Phase 6 — Land it
 

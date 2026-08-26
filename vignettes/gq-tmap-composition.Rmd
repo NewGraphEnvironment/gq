@@ -252,20 +252,22 @@ tm_shape(neexdzii_crossings) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment",
                                   field = "barrier_status"))
 
-# Fish observations — color from the registry, shape by hand.
-# The registry carries a mark shape for 15 layers and nothing translates it
-# yet (#16), so shape stays hardcoded here until it does.
+# Fish observations — colour, size AND shape now all come from the registry.
+# These two layers hardcoded `size` and `shape` until #16: the registry carries
+# a mark shape for 15 layers that nothing translated, and its millimetre sizes
+# converted through a guessed divisor, so every map hand-tuned its own numbers.
+# `col` is still set to the fill colour to give the symbol a matching edge.
 if (nrow(neexdzii_fish_obs) > 0) {
+  fish_args <- gq_tmap_style(reg, "bcfishobs_fiss_fish_observations")
   m <- m + tm_shape(neexdzii_fish_obs) +
-    tm_symbols(shape = 24, fill = fish_sty$mark$color,
-               col = fish_sty$mark$color, size = 0.12)
+    do.call(tm_symbols, c(fish_args, list(col = fish_sty$mark$color)))
 }
 
-# Falls — color from the registry, shape by hand (see #16, as above)
+# Falls — same, straight from the registry
 if (nrow(neexdzii_falls) > 0) {
+  falls_args <- gq_tmap_style(reg, "fiss_obstacles")
   m <- m + tm_shape(neexdzii_falls) +
-    tm_symbols(shape = 22, fill = falls_sty$mark$color,
-               col = falls_sty$mark$color, size = 0.2)
+    do.call(tm_symbols, c(falls_args, list(col = falls_sty$mark$color)))
 }
 
 # Stream labels
@@ -291,17 +293,23 @@ leg <- gq_tmap_legend(
 
 m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
 
-# Layout: four-corner rule
-# - Legend: bottom-left
-# - Logo: top-right
-# - Scalebar: bottom-center
-# - Keymap: bottom-right (via grid viewport)
+# Layout: four-corner rule -- each element gets a corner of its own.
+#
+# The scalebar sat at bottom-CENTRE until #16, which is not a corner: it is the
+# gap between the bottom-left legend and the bottom-right keymap. That survived
+# only while the legend was narrow. Once the symbols grew to their true registry
+# sizes the legend got taller and wider, overlapped the bar and clipped its own
+# last entry. Top-left was the free corner all along.
+# - Legend:   bottom-left
+# - Logo:     top-right
+# - Scalebar: top-left
+# - Keymap:   bottom-right (via grid viewport)
 m <- m +
 tm_scalebar(
   # gq_scale_breaks() needs metre units and says so, so project the bbox first
   breaks = gq_scale_breaks(st_bbox(st_transform(st_as_sfc(bbox), 3005))),
   text.size = 0.5,
-  position = c("center", "bottom"),
+  position = c("left", "top"),
   margins = c(0, 0, 0, 0)
 ) +
 tm_logo(logo_path, position = c("right", "top"), height = 2.5,
