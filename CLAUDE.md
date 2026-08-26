@@ -360,7 +360,7 @@ reg <- gq_reg_main()  # load once per script — 51+ layers
 For project-specific layers not in the main registry, use a hand-curated CSV and merge:
 
 ```r
-reg <- gq_reg_merge(gq_reg_main(), gq_reg_read_csv("path/to/custom.csv"))
+reg <- gq_reg_merge(gq_reg_main(), gq_reg_custom("path/to/custom.csv"))
 ```
 
 Install: `pak::pak("NewGraphEnvironment/gq")`
@@ -484,6 +484,29 @@ Add new checks here when a bug class is discovered — they compound over time.
 - **Test a guard against both known answers before shipping it.** One case that
   should fire and one that should not. The draft above returned the same value
   for both, which reading the code did not reveal.
+
+### An empty result set is not a pass — a loop over nothing exits 0
+- The same class one level up, and pointed the worse direction. Iterating a
+  result set makes "there was nothing to check" and "everything checked out"
+  produce **identical** output: the body never runs, nothing prints, exit 0.
+  Where a mis-fired guard silently skips an action, this silently makes an
+  affirmative claim of success.
+  ```bash
+  RUN_IDS=$(gh run list ... | jq '... | .databaseId')   # empty when nothing dispatched
+  for RUN_ID in $RUN_IDS; do gh run watch "$RUN_ID" --exit-status; done
+  # -> zero iterations, exit 0, caller reports "all green"
+  ```
+- **Poll for the expected results to exist, then branch on empty explicitly.**
+  Absence of evidence has to be reported as absence, not as evidence.
+- Caught 2026-08-26 in gq: GitHub never dispatched PR #56's workflows —
+  `gh pr checks` said "no checks reported" and the check-runs API returned
+  `total_count: 0`. The watch loop exited 0 having watched nothing. The same
+  workflows had fired correctly for PR #54 an hour earlier, so this is a
+  GitHub-side dispatch miss that can hit any repo at any time. Fixed in
+  `gh-pr-merge` step 10; verified against both a SHA with runs and a SHA without.
+- Generalizes past CI: any "verify N things" loop where the list is *computed*
+  — files matched by a glob, rows returned by a query, hosts resolved from an
+  inventory. If zero is a possible answer, zero needs its own branch.
 
 ### git pathspec excludes: use the long form
 - `:!path` is short-form magic, and git keeps parsing magic characters after the
@@ -1024,6 +1047,30 @@ Configuration patterns and false-positive handling for the `gitleaks` pre-commit
 ### as.POSIXct.Date silently ignores tz=
 - `as.POSIXct(x, tz = "UTC")` on a `Date` ignores `tz` and converts in the system local zone — west of UTC this shifts date boundaries by the local offset and silently drops edge data. Force UTC via `as.POSIXct(format(x), tz = "UTC")` when accepting Date inputs; widen Date upper bounds to `< next-day-midnight` so the whole calendar day is included. (water-temp-bc#17)
 
+### as.POSIXct on character infers ONE format for the whole vector
+- `as.POSIXct(x)` on a character vector picks a single format by finding the first candidate that parses **every** element — and `strptime` **ignores trailing characters**. So one coarse value silently truncates the entire column, and nothing warns:
+  ```r
+  as.POSIXct(c("2026-08-15 18:33:46", "2026-08-15 18:34:20", "2026-08-16"))
+  #> all three at 00:00:00   <- the times are gone
+  ```
+  One minute-precision value does the same to its neighbours' seconds. Order-independent, and the values are not `NA` afterwards, so an `is.na()` guard on the result cannot see it.
+- Same family as the `Date` case above, and worse: that one shifts by a known offset, this one destroys information.
+- Fix: match each value's **shape** with an anchored regex, then parse it with the format that shape implies — per element, not per vector. Anchoring at both ends is what turns trailing junk into an error instead of a silent truncation.
+- `tryCatch` around the whole call is not a fix either. `as.POSIXct.character` **throws** on an unrecognised string rather than returning `NA`, so a catch-all handler that blanks the vector then makes the "which value failed?" report name element one — usually a perfectly good timestamp. Compute the failing set per element inside the error path.
+- Caught 2026-08-24 in crate#9. Three bugs in one parse (this, a dropped `+02` offset, and the misleading error), all silent, all with the suite green at 171 passing.
+
+### An offset regex must be anchored to a time, or a date looks like a zone
+- Refusing or stripping a trailing UTC offset with something like `[+-][0-9]{2}(:?[0-9]{2})?$` also matches the end of a plain ISO date: `"2026-08-15"` ends in `-15`, which reads as a −15 hour zone. Require the offset to follow `HH:MM[:SS[.fff]]`.
+- The mirror mistake is requiring four offset digits. `±hh` is valid ISO 8601 and is what Postgres emits for whole-hour zones; a two-digit-offset value then falls through the guard, gets stripped as trailing junk, and the instant moves by hours with nothing reported.
+
+### `paste0()` treats a zero-length argument as `""`
+- `paste0(character(0), "x")` returns `"x"` — length **one**, not zero. So a composite key built from an empty data frame yields one phantom row rather than none:
+  ```r
+  paste0(df$a, "\x1f", df$b)   # nrow(df) == 0  ->  "\x1f"
+  ```
+- Downstream that reads as a real record. Caught 2026-08-24 in trap#14: an empty annotation table produced one key, which the join then reported as "an annotation matching no session". Guard with an explicit `if (!nrow(x)) return(character(0))`.
+- Same shape for any vectorised builder fed a possibly-empty frame — `sprintf()`, `file.path()`, `interaction()`.
+
 ### open_dataset(unify_schemas = TRUE) requires aligned types
 - Cross-prefix/file schema unification only merges what types allow: `timestamp[us, tz=UTC]` will not merge with naked `timestamp[us]`, `Grade: string` not with `Grade: double`. Audit the schemas of every file group BEFORE promising unified reads over a mixed archive; plan a normalization pass otherwise. (water-temp-bc#17)
 
@@ -1041,6 +1088,50 @@ Configuration patterns and false-positive handling for the `gitleaks` pre-commit
 ### Test fixtures must mirror production column TYPES, not just shapes
 - A fixture-green suite can hide type bugs that only real data exposes: water-temp-bc#23's fixtures had `Grade` as string when production has double, so a `coalesce(Grade, '')` sentinel inside the dedup ordering passed all 27 tests and broke on first contact with real data.
 - When writing fixtures for a pipeline over an existing dataset, print the real schema (`arrow::open_dataset(...)$schema`) and copy the types verbatim. Any type-sensitive expression (coalesce sentinels, casts, comparisons) is only tested if the fixture types match.
+
+### CSV whitespace: `trim_ws` and `strip.white` do not do what the name suggests
+
+- `readr::read_csv()` defaults to **`trim_ws = TRUE`** and silently strips leading
+  and trailing whitespace. Where whitespace is *meaningful* — a QGIS layer name
+  deliberately prefixed with a space so it sorts first — a trimmed value binds to
+  nothing, with no error. Use base `utils::read.csv()`, or pass
+  `trim_ws = FALSE`.
+- `read.csv(strip.white = TRUE)` applies **only to unquoted fields**, and
+  `write.csv()` quotes every character column. So a round-trip guard that
+  compares `read.csv()` against `read.csv(strip.white = TRUE)` is *structurally
+  incapable of failing* — both readers return the same thing, and the check
+  passes for nothing.
+- The second point is the trap: the guard looks right, runs green, and proves
+  nothing. Probing for the real failure mode is what surfaces the `readr` one.
+  Caught 2026-08 in rfp#174, where five leading-space layer names were at stake.
+
+### `R CMD check` rejects a filename containing a space
+
+- "checking for portable file names" fails on any file in the built package
+  whose name has a space. It is an ERROR, not a NOTE, so CI goes red.
+- Bites when shipped files are named after human-readable strings — layer names,
+  form labels, report titles. 40 of 50 in one case, one of which *began* with a
+  space.
+- Fix: derive a slug for the filename and keep the real name in an index CSV
+  beside it. Resolve through the index, never by reconstructing a path from the
+  display string.
+
+### Do not edit files a long test run is reading
+
+- `devtools::test()` (and most runners) load each test file **when they reach
+  it**, not at launch. A 30-minute run therefore reads whatever is on disk at
+  that moment, so edits made while it runs are half-applied and the result
+  describes a tree that never existed.
+- The tell is a **changing pass count** across runs of "the same" tree —
+  3490, then 3496, then 3500. A moving denominator means the input was moving.
+- Cost 2026-08 in rfp#178: two full Docker suites (~1 hour) both reported
+  `FAIL 1`, and the failure was a test written *during* the run, executing
+  against source from *before* the fix that made it pass. It was nearly reported
+  as a regression.
+- **Commit before a long run.** While it runs, do work that touches nothing it
+  reads — issue bodies, PR text, planning. And when a long run fails, get the
+  `file:line` before forming any theory: a mid-flight edit and a real regression
+  look identical in a summary line.
 
 ## General
 
@@ -1091,6 +1182,35 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - Prefer a **global structural invariant** over more examples. Properties like antisymmetry, transitivity, "every node reaches a terminal", or a conservation total sweep the whole domain and cannot be gamed by fixture choice.
 - (link#227 / fresh#214, 2026-08: a watershed drainage-closure fix was declared validated on 8 hydrology fixtures. All 8 compared groups with *differing* stream codes — the bug only manifests between groups sharing one code, so the set could not have caught it. The very next case tried, the Fraser, dropped the group the entire basin drains through. What actually earned the claim was a transitivity sweep: 0 violations across 3,537 triples, plus 0 cycles and every group reaching an outlet.)
 
+### Restore the bug and confirm the test fails
+- The rule above says a fixture that cannot reach the failure mode is worthless. This is the thirty-second check that tells you which kind you just wrote: **put the defect back, run the test, watch it go red.** A test that stays green against the code it was written to reject is decoration, and reading it will not tell you that — every case below looked correct on the page.
+- Cheapest form when the fix is inside a package: patch the namespace rather than editing the source back and forth.
+  ```r
+  ns <- asNamespace("pkg"); orig <- get("f", ns)
+  unlockBinding("f", ns); assign("f", broken_version, ns)
+  # run the assertion -- it must fail here
+  assign("f", orig, ns); lockBinding("f", ns)
+  ```
+  For a data-shaped bug, feed the function the input the fix was about and assert the old answer is gone.
+- Three instances in one PR (gq#52, 2026-08), all written by someone who had just read the fixture rule directly above:
+  - A scale-bar test asserting the bar stays within `share` of the frame — threshold hardcoded at **0.75** against a `share` of **0.35**, so a bar at 2.1x the requested size passed. Every width in the fixture also happened to round *down*, so none could overrun even at the right threshold.
+  - A clamp test for a bbox padded past ±90 — the box chosen padded the **x** axis, so the latitude clamp it was named for could never fire.
+  - An `options(str=)` independence test routed through real registry data whose values stayed distinct at one decimal. With the buggy key restored it still passed; a synthetic `1.32 / 1.34` pair made it fire.
+- What they share is the tell: the **assertion** is correct and the **input** cannot reach it. So review the fixture against the bug, not the assertion against the spec — the assertion is the part that reads well and the part that is usually already right.
+- Sibling of the interop rule above, at one remove: a test that inspects a structure its consumer would reject is the same failure. In that same PR, 18 tests read a legend object and none passed it to the renderer, which refused it outright.
+
+### Bare `y`, `n`, `on`, `off`, `yes`, `no` are booleans in YAML 1.1
+- The YAML 1.1 core schema resolves `y`, `Y`, `n`, `N`, `yes`, `no`, `on`, `off`, `true`, `false` (and their case variants) to **booleans**. Most parsers in wide use — libyaml, PyYAML, R's `yaml` — still do this.
+- So a column, key, or field literally named `y` stops being a string the moment it is written unquoted:
+  ```yaml
+  cols:
+    - name: y        # parses as logical TRUE, not "y"
+  ```
+  Nothing errors. The consumer simply never matches that entry again, and whatever it was supposed to do to it silently does not happen.
+- Bites hardest in **schema and config files**, where single-letter names are normal: coordinate columns (`x`, `y`, `z`), flags, short codes. Quote them: `- name: "y"`.
+- Caught twice in one file 2026-08-24 (crate#9) — once in a canonical column list and once in a variant's column list. Both found by a guard that asserted every declared name `is.character()`; reading the YAML had not found either.
+- Worth an assertion rather than vigilance: after parsing any config that carries user-chosen names, check they are all strings. The failure is invisible otherwise, because the wrong value is a perfectly valid one.
+
 ### Canonicalize serialized documents before diffing them
 - XML and JSON emitters are free to vary attribute order, whitespace, and regenerated ids without changing meaning. Comparing two such documents raw reports differences that are not differences — and the noise scales with document size, so it looks like a real signal.
 - Normalize first: C14N for XML (`ET.canonicalize(strip_text=True)` sorts attributes), key-sorted dumps for JSON, and mask any regenerated identifiers (uuids, timestamps, generator version stamps).
@@ -1135,6 +1255,41 @@ For one-line typo fixes, version-bump-only PRs, or trivial documentation edits, 
 - `/planning-archive` — when issue closes
 - `/gh-pr-push` — open the PR
 - `/gh-pr-merge` — merge with release bookkeeping
+
+## Issue bodies get edited, not appended
+
+When work changes what an issue should say, **edit the body**. Don't add a
+comment that corrects it, and retitle when the scope moves.
+
+**Why:** an issue is read as a spec by whoever picks it up. A body saying one
+thing with a comment three screens down saying the opposite costs the reader the
+reconciliation, every time.
+
+**How to apply:** `gh issue view N --json body -q .body` into a file, revise,
+`gh issue edit N --body-file`. Name what changed and why when the correction is
+load-bearing — the goal is a body that reads correctly top to bottom, not an
+erasure of history. Comments are for genuine commentary: a merge notice, a
+cross-repo pointer, a question. Applies to PR bodies too. Commit messages are
+immutable history and are never rewritten this way.
+
+**The failure mode that keeps recurring: research findings feel like
+commentary.** They are not — they are the spec. If a finding changes what
+someone would *build*, it belongs in the body, with the durable version in
+`research/` and the body linking to it.
+
+**Bodies drift at the moment work finishes, not while it is in flight.** Four
+instances in a single day of rfp work, all of the same shape — the code learned
+something and the issue did not:
+
+| drift | what a reader saw |
+|---|---|
+| premise disproved by measurement | an issue arguing for a fix that was no longer needed |
+| a conclusion asserted in the body but never landed in code | body and tree contradicting each other |
+| the shape of the work moved during exploration | a spec describing a design nobody built |
+| a decision made and shipped, body still listing options A–D | "decision needed" on a decision a year old |
+
+Vigilance does not catch this, because the drift happens exactly when attention
+moves to the merge. `/gh-pr-merge` reconciles at that moment — see its step 3b.
 
 ## Why This Exists
 
@@ -1208,7 +1363,34 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Subagents Are Evidence, Not Dependencies
+## 5. You Have No Clock Between Tool Calls
+
+**Every duration claim comes from `date`, never from how much waiting felt like
+it happened.**
+
+Background `sleep` returns immediately from the agent's side, and the number of
+times you have polled is not evidence of elapsed time. Two consecutive tool
+calls can be 15 seconds apart by the clock while feeling like ten minutes of
+waiting.
+
+The failure is stating it out loud before checking. Observed 2026-08: a CI run
+was reported to the user as "pending for over an hour — unusually long, probably
+a stuck runner", after roughly eight background sleeps. One `date -u` showed the
+run was **three minutes old** and entirely normal. The whole diagnosis — stuck
+runner, duplicate triggers, something wrong with the workflow — rested on a
+duration that had been invented.
+
+**How to apply:** before saying *any* duration — "still running after N
+minutes", "this has been X a while", "longer than usual" — run `date -u` and
+subtract a real start time. `gh run list --json createdAt` gives it for CI. If a
+claim about slowness would change what the user does next, it needs a measured
+number or it does not get made.
+
+The same rule covers process state. `ps` and task-status listings have both been
+observed wrong; check the artifact (an output file's size, its mtime, the
+service's own API) rather than the wrapper.
+
+## 6. Subagents Are Evidence, Not Dependencies
 
 **Don't block on one. Don't trust its status. Verify its claims in both directions.**
 
@@ -1404,9 +1586,21 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
    - `progress.md` — Session log with timestamps and commit refs
 3. **Plan-review with the Plan agent — concurrently, not as a gate** — Once `task_plan.md` is scaffolded, spawn the Plan subagent (`Agent({subagent_type: "Plan", prompt: "..."}`) and ask it to critically review the task_plan against the issue body + actual codebase. Categorize findings as Blocker / Gap / Ordering / Assumption / Scope / Acceptance. The agent reads files fresh — it catches what you miss when you've been thinking about the design too long. Real example: caught 21 issues including hardcoded literals across 4 files not listed in the plan, untested DB column mismatches, and a baseline-cache-shadow that would have produced a 6-second no-op run.
 
-   **Do not wait for it.** Spawn, then start the lowest-risk phase. Background agents have repeatedly returned late — in one case after the entire issue had shipped — so treating the review as a precondition stalls the work for as long as the agent takes (see `karpathy.md` §5). Fold findings in whenever they land: pre-baseline they edit the plan; mid-implementation they become follow-up commits. A review that arrives after the code is written is not wasted — the reviewer reads real code instead of a plan, which is how one late review still contributed three fixes that no earlier reading had found. If you genuinely cannot proceed without the result, run it with `run_in_background: false` so the blocking is explicit.
+   **Do not wait for it.** Spawn, then start the lowest-risk phase. Background agents have repeatedly returned late — in one case after the entire issue had shipped — so treating the review as a precondition stalls the work for as long as the agent takes (see `karpathy.md` §6). Fold findings in whenever they land: pre-baseline they edit the plan; mid-implementation they become follow-up commits. A review that arrives after the code is written is not wasted — the reviewer reads real code instead of a plan, which is how one late review still contributed three fixes that no earlier reading had found. If you genuinely cannot proceed without the result, run it with `run_in_background: false` so the blocking is explicit.
 
    Verify before acting, in both directions. Findings have been confidently wrong (a "BLOCKER" disproved by a 30-second probe) and confidently right about things nobody suspected. Reproduce the claim first.
+
+   **Spawn review agents UNNAMED.** Passing `name` to the `Agent` tool changes what you get: a named spawn becomes a persistent *teammate* that goes **idle** rather than completing, so there is no final report to auto-deliver and its output must be pulled with `SendMessage`. An unnamed spawn is a fire-and-return subagent whose report arrives on its own in the completion notification. Measured 2026-08-25 on one machine, one session, unchanged settings: the unnamed spawn returned in **6.4s**; three named reviewers returned nothing at all, sending only empty idle pings. Pass `name` only for a collaborator you intend to keep messaging, and shut it down when done — it pings indefinitely otherwise.
+
+   That mis-spawn is what produced the silent-delivery failures below, so check `name` before suspecting settings. Teammate mode (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` + `teammateMode`, merged globally from `soul/settings/defaults.json`) shapes what a *named* spawn becomes; it is not by itself why findings go missing, and an unnamed spawn delivers fine with it enabled.
+
+   **Have the agent write findings to a file, and report only the path.** Message delivery has silently failed twice: one review arrived as idle notifications with no content, and one was routed to a different session on the user's phone — which only surfaced because the user mentioned it. From this side an idle ping is indistinguishable from an agent that had nothing to say, so the loss is invisible. A file (`planning/active/review-<N>.md`) survives routing, survives the agent exiting, and is greppable later. Put the instruction in the first prompt, not as a follow-up.
+
+   **Review the fixes, not just the code.** The second pass is where the value concentrates, because a fix written under a wrong assumption reproduces the same defect. Measured on gq#52: pass 1 found 13 defects, pass 2 found 7 more — including a blocker sitting *inside the fix* for pass 1's blocker, the same class twice (`lty`, then `fill_alpha`) because completeness was reasoned about rather than computed. Pass 3, scoped narrowly to the file edited most, found no new instances; **convergence is the signal to stop, not a fixed number of rounds.**
+
+   Ask for the **mechanism**, not more instances. Pass 3's best finding was that an invariant was enforced by two lists happening to agree — which is what had produced instances two and three.
+
+   The thing reviewers catch that self-probing does not is **interop**: 18 tests inspected a legend object and none handed it to the renderer, which rejected it outright. Ask the consumer.
 4. **Lock naming before the baseline** — If naming feedback surfaces during planning (legacy filename, inconsistency with an existing file family), fold the rename into the convention + task_plan BEFORE the baseline commit, not as a follow-up. Pre-baseline it's free; retrofitting after implementation cascades (soul#52: `build_exec_pdf.R` → `run_pagedown_exec_summary.R` locked in pre-baseline meant zero downstream rework).
 5. **Commit the plan** — After Plan-agent review + fixes. This is the baseline.
 6. **Work in atomic commits** — Each commit bundles code changes WITH checkbox updates in the planning files. The diff shows both what was done and the checkbox marking it done.
