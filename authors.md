@@ -8,16 +8,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/NewGraphEnvironment/gq/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/NewGraphEnvironment/gq/blob/36-classified-layers-lose-non-colour-axes/DESCRIPTION)
 
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
-Targets*. R package version 0.5.1,
+Targets*. R package version 0.6.0,
 <https://github.com/NewGraphEnvironment/gq>.
 
     @Manual{,
       title = {gq: Cartographic Style Management Across Rendering Targets},
       author = {Allan Irvine},
       year = {2026},
-      note = {R package version 0.5.1},
+      note = {R package version 0.6.0},
       url = {https://github.com/NewGraphEnvironment/gq},
     }

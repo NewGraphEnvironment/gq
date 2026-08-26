@@ -1,5 +1,37 @@
 # Changelog
 
+## gq 0.6.0
+
+- **Classified layers now render every aesthetic the registry defines,
+  not just colour.** Line width, line dash and point size were collapsed
+  to the *first registry class* and emitted as a scalar. For the
+  `mapping_code` habitat layers that meant half the layer silently
+  disappeared: habitat use drives width and barrier status drives
+  colour, so every reach — spawning, rearing and access — drew at
+  spawning width while the colours rendered correctly.
+
+  Each axis now maps through its own scale, keyed on the same ordered
+  class vector as colour.
+  [`do.call()`](https://rdrr.io/r/base/do.call.html) callers need no
+  change.
+
+  Dash had a second symptom worth naming:
+  [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
+  has emitted per-class `lty` since 0.3.0 while the map never read it,
+  so the legend drew a dashed key beside a line the map drew solid — 15
+  of 30 stream classes.
+
+- The returned list changes shape for classified layers: `lwd` and
+  `size` are now the classification field name rather than a number,
+  alongside new `lwd.scale` / `lty.scale` / `size.scale` entries.
+  Numeric axes fall back to the old scalar when the registry defines the
+  value for only some classes.
+
+- Unknown class values no longer abort the render. Fixed as a side
+  effect of 0.5.1 passing `levels` — a layer whose data carries a code
+  absent from the registry used to error with
+  `All levels should occur in the vector names of values`.
+
 ## gq 0.5.1
 
 - **Classified layers no longer mislabel when the data carries a subset

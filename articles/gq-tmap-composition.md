@@ -169,7 +169,84 @@ gq_tmap_style(reg, "crossings_pscis_assessment")
 #> [1] "tm_legend"    "tm_component" "list"        
 #> 
 #> $size
-#> [1] 1
+#> [1] "barrier_result_code"
+#> 
+#> $size.scale
+#> $FUN
+#> [1] "tmapScaleCategorical"
+#> 
+#> $n.max
+#> [1] 30
+#> 
+#> $values
+#> [1] 1 1 1 1
+#> 
+#> $values.repeat
+#> [1] TRUE
+#> 
+#> $values.range
+#> [1] NA
+#> 
+#> $values.scale
+#> [1] NA
+#> 
+#> $value.na
+#> [1] NA
+#> 
+#> $value.null
+#> [1] NA
+#> 
+#> $value.neutral
+#> [1] NA
+#> 
+#> $levels
+#> [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"  
+#> 
+#> $levels.drop
+#> [1] TRUE
+#> 
+#> $labels
+#> NULL
+#> 
+#> $label.na
+#> [1] NA
+#> 
+#> $label.null
+#> [1] NA
+#> 
+#> $label.format
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "tm_scale_categorical" "tm_scale"             "list"                
+#> 
+#> $size.legend
+#> $show
+#> [1] FALSE
+#> 
+#> $called
+#> [1] "show"
+#> 
+#> $title
+#> [1] NA
+#> 
+#> $xlab
+#> [1] NA
+#> 
+#> $ylab
+#> [1] NA
+#> 
+#> $group_id
+#> [1] NA
+#> 
+#> $group_type
+#> [1] "tm_legend"
+#> 
+#> $z
+#> [1] NA
+#> 
+#> attr(,"class")
+#> [1] "tm_legend"    "tm_component" "list"
 ```
 
 ## Data prep
@@ -455,10 +532,14 @@ Every color on this map traces back to
 - **Classified layers** (crossings, roads, habitat) use
   [`do.call()`](https://rdrr.io/r/base/do.call.html) with
   [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
-  — classification field, colors, and labels all come from the registry.
-  Labels follow the classes the data actually carries: the registry’s 26
-  road classes are matched to the handful present rather than recycled
-  positionally over them (#53)
+  — classification field, colors, labels, **line widths and dashes** all
+  come from the registry. Labels follow the classes the data actually
+  carries: the registry’s 26 road classes are matched to the handful
+  present rather than recycled positionally over them (#53). Every
+  aesthetic is mapped per class, so salmon habitat draws spawning,
+  rearing and access reaches at their three registry widths and
+  intermittent reaches dashed — the `mapping_code` layers encode habitat
+  use in width and barrier status in colour, and both axes render (#36)
 - **The legend** is built by
   [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
   from the registry — it partitions by geometry type, expands classified

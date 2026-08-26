@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Map composition with gq and tmap</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/vignettes/gq-tmap-composition.Rmd" class="external-link"><code>vignettes/gq-tmap-composition.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/36-classified-layers-lose-non-colour-axes/vignettes/gq-tmap-composition.Rmd" class="external-link"><code>vignettes/gq-tmap-composition.Rmd</code></a></small>
       <div class="d-none name"><code>gq-tmap-composition.Rmd</code></div>
     </div>
 
@@ -227,7 +227,84 @@ extraction needed.</p>
 <span><span class="co">#&gt; [1] "tm_legend"    "tm_component" "list"        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $size</span></span>
-<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "barrier_result_code"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $size.scale</span></span>
+<span><span class="co">#&gt; $FUN</span></span>
+<span><span class="co">#&gt; [1] "tmapScaleCategorical"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $n.max</span></span>
+<span><span class="co">#&gt; [1] 30</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $values</span></span>
+<span><span class="co">#&gt; [1] 1 1 1 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $values.repeat</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $values.range</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $values.scale</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $value.na</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $value.null</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $value.neutral</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $levels</span></span>
+<span><span class="co">#&gt; [1] "BARRIER"   "PASSABLE"  "POTENTIAL" "UNKNOWN"  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $levels.drop</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $labels</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label.na</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label.null</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label.format</span></span>
+<span><span class="co">#&gt; list()</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"class")</span></span>
+<span><span class="co">#&gt; [1] "tm_scale_categorical" "tm_scale"             "list"                </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $size.legend</span></span>
+<span><span class="co">#&gt; $show</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $called</span></span>
+<span><span class="co">#&gt; [1] "show"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $title</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $xlab</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $ylab</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $group_id</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $group_type</span></span>
+<span><span class="co">#&gt; [1] "tm_legend"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $z</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"class")</span></span>
+<span><span class="co">#&gt; [1] "tm_legend"    "tm_component" "list"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="data-prep">Data prep<a class="anchor" aria-label="anchor" href="#data-prep"></a>
@@ -501,10 +578,15 @@ over a black line</li>
 <li>
 <strong>Classified layers</strong> (crossings, roads, habitat) use
 <code><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call()</a></code> with <code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> —
-classification field, colors, and labels all come from the registry.
-Labels follow the classes the data actually carries: the registry’s 26
-road classes are matched to the handful present rather than recycled
-positionally over them (#53)</li>
+classification field, colors, labels, <strong>line widths and
+dashes</strong> all come from the registry. Labels follow the classes
+the data actually carries: the registry’s 26 road classes are matched to
+the handful present rather than recycled positionally over them (#53).
+Every aesthetic is mapped per class, so salmon habitat draws spawning,
+rearing and access reaches at their three registry widths and
+intermittent reaches dashed — the <code>mapping_code</code> layers
+encode habitat use in width and barrier status in colour, and both axes
+render (#36)</li>
 <li>
 <strong>The legend</strong> is built by
 <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> from the registry — it partitions by

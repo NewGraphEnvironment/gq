@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,9 +33,19 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/36-classified-layers-lose-non-colour-axes/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="gq-060">gq 0.6.0<a class="anchor" aria-label="anchor" href="#gq-060"></a></h2>
+<ul><li>
+<p><strong>Classified layers now render every aesthetic the registry defines, not just colour.</strong> Line width, line dash and point size were collapsed to the <em>first registry class</em> and emitted as a scalar. For the <code>mapping_code</code> habitat layers that meant half the layer silently disappeared: habitat use drives width and barrier status drives colour, so every reach — spawning, rearing and access — drew at spawning width while the colours rendered correctly.</p>
+<p>Each axis now maps through its own scale, keyed on the same ordered class vector as colour. <code><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call()</a></code> callers need no change.</p>
+<p>Dash had a second symptom worth naming: <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> has emitted per-class <code>lty</code> since 0.3.0 while the map never read it, so the legend drew a dashed key beside a line the map drew solid — 15 of 30 stream classes.</p>
+</li>
+<li><p>The returned list changes shape for classified layers: <code>lwd</code> and <code>size</code> are now the classification field name rather than a number, alongside new <code>lwd.scale</code> / <code>lty.scale</code> / <code>size.scale</code> entries. Numeric axes fall back to the old scalar when the registry defines the value for only some classes.</p></li>
+<li><p>Unknown class values no longer abort the render. Fixed as a side effect of 0.5.1 passing <code>levels</code> — a layer whose data carries a code absent from the registry used to error with <code>All levels should occur in the vector names of values</code>.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.1" id="gq-051">gq 0.5.1<a class="anchor" aria-label="anchor" href="#gq-051"></a></h2>
 <ul><li>

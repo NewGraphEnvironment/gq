@@ -38,6 +38,15 @@ gq_tmap_style(layer_or_reg, name = NULL, field = NULL)
 A named list of tmap arguments. Use with
 [`do.call()`](https://rdrr.io/r/base/do.call.html).
 
+For a classified layer every aesthetic the registry defines is mapped
+per class, not just colour: line `lwd` and `lty`, point `size`. Each is
+returned as the classification field name plus a matching `.scale`, the
+same shape `fill`/`col` already used, so
+[`do.call()`](https://rdrr.io/r/base/do.call.html) callers need no
+change. Numeric axes (`lwd`, `size`) fall back to a scalar when the
+registry defines the value for only some classes, since a half-mapped
+axis would invent a size for the gaps.
+
 ## Examples
 
 ``` r
@@ -151,7 +160,164 @@ gq_tmap_style(reg, "road")
 #> [1] "tm_legend"    "tm_component" "list"        
 #> 
 #> $lwd
-#> [1] 2
+#> [1] "road_type"
+#> 
+#> $lwd.scale
+#> $FUN
+#> [1] "tmapScaleCategorical"
+#> 
+#> $n.max
+#> [1] 30
+#> 
+#> $values
+#> [1] 2.0 1.5
+#> 
+#> $values.repeat
+#> [1] TRUE
+#> 
+#> $values.range
+#> [1] NA
+#> 
+#> $values.scale
+#> [1] NA
+#> 
+#> $value.na
+#> [1] NA
+#> 
+#> $value.null
+#> [1] NA
+#> 
+#> $value.neutral
+#> [1] NA
+#> 
+#> $levels
+#> [1] "highway"  "arterial"
+#> 
+#> $levels.drop
+#> [1] TRUE
+#> 
+#> $labels
+#> NULL
+#> 
+#> $label.na
+#> [1] NA
+#> 
+#> $label.null
+#> [1] NA
+#> 
+#> $label.format
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "tm_scale_categorical" "tm_scale"             "list"                
+#> 
+#> $lwd.legend
+#> $show
+#> [1] FALSE
+#> 
+#> $called
+#> [1] "show"
+#> 
+#> $title
+#> [1] NA
+#> 
+#> $xlab
+#> [1] NA
+#> 
+#> $ylab
+#> [1] NA
+#> 
+#> $group_id
+#> [1] NA
+#> 
+#> $group_type
+#> [1] "tm_legend"
+#> 
+#> $z
+#> [1] NA
+#> 
+#> attr(,"class")
+#> [1] "tm_legend"    "tm_component" "list"        
+#> 
+#> $lty
+#> [1] "road_type"
+#> 
+#> $lty.scale
+#> $FUN
+#> [1] "tmapScaleCategorical"
+#> 
+#> $n.max
+#> [1] 30
+#> 
+#> $values
+#> [1] "solid"  "dashed"
+#> 
+#> $values.repeat
+#> [1] TRUE
+#> 
+#> $values.range
+#> [1] NA
+#> 
+#> $values.scale
+#> [1] NA
+#> 
+#> $value.na
+#> [1] NA
+#> 
+#> $value.null
+#> [1] NA
+#> 
+#> $value.neutral
+#> [1] NA
+#> 
+#> $levels
+#> [1] "highway"  "arterial"
+#> 
+#> $levels.drop
+#> [1] TRUE
+#> 
+#> $labels
+#> NULL
+#> 
+#> $label.na
+#> [1] NA
+#> 
+#> $label.null
+#> [1] NA
+#> 
+#> $label.format
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "tm_scale_categorical" "tm_scale"             "list"                
+#> 
+#> $lty.legend
+#> $show
+#> [1] FALSE
+#> 
+#> $called
+#> [1] "show"
+#> 
+#> $title
+#> [1] NA
+#> 
+#> $xlab
+#> [1] NA
+#> 
+#> $ylab
+#> [1] NA
+#> 
+#> $group_id
+#> [1] NA
+#> 
+#> $group_type
+#> [1] "tm_legend"
+#> 
+#> $z
+#> [1] NA
+#> 
+#> attr(,"class")
+#> [1] "tm_legend"    "tm_component" "list"        
 #> 
 
 # Override classification field for alternative data source
@@ -239,7 +405,164 @@ gq_tmap_style(reg, "road", field = "my_road_type")
 #> [1] "tm_legend"    "tm_component" "list"        
 #> 
 #> $lwd
-#> [1] 2
+#> [1] "my_road_type"
+#> 
+#> $lwd.scale
+#> $FUN
+#> [1] "tmapScaleCategorical"
+#> 
+#> $n.max
+#> [1] 30
+#> 
+#> $values
+#> [1] 2.0 1.5
+#> 
+#> $values.repeat
+#> [1] TRUE
+#> 
+#> $values.range
+#> [1] NA
+#> 
+#> $values.scale
+#> [1] NA
+#> 
+#> $value.na
+#> [1] NA
+#> 
+#> $value.null
+#> [1] NA
+#> 
+#> $value.neutral
+#> [1] NA
+#> 
+#> $levels
+#> [1] "highway"  "arterial"
+#> 
+#> $levels.drop
+#> [1] TRUE
+#> 
+#> $labels
+#> NULL
+#> 
+#> $label.na
+#> [1] NA
+#> 
+#> $label.null
+#> [1] NA
+#> 
+#> $label.format
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "tm_scale_categorical" "tm_scale"             "list"                
+#> 
+#> $lwd.legend
+#> $show
+#> [1] FALSE
+#> 
+#> $called
+#> [1] "show"
+#> 
+#> $title
+#> [1] NA
+#> 
+#> $xlab
+#> [1] NA
+#> 
+#> $ylab
+#> [1] NA
+#> 
+#> $group_id
+#> [1] NA
+#> 
+#> $group_type
+#> [1] "tm_legend"
+#> 
+#> $z
+#> [1] NA
+#> 
+#> attr(,"class")
+#> [1] "tm_legend"    "tm_component" "list"        
+#> 
+#> $lty
+#> [1] "my_road_type"
+#> 
+#> $lty.scale
+#> $FUN
+#> [1] "tmapScaleCategorical"
+#> 
+#> $n.max
+#> [1] 30
+#> 
+#> $values
+#> [1] "solid"  "dashed"
+#> 
+#> $values.repeat
+#> [1] TRUE
+#> 
+#> $values.range
+#> [1] NA
+#> 
+#> $values.scale
+#> [1] NA
+#> 
+#> $value.na
+#> [1] NA
+#> 
+#> $value.null
+#> [1] NA
+#> 
+#> $value.neutral
+#> [1] NA
+#> 
+#> $levels
+#> [1] "highway"  "arterial"
+#> 
+#> $levels.drop
+#> [1] TRUE
+#> 
+#> $labels
+#> NULL
+#> 
+#> $label.na
+#> [1] NA
+#> 
+#> $label.null
+#> [1] NA
+#> 
+#> $label.format
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "tm_scale_categorical" "tm_scale"             "list"                
+#> 
+#> $lty.legend
+#> $show
+#> [1] FALSE
+#> 
+#> $called
+#> [1] "show"
+#> 
+#> $title
+#> [1] NA
+#> 
+#> $xlab
+#> [1] NA
+#> 
+#> $ylab
+#> [1] NA
+#> 
+#> $group_id
+#> [1] NA
+#> 
+#> $group_type
+#> [1] "tm_legend"
+#> 
+#> $z
+#> [1] NA
+#> 
+#> attr(,"class")
+#> [1] "tm_legend"    "tm_component" "list"        
 #> 
 
 # Object-based (backwards compatible)
