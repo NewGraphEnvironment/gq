@@ -183,7 +183,11 @@ test_that("gq_tmap_style returns classified args for categorized layers", {
   expect_equal(args$col, "road_type")
   expect_s3_class(args$col.scale, "tm_scale_categorical")
   expect_false(is.null(args$col.legend))
-  expect_equal(args$lwd, 2)
+  # This asserted `args$lwd == 2` until #36. mini_registry's road classes have
+  # widths 2.0 and 1.5, so that was pinning the bug: lwd collapsed to the first
+  # registry class and every road drew at 2. Width is now mapped like colour.
+  expect_equal(args$lwd, "road_type")
+  expect_s3_class(args$lwd.scale, "tm_scale_categorical")
 })
 
 test_that("gq_tmap_style field override works for classified layers", {
@@ -350,4 +354,122 @@ test_that("no classified registry layer warns about label recycling", {
     pick <- utils::tail(names(gq_tmap_classes(reg, k)$values), 3)
     expect_no_warning(drawn_parts(render_classified(reg, k, pick)))
   }
+})
+
+
+# --- #36: every classified axis is per-class, not just colour -----------------
+
+test_that("a classified line layer draws each class at its own width", {
+  # tmap_classified() emitted lwd = cls$widths[1] -- the FIRST REGISTRY CLASS,
+  # nothing to do with the data. streams_bt encodes two orthogonal variables in
+  # one key: habitat use drives width, barrier status drives colour. Colour
+  # rendered correctly, so half the layer silently vanished and the map looked
+  # fine unless you knew what the widths should be.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "streams_bt")
+
+  pick <- c("SPAWN;NONE", "REAR;NONE", "ACCESS;NONE")
+  expect_length(unique(cls$widths[pick]), 3)  # fixture must span the axis
+
+  for (code in pick) {
+    m <- tm_shape_classified(reg, "streams_bt", code)
+    expect_equal(drawn_gp(m, "lwd")[1], unname(cls$widths[[code]]), info = code)
+  }
+})
+
+test_that("a classified line layer draws per-class dash", {
+  # cls$dashes was never read by tmap_classified() at all, while
+  # gq_tmap_legend() has emitted per-class lty since #32 -- so the legend drew a
+  # dashed key beside a line the map drew solid. Invisible to any test looking
+  # at only one of the two.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "streams_bt")
+
+  dashed <- "SPAWN;NONE;INTERMITTENT"
+  solid <- "SPAWN;NONE"
+  expect_false(is.na(cls$dashes[[dashed]]))
+  expect_true(is.na(cls$dashes[[solid]]))
+
+  expect_equal(drawn_gp(tm_shape_classified(reg, "streams_bt", dashed), "lty")[1],
+               "dashed")
+  expect_equal(drawn_gp(tm_shape_classified(reg, "streams_bt", solid), "lty")[1],
+               "solid")
+})
+
+test_that("a classified point layer carries per-class size", {
+  # No classified size assertion existed at all. crossings_pscis_assessment is
+  # the only layer with per-class radius and the central point layer of every
+  # fish passage map.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  sty <- gq_style(reg, "crossings_pscis_assessment")
+  expect_false(is.null(sty$classification$radii))
+
+  args <- gq_tmap_style(reg, "crossings_pscis_assessment", field = "code")
+  # size becomes the field name, mapped through a scale -- as fill already is.
+  expect_equal(args$size, "code")
+  expect_s3_class(args$size.scale, "tm_scale_categorical")
+})
+
+
+test_that("every classified layer draws each class at its registry width", {
+  # Per-feature, across the whole registry. The single-layer test above cannot
+  # establish this: 6 line layers carry widths and each loses a real axis.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers, function(l) {
+    identical(l$type, "line") && !is.null(l$classification)
+  }, logical(1))]
+  expect_gt(length(keys), 0)
+
+  spanning <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    if (is.null(cls$widths) || anyNA(cls$widths)) next
+    codes <- names(cls$values)
+    # One code per distinct width, so the check spans the axis rather than
+    # sampling one end of it.
+    pick <- codes[match(unique(cls$widths), cls$widths)]
+    if (length(unique(cls$widths)) > 1) spanning <- spanning + 1L
+
+    for (code in pick) {
+      got <- drawn_gp(tm_shape_classified(reg, k, code), "lwd")[1]
+      expect_equal(got, unname(cls$widths[[code]]), info = paste(k, code))
+    }
+  }
+
+  # Without a layer whose widths differ, every assertion above holds against the
+  # scalar-collapse code too and the sweep proves nothing.
+  expect_gt(spanning, 0)
+})
+
+test_that("map and legend agree on per-class dash", {
+  # gq_tmap_legend() has emitted per-class lty since #32 while the map never
+  # read cls$dashes at all, so the legend drew a dashed key beside a solid line.
+  # A test looking at either side alone cannot see a disagreement.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  keys <- names(reg$layers)[vapply(reg$layers, function(l) {
+    identical(l$type, "line") && !is.null(l$classification)
+  }, logical(1))]
+
+  checked <- 0L
+  for (k in keys) {
+    cls <- gq_tmap_classes(reg, k)
+    if (is.null(cls$dashes)) next
+    leg <- gq_tmap_legend(reg, k)$lines
+    codes <- names(cls$values)
+
+    for (code in codes[c(1, length(codes))]) {
+      j <- match(unname(cls$labels[match(code, codes)]), leg$labels)
+      if (is.na(j)) next
+      map_lty <- drawn_gp(tm_shape_classified(reg, k, code), "lty")[1]
+      leg_lty <- leg$lty[[j]]
+      expect_equal(map_lty, leg_lty, info = paste(k, code))
+      checked <- checked + 1L
+    }
+  }
+  expect_gt(checked, 0)
 })

@@ -324,10 +324,14 @@ Every color on this map traces back to `gq_reg_main()`:
   does not model — one class pulled out of a classified layer, and a white casing
   over a black line
 - **Classified layers** (crossings, roads, habitat) use `do.call()` with
-  `gq_tmap_style()` — classification field, colors, and labels all come from the
-  registry. Labels follow the classes the data actually carries: the registry's
-  26 road classes are matched to the handful present rather than recycled
-  positionally over them (#53)
+  `gq_tmap_style()` — classification field, colors, labels, **line widths and
+  dashes** all come from the registry. Labels follow the classes the data
+  actually carries: the registry's 26 road classes are matched to the handful
+  present rather than recycled positionally over them (#53). Every aesthetic is
+  mapped per class, so salmon habitat draws spawning, rearing and access reaches
+  at their three registry widths and intermittent reaches dashed — the
+  `mapping_code` layers encode habitat use in width and barrier status in
+  colour, and both axes render (#36)
 - **The legend** is built by `gq_tmap_legend()` from the registry — it partitions
   by geometry type, expands classified layers, collapses classes that render
   identically, and cuts road classes to the ones present in the data. Change a

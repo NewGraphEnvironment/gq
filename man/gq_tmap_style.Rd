@@ -23,6 +23,14 @@ alternatives.}
 }
 \value{
 A named list of tmap arguments. Use with \code{do.call()}.
+
+For a classified layer every aesthetic the registry defines is mapped
+per class, not just colour: line \code{lwd} and \code{lty}, point \code{size}. Each is
+returned as the classification field name plus a matching \code{.scale}, the
+same shape \code{fill}/\code{col} already used, so \code{do.call()} callers need no
+change. Numeric axes (\code{lwd}, \code{size}) fall back to a scalar when the
+registry defines the value for only some classes, since a half-mapped
+axis would invent a size for the gaps.
 }
 \description{
 Wraps \code{\link[=gq_style]{gq_style()}} and returns a named list of arguments suitable for

@@ -1,0 +1,171 @@
+# Task: gq_tmap_style() silently drops the line-width axis of classified layers (#36)
+
+## Context
+
+`tmap_classified()` (`R/gq_tmap_style.R:108-130`) maps **colour** through a
+proper per-class scale and then collapses everything else:
+
+```r
+if (!is.null(cls$widths)) args$lwd  <- unname(cls$widths[1])   # first class wins
+if (!is.null(cls$radii))  args$size <- unname(cls$radii[1]) / 3
+# cls$dashes -- never read at all
+```
+
+**Measured.** `streams_bt`, reading `lwd` back off the drawn polylines:
+
+| class | registry width | drawn today |
+|---|---:|---:|
+| `SPAWN;NONE` | 1.70 | 1.70 |
+| `REAR;NONE` | 1.00 | **1.70** |
+| `ACCESS;NONE` | 0.40 | **1.70** |
+
+The `mapping_code` layers encode **two orthogonal variables**: habitat use drives
+width (spawn 1.7 / rear 1.0 / access 0.4), barrier status drives colour. Colour
+renders correctly, so half the layer's information silently disappears and the
+map looks fine unless you know what the widths should be. The vignette's own
+salmon-habitat line (`gq-tmap-composition.Rmd:195`) is the reproducing case, as
+is `roads_dra` at `:223` — 26 classes, 4 distinct widths, all drawn at 0.26.
+
+**Dash is the same defect, one step worse.** `cls$dashes` is never read by
+`tmap_classified()`, yet `gq_tmap_legend()` *does* emit per-class `lty`
+(`R/gq_tmap_legend.R:181`). So as of v0.5.1 the legend draws a dashed key for a
+line the map draws solid — 15 of 30 stream classes and 10 of 26 road classes.
+Fixing width alone would leave that disagreement in place.
+
+**Verified the fix works, per feature, before planning.** Mapping each axis
+through its own `tm_scale_categorical()` keyed on the same field:
+
+| class | reg lwd | drawn | reg dash | drawn lty |
+|---|---:|---:|---|---|
+| `SPAWN;NONE` | 1.70 | 1.70 | — | solid |
+| `REAR;NONE` | 1.00 | 1.00 | — | solid |
+| `ACCESS;NONE` | 0.40 | 0.40 | — | solid |
+| `SPAWN;NONE;INTERMITTENT` | 1.70 | 1.70 | `0.66;2` | dashed |
+
+This mirrors what colour already does, and what #53 just made correct — the
+`levels=` argument is what keeps every axis aligned to the same class order.
+
+### Two of #36's three items are already resolved
+
+- **"Unknown class values abort the render"** — **fixed by #54.** Confirmed by
+  restoring the pre-#53 code: a `roads_dra` layer whose data carries `T` (trail,
+  present in FWA `transport_line`, absent from the registry) errors with exactly
+  the message #36 quotes, and renders fine on current `main`. Nothing to do;
+  note it when closing.
+- **"`$classification$labels` is positional, not named"** — real, but a
+  different defect about a return shape rather than about lost aesthetics.
+  Recommend **splitting to its own issue** rather than bundling: it changes an
+  exported function's documented output, and this PR's story should stay single.
+
+## Approach
+
+Give each axis the treatment colour already gets. One helper, three call sites.
+
+```r
+tmap_axis <- function(cls, v) {
+  tmap::tm_scale_categorical(values = unname(v), levels = names(cls$values),
+                             levels.drop = TRUE)
+}
+```
+
+- **width** (line `lwd`) and **radius** (point `size`) are numeric: emit the
+  per-class scale only when the vector has no `NA`, else keep today's scalar.
+  A partially-populated width is a custom-registry possibility (#42), and a
+  half-mapped axis is worse than a documented scalar.
+- **dash** (line `lty`): `NA` legitimately means "solid", so no completeness
+  rule. Reuse `dash_to_lty()` (`R/gq_tmap_style.R:159`) per class, mapping its
+  `NULL` to `"solid"`. **This is the #52 trap in vector form** — `dash_to_lty()`
+  returning `NULL` for undashed classes once produced `lty = c(NA, …, "dashed")`
+  and tmap rejected the whole vector at draw time.
+- Each axis gets `*.legend = tm_legend(show = FALSE)`, matching colour — the
+  legend comes from `gq_tmap_legend()`.
+
+Not in scope: `#16` (symbol shape, and the undocumented `radius / 3` divisor
+repeated in three files) — that is unit conversion, a different problem from
+per-class vs scalar.
+
+## Phase 1 — Failing tests first
+
+- [x] Extend `tests/testthat/helper-tmap_render.R` with a `drawn_gp()` that
+      reads `lwd`/`lty` off the rendered polyline grobs — the #53 helper reads
+      text and colours only
+- [x] `streams_bt`: assert each of spawn/rear/access draws at **its own** width.
+      Render one feature at a time; a three-feature render returns the right
+      *set* in the wrong order and would pass on a coincidence
+- [x] `streams_bt`: assert an `;INTERMITTENT` class draws `lty = "dashed"` and a
+      non-intermittent one `"solid"`
+- [x] Classified **point** `size`: `crossings_pscis_assessment` — no classified
+      size test exists at all today
+- [x] Confirm all fail on current `main` — **5 failures**. `SPAWN;NONE` passes,
+      since it is the first registry class and so collapses to its own width;
+      that is exactly the coincidence the three-width fixture guard covers
+
+## Phase 2 — Fix
+
+- [x] `tmap_classified()` — per-class `lwd`/`lty` for lines, `size` for points,
+      via a shared `tmap_scale_axis()` helper, plus `class_ltys()` mapping
+      `dash_to_lty()`'s `NULL` to `"solid"` (the #52 trap in vector form)
+- [x] Existing test `expect_equal(args$lwd, 2)` pinned the bug and now asserts
+      the scale, with a comment recording what it used to assert and why that
+      was wrong. It was the **only** failure the fix caused
+- [x] Roxygen `@return` documents which axes are per-class, that `do.call()`
+      callers need no change, and the completeness rule for numeric axes
+
+## Phase 3 — Registry-wide invariant
+
+- [x] Sweep every classified **line** layer carrying complete widths: one code
+      per distinct width, asserting the drawn width equals the registry width
+      for that class
+- [x] Assert map and legend now agree on dash — the disagreement this fixes is
+      invisible to any test that looks at only one of them
+- [x] Guard against vacuity: both sweeps assert a non-zero count of layers
+      actually exercised (`spanning`, `checked`)
+
+## Phase 4 — Restore the bug
+
+- [x] Namespace-patch `tmap_classified()` back, confirm Phases 1 and 3 fail,
+      assert the patch took before trusting the result, restore. **27 failures,
+      0 errors**, across all six new/changed tests — including the map-vs-legend
+      agreement check, so it bites rather than decorates. Patch in-memory only;
+      tree clean, FAIL 0 | PASS 829
+
+## Phase 5 — Land it
+
+- [x] Filed the `labels`-naming item as **#55**; #36's item 3 (unknown values)
+      confirmed already fixed by #54, to be noted when #36 closes
+- [x] Vignette prose updated. Verified against the shipped data: salmon habitat
+      draws widths 0.4/1.0/1.7 and both dash states, roads 0.46/1.035. The
+      `[[1]]` block at `:197-206` **stays** — it deliberately draws base streams
+      at one uniform width (note the `* 2` display scaling), so it is a choice
+      rather than a workaround
+- [x] `NEWS.md` + `DESCRIPTION` 0.5.1 → **0.6.0**. Minor, not patch: `args$lwd`
+      changes from a number to a field name and the returned list gains
+      `lwd.scale`/`lty`/`lty.scale`. `do.call()` callers are unaffected, but the
+      documented output shape changes
+- [x] `/planning-archive`, `/gh-pr-push`
+
+## Validation
+
+- [x] `devtools::test()` — FAIL 0 | PASS 829
+- [x] `lintr` clean on changed files — 0 on `R/gq_tmap_style.R`
+- [x] `devtools::check()` — 0 errors, 2 warnings, 2 notes: identical to main (gq#51)
+- [x] `/code-check` per commit; PWF checkboxes match landed work
+- [x] `/planning-archive` on completion
+
+## Verification
+
+```r
+devtools::load_all()
+reg <- gq_reg_main()
+args <- gq_tmap_style(reg, "streams_bt", field = "code")
+args$lwd        # "code", not 1.7
+args$lty        # "code"
+
+# per feature, not per set
+for (k in c("SPAWN;NONE", "REAR;NONE", "ACCESS;NONE")) print(drawn_gp(one(k), "lwd"))
+#> 1.7 / 1.0 / 0.4
+```
+
+Cross-check that matters: re-render the vignette and confirm salmon habitat now
+shows three distinct stream weights, and that intermittent reaches are dashed on
+the map as well as in the legend.
