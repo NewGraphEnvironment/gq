@@ -41,6 +41,45 @@ drawn_parts <- function(m) {
 
 drawn_labels <- function(m) drawn_parts(m)$labels
 
+# Read one graphical parameter off the drawn geometry grobs.
+#
+# `what` is a gpar name ("lwd", "lty"). Restricted to the grob class carrying
+# the geometry so tmap's frame and legend furniture do not contribute.
+#
+# Render ONE feature at a time when asserting a per-class value. A multi-feature
+# render returns values in draw order, which is level order rather than feature
+# order -- so comparing the returned vector against the input order passes on a
+# coincidence and fails to notice a mapping that is right only as a set.
+drawn_gp <- function(m, what, grob_class = "polyline") {
+  f <- tempfile(fileext = ".png")
+  grDevices::png(f)
+  g <- suppressMessages(tmap::tmap_grob(m))
+  grDevices::dev.off()
+  unlink(f)
+
+  out <- NULL
+  walk <- function(x) {
+    if (inherits(x, grob_class) && !is.null(x$gp[[what]])) {
+      out <<- c(out, x$gp[[what]])
+    }
+    if (!is.null(x$children)) for (ch in x$children) walk(ch)
+  }
+  walk(g)
+  out
+}
+
+# Render a registry layer over the given codes with gq's own legend settings
+# left alone (classified layers hide their legend). Use this when reading
+# geometry gpar -- render_classified() forces the legend on, and legend keys are
+# polyline grobs too, so they would pollute a drawn_gp("lwd") read.
+tm_shape_classified <- function(reg, key, codes, field = "code") {
+  type <- reg$layers[[key]]$type
+  args <- gq_tmap_style(reg, key, field = field)
+  fn <- switch(type, line = tmap::tm_lines, polygon = tmap::tm_polygons,
+               tmap::tm_dots)
+  tmap::tm_shape(geom_for(type, codes, field)) + do.call(fn, args)
+}
+
 # Minimal sf carrying one row per code, with geometry matching a layer type.
 geom_for <- function(type, codes, field) {
   n <- length(codes)

@@ -351,3 +351,60 @@ test_that("no classified registry layer warns about label recycling", {
     expect_no_warning(drawn_parts(render_classified(reg, k, pick)))
   }
 })
+
+
+# --- #36: every classified axis is per-class, not just colour -----------------
+
+test_that("a classified line layer draws each class at its own width", {
+  # tmap_classified() emitted lwd = cls$widths[1] -- the FIRST REGISTRY CLASS,
+  # nothing to do with the data. streams_bt encodes two orthogonal variables in
+  # one key: habitat use drives width, barrier status drives colour. Colour
+  # rendered correctly, so half the layer silently vanished and the map looked
+  # fine unless you knew what the widths should be.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "streams_bt")
+
+  pick <- c("SPAWN;NONE", "REAR;NONE", "ACCESS;NONE")
+  expect_length(unique(cls$widths[pick]), 3)  # fixture must span the axis
+
+  for (code in pick) {
+    m <- tm_shape_classified(reg, "streams_bt", code)
+    expect_equal(drawn_gp(m, "lwd")[1], unname(cls$widths[[code]]), info = code)
+  }
+})
+
+test_that("a classified line layer draws per-class dash", {
+  # cls$dashes was never read by tmap_classified() at all, while
+  # gq_tmap_legend() has emitted per-class lty since #32 -- so the legend drew a
+  # dashed key beside a line the map drew solid. Invisible to any test looking
+  # at only one of the two.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cls <- gq_tmap_classes(reg, "streams_bt")
+
+  dashed <- "SPAWN;NONE;INTERMITTENT"
+  solid <- "SPAWN;NONE"
+  expect_false(is.na(cls$dashes[[dashed]]))
+  expect_true(is.na(cls$dashes[[solid]]))
+
+  expect_equal(drawn_gp(tm_shape_classified(reg, "streams_bt", dashed), "lty")[1],
+               "dashed")
+  expect_equal(drawn_gp(tm_shape_classified(reg, "streams_bt", solid), "lty")[1],
+               "solid")
+})
+
+test_that("a classified point layer carries per-class size", {
+  # No classified size assertion existed at all. crossings_pscis_assessment is
+  # the only layer with per-class radius and the central point layer of every
+  # fish passage map.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  sty <- gq_style(reg, "crossings_pscis_assessment")
+  expect_false(is.null(sty$classification$radii))
+
+  args <- gq_tmap_style(reg, "crossings_pscis_assessment", field = "code")
+  # size becomes the field name, mapped through a scale -- as fill already is.
+  expect_equal(args$size, "code")
+  expect_s3_class(args$size.scale, "tm_scale_categorical")
+})

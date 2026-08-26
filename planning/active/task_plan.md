@@ -86,17 +86,19 @@ per-class vs scalar.
 
 ## Phase 1 — Failing tests first
 
-- [ ] Extend `tests/testthat/helper-tmap_render.R` with a `drawn_gp()` that
+- [x] Extend `tests/testthat/helper-tmap_render.R` with a `drawn_gp()` that
       reads `lwd`/`lty` off the rendered polyline grobs — the #53 helper reads
       text and colours only
-- [ ] `streams_bt`: assert each of spawn/rear/access draws at **its own** width.
+- [x] `streams_bt`: assert each of spawn/rear/access draws at **its own** width.
       Render one feature at a time; a three-feature render returns the right
       *set* in the wrong order and would pass on a coincidence
-- [ ] `streams_bt`: assert an `;INTERMITTENT` class draws `lty = "dashed"` and a
+- [x] `streams_bt`: assert an `;INTERMITTENT` class draws `lty = "dashed"` and a
       non-intermittent one `"solid"`
-- [ ] Classified **point** `size`: `crossings_pscis_assessment` — no classified
+- [x] Classified **point** `size`: `crossings_pscis_assessment` — no classified
       size test exists at all today
-- [ ] Confirm all fail on current `main`
+- [x] Confirm all fail on current `main` — **5 failures**. `SPAWN;NONE` passes,
+      since it is the first registry class and so collapses to its own width;
+      that is exactly the coincidence the three-width fixture guard covers
 
 ## Phase 2 — Fix
 
