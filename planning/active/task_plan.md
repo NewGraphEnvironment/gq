@@ -123,8 +123,11 @@ per-class vs scalar.
 
 ## Phase 4 — Restore the bug
 
-- [ ] Namespace-patch `tmap_classified()` back, confirm Phases 1 and 3 fail,
-      assert the patch took before trusting the result, restore
+- [x] Namespace-patch `tmap_classified()` back, confirm Phases 1 and 3 fail,
+      assert the patch took before trusting the result, restore. **27 failures,
+      0 errors**, across all six new/changed tests — including the map-vs-legend
+      agreement check, so it bites rather than decorates. Patch in-memory only;
+      tree clean, FAIL 0 | PASS 829
 
 ## Phase 5 — Land it
 
