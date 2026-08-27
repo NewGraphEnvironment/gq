@@ -92,6 +92,29 @@ test_that("wms layers are exactly the services in the QML index", {
   expect_equal(wms, svc)
 })
 
+test_that("draw order is unambiguous within a group", {
+  # `order` is z-order: which layer draws over which. A duplicate makes the
+  # result depend on row order in the file rather than on the value, so two
+  # polygons silently swap depending on how the CSV was last edited.
+  #
+  # Added after inserting two rows into Basemap produced exactly that -- a
+  # shifted tail collided with an inserted value, and nothing complained.
+  g <- gq_groups()
+  g$subgroup[is.na(g$subgroup)] <- ""
+  for (k in unique(paste(g$group, g$subgroup, sep = "|"))) {
+    parts <- strsplit(k, "|", fixed = TRUE)[[1]]
+    rows <- g[g$group == parts[1] & g$subgroup == (if (length(parts) > 1) parts[2] else ""), ]
+    expect_equal(anyDuplicated(rows$order), 0L,
+                 label = paste0("duplicate order in '", k, "'"))
+  }
+})
+
+test_that("layer_key is unique across groups.csv", {
+  # gq_template_layers() asserts its output has no duplicates; that holds only
+  # because keys are unique here. Pin the thing the other assertion rests on.
+  expect_equal(anyDuplicated(gq_groups()$layer_key), 0L)
+})
+
 test_that("every group in groups.csv is mapped to at least one template", {
   # The failure gq#40 is about. A group nothing maps to is dead weight: its
   # layers are styled, indexed and ordered, and no template ever asks for them.

@@ -82,3 +82,35 @@ Chasing the table I named would have wasted someone's afternoon.
 `form_edna`, `form_monitoring`, `habitat_lateral` exempted with **gq#64** as the
 stated reason, plus an assertion that each exemption is still *needed* — so when
 #64 lands the guard fails and says to delete them.
+
+### Phase 3 — the user's question found a real style
+
+Asked whether a QML could come from `sern_peace_fwcp_2023` rather than being
+invented. It could, for one of the two:
+
+| project | OGMA | national_park |
+|---|---|---|
+| shipped templates (both) | renderer-v2 = 0 | renderer-v2 = 0 |
+| `sern_peace_fwcp_2023.qgs` | **renderer-v2 = 1** | renderer-v2 = 0 |
+
+So OGMA's colours are extracted from a real project — `#4daf4a`, a
+LinePatternFill hatch over two SimpleLine outlines — and only the hatch-to-fill
+approximation is a judgement, recorded in the note. `national_park` is genuinely
+unstyled everywhere and is authored, labelled as authored, reusing
+`provincial_park`'s exact colours so no new hue is invented.
+
+Worth keeping: "can we get a QML from X" was a better question than either
+option I had put up. The choice I framed was extract-from-corpus *or*
+author-fresh, and the answer was one of each.
+
+**A duplicate z-order I introduced, caught by looking.** Shifting the Basemap
+tail to make room collided with an inserted value — `conservancy` and OGMA both
+landed on 6. Nothing complained, because `order` had no uniqueness guard.
+A duplicate makes draw order depend on row position in the file rather than on
+the value, so two polygons swap silently depending on how the CSV was last
+edited. Guard added; also pinned `layer_key` uniqueness, which
+`gq_template_layers()`'s no-duplicates assertion silently rests on.
+
+Templates now: restoration 57 -> 64, fishpass 58 -> 61. The 9 remaining NA
+source_layers are all accounted for — 6 `wms` services that legitimately have no
+table, 3 exempted against gq#64.

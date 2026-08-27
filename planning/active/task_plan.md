@@ -94,25 +94,30 @@ on the next twenty.
 
 ## Phase 3 — `national_park` and `old_growth_management_areas`
 
-Rewritten after the review disproved this phase's premise. There is no shipped
-symbology to register; it has to come from somewhere.
+Rewritten twice: once after the review disproved my "the symbology already
+ships" correction, once after the user asked whether a real style existed
+somewhere else. It did, for one of the two.
 
-- [ ] Symbology from the corpus via `gq_qgs_extract()` on a project that carries
-      the layer — the only route giving faithful entries with real provenance.
-      Falling back to authoring fresh in `reg_custom.csv` is acceptable (both are
-      polygons, the simple branch handles fill/stroke/label) **but the `note`
-      must say the symbology is authored, not extracted**
-- [ ] `reg_custom.csv` row + `Rscript data-raw/reg_build_main.R` — NOT a direct
-      edit of `reg_main.json`, which is a build artifact
-- [ ] `groups.csv` rows with `source_type` and a `source_layer` that is real and
-      schema-qualified, so the Phase 1 guard passes on its own terms
-- [ ] Record that `rmp_ogma_non_legal_current_svw` is the deliberate choice over
-      the `_legal_` variant, or the next person "fixes" it
-- [ ] Acceptance is NOT `gq_style_qml()` returning a path — it never parses the
-      file and would return one for a zero-byte QML. Assert the QML **has a
-      renderer**, which today it does not
-- [ ] OGMA is in 6 of 16 corpus projects, national_park in 2 — treat separately
-      rather than as one unit
+- [x] Searched beyond the shipped templates on the user's suggestion.
+      `sern_peace_fwcp_2023.qgs` carries **OGMA with a real renderer**
+      (`singleSymbol`) where both shipped templates have `renderer-v2=0`.
+      `national_park` is unstyled in every project checked
+- [x] OGMA colours **extracted, not invented**: `#4daf4a` from a LinePatternFill
+      hatch plus two SimpleLine outlines at 0.3/0.46. The registry models one
+      fill and one stroke, so the hatch is approximated by a low-opacity fill —
+      recorded in the `note`, with the multi-layer limitation pointing at gq#24
+- [x] `national_park` authored, and labelled as authored. It reuses
+      `provincial_park`'s **exact** colours so the two read as one family, and
+      is distinguished by stroke weight rather than by a newly invented hue
+- [x] Both via `reg_custom.csv` + `Rscript data-raw/reg_build_main.R`, never a
+      direct edit of the generated `reg_main.json`
+- [x] `groups.csv` rows in `Basemap` beside `provincial_park` and `conservancy`,
+      with the tail z-order shifted so protected areas draw together
+- [x] Recorded that `rmp_ogma_non_legal_current_svw` is deliberate over the
+      `_legal_` variant
+- [x] Acceptance is NOT `gq_style_qml()` returning a path — it never parses the
+      file. The real check is that both now carry a source_layer and pass the
+      derived guard on their own terms
 
 ## Phase 4 — The `NA` source_layer set the issue missed
 
