@@ -70,4 +70,4 @@ Split out: **#64** (`form_edna`, `form_monitoring`, `habitat_lateral` — groupe
 and shipped with no registry entry at all; nothing in the repo says whether they
 are live or stale).
 
-Suite 922 → 962. Commits `de34ed5`..`<release>`. PR #65.
+Suite 922 → 962. Commits `de34ed5`..`5bbc80a`. PR #65. Split out: #64.
