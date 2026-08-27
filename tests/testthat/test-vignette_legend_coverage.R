@@ -10,15 +10,25 @@
 # list maintained beside the first one drifts from it, which is the failure
 # being guarded against.
 
-vignette_dir <- function() {
-  # devtools::test() runs from tests/testthat/; R CMD check runs the same tests
-  # from the unpacked source, so walk up looking for the directory rather than
-  # hardcoding a depth.
-  for (up in c("..", "../..", "../../..", "../../../..")) {
-    p <- file.path(up, "vignettes")
-    if (dir.exists(p)) return(normalizePath(p))
-  }
-  NA_character_
+# Locate a vignette SOURCE file across the layouts it actually lives in.
+#
+# Test for the file, never for a `vignettes/` directory. The first version of
+# this walked up looking for the directory and, under R CMD check, matched an
+# unrelated one further up the temp tree -- so it reported "found" and then died
+# in readLines(). A directory of the right name is not evidence.
+#
+# Three real layouts: devtools::test() from tests/testthat/ in the source tree;
+# R CMD check running from the unpacked tarball, which ships vignettes/ as well
+# as inst/doc/ once vignettes are built; and the installed package, where the
+# source is reachable as system.file("doc", ...).
+vignette_source <- function(file) {
+  rel <- file.path(c("..", "../..", "../../..", "../../../.."),
+                   "vignettes", file)
+  cand <- c(rel,
+            file.path("../00_pkg_src/gq/vignettes", file),
+            system.file("doc", file, package = "gq"))
+  hit <- cand[nzchar(cand) & file.exists(cand)]
+  if (!length(hit)) NA_character_ else normalizePath(hit[[1]])
 }
 
 # Parse the vignette's R with R's own parser rather than with regexes.
@@ -109,13 +119,15 @@ legend_keys <- function(expr) {
 legend_exempt <- character(0)
 
 test_that("gq-tmap-composition draws no registry layer it fails to legend", {
-  vd <- vignette_dir()
-  # Assert the premise. If the source cannot be found this test must fail, not
-  # skip -- a coverage guard that silently checks nothing is worse than none.
-  expect_false(is.na(vd))
+  f <- vignette_source("gq-tmap-composition.Rmd")
 
-  f <- file.path(vd, "gq-tmap-composition.Rmd")
-  expect_true(file.exists(f))
+  # The one case where this legitimately cannot run: a build that ships no
+  # vignette source at all (R CMD check --no-build-vignettes). Skip visibly
+  # rather than pass quietly -- and note that the parser logic itself is still
+  # covered unconditionally by the test below, so a skip here never leaves the
+  # guard entirely unexercised.
+  skip_if(is.na(f), "vignette source not shipped in this build")
+
   code <- chunk_code(readLines(f, warn = FALSE), "map-composition")
   expr <- parse(text = code)
 
