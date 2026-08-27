@@ -1,6 +1,6 @@
 ---
 title: "Getting started with gq"
-output: rmarkdown::html_vignette
+output: bookdown::html_vignette2
 vignette: >
   %\VignetteIndexEntry{Getting started with gq}
   %\VignetteEngine{knitr::rmarkdown}
@@ -85,7 +85,7 @@ reg$layers$lake
 `gq_tmap_style()` converts registry entries directly to tmap v4 arguments.
 Here's a study area map following New Graph cartographic conventions:
 
-```{r tmap-study-area, fig.alt = "Study area map of Bittner Creek watershed near Prince George showing streams, lakes, roads, railway, and PSCIS crossings"}
+```{r tmap-study-area, fig.cap = "PSCIS crossings around the Bittner Creek watershed, classified by barrier status from the gq registry.", fig.alt = "Study area map of Bittner Creek watershed near Prince George showing streams, lakes, roads, railway, and PSCIS crossings"}
 library(tmap)
 sf_use_s2(FALSE)
 
@@ -246,7 +246,7 @@ gq_tmap_classes(reg$layers$crossings_pscis_assessment)
 The same registry produces MapLibre GL paint properties for web maps via
 `gq_mapgl_style()`:
 
-```{r mapgl-map, fig.alt = "Interactive MapLibre GL map of Bittner Creek watershed with PSCIS crossings"}
+```{r mapgl-map, fig.cap = "The same registry styles translated to MapLibre GL paint properties.", fig.alt = "Interactive MapLibre GL map of Bittner Creek watershed with PSCIS crossings"}
 library(mapgl)
 
 # PSCIS match expression from registry — same classification as tmap
