@@ -38,8 +38,10 @@ etc.
 path <- system.file("registry", "reg_custom.csv", package = "gq")
 reg <- gq_reg_custom(path)
 names(reg$layers)
-#> [1] "bec_zone"      "rivers_poly"   "dam"           "town"         
-#> [5] "harvest_area"  "planting_site"
+#> [1] "bec_zone"                    "rivers_poly"                
+#> [3] "dam"                         "town"                       
+#> [5] "harvest_area"                "planting_site"              
+#> [7] "old_growth_management_areas" "national_park"              
 
 # Classified layer (multiple rows per layer_key)
 reg$layers$bec_zone$classification$field

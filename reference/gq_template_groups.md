@@ -33,4 +33,5 @@ gq_template_groups("bcfishpass_mobile")
 #> 6 bcfishpass_mobile               Basemap           6
 #> 7 bcfishpass_mobile  Web Mapping Services           7
 #> 8 bcfishpass_mobile           Base - misc           8
+#> 9 bcfishpass_mobile   Base - Orthoimagery           9
 ```

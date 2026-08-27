@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,13 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.0" id="gq-0100">gq 0.10.0<a class="anchor" aria-label="anchor" href="#gq-0100"></a></h2>
+<ul><li><p><strong>Template composition is now guarded, and two groups that were never mapped are.</strong> <code><a href="../reference/gq_template_layers.html">gq_template_layers()</a></code> returns more layers for both shipped templates — <code>bcrestoration_mobile</code> 57 → 64, <code>bcfishpass_mobile</code> 58 → 61. A project built from a template was displaying cartography for data it never downloaded, because the chain <code>templates.csv → groups.csv → reg_main.json</code> is three joins deep and none of them reported a miss. <code>Base - Orthoimagery</code> had been mapped to zero templates for the entire history of the file with a green suite. <a href="https://github.com/NewGraphEnvironment/gq/issues/40" class="external-link">#40</a></p></li>
+<li><p><strong><code>source_type</code> now drives a real check, and two layers had the wrong value.</strong> <code>harvest_area</code> and <code>planting_site</code> change from <code>bcdata</code> to <code>local</code> — a value change in a column <code><a href="../reference/gq_groups.html">gq_groups()</a></code> returns, not just extra rows. They are project-authored layers (“buffered river corridor”, “proposed restoration planting location”), never BCGW tables, so they now carry the <code>source_layer == layer_key</code> sentinel that <code>form_pscis</code> and <code>form_fiss_site</code> already used.</p></li>
+<li><p><strong>Two new registry layers.</strong> <code>old_growth_management_areas</code> — the most-used layer in a 16-project corpus that the registry did not carry — with symbology <strong>extracted</strong> from a project that styles it. <code>national_park</code> with symbology <strong>authored</strong>, labelled as such in its <code>note</code>, reusing <code>provincial_park</code>’s colours rather than an invented hue. Neither has a renderer in the shipped <code>.qgs</code> templates, which is why neither was ever extracted.</p></li>
+<li><p><code>group_order</code> is documented as a sort key only: per-template, requiring neither contiguity, a 1-based start, nor cross-template agreement. The two shipped templates happen to have those properties and do not define them.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.0" id="gq-090">gq 0.9.0<a class="anchor" aria-label="anchor" href="#gq-090"></a></h2>
 <ul><li>

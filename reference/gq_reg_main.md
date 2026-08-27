@@ -73,6 +73,8 @@ names(reg$layers)
 #> [52] "town"                                                  
 #> [53] "harvest_area"                                          
 #> [54] "planting_site"                                         
+#> [55] "old_growth_management_areas"                           
+#> [56] "national_park"                                         
 
 # Use directly with style translators
 gq_tmap_style(gq_reg_main()$layers$lake)

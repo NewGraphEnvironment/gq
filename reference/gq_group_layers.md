@@ -36,30 +36,32 @@ gq_group_layers("Basemap")
 #> 1  Basemap        <NA>                watershed_group_boundary     1
 #> 2  Basemap        <NA>                          municipalities     2
 #> 3  Basemap        <NA>                         provincial_park     3
-#> 4  Basemap        <NA>                             conservancy     4
-#> 5  Basemap        <NA>                    first_nation_reserve     5
-#> 6  Basemap        <NA>                            range_tenure     6
-#> 7  Basemap        <NA>                          land_ownership     7
-#> 8  Basemap        <NA>                    fire_historical_burn     8
-#> 9  Basemap        <NA>                           fire_severity     9
-#> 10 Basemap        <NA>                                glaciers    10
-#> 11 Basemap        <NA>                                    town    11
-#> 12 Basemap         BEC                                bec_zone     1
-#> 13 Basemap         BEC biogeoclimatic_ecosystem_classification     2
-#> 14 Basemap Waterbodies                                    lake     1
-#> 15 Basemap Waterbodies                                 wetland     2
-#> 16 Basemap Waterbodies                             rivers_poly     3
-#> 17 Basemap Waterbodies                     manmade_waterbodies     4
+#> 4  Basemap        <NA>                           national_park     4
+#> 5  Basemap        <NA>                             conservancy     5
+#> 6  Basemap        <NA>             old_growth_management_areas     6
+#> 7  Basemap        <NA>                    first_nation_reserve     7
+#> 8  Basemap        <NA>                            range_tenure     8
+#> 9  Basemap        <NA>                          land_ownership     9
+#> 10 Basemap        <NA>                    fire_historical_burn    10
+#> 11 Basemap        <NA>                           fire_severity    11
+#> 12 Basemap        <NA>                                glaciers    12
+#> 13 Basemap        <NA>                                    town    13
+#> 14 Basemap         BEC                                bec_zone     1
+#> 15 Basemap         BEC biogeoclimatic_ecosystem_classification     2
+#> 16 Basemap Waterbodies                                    lake     1
+#> 17 Basemap Waterbodies                                 wetland     2
+#> 18 Basemap Waterbodies                             rivers_poly     3
+#> 19 Basemap Waterbodies                     manmade_waterbodies     4
 #>    source_type
 #> 1       bcdata
 #> 2       bcdata
 #> 3       bcdata
 #> 4       bcdata
 #> 5       bcdata
-#> 6          aws
-#> 7          aws
-#> 8       bcdata
-#> 9       bcdata
+#> 6       bcdata
+#> 7       bcdata
+#> 8          aws
+#> 9          aws
 #> 10      bcdata
 #> 11      bcdata
 #> 12      bcdata
@@ -68,6 +70,8 @@ gq_group_layers("Basemap")
 #> 15      bcdata
 #> 16      bcdata
 #> 17      bcdata
+#> 18      bcdata
+#> 19      bcdata
 gq_group_layers("Streams")
 #>     group       subgroup                      layer_key order source_type
 #> 1 Streams           <NA>                    streams_all     1         aws

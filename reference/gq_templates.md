@@ -26,13 +26,16 @@ gq_templates()
 #> 6     bcfishpass_mobile               Basemap           6
 #> 7     bcfishpass_mobile  Web Mapping Services           7
 #> 8     bcfishpass_mobile           Base - misc           8
-#> 9  bcrestoration_mobile                 Forms           1
-#> 10 bcrestoration_mobile             Crossings           2
-#> 11 bcrestoration_mobile               Streams           3
-#> 12 bcrestoration_mobile Roads/Rails/Pipelines           4
-#> 13 bcrestoration_mobile               Basemap           5
-#> 14 bcrestoration_mobile            Floodplain           6
-#> 15 bcrestoration_mobile           Restoration           7
-#> 16 bcrestoration_mobile  Web Mapping Services           8
-#> 17 bcrestoration_mobile           Base - misc           9
+#> 9     bcfishpass_mobile   Base - Orthoimagery           9
+#> 10 bcrestoration_mobile                 Forms           1
+#> 11 bcrestoration_mobile             Crossings           2
+#> 12 bcrestoration_mobile  Other Point Features           3
+#> 13 bcrestoration_mobile               Streams           4
+#> 14 bcrestoration_mobile Roads/Rails/Pipelines           5
+#> 15 bcrestoration_mobile               Basemap           6
+#> 16 bcrestoration_mobile            Floodplain           7
+#> 17 bcrestoration_mobile           Restoration           8
+#> 18 bcrestoration_mobile  Web Mapping Services           9
+#> 19 bcrestoration_mobile           Base - misc          10
+#> 20 bcrestoration_mobile   Base - Orthoimagery          11
 ```

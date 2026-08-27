@@ -75,22 +75,25 @@ gq_template_layers("bcfishpass_mobile")
 #> 40 bcfishpass_mobile               Basemap           6           <NA>
 #> 41 bcfishpass_mobile               Basemap           6           <NA>
 #> 42 bcfishpass_mobile               Basemap           6           <NA>
-#> 43 bcfishpass_mobile               Basemap           6            BEC
-#> 44 bcfishpass_mobile               Basemap           6            BEC
-#> 45 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 46 bcfishpass_mobile               Basemap           6    Waterbodies
+#> 43 bcfishpass_mobile               Basemap           6           <NA>
+#> 44 bcfishpass_mobile               Basemap           6           <NA>
+#> 45 bcfishpass_mobile               Basemap           6            BEC
+#> 46 bcfishpass_mobile               Basemap           6            BEC
 #> 47 bcfishpass_mobile               Basemap           6    Waterbodies
 #> 48 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 49 bcfishpass_mobile  Web Mapping Services           7           <NA>
-#> 50 bcfishpass_mobile  Web Mapping Services           7           <NA>
-#> 51 bcfishpass_mobile           Base - misc           8           <NA>
-#> 52 bcfishpass_mobile           Base - misc           8           <NA>
+#> 49 bcfishpass_mobile               Basemap           6    Waterbodies
+#> 50 bcfishpass_mobile               Basemap           6    Waterbodies
+#> 51 bcfishpass_mobile  Web Mapping Services           7           <NA>
+#> 52 bcfishpass_mobile  Web Mapping Services           7           <NA>
 #> 53 bcfishpass_mobile           Base - misc           8           <NA>
 #> 54 bcfishpass_mobile           Base - misc           8           <NA>
 #> 55 bcfishpass_mobile           Base - misc           8           <NA>
 #> 56 bcfishpass_mobile           Base - misc           8           <NA>
 #> 57 bcfishpass_mobile           Base - misc           8           <NA>
 #> 58 bcfishpass_mobile           Base - misc           8           <NA>
+#> 59 bcfishpass_mobile           Base - misc           8           <NA>
+#> 60 bcfishpass_mobile           Base - misc           8           <NA>
+#> 61 bcfishpass_mobile   Base - Orthoimagery           9           <NA>
 #>                                                 layer_key order
 #> 1                                              form_pscis     1
 #> 2                                          form_fiss_site     2
@@ -126,30 +129,33 @@ gq_template_layers("bcfishpass_mobile")
 #> 32                               watershed_group_boundary     1
 #> 33                                         municipalities     2
 #> 34                                        provincial_park     3
-#> 35                                            conservancy     4
-#> 36                                   first_nation_reserve     5
-#> 37                                           range_tenure     6
-#> 38                                         land_ownership     7
-#> 39                                   fire_historical_burn     8
-#> 40                                          fire_severity     9
-#> 41                                               glaciers    10
-#> 42                                                   town    11
-#> 43                                               bec_zone     1
-#> 44                biogeoclimatic_ecosystem_classification     2
-#> 45                                                   lake     1
-#> 46                                                wetland     2
-#> 47                                            rivers_poly     3
-#> 48                                    manmade_waterbodies     4
-#> 49                                fire_perimeters_current     1
-#> 50                                   frep_rip2021_mar2022     2
-#> 51                                        habitat_lateral     1
-#> 52                                              utm_zones     2
-#> 53 terrestrial_ecosystem_information_scanned_map_boundary     3
-#> 54                     terrain_mapping_project_boundaries     4
-#> 55                                        esri_world_topo     5
-#> 56                                            bing_aerial     6
-#> 57                                         esri_satellite     7
-#> 58                                       google_satellite     8
+#> 35                                          national_park     4
+#> 36                                            conservancy     5
+#> 37                            old_growth_management_areas     6
+#> 38                                   first_nation_reserve     7
+#> 39                                           range_tenure     8
+#> 40                                         land_ownership     9
+#> 41                                   fire_historical_burn    10
+#> 42                                          fire_severity    11
+#> 43                                               glaciers    12
+#> 44                                                   town    13
+#> 45                                               bec_zone     1
+#> 46                biogeoclimatic_ecosystem_classification     2
+#> 47                                                   lake     1
+#> 48                                                wetland     2
+#> 49                                            rivers_poly     3
+#> 50                                    manmade_waterbodies     4
+#> 51                                fire_perimeters_current     1
+#> 52                                   frep_rip2021_mar2022     2
+#> 53                                        habitat_lateral     1
+#> 54                                              utm_zones     2
+#> 55 terrestrial_ecosystem_information_scanned_map_boundary     3
+#> 56                     terrain_mapping_project_boundaries     4
+#> 57                                        esri_world_topo     5
+#> 58                                            bing_aerial     6
+#> 59                                         esri_satellite     7
+#> 60                                       google_satellite     8
+#> 61                                       orthophoto_tiles     1
 #>                                                    source_layer source_type
 #> 1                                                    form_pscis       local
 #> 2                                                form_fiss_site       local
@@ -185,30 +191,33 @@ gq_template_layers("bcfishpass_mobile")
 #> 32                   whse_basemapping.fwa_watershed_groups_poly      bcdata
 #> 33           whse_legal_admin_boundaries.abms_municipalities_sp      bcdata
 #> 34                          whse_tantalis.ta_park_ecores_pa_svw      bcdata
-#> 35                       whse_tantalis.ta_conservancy_areas_svw      bcdata
-#> 36                   whse_admin_boundaries.clab_indian_reserves      bcdata
-#> 37                  whse_forest_tenure.ften_range_poly_carto_vw         aws
-#> 38                    whse_cadastre.pmbc_parcel_fabric_poly_svw         aws
-#> 39 whse_land_and_natural_resource.prot_historical_fire_polys_sp      bcdata
-#> 40                  whse_forest_vegetation.veg_burn_severity_sp      bcdata
-#> 41                           whse_basemapping.fwa_glaciers_poly      bcdata
-#> 42                   whse_basemapping.gns_geographical_names_sp      bcdata
-#> 43               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
-#> 44               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
-#> 45                              whse_basemapping.fwa_lakes_poly      bcdata
-#> 46                           whse_basemapping.fwa_wetlands_poly      bcdata
-#> 47                             whse_basemapping.fwa_rivers_poly      bcdata
-#> 48                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
-#> 49                                                         <NA>         wms
-#> 50                                                         <NA>         wms
-#> 51                                                         <NA>       local
-#> 52                           whse_basemapping.utmg_utm_zones_sp      bcdata
-#> 53         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
-#> 54      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
-#> 55                                                         <NA>         wms
-#> 56                                                         <NA>         wms
+#> 35                    whse_admin_boundaries.clab_national_parks      bcdata
+#> 36                       whse_tantalis.ta_conservancy_areas_svw      bcdata
+#> 37        whse_land_use_planning.rmp_ogma_non_legal_current_svw      bcdata
+#> 38                   whse_admin_boundaries.clab_indian_reserves      bcdata
+#> 39                  whse_forest_tenure.ften_range_poly_carto_vw         aws
+#> 40                    whse_cadastre.pmbc_parcel_fabric_poly_svw         aws
+#> 41 whse_land_and_natural_resource.prot_historical_fire_polys_sp      bcdata
+#> 42                  whse_forest_vegetation.veg_burn_severity_sp      bcdata
+#> 43                           whse_basemapping.fwa_glaciers_poly      bcdata
+#> 44                   whse_basemapping.gns_geographical_names_sp      bcdata
+#> 45               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 46               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 47                              whse_basemapping.fwa_lakes_poly      bcdata
+#> 48                           whse_basemapping.fwa_wetlands_poly      bcdata
+#> 49                             whse_basemapping.fwa_rivers_poly      bcdata
+#> 50                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
+#> 51                                                         <NA>         wms
+#> 52                                                         <NA>         wms
+#> 53                                                         <NA>       local
+#> 54                           whse_basemapping.utmg_utm_zones_sp      bcdata
+#> 55         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
+#> 56      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
 #> 57                                                         <NA>         wms
 #> 58                                                         <NA>         wms
+#> 59                                                         <NA>         wms
+#> 60                                                         <NA>         wms
+#> 61        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly      bcdata
 #>       type
 #> 1    point
 #> 2    point
@@ -251,21 +260,24 @@ gq_template_layers("bcfishpass_mobile")
 #> 39 polygon
 #> 40 polygon
 #> 41 polygon
-#> 42   point
+#> 42 polygon
 #> 43 polygon
-#> 44 polygon
+#> 44   point
 #> 45 polygon
 #> 46 polygon
 #> 47 polygon
 #> 48 polygon
-#> 49    <NA>
-#> 50   point
+#> 49 polygon
+#> 50 polygon
 #> 51    <NA>
-#> 52 polygon
-#> 53 polygon
+#> 52   point
+#> 53    <NA>
 #> 54 polygon
-#> 55    <NA>
-#> 56    <NA>
+#> 55 polygon
+#> 56 polygon
 #> 57    <NA>
 #> 58    <NA>
+#> 59    <NA>
+#> 60    <NA>
+#> 61 polygon
 ```
