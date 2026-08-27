@@ -39,3 +39,46 @@
   either, all five named layers present.
 - 11 layers still resolve to `NA` source_layer. That is Phase 4, and it is the
   larger version of the same bug.
+
+### Plan review — and a false claim of mine it caught
+
+26 findings. The blocker was mine: I "corrected" the issue by asserting gq
+already ships symbology for `national_park` and `old_growth_management_areas`.
+It does not. Both QMLs have **zero** `renderer-v2` elements — they are
+attribute-form configs, and their only `<symbol>` nodes are QGIS elevation-
+profile defaults. Verified directly before acting: `lake` and `wetland` have 1
+renderer each, these have 0.
+
+I had taken "a 13 KB QML exists" as "symbology exists". Presence is not content —
+the same shape as trusting a green run without reading what it checked. The
+issue was right and my correction of it was wrong; the plan and issue body both
+had to be re-corrected.
+
+Two more of my own defects the review found, both in the commit that had just
+landed:
+
+- **A test contradicting its own header.** `group_order` sorted-in-file was
+  asserted in the very test written to protect the freedom to number 10/20/30.
+  Appending a group with a mid-range number would have failed it. Replaced with
+  uniqueness, which is the property that actually makes the sort deterministic.
+- **A checked box that was not done.** The "document group_order is sort-only"
+  bullet was marked `[x]` while no `R/` or `man/` file had been touched — the
+  prose existed only in a test comment. Now roxygen on `gq_templates()`. Also
+  learned the bullet's other half was impossible: `read.csv()` defaults
+  `comment.char = ""`, so a `#` header line in the CSV parses as data.
+
+### Phase 4 — the derived rule
+
+`source_type` turned out to be the discriminator already present in the data, so
+the exemption list went from a proposed eleven entries to **zero**. The census
+that settled it: aws 13/13 and fwa/osm 1/1 have source_layer, all 6 wms have
+none, and wms is *exactly* `index.csv kind == "service"` — two hand-maintained
+columns in perfect agreement, now pinned to each other.
+
+`harvest_area`/`planting_site` were mis-diagnosed by me as bcdata layers missing
+a table. Their own notes say otherwise; the wrong field was `source_type`.
+Chasing the table I named would have wasted someone's afternoon.
+
+`form_edna`, `form_monitoring`, `habitat_lateral` exempted with **gq#64** as the
+stated reason, plus an assertion that each exemption is still *needed* — so when
+#64 lands the guard fails and says to delete them.

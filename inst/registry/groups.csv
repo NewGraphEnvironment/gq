@@ -48,8 +48,8 @@ Forms,,form_fiss_site,2,local
 Forms,,form_edna,3,local
 Forms,,form_monitoring,4,local
 Floodplain,,floodplains,1,bcdata
-Restoration,,harvest_area,1,bcdata
-Restoration,,planting_site,2,bcdata
+Restoration,,harvest_area,1,local
+Restoration,,planting_site,2,local
 Web Mapping Services,,fire_perimeters_current,1,wms
 Web Mapping Services,,frep_rip2021_mar2022,2,wms
 Base - Orthoimagery,,orthophoto_tiles,1,bcdata

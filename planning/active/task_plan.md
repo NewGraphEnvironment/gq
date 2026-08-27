@@ -22,12 +22,17 @@ Measured against the files, not taken on trust:
 1. **"Nine layers" is seven.** 9 counts layer×template *pairs* and double-counts
    the two the issue itself says are shared. The restoration list of 5 is exactly
    right.
-2. **`national_park` and `old_growth_management_areas` do not "need real registry
-   work".** gq already ships and indexes QMLs for both
-   (`inst/styles/index.csv:35-36`, ~13 KB and ~15 KB), vendored 2026-08-24. The
-   symbology exists; what is missing is a `groups.csv` row and a `reg_main.json`
-   source_layer/type entry. `planning/archive/2026-08-issue-39-qml-corpus/findings.md:57`
-   already lists both as known store-only layers.
+2. ~~**`national_park` and `old_growth_management_areas` do not "need real
+   registry work"** — gq already ships QMLs for both, so the symbology exists.~~
+   **This correction of mine was FALSE and the issue was right.** Both QMLs
+   contain **zero** `renderer-v2` elements — they are attribute-form QMLs
+   (`fieldConfiguration`, `editform`, `widgets`), and their only `<symbol>`
+   nodes are QGIS 3D elevation-profile defaults. Measured: real styled layers
+   (`lake`, `wetland`) have 1 renderer; these have 0. The 13 KB / 15 KB I cited
+   as evidence of symbology is form config. Exactly five QMLs in the corpus lack
+   a renderer, and they are precisely the five "store-only" keys at
+   `planning/archive/2026-08-issue-39-qml-corpus/findings.md:57` — which is the
+   coherent reason they were never in `groups.csv`, not an oversight.
 3. **It misses a larger gap.** Eight `groups.csv` keys have **no `reg_main.json`
    entry at all** — `bing_aerial`, `esri_satellite`, `esri_world_topo`,
    `google_satellite`, `fire_perimeters_current`, `form_edna`, `form_monitoring`,
@@ -89,27 +94,42 @@ on the next twenty.
 
 ## Phase 3 — `national_park` and `old_growth_management_areas`
 
-- [ ] `groups.csv` rows — decide group and `order` for each
-- [ ] `reg_main.json` entries via the hand-curated path, carrying
-      `whse_admin_boundaries.clab_national_parks` and
-      `whse_land_use_planning.rmp_ogma_non_legal_current_svw`
-- [ ] **Check `reg_custom.csv` can express what these need before routing them
-      through it** — its classified branch has no per-class width or dash field
-      (the trap hit in #61). If either layer's QML is classified, the CSV is
-      lossy and the entry belongs elsewhere
-- [ ] The QMLs already ship, so `gq_style_qml()` must keep resolving for both —
-      assert it still does after the registry entries land
-- [ ] OGMA appears in 6 of 16 projects in the corpus sweep, national_park in 2.
-      Note that asymmetry rather than treating them as one unit
+Rewritten after the review disproved this phase's premise. There is no shipped
+symbology to register; it has to come from somewhere.
+
+- [ ] Symbology from the corpus via `gq_qgs_extract()` on a project that carries
+      the layer — the only route giving faithful entries with real provenance.
+      Falling back to authoring fresh in `reg_custom.csv` is acceptable (both are
+      polygons, the simple branch handles fill/stroke/label) **but the `note`
+      must say the symbology is authored, not extracted**
+- [ ] `reg_custom.csv` row + `Rscript data-raw/reg_build_main.R` — NOT a direct
+      edit of `reg_main.json`, which is a build artifact
+- [ ] `groups.csv` rows with `source_type` and a `source_layer` that is real and
+      schema-qualified, so the Phase 1 guard passes on its own terms
+- [ ] Record that `rmp_ogma_non_legal_current_svw` is the deliberate choice over
+      the `_legal_` variant, or the next person "fixes" it
+- [ ] Acceptance is NOT `gq_style_qml()` returning a path — it never parses the
+      file and would return one for a zero-byte QML. Assert the QML **has a
+      renderer**, which today it does not
+- [ ] OGMA is in 6 of 16 corpus projects, national_park in 2 — treat separately
+      rather than as one unit
 
 ## Phase 4 — The `NA` source_layer set the issue missed
 
-- [ ] Decide each of the 11 explicitly: legitimately source-free (exempt, with
-      the reason recorded) or a real gap (fix or file)
-- [ ] `harvest_area` and `planting_site` are the suspicious pair — `bcdata` in
-      `groups.csv` with no `source_layer`. Resolve or file separately
-- [ ] Whatever is not fixed here becomes an exemption from Phase 1's guard, so
-      the guard goes green honestly rather than by being narrowed
+- [x] Rule **derived from `source_type`**, not a hand-maintained exemption list.
+      The direction of failure is the point: a list must be extended per layer,
+      so a new layer defaults to *exempt*; a derived rule defaults to *checked*
+- [x] `source_type` validated against a closed set first — it was unvalidated
+      and nearly unconsumed, so a typo would have fallen through every branch
+- [x] `wms` layers pinned to `index.csv` `kind == "service"` — two separately
+      authored columns that must agree, each now a witness for the other
+- [x] `harvest_area` / `planting_site`: the bug was **`source_type=bcdata`**,
+      not the missing `source_layer`. Their own `reg_custom.csv` notes say
+      "buffered river corridor" and "proposed restoration planting location" —
+      project-authored, not BCGW tables. Changed to `local` with the sentinel
+- [x] The three that cannot be resolved here — `form_edna`, `form_monitoring`,
+      `habitat_lateral` — exempted with **gq#64** named as the reason, plus an
+      assertion that each exemption is still needed so they cannot outlive it
 
 ## Phase 5 — Reconcile the issue body
 

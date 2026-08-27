@@ -1670,6 +1670,7 @@
     },
     "harvest_area": {
       "type": "polygon",
+      "source_layer": "harvest_area",
       "fill": {
         "color": "#8b7355",
         "opacity": 0.3
@@ -1682,6 +1683,7 @@
     },
     "planting_site": {
       "type": "point",
+      "source_layer": "planting_site",
       "mark": {
         "color": "#2d8659",
         "shape": "circle",
