@@ -82,16 +82,27 @@ layers (`:147` is in the unclassified branch only).
 
 ## Phase 2 — Make the legend describe the map (#61's headline defect)
 
-- [ ] Add `streams_salmon` to the `gq_tmap_legend()` call
-      (`vignettes/gq-tmap-composition.Rmd:284`) with
-      `present = list(streams_salmon = <the 6 non-INTERMITTENT keys>)`
-- [ ] Prose: one sentence that a dashed line means intermittent, so the six
-      dropped rows stay explained
-- [ ] **Add a guard chunk so this cannot recur.** Collect the layer keys the
-      vignette styles from the registry and the keys it passes to
-      `gq_tmap_legend()`; `stop()` on any styled-but-unlegended key. This is the
-      class of defect that shipped here, and it is cheap to make impossible
-- [ ] Confirm the guard fires: remove `streams_salmon` again, see the build stop
+- [x] Add `streams_salmon` to the `gq_tmap_legend()` call, **unnamed** — a
+      caller-supplied name is silently discarded for classified layers, so a
+      `c("Salmon habitat" = ...)` would mislead the next reader
+- [x] `present` narrowed to the non-`;INTERMITTENT` keys, **derived from the
+      data** rather than typed. There are 7 of them, not 6, so the line legend
+      is 13 entries — hand-typing the list would re-create the drift the guard
+      is being added to prevent
+- [x] Prose: one sentence that a dashed line means intermittent, so the dropped
+      rows stay explained
+- [x] **A guard so this cannot recur — as a test, not a vignette chunk.** It
+      parses the `map-composition` chunk with R's own parser and compares the
+      layers drawn against the layers legended. Rejected alternatives: a second
+      hand-maintained list (drifts, which is the bug), and wrapping every
+      `gq_tmap_style()` call in a recording helper (the chunk is documentation;
+      a bespoke wrapper makes the example dishonest about the API)
+- [x] Scope it to the one named chunk — a whole-file scan reads the teaching
+      chunk and the keymap's inset style as false positives — and `stop()` when
+      the chunk is not found, so a rename fails loudly instead of vacuously
+- [x] Confirm the guard fires, on both failure modes: layer drawn but not
+      legended, and chunk renamed. Verified against the real vignette, restored
+      byte-identically after each
 
 ## Phase 3 — Make the map read
 
@@ -104,8 +115,12 @@ layers (`:147` is in the unclassified branch only).
 - [ ] Replace or retune the basemap. `WorldGrayCanvas × WorldShadedRelief` at
       `gamma = 0.5` is a featureless grey field that only lowers contrast — a
       basemap that adds no terrain reading is not neutral
-- [ ] Fix the ~20% dead band above the watershed — `gq_bbox_aspect()` put nearly
-      all the 7:9 slack on one side
+- [ ] Reconsider the canvas aspect. **Not** a `gq_bbox_aspect()` defect — it
+      pads symmetrically, measured 21.7% above and 21.7% below. The band above
+      has an identical twin below, hidden because the legend sits in it. The
+      cause is asking a ~1.32:1 landscape watershed to fill a 7:9 portrait
+      frame. Either go landscape, move `asp` toward the data, or keep 7:9 and
+      put something in both bands deliberately
 - [ ] Size type for the width the figure is **published** at (~700 px), not
       rendered at (7 in). `legend.text.size = 0.5` and `size = 0.45` labels land
       at a few pixels on the site

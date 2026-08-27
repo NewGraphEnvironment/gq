@@ -13,8 +13,8 @@ class_labels <- function(reg, layer) {
 }
 
 test_that("no ACCESS class is labelled with a barrier-status phrase", {
-  # `mapping_code` is `<habitat use>;<barrier status>[;INTERMITTENT]`. Token 1 is
-  # habitat use -- SPAWN is "Spawning", REAR is "Rearing", ACCESS is
+  # `mapping_code` is `<habitat use>;<barrier status>[;INTERMITTENT]`. Token 1
+  # is habitat use -- SPAWN is "Spawning", REAR is "Rearing", ACCESS is
   # "Accessible". Labelling ACCESS with a barrier phrase produces
   # "No known barriers; known barrier", which contradicts itself in a legend.
   #

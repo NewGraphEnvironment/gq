@@ -56,8 +56,12 @@ explain it — that is a more useful lesson than "turn every layer on".
 - **The AOI has no containment.** Inside and outside the watershed render
   identically; only a thin dark boundary separates them, so the subject of the
   map is not visually obvious.
-- **~20% of the frame is empty** above the watershed — `gq_bbox_aspect()` put
-  nearly all of the 7:9 slack on one side.
+- **~40% of the frame height is padding**, split evenly above and below. The
+  band above reads as dead space; its twin below is merely hidden under the
+  legend. This is **not** a `gq_bbox_aspect()` defect — measured, it pads
+  symmetrically (21.7% each side). It is the cost of asking a ~1.32:1 landscape
+  watershed to fill a 7:9 portrait frame, so the fix is the aspect choice, not
+  the function.
 - **Text is sized for the render, not the publication.** A 7×9 in figure is
   squeezed into `html_vignette`'s ~700 px column, so `legend.text.size = 0.5`
   and `size = 0.45` labels land at a few pixels on the site.

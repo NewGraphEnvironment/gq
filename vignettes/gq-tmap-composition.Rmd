@@ -281,14 +281,35 @@ if (nrow(stream_labels) > 0) {
 # expands classified layers to one entry per class, merges simple and classified
 # layers of the same type into one legend, and collapses classes that render
 # identically. `present` cuts road classes to the ones the data actually has.
+# Salmon habitat is the most prominent linework on this map, and it was absent
+# from this list until #61 -- the reader saw red dominating the figure with
+# nothing saying what red meant, while the prose below described its widths and
+# dashes in detail. Building the legend from the layer list answers "did I list
+# my layers", which always says yes. The check that catches this is the other
+# direction: rank what draws the eye in the rendered image, then confirm each of
+# those is here.
+#
+# `present` cuts each classified layer to the classes its data actually carries.
+# Habitat drops its `;INTERMITTENT` variants too -- they differ from their solid
+# twins by a dash alone, and carrying all twelve would put eighteen entries in
+# one box on a figure published about 700 px wide. The dash is explained once in
+# prose instead. Note this is a narrowing decision, not a collapse:
+# gq_tmap_legend() keys its dedup on the whole row including the label, so the
+# repeated colours here do not merge on their own.
+habitat_classes <- unique(neexdzii_habitat$mapping_code)
+habitat_legend <- grep(";INTERMITTENT$", habitat_classes,
+                       value = TRUE, invert = TRUE)
+
 leg <- gq_tmap_legend(
   reg,
   c("Lake" = "lake", "Wetland" = "wetland", "Stream" = "streams_all",
+    "streams_salmon",
     "roads_dra", "Railway" = "railway",
     "crossings_pscis_assessment",
     "Fish obs" = "bcfishobs_fiss_fish_observations",
     "Falls" = "fiss_obstacles"),
-  present = list(roads_dra = unique(neexdzii_roads$road_type))
+  present = list(roads_dra = unique(neexdzii_roads$road_type),
+                 streams_salmon = habitat_legend)
 )
 
 m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
@@ -356,5 +377,14 @@ Every color on this map traces back to `gq_reg_main()`:
   colour, and both axes render (#36)
 - **The legend** is built by `gq_tmap_legend()` from the registry — it partitions
   by geometry type, expands classified layers, collapses classes that render
-  identically, and cuts road classes to the ones present in the data. Change a
-  colour in the registry and every element updates
+  identically, and cuts each classified layer to the classes present in the data.
+  Change a colour in the registry and every element updates
+
+**Reading the habitat lines.** Width is habitat use — spawning is widest,
+accessible-only is thinnest — and colour is the barrier status downstream. A
+**dashed** line of any width or colour is an intermittent reach. The legend
+lists the solid variants only: each dashed class differs from its solid twin by
+the dash alone, so showing both would double the habitat entries to explain one
+distinction. That is a deliberate narrowing rather than something
+`gq_tmap_legend()` did on its own — its dedup keys on the whole entry including
+the label, so classes sharing a colour do not merge by themselves.
