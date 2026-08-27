@@ -65,4 +65,11 @@ because it says to rank the *image* rather than the layer list.
 review measured it as a re-composition with no registry legend at all and 87% of
 its crossings outside its own AOI.
 
-Commits `1dbe8f8`..`ed2b76f`. PR #63. Closes #33, #37.
+Commits `1dbe8f8`..`c22640f`. PR #63. Closes #33, #37. Split out: #62.
+
+Late addition worth naming: the coverage guard located the vignette by
+walking up for a `vignettes/` **directory**, which under `R CMD check`
+matched an unrelated one in the temp tree — reported success, then died on
+`readLines()`. One new ERROR against a zero-error baseline, invisible to
+`devtools::test()`. A directory of the right name is not evidence the file
+is in it.
