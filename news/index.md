@@ -1,5 +1,67 @@
 # Changelog
 
+## gq 0.9.0
+
+- **Breaking for label text: the `ACCESS` `mapping_code` classes are
+  relabelled.** `mapping_code` is
+  `<habitat use>;<barrier status>[;INTERMITTENT]`, but the source QGIS
+  project labelled token 1 `ACCESS` with the token 2 vocabulary, so
+  every ACCESS class read back as a self-contradiction:
+
+  | class | was | now |
+  |----|----|----|
+  | `ACCESS;NONE` | `No known barriers; no known barriers` | `Accessible; no known barriers` |
+  | `ACCESS;MODELLED` | `No known barriers; potential barrier` | `Accessible; potential barrier` |
+  | `ACCESS;ASSESSED` | `No known barriers; known barrier` | `Accessible; known barrier` |
+  | `ACCESS;DAM` | `No known barriers; dam` | `Accessible; dam` |
+  | `ACCESS;REMEDIATED` | `No known barriers; remediated` | `Accessible; remediated` |
+
+  …and the five `;INTERMITTENT` variants of each, on `streams_salmon`,
+  `streams_st` and `streams_bt` — 30 classes in all. Colours, widths,
+  dashes and class keys are untouched.
+
+  **If your project hand-decodes these tokens, you can delete that
+  code.** At least three did. Anything that string-matches the old label
+  text needs updating.
+
+  This corrects an upstream authoring bug
+  (NewGraphEnvironment/bcfishpass#13) at gq’s registry build.
+  [`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md)
+  is the corrected surface. Deliberately *not* corrected, because both
+  must stay faithful to their source:
+  [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md),
+  which copies the category label verbatim from whatever `.qgs` you hand
+  it, and the shipped QML corpus
+  ([`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)),
+  which is byte-identical to rfp’s store — so a style loaded into QGIS
+  Desktop or QWC2 still shows the upstream wording until
+  [\#13](https://github.com/NewGraphEnvironment/gq/issues/13) lands. The
+  `reg_qgis_*.json` extraction artifacts are likewise left as-extracted.
+  Closes [\#33](https://github.com/NewGraphEnvironment/gq/issues/33),
+  [\#37](https://github.com/NewGraphEnvironment/gq/issues/37).
+
+- **The composition vignette’s map now describes itself.** Its most
+  prominent feature — a 397-feature salmon habitat network — was styled
+  from the registry and missing from the legend entirely, while the
+  prose beneath described its widths and dashes. Fixed, along with the
+  reason it went unnoticed: a new test parses the map chunk and fails
+  the build if any layer drawn from the registry is absent from the
+  legend.
+
+  The map also gained AOI containment, type sized for the width it is
+  published at, and an editorial cut — 130 of 146 crossings are modelled
+  candidates rather than surveyed sites, and at their correct size they
+  buried the network the map exists to show.
+  [\#61](https://github.com/NewGraphEnvironment/gq/issues/61).
+
+- Both vignettes moved to
+  [`bookdown::html_vignette2`](https://pkgs.rstudio.com/bookdown/reference/html_document2.html)
+  with numbered figure captions; `bookdown` added to `Suggests`.
+
+- Removed the dead `registry/` directory at the repo root — a
+  build-ignored fossil superseded by `inst/registry/` at the original
+  scaffold.
+
 ## gq 0.8.0
 
 - **Point symbols now render at the size the registry says.** The

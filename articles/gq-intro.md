@@ -285,6 +285,9 @@ m
 streams, lakes, roads, railway, and PSCIS
 crossings](gq-intro_files/figure-html/tmap-study-area-1.png)
 
+PSCIS crossings around the Bittner Creek watershed, classified by
+barrier status from the gq registry.
+
 Every color on that map traces back to the registry. The PSCIS crossing
 colors (red = barrier, green = passable, orange = potential, purple =
 unknown) match the QGIS project exactly because they come from the same
@@ -404,6 +407,8 @@ maplibre(
     circle_stroke_width = 1
   )
 ```
+
+The same registry styles translated to MapLibre GL paint properties.
 
 The PSCIS crossings use a MapLibre `match` expression built from the
 registry:

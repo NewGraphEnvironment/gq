@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,39 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="gq-090">gq 0.9.0<a class="anchor" aria-label="anchor" href="#gq-090"></a></h2>
+<ul><li>
+<p><strong>Breaking for label text: the <code>ACCESS</code> <code>mapping_code</code> classes are relabelled.</strong> <code>mapping_code</code> is <code>&lt;habitat use&gt;;&lt;barrier status&gt;[;INTERMITTENT]</code>, but the source QGIS project labelled token 1 <code>ACCESS</code> with the token 2 vocabulary, so every ACCESS class read back as a self-contradiction:</p>
+<table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>class</th>
+<th>was</th>
+<th>now</th>
+</tr></thead><tbody><tr><td><code>ACCESS;NONE</code></td>
+<td><code>No known barriers; no known barriers</code></td>
+<td><code>Accessible; no known barriers</code></td>
+</tr><tr><td><code>ACCESS;MODELLED</code></td>
+<td><code>No known barriers; potential barrier</code></td>
+<td><code>Accessible; potential barrier</code></td>
+</tr><tr><td><code>ACCESS;ASSESSED</code></td>
+<td><code>No known barriers; known barrier</code></td>
+<td><code>Accessible; known barrier</code></td>
+</tr><tr><td><code>ACCESS;DAM</code></td>
+<td><code>No known barriers; dam</code></td>
+<td><code>Accessible; dam</code></td>
+</tr><tr><td><code>ACCESS;REMEDIATED</code></td>
+<td><code>No known barriers; remediated</code></td>
+<td><code>Accessible; remediated</code></td>
+</tr></tbody></table><p>…and the five <code>;INTERMITTENT</code> variants of each, on <code>streams_salmon</code>, <code>streams_st</code> and <code>streams_bt</code> — 30 classes in all. Colours, widths, dashes and class keys are untouched.</p>
+<p><strong>If your project hand-decodes these tokens, you can delete that code.</strong> At least three did. Anything that string-matches the old label text needs updating.</p>
+<p>This corrects an upstream authoring bug (NewGraphEnvironment/bcfishpass#13) at gq’s registry build. <code><a href="../reference/gq_reg_main.html">gq_reg_main()</a></code> is the corrected surface. Deliberately <em>not</em> corrected, because both must stay faithful to their source: <code><a href="../reference/gq_qgs_extract.html">gq_qgs_extract()</a></code>, which copies the category label verbatim from whatever <code>.qgs</code> you hand it, and the shipped QML corpus (<code><a href="../reference/gq_style_qml.html">gq_style_qml()</a></code>), which is byte-identical to rfp’s store — so a style loaded into QGIS Desktop or QWC2 still shows the upstream wording until <a href="https://github.com/NewGraphEnvironment/gq/issues/13" class="external-link">#13</a> lands. The <code>reg_qgis_*.json</code> extraction artifacts are likewise left as-extracted. Closes <a href="https://github.com/NewGraphEnvironment/gq/issues/33" class="external-link">#33</a>, <a href="https://github.com/NewGraphEnvironment/gq/issues/37" class="external-link">#37</a>.</p>
+</li>
+<li>
+<p><strong>The composition vignette’s map now describes itself.</strong> Its most prominent feature — a 397-feature salmon habitat network — was styled from the registry and missing from the legend entirely, while the prose beneath described its widths and dashes. Fixed, along with the reason it went unnoticed: a new test parses the map chunk and fails the build if any layer drawn from the registry is absent from the legend.</p>
+<p>The map also gained AOI containment, type sized for the width it is published at, and an editorial cut — 130 of 146 crossings are modelled candidates rather than surveyed sites, and at their correct size they buried the network the map exists to show. <a href="https://github.com/NewGraphEnvironment/gq/issues/61" class="external-link">#61</a>.</p>
+</li>
+<li><p>Both vignettes moved to <code><a href="https://pkgs.rstudio.com/bookdown/reference/html_document2.html" class="external-link">bookdown::html_vignette2</a></code> with numbered figure captions; <code>bookdown</code> added to <code>Suggests</code>.</p></li>
+<li><p>Removed the dead <code>registry/</code> directory at the repo root — a build-ignored fossil superseded by <code>inst/registry/</code> at the original scaffold.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.0" id="gq-080">gq 0.8.0<a class="anchor" aria-label="anchor" href="#gq-080"></a></h2>
 <ul><li>

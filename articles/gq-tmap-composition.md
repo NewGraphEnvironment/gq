@@ -396,9 +396,25 @@ falls_sty <- gq_style(reg, "fiss_obstacles")
 lake_sty <- gq_style(reg, "lake")
 
 # Polygon layers — do.call() with gq_tmap_style() directly
+# Contain the AOI. Without this, inside and outside the watershed render
+# identically and only a thin boundary line separates them, so the subject of
+# the map is not visually obvious -- a reader has to be told where to look.
+# Knocking back everything outside does that without hiding the context, which
+# a hard clip would.
+#
+# Note the frame is 41% padding by height, split evenly above and below (7:9
+# portrait against a ~1.32:1 landscape watershed). That padding is where the
+# scalebar, logo, legend and keymap live, so it is element space rather than
+# waste -- but it only reads that way once the AOI itself stands out.
+aoi_mask <- sf::st_difference(bb_box, sf::st_geometry(neexdzii_wsd))
+#> although coordinates are longitude/latitude, st_difference assumes that they
+#> are planar
+
 m <- basemap +
 tm_shape(bb_box) +
   tm_borders(lwd = 0, col = NA) +
+tm_shape(aoi_mask) +
+  tm_polygons(fill = "white", fill_alpha = 0.45, col = NA, lwd = 0) +
 tm_shape(neexdzii_wsd) +
   tm_polygons(fill_alpha = 0, col = "#2c3e50", lwd = 1.5) +
 tm_shape(neexdzii_wetlands) +
@@ -427,7 +443,7 @@ tm_shape(neexdzii_lakes) +
 # Lake labels — color from registry
 if (nrow(lakes_named) > 0) {
   m <- m + tm_shape(lakes_named) +
-    tm_text("gnis_name_1", size = 0.5, col = lake_sty$stroke$color,
+    tm_text("gnis_name_1", size = 0.7, col = lake_sty$stroke$color,
             fontface = "italic",
             options = opt_tm_text(shadow = TRUE))
 }
@@ -449,8 +465,23 @@ if (nrow(neexdzii_railway) > 0) {
 
 # Crossings — classified by barrier_status (xref: bcfishpass.crossings uses
 # barrier_status, registry expects barrier_result_code from PSCIS WHSE)
+#
+# An editorial decision, and the reason for it: 130 of these 146 crossings are
+# POTENTIAL -- modelled candidates for assessment rather than surveyed sites.
+# At their true registry size (3 mm, correct since #16) they are 89% of the
+# point symbols on the map and they bury the stream network the habitat
+# classification exists to describe. QGIS never shows this because you would be
+# zoomed in; a static overview has to choose.
+#
+# So this map shows the assessed inventory and says so. The modelled crossings
+# are not wrong and are not mis-sized -- they are a different map's subject.
+# Note what is NOT done here: hand-tuning `size` down for one class would
+# reintroduce exactly the per-map guessing #16 removed.
+crossings_assessed <- neexdzii_crossings[
+  neexdzii_crossings$barrier_status != "POTENTIAL", ]
+
 m <- m +
-tm_shape(neexdzii_crossings) +
+tm_shape(crossings_assessed) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment",
                                   field = "barrier_status"))
 
@@ -475,7 +506,7 @@ if (nrow(neexdzii_falls) > 0) {
 # Stream labels
 if (nrow(stream_labels) > 0) {
   m <- m + tm_shape(stream_labels) +
-    tm_text("gnis_name", size = 0.45, fontface = "italic", col = "#1a5276",
+    tm_text("gnis_name", size = 0.65, fontface = "italic", col = "#1a5276",
             options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
 }
 
@@ -483,14 +514,37 @@ if (nrow(stream_labels) > 0) {
 # expands classified layers to one entry per class, merges simple and classified
 # layers of the same type into one legend, and collapses classes that render
 # identically. `present` cuts road classes to the ones the data actually has.
+# Salmon habitat is the most prominent linework on this map, and it was absent
+# from this list until #61 -- the reader saw red dominating the figure with
+# nothing saying what red meant, while the prose below described its widths and
+# dashes in detail. Building the legend from the layer list answers "did I list
+# my layers", which always says yes. The check that catches this is the other
+# direction: rank what draws the eye in the rendered image, then confirm each of
+# those is here.
+#
+# `present` cuts each classified layer to the classes its data actually carries.
+# Habitat drops its `;INTERMITTENT` variants too -- they differ from their solid
+# twins by a dash alone, and carrying all twelve would put eighteen entries in
+# one box on a figure published about 700 px wide. The dash is explained once in
+# prose instead. Note this is a narrowing decision, not a collapse:
+# gq_tmap_legend() keys its dedup on the whole row including the label, so the
+# repeated colours here do not merge on their own.
+habitat_classes <- unique(neexdzii_habitat$mapping_code)
+habitat_legend <- grep(";INTERMITTENT$", habitat_classes,
+                       value = TRUE, invert = TRUE)
+
 leg <- gq_tmap_legend(
   reg,
   c("Lake" = "lake", "Wetland" = "wetland", "Stream" = "streams_all",
+    "streams_salmon",
     "roads_dra", "Railway" = "railway",
     "crossings_pscis_assessment",
     "Fish obs" = "bcfishobs_fiss_fish_observations",
     "Falls" = "fiss_obstacles"),
-  present = list(roads_dra = unique(neexdzii_roads$road_type))
+  present = list(roads_dra = unique(neexdzii_roads$road_type),
+                 streams_salmon = habitat_legend,
+                 crossings_pscis_assessment = unique(
+                   crossings_assessed$barrier_status))
 )
 
 m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
@@ -506,11 +560,20 @@ m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
 # - Logo:     top-right
 # - Scalebar: top-left
 # - Keymap:   bottom-right (via grid viewport)
+#
+# Bottom-left is where "legend over least-important terrain" lands here, and it
+# was settled by rendering both, not by reasoning. Top-left looks like the
+# better corner -- the upper band is empty ground outside the AOI -- but a
+# nineteen-row legend hung from it reaches down over the northwest arm and hides
+# the barrier crossings, which are the most important points on the map. The
+# bottom-left box overlaps the southwest arm instead, where nothing is
+# obscured. Read the PNG; the emptiest corner of the frame is not necessarily
+# the least important.
 m <- m +
 tm_scalebar(
   # gq_scale_breaks() needs metre units and says so, so project the bbox first
   breaks = gq_scale_breaks(st_bbox(st_transform(st_as_sfc(bbox), 3005))),
-  text.size = 0.5,
+  text.size = 0.7,
   position = c("left", "top"),
   margins = c(0, 0, 0, 0)
 ) +
@@ -524,8 +587,12 @@ tm_layout(
   legend.frame = TRUE,
   legend.bg.color = "white",
   legend.bg.alpha = 0.85,
-  legend.text.size = 0.5,
-  legend.title.size = 0.6,
+  # Sized for the width the figure is PUBLISHED at, not the width it is
+  # rendered at. A 7 in figure lands in roughly a 700 px column, so it is scaled
+  # to about 60% -- text set to look right in the render is a few pixels on the
+  # page.
+  legend.text.size = 0.7,
+  legend.title.size = 0.8,
   inner.margins = c(0.001, 0.001, 0.001, 0.001),
   outer.margins = c(0.003, 0.003, 0.003, 0.003),
   meta.margins = 0
@@ -545,6 +612,10 @@ print(keymap, vp = km$viewport)
 observations, streams, lakes, wetlands, roads, and railway styled from
 the gq
 registry](gq-tmap-composition_files/figure-html/map-composition-1.png)
+
+Neexdzii Kwa subbasin: salmon habitat classified by use and barrier
+status, over the assessed PSCIS crossing inventory. Every colour, width
+and dash resolves from the gq registry.
 
 Every color on this map traces back to
 [`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md):
@@ -567,6 +638,17 @@ Every color on this map traces back to
 - **The legend** is built by
   [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
   from the registry — it partitions by geometry type, expands classified
-  layers, collapses classes that render identically, and cuts road
-  classes to the ones present in the data. Change a colour in the
-  registry and every element updates
+  layers, collapses classes that render identically, and cuts each
+  classified layer to the classes present in the data. Change a colour
+  in the registry and every element updates
+
+**Reading the habitat lines.** Width is habitat use — spawning is
+widest, accessible-only is thinnest — and colour is the barrier status
+downstream. A **dashed** line of any width or colour is an intermittent
+reach. The legend lists the solid variants only: each dashed class
+differs from its solid twin by the dash alone, so showing both would
+double the habitat entries to explain one distinction. That is a
+deliberate narrowing rather than something
+[`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
+did on its own — its dedup keys on the whole entry including the label,
+so classes sharing a colour do not merge by themselves.

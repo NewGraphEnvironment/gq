@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -445,9 +445,25 @@ labels last.</p>
 <span><span class="va">lake_sty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_style.html">gq_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"lake"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Polygon layers — do.call() with gq_tmap_style() directly</span></span>
+<span><span class="co"># Contain the AOI. Without this, inside and outside the watershed render</span></span>
+<span><span class="co"># identically and only a thin boundary line separates them, so the subject of</span></span>
+<span><span class="co"># the map is not visually obvious -- a reader has to be told where to look.</span></span>
+<span><span class="co"># Knocking back everything outside does that without hiding the context, which</span></span>
+<span><span class="co"># a hard clip would.</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># Note the frame is 41% padding by height, split evenly above and below (7:9</span></span>
+<span><span class="co"># portrait against a ~1.32:1 landscape watershed). That padding is where the</span></span>
+<span><span class="co"># scalebar, logo, legend and keymap live, so it is element space rather than</span></span>
+<span><span class="co"># waste -- but it only reads that way once the AOI itself stands out.</span></span>
+<span><span class="va">aoi_mask</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_binary_ops.html" class="external-link">st_difference</a></span><span class="op">(</span><span class="va">bb_box</span>, <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">neexdzii_wsd</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; although coordinates are longitude/latitude, st_difference assumes that they</span></span>
+<span><span class="co">#&gt; are planar</span></span>
+<span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">basemap</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">bb_box</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_polygons.html" class="external-link">tm_borders</a></span><span class="op">(</span>lwd <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">aoi_mask</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_polygons.html" class="external-link">tm_polygons</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"white"</span>, fill_alpha <span class="op">=</span> <span class="fl">0.45</span>, col <span class="op">=</span> <span class="cn">NA</span>, lwd <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_wsd</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_polygons.html" class="external-link">tm_polygons</a></span><span class="op">(</span>fill_alpha <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"#2c3e50"</span>, lwd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_wetlands</span><span class="op">)</span> <span class="op">+</span></span>
@@ -476,7 +492,7 @@ labels last.</p>
 <span><span class="co"># Lake labels — color from registry</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">lakes_named</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">lakes_named</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text</a></span><span class="op">(</span><span class="st">"gnis_name_1"</span>, size <span class="op">=</span> <span class="fl">0.5</span>, col <span class="op">=</span> <span class="va">lake_sty</span><span class="op">$</span><span class="va">stroke</span><span class="op">$</span><span class="va">color</span>,</span>
+<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text</a></span><span class="op">(</span><span class="st">"gnis_name_1"</span>, size <span class="op">=</span> <span class="fl">0.7</span>, col <span class="op">=</span> <span class="va">lake_sty</span><span class="op">$</span><span class="va">stroke</span><span class="op">$</span><span class="va">color</span>,</span>
 <span>            fontface <span class="op">=</span> <span class="st">"italic"</span>,</span>
 <span>            options <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">opt_tm_text</a></span><span class="op">(</span>shadow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
@@ -498,8 +514,23 @@ labels last.</p>
 <span></span>
 <span><span class="co"># Crossings — classified by barrier_status (xref: bcfishpass.crossings uses</span></span>
 <span><span class="co"># barrier_status, registry expects barrier_result_code from PSCIS WHSE)</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># An editorial decision, and the reason for it: 130 of these 146 crossings are</span></span>
+<span><span class="co"># POTENTIAL -- modelled candidates for assessment rather than surveyed sites.</span></span>
+<span><span class="co"># At their true registry size (3 mm, correct since #16) they are 89% of the</span></span>
+<span><span class="co"># point symbols on the map and they bury the stream network the habitat</span></span>
+<span><span class="co"># classification exists to describe. QGIS never shows this because you would be</span></span>
+<span><span class="co"># zoomed in; a static overview has to choose.</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># So this map shows the assessed inventory and says so. The modelled crossings</span></span>
+<span><span class="co"># are not wrong and are not mis-sized -- they are a different map's subject.</span></span>
+<span><span class="co"># Note what is NOT done here: hand-tuning `size` down for one class would</span></span>
+<span><span class="co"># reintroduce exactly the per-map guessing #16 removed.</span></span>
+<span><span class="va">crossings_assessed</span> <span class="op">&lt;-</span> <span class="va">neexdzii_crossings</span><span class="op">[</span></span>
+<span>  <span class="va">neexdzii_crossings</span><span class="op">$</span><span class="va">barrier_status</span> <span class="op">!=</span> <span class="st">"POTENTIAL"</span>, <span class="op">]</span></span>
+<span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">neexdzii_crossings</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">crossings_assessed</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_dots</span>, <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span>,</span>
 <span>                                  field <span class="op">=</span> <span class="st">"barrier_status"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -524,7 +555,7 @@ labels last.</p>
 <span><span class="co"># Stream labels</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">stream_labels</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">stream_labels</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text</a></span><span class="op">(</span><span class="st">"gnis_name"</span>, size <span class="op">=</span> <span class="fl">0.45</span>, fontface <span class="op">=</span> <span class="st">"italic"</span>, col <span class="op">=</span> <span class="st">"#1a5276"</span>,</span>
+<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text</a></span><span class="op">(</span><span class="st">"gnis_name"</span>, size <span class="op">=</span> <span class="fl">0.65</span>, fontface <span class="op">=</span> <span class="st">"italic"</span>, col <span class="op">=</span> <span class="st">"#1a5276"</span>,</span>
 <span>            options <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">opt_tm_text</a></span><span class="op">(</span>shadow <span class="op">=</span> <span class="cn">TRUE</span>, remove_overlap <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
@@ -532,14 +563,37 @@ labels last.</p>
 <span><span class="co"># expands classified layers to one entry per class, merges simple and classified</span></span>
 <span><span class="co"># layers of the same type into one legend, and collapses classes that render</span></span>
 <span><span class="co"># identically. `present` cuts road classes to the ones the data actually has.</span></span>
+<span><span class="co"># Salmon habitat is the most prominent linework on this map, and it was absent</span></span>
+<span><span class="co"># from this list until #61 -- the reader saw red dominating the figure with</span></span>
+<span><span class="co"># nothing saying what red meant, while the prose below described its widths and</span></span>
+<span><span class="co"># dashes in detail. Building the legend from the layer list answers "did I list</span></span>
+<span><span class="co"># my layers", which always says yes. The check that catches this is the other</span></span>
+<span><span class="co"># direction: rank what draws the eye in the rendered image, then confirm each of</span></span>
+<span><span class="co"># those is here.</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># `present` cuts each classified layer to the classes its data actually carries.</span></span>
+<span><span class="co"># Habitat drops its `;INTERMITTENT` variants too -- they differ from their solid</span></span>
+<span><span class="co"># twins by a dash alone, and carrying all twelve would put eighteen entries in</span></span>
+<span><span class="co"># one box on a figure published about 700 px wide. The dash is explained once in</span></span>
+<span><span class="co"># prose instead. Note this is a narrowing decision, not a collapse:</span></span>
+<span><span class="co"># gq_tmap_legend() keys its dedup on the whole row including the label, so the</span></span>
+<span><span class="co"># repeated colours here do not merge on their own.</span></span>
+<span><span class="va">habitat_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">neexdzii_habitat</span><span class="op">$</span><span class="va">mapping_code</span><span class="op">)</span></span>
+<span><span class="va">habitat_legend</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">";INTERMITTENT$"</span>, <span class="va">habitat_classes</span>,</span>
+<span>                       value <span class="op">=</span> <span class="cn">TRUE</span>, invert <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">leg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_legend.html">gq_tmap_legend</a></span><span class="op">(</span></span>
 <span>  <span class="va">reg</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Lake"</span> <span class="op">=</span> <span class="st">"lake"</span>, <span class="st">"Wetland"</span> <span class="op">=</span> <span class="st">"wetland"</span>, <span class="st">"Stream"</span> <span class="op">=</span> <span class="st">"streams_all"</span>,</span>
+<span>    <span class="st">"streams_salmon"</span>,</span>
 <span>    <span class="st">"roads_dra"</span>, <span class="st">"Railway"</span> <span class="op">=</span> <span class="st">"railway"</span>,</span>
 <span>    <span class="st">"crossings_pscis_assessment"</span>,</span>
 <span>    <span class="st">"Fish obs"</span> <span class="op">=</span> <span class="st">"bcfishobs_fiss_fish_observations"</span>,</span>
 <span>    <span class="st">"Falls"</span> <span class="op">=</span> <span class="st">"fiss_obstacles"</span><span class="op">)</span>,</span>
-<span>  present <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>roads_dra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">neexdzii_roads</span><span class="op">$</span><span class="va">road_type</span><span class="op">)</span><span class="op">)</span></span>
+<span>  present <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>roads_dra <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">neexdzii_roads</span><span class="op">$</span><span class="va">road_type</span><span class="op">)</span>,</span>
+<span>                 streams_salmon <span class="op">=</span> <span class="va">habitat_legend</span>,</span>
+<span>                 crossings_pscis_assessment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span></span>
+<span>                   <span class="va">crossings_assessed</span><span class="op">$</span><span class="va">barrier_status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">`+`</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">leg</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_add_legend</span>, <span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -555,11 +609,20 @@ labels last.</p>
 <span><span class="co"># - Logo:     top-right</span></span>
 <span><span class="co"># - Scalebar: top-left</span></span>
 <span><span class="co"># - Keymap:   bottom-right (via grid viewport)</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># Bottom-left is where "legend over least-important terrain" lands here, and it</span></span>
+<span><span class="co"># was settled by rendering both, not by reasoning. Top-left looks like the</span></span>
+<span><span class="co"># better corner -- the upper band is empty ground outside the AOI -- but a</span></span>
+<span><span class="co"># nineteen-row legend hung from it reaches down over the northwest arm and hides</span></span>
+<span><span class="co"># the barrier crossings, which are the most important points on the map. The</span></span>
+<span><span class="co"># bottom-left box overlaps the southwest arm instead, where nothing is</span></span>
+<span><span class="co"># obscured. Read the PNG; the emptiest corner of the frame is not necessarily</span></span>
+<span><span class="co"># the least important.</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_scalebar.html" class="external-link">tm_scalebar</a></span><span class="op">(</span></span>
 <span>  <span class="co"># gq_scale_breaks() needs metre units and says so, so project the bbox first</span></span>
 <span>  breaks <span class="op">=</span> <span class="fu"><a href="../reference/gq_scale_breaks.html">gq_scale_breaks</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sfc.html" class="external-link">st_as_sfc</a></span><span class="op">(</span><span class="va">bbox</span><span class="op">)</span>, <span class="fl">3005</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  text.size <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  text.size <span class="op">=</span> <span class="fl">0.7</span>,</span>
 <span>  position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"left"</span>, <span class="st">"top"</span><span class="op">)</span>,</span>
 <span>  margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">+</span></span>
@@ -573,8 +636,12 @@ labels last.</p>
 <span>  legend.frame <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  legend.bg.color <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  legend.bg.alpha <span class="op">=</span> <span class="fl">0.85</span>,</span>
-<span>  legend.text.size <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  legend.title.size <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>  <span class="co"># Sized for the width the figure is PUBLISHED at, not the width it is</span></span>
+<span>  <span class="co"># rendered at. A 7 in figure lands in roughly a 700 px column, so it is scaled</span></span>
+<span>  <span class="co"># to about 60% -- text set to look right in the render is a few pixels on the</span></span>
+<span>  <span class="co"># page.</span></span>
+<span>  legend.text.size <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  legend.title.size <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  inner.margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.001</span>, <span class="fl">0.001</span>, <span class="fl">0.001</span><span class="op">)</span>,</span>
 <span>  outer.margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.003</span>, <span class="fl">0.003</span>, <span class="fl">0.003</span>, <span class="fl">0.003</span><span class="op">)</span>,</span>
 <span>  meta.margins <span class="op">=</span> <span class="fl">0</span></span>
@@ -588,7 +655,13 @@ labels last.</p>
 <span><span class="co"># (watershed groups) that the (aoi, context) signature cannot express.</span></span>
 <span><span class="va">km</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_keymap.html">gq_tmap_keymap</a></span><span class="op">(</span><span class="va">neexdzii_wsd</span>, <span class="va">neexdzii_bc</span>, asp <span class="op">=</span> <span class="fl">7</span> <span class="op">/</span> <span class="fl">9</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">keymap</span>, vp <span class="op">=</span> <span class="va">km</span><span class="op">$</span><span class="va">viewport</span><span class="op">)</span></span></code></pre></div>
-<p><img src="gq-tmap-composition_files/figure-html/map-composition-1.png" class="r-plt" alt="Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry" width="1050"></p>
+<div class="figure">
+<img src="gq-tmap-composition_files/figure-html/map-composition-1.png" class="r-plt" alt="Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry" width="1050"><p class="caption">
+Neexdzii Kwa subbasin: salmon habitat classified by use and barrier
+status, over the assessed PSCIS crossing inventory. Every colour, width
+and dash resolves from the gq registry.
+</p>
+</div>
 <p>Every color on this map traces back to
 <code><a href="../reference/gq_reg_main.html">gq_reg_main()</a></code>:</p>
 <ul>
@@ -614,9 +687,19 @@ render (#36)</li>
 <strong>The legend</strong> is built by
 <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> from the registry — it partitions by
 geometry type, expands classified layers, collapses classes that render
-identically, and cuts road classes to the ones present in the data.
-Change a colour in the registry and every element updates</li>
+identically, and cuts each classified layer to the classes present in
+the data. Change a colour in the registry and every element updates</li>
 </ul>
+<p><strong>Reading the habitat lines.</strong> Width is habitat use —
+spawning is widest, accessible-only is thinnest — and colour is the
+barrier status downstream. A <strong>dashed</strong> line of any width
+or colour is an intermittent reach. The legend lists the solid variants
+only: each dashed class differs from its solid twin by the dash alone,
+so showing both would double the habitat entries to explain one
+distinction. That is a deliberate narrowing rather than something
+<code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> did on its own — its dedup keys on the
+whole entry including the label, so classes sharing a colour do not
+merge by themselves.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
