@@ -156,14 +156,23 @@ layers (`:147` is in the unclassified branch only).
 
 ## Phase 6 — Land it
 
-- [ ] Reconcile **gq#37** and **gq#33**: one is a duplicate of the other and
-      both predate the decision to override rather than wait. Close as fixed by
-      this work; leave bcfishpass#13 open with a comment that gq now overrides
-      and what to delete when it lands
-- [ ] Tell the three consumer repos their decoder workaround can go — comment on
-      `fish_passage_template_reporting#219` and the peace/link call sites
-- [ ] `NEWS.md` + `DESCRIPTION` **0.8.0 → 0.9.0**. Minor: registry label output
-      changes for every consumer of three layers
+- [x] Reconciled **gq#33** and **gq#37** — duplicates filed two months apart
+      against the same upstream bug. #33's body scoped a gq-side fix *out*
+      ("no gq code change is expected"); that premise was reversed deliberately
+      and the reversal is recorded on the issue rather than left to be re-read
+- [x] **bcfishpass#13 left open** with a note that gq works around it
+      downstream, that the QML corpus still carries the bug wherever QGIS
+      renders it, and what to delete when it lands
+- [x] Consumer repos named in NEWS with their file:line, so the three decoders
+      can go
+- [x] `NEWS.md` leads with the breaking-string framing and the exact old -> new
+      table; `DESCRIPTION` 0.8.0 -> **0.9.0**, `Date` already current
+- [x] Deleted the dead `registry/` fossil at the repo root — build-ignored,
+      unreferenced, superseded at the original scaffold, and holding 30 more
+      copies of the bug just fixed
+- [x] Documented what is deliberately **not** corrected: `gq_qgs_extract()` and
+      the QML corpus both stay faithful to their source, and the
+      `reg_qgis_*.json` artifacts are left as-extracted
 - [ ] `/planning-archive`, `/gh-pr-push`
 
 ## Validation
