@@ -388,7 +388,9 @@ Install: `pak::pak("NewGraphEnvironment/gq")`
 
 ## Self-Review (after every render)
 
-Read the PNG and check before showing anyone:
+Read the PNG and check before showing anyone.
+
+### Placement
 
 1. Correct polygon/study area shown? (verify source data, not just the bbox)
 2. Map fills the page? (no white/black bands)
@@ -397,6 +399,45 @@ Read the PNG and check before showing anyone:
 5. Legend over least-important terrain?
 6. Consistent spacing across all elements?
 7. Scale bar breaks appropriate for extent?
+
+### Does it communicate?
+
+Every check above is about **where elements sit**. A map can satisfy all seven
+and still fail to say what it is about — so these are not optional extras, they
+are the half of the review that the placement list structurally cannot reach.
+
+8. **Is every prominent feature in the legend?** Work the other direction from
+   the usual one: rank what draws the eye *in the rendered image*, then confirm
+   each of the top few appears in the legend. Building the legend from the layer
+   list instead answers "did I list my layers", which is a different question and
+   always says yes.
+9. **Is the subject obvious to someone who has never seen this area?** An AOI
+   that renders identically to its surroundings is not delineated by a thin
+   boundary line — the reader has to be told where to look. Containment (a fill,
+   a dimmed exterior, a mask) is what does it.
+10. **Does the symbology have a hierarchy, or is it flat?** If one class holds
+    the great majority of the features, it will dominate regardless of how
+    correct its size is. Ask what the map is *for* and de-emphasise or filter
+    accordingly — and say in the caption or prose that you did.
+11. **Does the basemap earn its contrast cost?** A basemap that adds no readable
+    terrain is not neutral: it lowers the contrast of everything drawn over it.
+    Blend parameters that mute it into a flat field are worse than no basemap.
+12. **Is the type sized for the width it is published at, not rendered at?** A
+    7 in figure squeezed into a ~700 px column loses roughly 40% — text set at
+    `size = 0.5` for the render lands at a few pixels on the page. Check the
+    figure at its delivered width.
+
+### Why this half exists
+
+Added 2026-08-26 after gq's flagship vignette map was reported as passing all
+seven placement checks and was, on being looked at, unreadable: 89% of its point
+symbols were one modelled class, the basemap was a featureless grey field, the
+AOI was indistinguishable from its surroundings, and the single most prominent
+feature on the map — a bright red 397-feature habitat network — **was not in the
+legend at all**, while the prose beneath the figure described its styling in
+detail (gq#61).
+
+The seven checks had returned green, accurately. They were simply not asking.
 
 See the `cartography` skill for full reference: basemap blending, BC spatial data queries, label hierarchy, mapgl gotchas, and worked examples.
 
@@ -1368,6 +1409,49 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 - The same shape applies to any "this input is unsupported" test: unsupported file extensions, unregistered layer types, unknown enum values. Ask what would have to become true for the chosen input to stop being unsupported, then assert it is still false.
 - (rfp#139, 2026-08: shipping an `EPSG_4326.xml` `<srs>` block so a tracking layer could carry a CRS no template used made that CRS resolvable from a package resolver's third tier — breaking a raster test that had picked EPSG:4326 precisely because nothing supplied it. The behaviour was correct in both directions; only the fixture's premise had expired.)
 
+### A guard's escape hatches are where it goes to die — read them first
+- Every guard grows two things that can silently disable it: an **exemption
+  list** ("these are allowed to fail the rule") and a **lookup** ("find the
+  thing I am checking"). Both fail toward *pass*, and both read as diligence on
+  the page. When reviewing a guard, read those two before reading the
+  assertion — the assertion is the part that is usually already right.
+- **An exemption list that covers every input makes the assertion unreachable.**
+  It is not a weakened guard; it is a guard that cannot go red, and it looks
+  more careful than the correct version because it is longer.
+  ```r
+  legend_exempt <- c(
+    lake    = "drawn and legended",     # <- every one of these is a REASON
+    wetland = "drawn and legended",     #    to remove the entry, not to keep it
+    ...                                 #    all 9 drawn layers listed
+  )
+  missing <- setdiff(drawn, c(legended, names(legend_exempt)))   # always empty
+  ```
+  **Tell:** an exemption whose reason says the rule *is* satisfied. "Drawn and
+  legended" is not a reason to exempt something from a drawn-must-be-legended
+  check — it is the check passing. An exemption is only ever for an input the
+  rule should genuinely not apply to, and `character(0)` is a normal and healthy
+  state that deserves a comment saying so.
+- **A lookup that matches a container rather than the artifact reports success
+  and then dies — or worse, checks the wrong thing.** Test for the *file*, never
+  for a directory of the right name:
+  ```r
+  for (up in c("..", "../..", "../../..")) {
+    if (dir.exists(file.path(up, "vignettes"))) return(...)   # matched SOME vignettes/
+  }
+  ```
+  Under `R CMD check` that walked out of the package into the temp tree, matched
+  an unrelated `vignettes/`, and blew up in `readLines()`. Had a same-named file
+  existed there it would have silently checked a stranger's copy.
+- Both caught 2026-08-26 in gq#61, in the same 100-line test file, written by
+  someone who had just added the "fixture that cannot reach the failure mode"
+  rule below. Neither was visible by reading; the first surfaced by restoring
+  the bug, the second only under `R CMD check` — `devtools::test()` passed it
+  because the source tree happens to have the directory where it looked.
+- **Corollary on where you verify.** A guard that reads repo layout behaves
+  differently under `devtools::test()`, `R CMD check`, and an installed package.
+  Green in the one you run locally says nothing about the one CI runs. Run both
+  before believing it.
+
 ### Restore the bug and confirm the test fails
 - The rule above says a fixture that cannot reach the failure mode is worthless. This is the thirty-second check that tells you which kind you just wrote: **put the defect back, run the test, watch it go red.** A test that stays green against the code it was written to reject is decoration, and reading it will not tell you that — every case below looked correct on the page.
 - Cheapest form when the fix is inside a package: patch the namespace rather than editing the source back and forth.
@@ -1835,7 +1919,9 @@ This creates a git audit trail where `git log -- planning/` tells the full story
 Phases with checkboxes. This is the core tracking file.
 
 ```markdown
-# Task Plan
+# Task: <issue title> (#<N>)
+
+<issue body — Problem section if present, otherwise first paragraph>
 
 ## Phase 1: [Name]
 - [ ] Task description
@@ -1856,6 +1942,11 @@ Append-only research log. Discoveries, technical analysis, things learned.
 
 ## [Topic]
 [What was found, with source/date]
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
 ```
 
 ### progress.md
@@ -1870,6 +1961,38 @@ Session entries with commit references.
 - Commits: [refs]
 - Next: [items]
 ```
+
+<!-- The Reboot Test and the error ledger below are adapted from -->
+<!-- OthmanAdi/planning-with-files (MIT). Soul does not install or invoke that -->
+<!-- plugin — the useful parts are carried here as text. Adapted 2026-08-26. -->
+<!-- Same precedent as the attribution header in karpathy.md. -->
+
+## The Reboot Test
+
+The planning files exist so the work survives an interruption. Whether they
+actually do is checkable: at any point mid-task, these five questions must be
+answerable from the files alone, without the conversation.
+
+| Question | Answer source |
+|----------|---------------|
+| Where am I? | Current phase in `task_plan.md` |
+| Where am I going? | Remaining phases in `task_plan.md` |
+| What's the goal? | The `# Task: <title> (#N)` frame and problem statement at the top of `task_plan.md` |
+| What have I learned? | `findings.md` |
+| What have I done? | `progress.md` |
+
+If an answer lives only in the session, **write it down and commit it**. Written
+is not sufficient: an uncommitted `findings.md` does not move between machines,
+and a repo whose `planning/` is gitignored accepts `git add planning/` with exit
+0 while tracking nothing — see Directory Structure below.
+
+This is the operational check for the rule that every interruption should be a
+resume point: a session death, sleep, or machine swap should cost a re-run at
+most, never lost context. That rule states the goal; this tests it.
+
+Run it before any long wait, before compaction, and before switching machines —
+the moments that take a session without warning. `/compact-prep` and
+`/planning-update` are where it gets run; this section is what it asks.
 
 ## Directory Structure
 
@@ -1903,6 +2026,54 @@ git check-ignore -v planning/active/task_plan.md   # expect no output
 Found 2026-08-24 in gq, where the rule dated from the scaffold commit and the
 #17 files had only survived because they predated their move into that
 directory. gq and roli were the only 2 of 32 repos carrying it; roli still does.
+
+## When Something Keeps Failing
+
+Before a second attempt, name the failure class. A **deterministic** failure
+returns the same result to the same inputs, so re-running unchanged only spends a
+turn — change the inputs or change the approach. A **transient** failure
+(network, a provider read, a rate limit, a resource still settling) is the case
+where a re-run *is* the attempt: `code-check.md` prescribes exactly that for a
+tofu plan that falsely reports a resource deleted. The rule is not "never retry";
+it is never retry unchanged while expecting a different answer.
+
+Escalate rather than iterate once the approach itself is in question. Report what
+was tried and the exact error, and hand over the commands to run — the user is
+assumed to be away, so a question answerable from a phone beats a retry loop they
+cannot see. Escalating is not stopping: commit the current state, then move to
+the lowest-risk independent part of the plan while the question is outstanding.
+
+Two classes escalate immediately rather than after retries, because further
+attempts make them worse:
+
+- **A clamped session.** Once a live credential has been read, later
+  system-mutating commands are refused regardless of route — seven consecutive
+  refusals across unrelated routes is the documented case (`newgraph.md`,
+  "Reading a secret clamps the rest of the session"). Trying more phrasings is
+  the failure mode, not the remedy, and `/permissions` does not clear it.
+- **Rate limits.** Retrying extends the block (`ci-monitoring.md`).
+
+### Log the errors that cost a retry
+
+An error that took more than one attempt to get past goes in `findings.md`, so
+one task does not hit the same wall twice:
+
+```markdown
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
+| `fatal: Unimplemented pathspec magic '_'` | Long-form `:(exclude)path` |
+```
+
+That row is also what graduation looks like: it began as one task's blocker and
+now lives in `code-check.md` as a general rule about pathspec magic. Most rows
+never make that trip and should not — the ledger's job is to stop one task
+repeating itself.
+
+When a failure does generalize, it graduates to the convention that owns its
+class: `code-check.md` for a bug class in a diff, `ci-monitoring.md` for CI
+behaviour, the domain convention otherwise.
 
 ## Skills
 
