@@ -123,6 +123,21 @@ gq_group_layers <- function(group, registry = NULL) {
 #' Returns a data.frame of all templates defined in the registry, showing
 #' which groups each template includes and their order.
 #'
+#' @section Ordering:
+#' `group_order` is a **sort key and nothing else**. It is per-template, and it
+#' requires none of: contiguity, a 1-based start, uniqueness across templates,
+#' or agreement between templates on where a shared group sits. A template is
+#' free to number its groups 10/20/30 to leave room for insertions, or to use a
+#' group vocabulary no other template shares.
+#'
+#' This is written down because the two templates shipped today happen to be
+#' numbered 1..N and happen to agree on their first three groups, which invites
+#' the inference that those properties are required. They are not — and the two
+#' already disagree beyond that point (`bcfishpass_mobile` orders
+#' Roads/Rails/Pipelines before Streams, `bcrestoration_mobile` the reverse).
+#' Do not add a contiguity check; it would break the first project type that
+#' does not look like these two.
+#'
 #' @return A data.frame with columns: template, group, group_order.
 #'
 #' @examples

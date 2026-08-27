@@ -1670,6 +1670,7 @@
     },
     "harvest_area": {
       "type": "polygon",
+      "source_layer": "harvest_area",
       "fill": {
         "color": "#8b7355",
         "opacity": 0.3
@@ -1682,6 +1683,7 @@
     },
     "planting_site": {
       "type": "point",
+      "source_layer": "planting_site",
       "mark": {
         "color": "#2d8659",
         "shape": "circle",
@@ -1699,6 +1701,31 @@
           "color": "white",
           "width": 1.5
         }
+      }
+    },
+    "old_growth_management_areas": {
+      "type": "polygon",
+      "source_layer": "whse_land_use_planning.rmp_ogma_non_legal_current_svw",
+      "fill": {
+        "color": "#4daf4a",
+        "opacity": 0.2
+      },
+      "stroke": {
+        "color": "#4daf4a",
+        "width": 0.46,
+        "opacity": 1
+      }
+    },
+    "national_park": {
+      "type": "polygon",
+      "source_layer": "whse_admin_boundaries.clab_national_parks",
+      "fill": {
+        "color": "#639b5f",
+        "opacity": 0.161
+      },
+      "stroke": {
+        "color": "#33a02c",
+        "width": 1
       }
     }
   }
