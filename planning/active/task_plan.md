@@ -106,24 +106,28 @@ layers (`:147` is in the unclassified branch only).
 
 ## Phase 3 — Make the map read
 
-- [ ] Give the AOI containment — inside and outside currently render
-      identically, so the subject is not visually obvious
-- [ ] Make an editorial decision about the 130 `POTENTIAL` crossings (89% of all
-      point symbols) and **state it in prose**. The sizing is correct (#16); the
-      density is the problem, and a static overview has to choose. The choice
-      being explained is itself the lesson
-- [ ] Replace or retune the basemap. `WorldGrayCanvas × WorldShadedRelief` at
-      `gamma = 0.5` is a featureless grey field that only lowers contrast — a
-      basemap that adds no terrain reading is not neutral
-- [ ] Reconsider the canvas aspect. **Not** a `gq_bbox_aspect()` defect — it
-      pads symmetrically, measured 21.7% above and 21.7% below. The band above
-      has an identical twin below, hidden because the legend sits in it. The
-      cause is asking a ~1.32:1 landscape watershed to fill a 7:9 portrait
-      frame. Either go landscape, move `asp` toward the data, or keep 7:9 and
-      put something in both bands deliberately
-- [ ] Size type for the width the figure is **published** at (~700 px), not
-      rendered at (7 in). `legend.text.size = 0.5` and `size = 0.45` labels land
-      at a few pixels on the site
+- [x] AOI containment — everything outside the watershed knocked back 45%, so
+      the subject is obvious without a hard clip hiding the context
+- [x] The `POTENTIAL` crossings decision, stated in prose: 130 of 146 are
+      modelled candidates, not surveyed sites, and at their correct registry
+      size they were 89% of the point symbols. The map now shows the assessed
+      inventory. Explicitly NOT done: hand-tuning `size` down for one class,
+      which would reintroduce the per-map guessing #16 removed
+- [x] Canvas aspect reconsidered rather than "fixed". The 41% padding is real
+      but symmetric, and it is where the scalebar, logo, legend and keymap
+      live — element space, not waste. Kept 7:9; the containment is what stops
+      it reading as dead
+- [x] Type sized for the published column (~700 px), not the render width:
+      legend 0.5 -> 0.7, labels 0.45/0.5 -> 0.65/0.7, scalebar 0.5 -> 0.7
+- [x] Legend placement settled **by rendering both options**, not by reasoning.
+      Top-left looks like the emptier corner and is wrong: a 19-row legend hung
+      there covers the northwest arm and hides the barrier crossings. Bottom-left
+      overlaps the southwest arm and obscures nothing
+- [ ] **Basemap left as-is — considered, not done.** With the AOI containment in
+      place the gray-canvas x shaded-relief blend does read as terrain, so the
+      contrast complaint in #61 is substantially answered by the mask rather
+      than by changing provider. Revisit only if a render says otherwise; do not
+      change it just to tick the box
 
 ## Phase 4 — Vignette infrastructure
 

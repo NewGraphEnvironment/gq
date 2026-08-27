@@ -56,3 +56,26 @@
 - Next: Phase 3 — outstanding decisions are the 130 `POTENTIAL` crossings (89%
   of point symbols) and the canvas aspect. G2/G5 (the other shipped registries,
   and the dead `registry/registry.json`) to be decided in Phase 3/6.
+
+### Phase 3 — cartography (render-and-look)
+
+Four renders. What each one taught:
+
+- **v2 (containment + type)** — habitat legend labels legible for the first
+  time, AOI reads as the subject. Two failures still obvious: the legend covered
+  real watershed, and the orange still buried everything.
+- **v3 (assessed crossings only)** — the change that mattered. Removing the 130
+  modelled crossings made the salmon habitat network visible, which is the whole
+  subject of the map.
+- **v4 (legend top-left)** — a regression, and the useful one. Top-left is the
+  emptier corner, so it looked like the right answer; hung from it, a 19-row
+  legend covers the northwest arm and hides the barrier crossings. Reverted.
+  "Least important terrain" has to be read off the rendered image.
+- **final** — byte-identical to v3 (md5 confirmed), so the revert is exact.
+
+Review gate AC2 passes: no `component.autoscale` rescale warning, so the legend
+now fits the frame. It was firing before this phase.
+
+Basemap deliberately left unchanged — the contrast complaint turned out to be
+mostly a containment problem, and swapping provider to tick a box would be a
+change without a render to justify it.
