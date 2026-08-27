@@ -889,57 +889,57 @@
           "ACCESS;NONE": {
             "color": "#129bdb",
             "width": 0.4,
-            "label": "No known barriers; no known barriers"
+            "label": "Accessible; no known barriers"
           },
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; no known barriers; intermittent"
+            "label": "Accessible; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
             "color": "#ff9f85",
             "width": 0.4,
-            "label": "No known barriers; potential barrier"
+            "label": "Accessible; potential barrier"
           },
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; potential barrier; intermittent"
+            "label": "Accessible; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
             "color": "#ef4545",
             "width": 0.4,
-            "label": "No known barriers; known barrier"
+            "label": "Accessible; known barrier"
           },
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; known barrier; intermittent"
+            "label": "Accessible; known barrier; intermittent"
           },
           "ACCESS;DAM": {
             "color": "#ae7dd6",
             "width": 0.4,
-            "label": "No known barriers; dam"
+            "label": "Accessible; dam"
           },
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; dam; intermittent"
+            "label": "Accessible; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
             "color": "#33a02c",
             "width": 0.4,
-            "label": "No known barriers; remediated"
+            "label": "Accessible; remediated"
           },
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; remediated; intermittent"
+            "label": "Accessible; remediated; intermittent"
           }
         }
       }
@@ -1063,57 +1063,57 @@
           "ACCESS;NONE": {
             "color": "#129bdb",
             "width": 0.4,
-            "label": "No known barriers; no known barriers"
+            "label": "Accessible; no known barriers"
           },
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; no known barriers; intermittent"
+            "label": "Accessible; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
             "color": "#ff9f85",
             "width": 0.4,
-            "label": "No known barriers; potential barrier"
+            "label": "Accessible; potential barrier"
           },
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; potential barrier; intermittent"
+            "label": "Accessible; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
             "color": "#ef4545",
             "width": 0.4,
-            "label": "No known barriers; known barrier"
+            "label": "Accessible; known barrier"
           },
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; known barrier; intermittent"
+            "label": "Accessible; known barrier; intermittent"
           },
           "ACCESS;DAM": {
             "color": "#ae7dd6",
             "width": 0.4,
-            "label": "No known barriers; dam"
+            "label": "Accessible; dam"
           },
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ae7dd6",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; dam; intermittent"
+            "label": "Accessible; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
             "color": "#33a02c",
             "width": 0.4,
-            "label": "No known barriers; remediated"
+            "label": "Accessible; remediated"
           },
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; remediated; intermittent"
+            "label": "Accessible; remediated; intermittent"
           }
         }
       }
@@ -1237,57 +1237,57 @@
           "ACCESS;NONE": {
             "color": "#129bdb",
             "width": 0.4,
-            "label": "No known barriers; no known barriers"
+            "label": "Accessible; no known barriers"
           },
           "ACCESS;NONE;INTERMITTENT": {
             "color": "#129bdb",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; no known barriers; intermittent"
+            "label": "Accessible; no known barriers; intermittent"
           },
           "ACCESS;MODELLED": {
             "color": "#ff9f85",
             "width": 0.4,
-            "label": "No known barriers; potential barrier"
+            "label": "Accessible; potential barrier"
           },
           "ACCESS;MODELLED;INTERMITTENT": {
             "color": "#ff9f85",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; potential barrier; intermittent"
+            "label": "Accessible; potential barrier; intermittent"
           },
           "ACCESS;ASSESSED": {
             "color": "#ef4545",
             "width": 0.4,
-            "label": "No known barriers; known barrier"
+            "label": "Accessible; known barrier"
           },
           "ACCESS;ASSESSED;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; known barrier; intermittent"
+            "label": "Accessible; known barrier; intermittent"
           },
           "ACCESS;DAM": {
             "color": "#ef4545",
             "width": 0.4,
-            "label": "No known barriers; dam"
+            "label": "Accessible; dam"
           },
           "ACCESS;DAM;INTERMITTENT": {
             "color": "#ef4545",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; dam; intermittent"
+            "label": "Accessible; dam; intermittent"
           },
           "ACCESS;REMEDIATED": {
             "color": "#33a02c",
             "width": 0.4,
-            "label": "No known barriers; remediated"
+            "label": "Accessible; remediated"
           },
           "ACCESS;REMEDIATED;INTERMITTENT": {
             "color": "#33a02c",
             "width": 0.4,
             "dash": "0.66;2",
-            "label": "No known barriers; remediated; intermittent"
+            "label": "Accessible; remediated; intermittent"
           }
         }
       }

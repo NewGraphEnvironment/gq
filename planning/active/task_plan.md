@@ -62,23 +62,23 @@ layers (`:147` is in the unclassified branch only).
 
 ## Phase 1 — Correct the ACCESS labels where they're built (closes #37, #33)
 
-- [ ] Add a targeted correction step to `data-raw/reg_build_main.R`, after
+- [x] Add a targeted correction step to `data-raw/reg_build_main.R`, after
       extraction and before write: on `streams_salmon`, `streams_st`,
       `streams_bt`, rewrite the leading `"No known barriers; "` of the ten
       `ACCESS;*` class labels to `"Accessible; "`. Token2/token3 suffixes and
       every colour, width and dash untouched
-- [ ] **Guard it against its own obsolescence.** Assert the expected wrong
+- [x] **Guard it against its own obsolescence.** Assert the expected wrong
       labels are present before rewriting; if they are absent, stop loudly —
       that means bcfishpass#13 landed and this block should be deleted, not
       silently no-op forever. A correction nobody notices has expired is how a
       workaround outlives its bug
-- [ ] Comment the block with `bcfishpass#13` and the removal condition
-- [ ] Regenerate `reg_main.json`; confirm the diff touches **only** those 30
+- [x] Comment the block with `bcfishpass#13` and the removal condition
+- [x] Regenerate `reg_main.json`; confirm the diff touches **only** those 30
       labels (`git diff --stat`, then read the hunks)
-- [ ] Tests: no `ACCESS;*` label on any of the three layers begins with
+- [x] Tests: no `ACCESS;*` label on any of the three layers begins with
       `"No known barriers"`; `SPAWN`/`REAR` labels and all token2 statuses are
       byte-identical to before; colours/widths/dashes unchanged
-- [ ] Restore-the-bug check: revert the correction, confirm the test goes red
+- [x] Restore-the-bug check: revert the correction, confirm the test goes red
 
 ## Phase 2 — Make the legend describe the map (#61's headline defect)
 
