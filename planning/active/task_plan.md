@@ -62,10 +62,10 @@ on the next twenty.
       with a `source_layer`, **except** an exemption set where each entry carries
       a REASON. Exemptions are for layers with no BC table by nature — xyz/WMS
       basemaps, local forms — not for "not done yet"
-- [ ] Test: every group in `groups.csv` is mapped to at least one template
-- [ ] Test: every group in `templates.csv` exists in `groups.csv` (true today by
+- [x] Test: every group in `groups.csv` is mapped to at least one template
+- [x] Test: every group in `templates.csv` exists in `groups.csv` (true today by
       luck, nothing enforces it)
-- [ ] Deliberate template asymmetry (`Floodplain`, `Restoration` being
+- [x] Deliberate template asymmetry (`Floodplain`, `Restoration` being
       restoration-only) must **not** trip these. Assert that intent explicitly
       rather than letting it pass by accident
 - [ ] Confirm each guard FAILS on current data and names the real gaps. A guard
@@ -76,15 +76,15 @@ on the next twenty.
 
 ## Phase 2 — The two `templates.csv` rows
 
-- [ ] `Other Point Features` at 3 for `bcrestoration_mobile`, existing 3–9
+- [x] `Other Point Features` at 3 for `bcrestoration_mobile`, existing 3–9
       renumbered to 4–10; `Base - Orthoimagery` at 11
-- [ ] Mirror `bcfishpass_mobile`'s position deliberately, and **document in the
+- [x] Mirror `bcfishpass_mobile`'s position deliberately, and **document in the
       CSV header comment or roxygen that `group_order` is sort-only,
       per-template, and requires neither contiguity nor cross-template
       agreement** — so the next project type is not held to these two
-- [ ] Pin that freedom with a test using non-contiguous values, so nobody later
+- [x] Pin that freedom with a test using non-contiguous values, so nobody later
       adds a contiguity validator and breaks a future template
-- [ ] Verify: `gq_template_layers("bcrestoration_mobile")` gains exactly the 5;
+- [x] Verify: `gq_template_layers("bcrestoration_mobile")` gains exactly the 5;
       `bcfishpass_mobile` gains `orthophoto_tiles`; no layer appears twice
 
 ## Phase 3 — `national_park` and `old_growth_management_areas`
