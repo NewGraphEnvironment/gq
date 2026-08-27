@@ -1,6 +1,6 @@
 ---
 title: "Map composition with gq and tmap"
-output: rmarkdown::html_vignette
+output: bookdown::html_vignette2
 vignette: >
   %\VignetteIndexEntry{Map composition with gq and tmap}
   %\VignetteEngine{knitr::rmarkdown}
@@ -180,7 +180,7 @@ tm_layout(
 Draw order matters: polygons first, then habitat lines, base streams, lakes
 on top, transport, point features (crossings, fish, falls), then labels last.
 
-```{r map-composition, fig.alt = "Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry"}
+```{r map-composition, fig.cap = "Neexdzii Kwa subbasin: salmon habitat classified by use and barrier status, over the assessed PSCIS crossing inventory. Every colour, width and dash resolves from the gq registry.", fig.alt = "Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry"}
 bb_box <- st_as_sfc(bbox, crs = st_crs(neexdzii_wsd))
 logo_path <- system.file("logo", "nge_icon_200.png", package = "gq")
 

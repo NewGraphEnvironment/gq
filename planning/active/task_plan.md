@@ -131,12 +131,17 @@ layers (`:147` is in the unclassified branch only).
 
 ## Phase 4 — Vignette infrastructure
 
-- [ ] Both vignettes to `bookdown::html_vignette2` with `fig.cap`, per the
-      r-packages convention; add `bookdown` to `Suggests` (it is not there now)
-- [ ] `gq-intro.Rmd`: most crossings drawn sit outside the Bittner Creek AOI and
-      it has no scale bar or keymap, so it demonstrates the four-corner rule not
-      at all. Either bring it up to standard or narrow it deliberately and say
-      which
+- [x] Both vignettes to `bookdown::html_vignette2` with `fig.cap`; `bookdown`
+      added to `Suggests` (it was absent). Verified the captions render
+      **numbered** — "Figure 1:", "Figure 2:" — rather than as bare text
+- [x] Natural-language references only, no `\@ref()`: bookdown's cross-ref
+      machinery is not fully wired through `html_vignette2` under pkgdown and
+      compiles to a literal marker
+- [x] `gq-intro.Rmd` **split to gq#62** rather than carried as one checkbox. The
+      review measured it as a re-composition, not a tweak: no
+      `gq_tmap_legend()` call at all, no scale bar, no keymap, still on the old
+      single-layer signature, and only 12 of 95 crossings inside the AOI (13%),
+      so 87% of its most prominent symbols are not its subject
 
 ## Phase 5 — Verify by looking
 

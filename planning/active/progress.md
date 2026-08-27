@@ -79,3 +79,16 @@ now fits the frame. It was firing before this phase.
 Basemap deliberately left unchanged — the contrast complaint turned out to be
 mostly a containment problem, and swapping provider to tick a box would be a
 change without a render to justify it.
+
+### Phase 4 — vignette infrastructure
+
+- Both vignettes on `bookdown::html_vignette2`; `bookdown` added to `Suggests`,
+  where it was absent. Captions verified **numbered** in the rendered HTML
+  ("Figure 1:", "Figure 2:") rather than assumed.
+- `gq-intro.Rmd` split to **gq#62** on the user's call. The review measured it
+  as a re-composition rather than a tweak, and the sharpest number is that only
+  12 of its 95 crossings fall inside the AOI — 87% of its most prominent
+  symbols are not its subject.
+- One residual `component.autoscale` warning in the suite is **test**-generated
+  and pre-existing (present in the 912-pass baseline). The vignette render
+  itself is clean, verified directly rather than inferred from the suite.
