@@ -1,3 +1,32 @@
+# gq 0.10.0
+
+- **Template composition is now guarded, and two groups that were never mapped
+  are.** `gq_template_layers()` returns more layers for both shipped templates —
+  `bcrestoration_mobile` 57 → 64, `bcfishpass_mobile` 58 → 61. A project built
+  from a template was displaying cartography for data it never downloaded,
+  because the chain `templates.csv → groups.csv → reg_main.json` is three joins
+  deep and none of them reported a miss. `Base - Orthoimagery` had been mapped
+  to zero templates for the entire history of the file with a green suite. #40
+
+- **`source_type` now drives a real check, and two layers had the wrong value.**
+  `harvest_area` and `planting_site` change from `bcdata` to `local` — a value
+  change in a column `gq_groups()` returns, not just extra rows. They are
+  project-authored layers ("buffered river corridor", "proposed restoration
+  planting location"), never BCGW tables, so they now carry the
+  `source_layer == layer_key` sentinel that `form_pscis` and `form_fiss_site`
+  already used.
+
+- **Two new registry layers.** `old_growth_management_areas` — the most-used
+  layer in a 16-project corpus that the registry did not carry — with symbology
+  **extracted** from a project that styles it. `national_park` with symbology
+  **authored**, labelled as such in its `note`, reusing `provincial_park`'s
+  colours rather than an invented hue. Neither has a renderer in the shipped
+  `.qgs` templates, which is why neither was ever extracted.
+
+- `group_order` is documented as a sort key only: per-template, requiring
+  neither contiguity, a 1-based start, nor cross-template agreement. The two
+  shipped templates happen to have those properties and do not define them.
+
 # gq 0.9.0
 
 - **Breaking for label text: the `ACCESS` `mapping_code` classes are relabelled.**
