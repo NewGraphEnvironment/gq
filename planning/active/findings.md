@@ -98,3 +98,64 @@ Re-render both vignettes and **read the figures**, against the extended
 someone who has never seen this watershed can tell what the map is about, and
 can find every prominent feature in the legend.
 
+
+## Phase 5 — self-review against the extended checklist (soul#78)
+
+First real use of the "does it communicate" half added to
+`cartography.md`. Verdict on `gq-tmap-composition.Rmd`'s figure:
+
+### Placement (checks 1–7)
+
+| # | check | verdict |
+|---|---|---|
+| 1 | correct study area | pass — Neexdzii Kwa subbasin, from source data |
+| 2 | map fills the page | pass — basemap edge to edge, no bands |
+| 3 | keymap in frame with spacing | pass — bottom-right |
+| 4 | no element overlap | pass — four distinct corners |
+| 5 | legend over least-important terrain | pass, **and this one was earned**: top-left renders better on paper and hides the barrier crossings. Settled by rendering both |
+| 6 | consistent spacing | pass |
+| 7 | scale bar breaks | pass — 0/2/4/6 km over a ~20 km extent |
+
+### Does it communicate (checks 8–12)
+
+**8. Every prominent feature in the legend.** Ranked by measured ink
+(length x registry width), not by eye:
+
+```
+salmon habitat        154114     <- was absent from the legend
+streams (order>=3)     51931
+roads                  11266
+crossings (assessed)   16 pts
+```
+
+All four are legended. The layer that outranks everything else by a factor of
+three is precisely the one #61 was filed about — which is the argument for
+ranking the rendered image rather than reading the layer list.
+
+**9. Subject obvious.** Pass, via the containment mask. It was failing before:
+inside and outside the watershed rendered identically.
+
+**10. Symbology hierarchy.** Pass after the editorial cut. Was failing badly —
+89% of point symbols were one modelled class.
+
+**11. Basemap earns its contrast cost.** Marginal pass. With the AOI knocked
+back the relief blend does read as terrain. Left unchanged deliberately; the
+complaint in #61 turned out to be mostly a containment problem.
+
+**12. Type sized for the published width.** Pass — sized for the ~700 px column
+rather than the 7 in render.
+
+### Residual, recorded rather than fixed
+
+Review finding AC1: dropping the `;INTERMITTENT` legend rows removes the single
+most-drawn habitat class (`ACCESS;ASSESSED;INTERMITTENT`, 178 of 397 — 45%).
+Tracing a dashed red line to "Accessible; known barrier" requires reading the
+prose. Accepted: the alternative is eighteen line entries, which reintroduces
+the overflow this phase removed. Revisit if a reader reports it.
+
+### On the checklist itself
+
+Check 8 is the one that would have caught gq#61, and it only works because it
+says to rank the *rendered image*. Check 5 turned out to need the same
+discipline — reasoning about which corner is emptiest gave the wrong answer,
+and only rendering both settled it. Worth folding back into soul.
