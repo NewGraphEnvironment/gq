@@ -1,0 +1,106 @@
+<qgis version="4.2.1-fixture">
+  <!--
+    The bcrestoration_mobile group tree, with two deliberate defects so the
+    drift guard can be seen to fire: `Basemap` is renamed to `Basemaps`, and
+    `Web Mapping Services` is deleted. Layers are omitted (the walker tabulates
+    groups) but one <layer-tree-layer> and the <customproperties> element
+    children are kept, because `order` indexes group AND layer siblings
+    together, and a walker that filtered them wrongly would still pass on a
+    groups-only fixture.
+
+    No DOCTYPE. The real templates carry
+    `<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>`, which names an
+    external DTD. A fixture that could reach the network is one that can fail
+    for a reason unrelated to what it tests. The walker never consults it.
+  -->
+  <layer-tree-group>
+    <customproperties>
+      <Option/>
+    </customproperties>
+    <layer-tree-group checked="Qt::Checked" expanded="1" name="bcrestoration Mobile " wms-group-request-mode="Normal">
+      <customproperties>
+        <Option/>
+      </customproperties>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Forms" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Project Specific" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+        <layer-tree-layer checked="Qt::Unchecked" id="rfp_tracking_fixture" name="Tracking" source="/tpl/background_layers.gpkg|layername=rfp_tracking">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-layer>
+        <layer-tree-group checked="Qt::Unchecked" expanded="0" name="Field Data" wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+        <layer-tree-group checked="Qt::Unchecked" expanded="0" name="Model Parameters - bcfishpass " wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Crossings" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Other point features" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Roads,Railways,Pipelines" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Streams" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Stream labels" wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Habitat models" wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Basemaps" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Waterbodies" wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Terrestrial Ecology" wms-group-request-mode="Normal">
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </layer-tree-group>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Base - lidar" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Base - misc" wms-group-request-mode="Normal">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-group>
+    </layer-tree-group>
+  </layer-tree-group>
+</qgis>

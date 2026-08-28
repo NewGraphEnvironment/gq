@@ -36,18 +36,18 @@ registry-vs-both.
 | gq layers absent from the template | 8 |
 | template layers with no `groups.csv` row (gq#64) | 3 |
 
-The nine genuine ones, template path vs gq path — **out of scope here**, filed as
-a gq follow-up:
+The nine genuine ones, template path vs gq path. Three were settled by this
+issue (marked); the remaining six are **out of scope here** and filed as gq#68:
 
 | layer_key | template | gq |
 |---|---|---|
-| `floodplains` | `Base - misc` | `Floodplain` |
+| `floodplains` | `Base - misc` | `Floodplain` — **settled**: gq keeps its group, declared divergence, rfp#216 |
 | `fisheries_sensitive_watersheds` | `Basemap` | `Streams` |
 | `first_nation_reserve` | `Basemap/Waterbodies` | `Basemap` |
 | `streams_all` | `Basemap/Waterbodies` | `Streams` |
 | `stream_labels` | `Streams/Stream labels` | `Streams` |
-| `biogeoclimatic_ecosystem_classification` | `Basemap/Terrestrial Ecology` | `Basemap/BEC` |
-| `orthophoto_tiles` | `Basemap/Terrestrial Ecology` | `Base - Orthoimagery` |
+| `biogeoclimatic_ecosystem_classification` | `Basemap/Terrestrial Ecology` | `Basemap/BEC` — **settled** by the rename |
+| `orthophoto_tiles` | `Basemap/Terrestrial Ecology` | `Base - Orthoimagery` — **settled**: group deleted, layer moved |
 | `terrain_mapping_project_boundaries` | `Basemap/Terrestrial Ecology` | `Base - misc` |
 | `terrestrial_ecosystem_information_scanned_map_boundary` | `Basemap/Terrestrial Ecology` | `Base - misc` |
 
@@ -150,6 +150,9 @@ for the same theme.
 - `order` must index group **and** layer children together. rfp's
   `data-raw/qgs/extract_roster.R:50-53`: "Indexing layers alone cannot place a
   subgroup, so a rebuild would silently reorder the tree, which IS draw order."
+  The *reason* is shared with rfp; the **values are not** — rfp indexes every
+  element child including `<customproperties>`, so its roster reads `Forms` 2
+  where gq reads 1. Only relative order carries across the two artifacts.
 - Names are byte-exact and must stay that way. `Model Parameters - bcfishpass `
   has a trailing space; `" Form PSCIS"` a leading one. rfp's
   `rfp_qgs_theme_internals.R:17-19`: "a `trimws()` anywhere here silently
@@ -160,3 +163,89 @@ for the same theme.
 | Error | Resolution |
 |-------|------------|
 | | |
+
+## Plan review (Plan agent, 2026-08-28) — what it caught
+
+Spawned concurrently with Phase 1, returned during Phase 2. Six findings
+verified before acting; four were real and changed the work.
+
+### Real, and mine to fix
+
+**`Basemap/Terrestrial Ecology` is a bcrestoration-only subgroup, and
+`groups.csv` has no `template` column.** So declaring it declares it for
+`bcfishpass` too, which has no such group — this issue's own failure mode, at
+depth 2, introduced by the fix for it. The first draft of the path guard compared
+against the **union** of both templates and would never have seen it. Rewritten
+per-template (`declared_not_present()`), and the subgroup is now a third
+exemption naming the schema limitation. Pre-dates this issue as `Basemap/BEC`,
+which existed in *neither* template; the rename made it correct for one.
+
+**`Base - lidar` is empty in both templates** — zero children. `groups.csv` is
+one row per layer, so a group with no layers cannot be declared, and declaring it
+in `templates.csv` alone would go red on
+`test-composition_integrity.R:128-137`. Exempted rather than declared, with
+`Project Specific` (which holds only gq#64 layers).
+
+**`man/gq_templates.Rd` had no `Ordering` section.** The `@section Ordering:`
+block was added in gq#40 and never documented, so the correction here would not
+have reached any reader of `?gq_templates`. `devtools::document()` added it.
+
+**The `order` column does NOT match rfp's roster, and two places said it did.**
+rfp's `extract_roster.R` indexes *every* element child, including the
+`<customproperties>` every node carries; this filters to group/layer first.
+Measured off-by-one at every level — `Forms` 1 here, 2 there; `Base - misc` 10
+here, 11 there. gq's definition is the better one (rfp's leaks a non-tree element
+into a tree index) but the comment was a trap for whoever next cross-checks the
+two artifacts. Corrected in `R/utils_qgs_groups.R`.
+
+### Wrong, and worth recording as wrong
+
+**"A `.qgs` fixture cannot make the drift alarm fire."** It can, and does — the
+alarm test feeds the fixture through the same `compare_groups()` the real
+assertions use. The review was reading the plan, which had not specified that.
+
+**"Phase 3 must adjust `reg_extract_themes.R`'s comma guard."** Independently
+verified false before the review arrived: that guard scans the `themes` data
+frame (`template`, `theme`, `layer_key`, `visible`). Group names never enter
+`themes.csv`. The plan bullet was mine and was wrong; touching a working guard
+would have been a net loss.
+
+### The sharper break than the one the plan named
+
+`gq_group_layers("Roads/Rails/Pipelines")` now returns a **zero-row data frame
+with no error and no warning** (`R/gq_groups.R:106`, pinned as intended
+behaviour by `test-gq_groups.R:37-41`). The argument domain is the breaking
+change, not the return value. NEWS carries the old→new table and a
+grep-your-code instruction; no shim, because rfp is the only known consumer and
+does not pass group names.
+
+## The order guard would not have caught anything on main
+
+Verified by running the landed guards against `git show main:` versions of both
+CSVs. Every presence guard fires, and the narrow check is red on **both**
+templates (`Base - Orthoimagery` vs `Base - misc`). But `relative order agrees`
+came back **TRUE** for both — the name mismatches shrink the intersection to a
+set whose order happens to agree.
+
+So the order guard is a regression guard, not what found today's defects. Worth
+knowing: a guard that is green on the data that motivated it is not thereby
+useless, but it is not evidence either.
+
+## An unmeasured disagreement the group-level guard cannot see
+
+`groups.csv` orders `Base - misc` as `esri_world_topo 5, bing_aerial 6,
+esri_satellite 7, google_satellite 8`. The templates' document order is
+`Esri Satellite, Bing Aerial, Google Satellite, ESRI World Topo` — World Topo
+**last**. gq declares it above the other three; the template puts it below.
+
+Not a defect: all four are opaque, so the bottom of the stack is opaque either
+way and the narrow check's premise holds. But the prose justifying that check
+says "beneath ESRI World Topo", which describes a tree gq does not declare.
+Recorded so it is not rediscovered as a surprise. Belongs to gq#68.
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
+| `expect_setequal(..., info = )` — unused argument | `expect_setequal()` takes no `info`; use `expect_equal(setdiff(a, b), character(0), info = )` |
+| `Double hyphen within comment` from `xml2::read_xml` on the fixture | `--` is illegal inside an XML comment even in prose; reword |

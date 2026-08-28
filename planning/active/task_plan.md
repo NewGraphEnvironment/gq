@@ -44,53 +44,61 @@ Vendor a committed artifact; the live comparison skips when rfp is absent.
 
 `tests/testthat/test-template_drift.R`.
 
-- [ ] Every `templates.csv` group exists in `template_groups.csv`; every
+- [x] Every `templates.csv` group exists in `template_groups.csv`; every
       `groups.csv` group/subgroup path likewise. Exemptions carry a reason plus
       the rfp issue that removes them, and each is asserted **still needed** —
       the `test-composition_integrity.R:74-79` pattern.
-- [ ] Relative order of groups present on both sides agrees, same exemptions.
-- [ ] **Narrow check** — no group declared below the bottom-most template group.
+- [x] Relative order of groups present on both sides agrees, same exemptions.
+- [x] **Narrow check** — no group declared below the bottom-most template group.
       Red today on `Base - Orthoimagery`.
-- [ ] **Premise beside the assertion** — the bottom template group holds
+- [x] **Premise beside the assertion** — the bottom template group holds
       `esri_world_topo`, `bing_aerial`, `esri_satellite`, `google_satellite`. If
       that moves, the rule's basis moved and the test says which.
-- [ ] Round-trip: `Model Parameters - bcfishpass ` survives write→read
+- [x] Round-trip: `Model Parameters - bcfishpass ` survives write→read
       byte-exact.
-- [ ] **Alarm can fire** — a small `.qgs` fixture with one group renamed; assert
+- [x] **Alarm can fire** — a small `.qgs` fixture with one group renamed; assert
       it is reported.
-- [ ] Restore the bug: confirm every guard goes red before moving on. A guard
+- [x] Restore the bug: confirm every guard goes red before moving on. A guard
       nobody has seen fail is decoration.
 
 ## Phase 3: Adopt template names as the key
 
-- [ ] `groups.csv`: `Other Point Features` → `Other point features`;
+- [x] `groups.csv`: `Other Point Features` → `Other point features`;
       `Roads/Rails/Pipelines` → `Roads,Railways,Pipelines`; subgroup
       `Habitat Models` → `Habitat models`; `BEC` → `Terrestrial Ecology`.
       Write quoted.
-- [ ] `templates.csv`: same names, quoted.
-- [ ] Three gq call sites: `tests/testthat/test-gq_groups.R:34`,
+- [x] `templates.csv`: same names, quoted.
+- [x] Three gq call sites: `tests/testthat/test-gq_groups.R:34`,
       `tests/testthat/test-gq_trail_style.R:86`, `R/gq_groups.R:137`.
-- [ ] `reg_extract_themes.R`'s unquoted-comma guard now aborts on correct data.
-      Adjust it to match the quoting rather than leaving a guard that refuses the
-      new truth.
+- [x] ~~`reg_extract_themes.R`'s unquoted-comma guard~~ — **dropped, premise
+      false.** That guard scans the `themes` data frame; group names never enter
+      `themes.csv`. Verified before editing. Touching it would have been a net
+      loss.
 
 ## Phase 4: Fix the ordering bug, settle composition
 
-- [ ] Delete `Base - Orthoimagery`; `orthophoto_tiles` → `Basemap` /
+- [x] Delete `Base - Orthoimagery`; `orthophoto_tiles` → `Basemap` /
       `Terrestrial Ecology`, where the template has it.
-- [ ] Declare `Project Specific` and `Base - lidar` — the template has them,
-      gq does not.
-- [ ] Adopt Roads-before-Streams (template order); it was never a decision.
-- [ ] `Floodplain` above `Basemap` — deliberate, kept, exempted with the reason
+- [x] ~~Declare `Project Specific` and `Base - lidar`~~ — **not
+      representable.** `Base - lidar` is EMPTY in both templates and
+      `Project Specific` holds only gq#64 layers; `groups.csv` is one row per
+      layer, so neither can be declared. Exempted instead, in the second
+      exemption list, each asserted still needed.
+- [x] Adopt Roads-before-Streams (template order); it was never a decision.
+- [x] `Floodplain` above `Basemap` — deliberate, kept, exempted with the reason
       (46% of change area is water-class, hidden by Basemap's waterbody fills).
-- [ ] `Restoration` kept, exempted — `local` layers, no template equivalent.
-- [ ] Correct `gq_templates()`'s `@section Ordering:` evidence. Rule stays.
-- [ ] Reconcile `test-composition_integrity.R`'s `restoration_only` assertion
+- [x] `Restoration` kept, exempted — `local` layers, no template equivalent.
+- [x] Third exemption the plan missed: `Basemap/Terrestrial Ecology` is
+      bcrestoration-only and `groups.csv` has no `template` column, so declaring
+      it declares it for bcfishpass too. Path guard rewritten per-template.
+- [x] `devtools::document()` — `man/gq_templates.Rd` had no `Ordering` section.
+- [x] Correct `gq_templates()`'s `@section Ordering:` evidence. Rule stays.
+- [x] Reconcile `test-composition_integrity.R`'s `restoration_only` assertion
       with the new exemptions.
 
 ## Phase 5: One rfp issue, and the deferred work
 
-- [ ] **One** rfp issue, with a table: add `Floodplain` above `Basemap` and
+- [x] **One** rfp issue, with a table: add `Floodplain` above `Basemap` and
       `Restoration` to both templates. Two secondary notes: `Land Tenure` appears
       once in `bcrestoration_mobile.qgs` but in neither layer tree; and
       `rfp/R/rfp_qgs_theme_add.R:13-14` attributes non-portable theme group rows
@@ -98,24 +106,24 @@ Vendor a committed artifact; the live comparison skips when rfp is absent.
       identical names, and the mechanism is the differing root prefix
       (`bcfishpass Mobile ` / `bcrestoration Mobile `) plus
       `Basemap/Terrestrial Ecology` existing only in bcrestoration.
-- [ ] gq follow-up issue for the 9 layer-placement disagreements, measurement in
+- [x] gq follow-up issue for the 9 layer-placement disagreements, measurement in
       the body.
-- [ ] Reconcile #66's body: the templates are structurally identical, not
+- [x] Reconcile #66's body: the templates are structurally identical, not
       divergent as its table implies; `Base - Orthoimagery` and `Basemap/BEC`
       never existed; the narrow check fails on the registry itself.
 
 ## Phase 6: Land it
 
-- [ ] `NEWS.md` + `DESCRIPTION` 0.10.0 → **0.11.0**. Minor: `gq_groups()`,
+- [x] `NEWS.md` + `DESCRIPTION` 0.10.0 → **0.11.0**. Minor: `gq_groups()`,
       `gq_group_layers()` and `gq_template_groups()` return different group
       strings, visible to any consumer matching on name.
-- [ ] `/planning-archive`, `/gh-pr-push`.
+- [x] `/planning-archive`, `/gh-pr-push`.
 
 ## Validation
 
-- [ ] `devtools::test()` — 962 passing plus new
-- [ ] `lintr` clean on changed files (baseline 0)
-- [ ] `devtools::check()` no new ERROR/WARNING/NOTE against main's 0/2/2
-- [ ] `/code-check` clean on each commit
-- [ ] PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `devtools::test()` — 992 passing (962 baseline, +30)
+- [x] `lintr` clean on changed files (baseline 0)
+- [x] `devtools::check()` no new ERROR/WARNING/NOTE against main's 0/2/2
+- [x] `/code-check` clean on each commit
+- [x] PWF checkboxes match landed work
+- [x] `/planning-archive` on completion

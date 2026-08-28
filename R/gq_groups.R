@@ -130,13 +130,20 @@ gq_group_layers <- function(group, registry = NULL) {
 #' free to number its groups 10/20/30 to leave room for insertions, or to use a
 #' group vocabulary no other template shares.
 #'
-#' This is written down because the two templates shipped today happen to be
-#' numbered 1..N and happen to agree on their first three groups, which invites
-#' the inference that those properties are required. They are not — and the two
-#' already disagree beyond that point (`bcfishpass_mobile` orders
-#' Roads/Rails/Pipelines before Streams, `bcrestoration_mobile` the reverse).
+#' This is written down because the two templates shipped today are numbered
+#' 1..N and agree on most of their vocabulary, which invites the inference that
+#' those properties are required. They are not: `bcrestoration_mobile` declares
+#' `Floodplain` and `Restoration`, which `bcfishpass_mobile` does not, so the
+#' two already disagree about both membership and every position after group 5.
 #' Do not add a contiguity check; it would break the first project type that
 #' does not look like these two.
+#'
+#' An earlier version of this section cited a Roads-before-Streams asymmetry
+#' between the templates as the evidence. There was none — both shipped `.qgs`
+#' order `Roads,Railways,Pipelines` before `Streams`, and the asymmetry was
+#' unchecked drift in this registry, cited as a fact about the projects it
+#' describes. gq#66 adopted the template order and added
+#' `tests/testthat/test-template_drift.R` so the next such claim is measured.
 #'
 #' @return A data.frame with columns: template, group, group_order.
 #'

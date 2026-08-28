@@ -26,3 +26,28 @@
   `order` is the sibling loop index, so it is distinct by construction and the
   assertion could not have failed.
 - Test baseline on this branch: 962 passing, 0 failures (the plan said 941).
+
+### Phases 2-4 — guards, names, composition
+
+- `tests/testthat/test-template_drift.R` (11 tests) plus
+  `tests/testthat/fixtures/template_drift_fixture.qgs`.
+- Written first and watched fail: 9 failures on the pre-fix registry, every one
+  on a real divergence. Re-verified after the fix by running the landed guards
+  against `git show main:` versions of both CSVs — narrow check red on both
+  templates.
+- Four group renames adopted from the templates; `groups.csv` and
+  `templates.csv` are now quoted (mandatory, not hygiene:
+  `Roads,Railways,Pipelines` would be six fields against a three-column header).
+- `Base - Orthoimagery` deleted, `orthophoto_tiles` moved to
+  `Basemap/Terrestrial Ecology`; `Floodplain`/`Restoration` above `Basemap`.
+- Plan review returned mid-phase; 4 of 6 findings real, folded in. Two of them
+  were defects in my own fix. Recorded in `findings.md`.
+- `devtools::document()` — `man/gq_templates.Rd` gained the `Ordering` section
+  it never had.
+- 992 passing, 0 failures. lintr clean on all changed files.
+
+### Phase 5 — issues
+
+- rfp#216 filed: three groups gq declares that the templates lack, with
+  positions stated, plus the two prose misattributions.
+- gq#68 filed: the six remaining layer-placement disagreements.

@@ -83,7 +83,7 @@ test_that("trails are in both templates, in the roads group", {
     expect_equal(nrow(r), 1L, info = t)
     expect_equal(r$source_layer[[1]], "osm.trail", info = t)
     expect_equal(r$source_type[[1]], "osm", info = t)
-    expect_equal(r$group[[1]], "Roads/Rails/Pipelines", info = t)
+    expect_equal(r$group[[1]], "Roads,Railways,Pipelines", info = t)
   }
 })
 

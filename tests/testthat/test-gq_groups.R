@@ -31,7 +31,7 @@ test_that("gq_group_layers includes subgroups", {
   expect_true("streams_all" %in% df$layer_key)
   # subgroup children
   expect_true("streams_bt" %in% df$layer_key)
-  expect_true(any(df$subgroup == "Habitat Models", na.rm = TRUE))
+  expect_true(any(df$subgroup == "Habitat models", na.rm = TRUE))
 })
 
 test_that("gq_group_layers returns empty for unknown group", {

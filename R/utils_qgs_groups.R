@@ -22,9 +22,14 @@
 #' why a group appended at the end of the tree renders beneath the opaque raster
 #' basemap and disappears.
 #'
-#' `order` indexes group **and** layer siblings together, matching rfp's
-#' `data-raw/qgs/extract_roster.R`: indexing groups alone cannot place a
+#' `order` indexes group **and** layer siblings together, for the reason rfp's
+#' `data-raw/qgs/extract_roster.R` gives: indexing groups alone cannot place a
 #' subgroup among the layers it sits between.
+#'
+#' The reason is shared; the **values are not comparable**. rfp indexes every
+#' element child, including the `<customproperties>` every node carries, so its
+#' roster reads `Forms` at 2 and `Base - misc` at 11 where this reads 1 and 10.
+#' Only relative order carries across the two artifacts.
 #'
 #' Names are byte-exact and must stay that way. The project root is
 #' `"bcrestoration Mobile "`, with a trailing space; several layers carry a
@@ -82,8 +87,8 @@ qgs_group_table <- function(path) {
         stop("Unnamed group below the project root in ", path, call. = FALSE)
       }
       # "/" is the path separator, so a group carrying one would make the path
-      # ambiguous. Not hypothetical: gq's registry called this very group
-      # "Roads/Rails/Pipelines" until gq#66.
+      # ambiguous. Not hypothetical: gq's own registry called this very group
+      # "Roads/Rails/Pipelines" before the rename in this issue.
       if (grepl("/", nm, fixed = TRUE)) {
         stop("Group name contains '/', which is the path separator: ", nm,
              call. = FALSE)

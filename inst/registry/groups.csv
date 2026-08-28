@@ -1,65 +1,65 @@
 group,subgroup,layer_key,order,source_type
-Basemap,,watershed_group_boundary,1,bcdata
-Basemap,,municipalities,2,bcdata
-Basemap,,provincial_park,3,bcdata
-Basemap,,national_park,4,bcdata
-Basemap,,conservancy,5,bcdata
-Basemap,,old_growth_management_areas,6,bcdata
-Basemap,,first_nation_reserve,7,bcdata
-Basemap,,range_tenure,8,aws
-Basemap,,land_ownership,9,aws
-Basemap,,fire_historical_burn,10,bcdata
-Basemap,,fire_severity,11,bcdata
-Basemap,,glaciers,12,bcdata
-Basemap,,town,13,bcdata
-Basemap,Waterbodies,lake,1,bcdata
-Basemap,Waterbodies,wetland,2,bcdata
-Basemap,Waterbodies,rivers_poly,3,bcdata
-Basemap,Waterbodies,manmade_waterbodies,4,bcdata
-Basemap,BEC,bec_zone,1,bcdata
-Basemap,BEC,biogeoclimatic_ecosystem_classification,2,bcdata
-Crossings,,crossings_pscis_assessment,1,bcdata
-Crossings,,crossings_pscis_confirmation,2,bcdata
-Crossings,,crossings_pscis_design,3,bcdata
-Crossings,,crossings_pscis_remedation,4,bcdata
-Crossings,,crossings_modelled,5,aws
-Crossings,,crossings_pscis_modelled_dams,6,aws
-Crossings,,moti_culverts,7,bcdata
-Crossings,,moti_major_structures,8,bcdata
-Crossings,,dam,9,aws
-Streams,,streams_all,1,aws
-Streams,,stream_labels,2,fwa
-Streams,,fisheries_sensitive_watersheds,3,bcdata
-Streams,Habitat Models,streams_bt,1,aws
-Streams,Habitat Models,streams_salmon,2,aws
-Streams,Habitat Models,streams_st,3,aws
-Other Point Features,,fiss_stream_sample_sites,1,bcdata
-Other Point Features,,bcfishobs_fiss_fish_observations,2,aws
-Other Point Features,,fiss_obstacles,3,aws
-Other Point Features,,hydrometric_stations_environment_canada,4,bcdata
-Roads/Rails/Pipelines,,roads_dra,1,aws
-Roads/Rails/Pipelines,,roads_ften,2,aws
-Roads/Rails/Pipelines,,railway,3,bcdata
-Roads/Rails/Pipelines,,pipeline_installed,4,bcdata
-Roads/Rails/Pipelines,,pipeline_permit,5,bcdata
-Roads/Rails/Pipelines,,pipeline_application,6,bcdata
-Roads/Rails/Pipelines,,transmission_line,7,bcdata
-Roads/Rails/Pipelines,,trails,8,osm
-Forms,,form_pscis,1,local
-Forms,,form_fiss_site,2,local
-Forms,,form_edna,3,local
-Forms,,form_monitoring,4,local
-Floodplain,,floodplains,1,bcdata
-Restoration,,harvest_area,1,local
-Restoration,,planting_site,2,local
-Web Mapping Services,,fire_perimeters_current,1,wms
-Web Mapping Services,,frep_rip2021_mar2022,2,wms
-Base - Orthoimagery,,orthophoto_tiles,1,bcdata
-Base - misc,,habitat_lateral,1,local
-Base - misc,,utm_zones,2,bcdata
-Base - misc,,terrestrial_ecosystem_information_scanned_map_boundary,3,bcdata
-Base - misc,,terrain_mapping_project_boundaries,4,bcdata
-Base - misc,,esri_world_topo,5,wms
-Base - misc,,bing_aerial,6,wms
-Base - misc,,esri_satellite,7,wms
-Base - misc,,google_satellite,8,wms
+"Basemap",,watershed_group_boundary,1,bcdata
+"Basemap",,municipalities,2,bcdata
+"Basemap",,provincial_park,3,bcdata
+"Basemap",,national_park,4,bcdata
+"Basemap",,conservancy,5,bcdata
+"Basemap",,old_growth_management_areas,6,bcdata
+"Basemap",,first_nation_reserve,7,bcdata
+"Basemap",,range_tenure,8,aws
+"Basemap",,land_ownership,9,aws
+"Basemap",,fire_historical_burn,10,bcdata
+"Basemap",,fire_severity,11,bcdata
+"Basemap",,glaciers,12,bcdata
+"Basemap",,town,13,bcdata
+"Basemap","Waterbodies",lake,1,bcdata
+"Basemap","Waterbodies",wetland,2,bcdata
+"Basemap","Waterbodies",rivers_poly,3,bcdata
+"Basemap","Waterbodies",manmade_waterbodies,4,bcdata
+"Basemap","Terrestrial Ecology",orthophoto_tiles,1,bcdata
+"Basemap","Terrestrial Ecology",bec_zone,2,bcdata
+"Basemap","Terrestrial Ecology",biogeoclimatic_ecosystem_classification,3,bcdata
+"Crossings",,crossings_pscis_assessment,1,bcdata
+"Crossings",,crossings_pscis_confirmation,2,bcdata
+"Crossings",,crossings_pscis_design,3,bcdata
+"Crossings",,crossings_pscis_remedation,4,bcdata
+"Crossings",,crossings_modelled,5,aws
+"Crossings",,crossings_pscis_modelled_dams,6,aws
+"Crossings",,moti_culverts,7,bcdata
+"Crossings",,moti_major_structures,8,bcdata
+"Crossings",,dam,9,aws
+"Streams",,streams_all,1,aws
+"Streams",,stream_labels,2,fwa
+"Streams",,fisheries_sensitive_watersheds,3,bcdata
+"Streams","Habitat models",streams_bt,1,aws
+"Streams","Habitat models",streams_salmon,2,aws
+"Streams","Habitat models",streams_st,3,aws
+"Other point features",,fiss_stream_sample_sites,1,bcdata
+"Other point features",,bcfishobs_fiss_fish_observations,2,aws
+"Other point features",,fiss_obstacles,3,aws
+"Other point features",,hydrometric_stations_environment_canada,4,bcdata
+"Roads,Railways,Pipelines",,roads_dra,1,aws
+"Roads,Railways,Pipelines",,roads_ften,2,aws
+"Roads,Railways,Pipelines",,railway,3,bcdata
+"Roads,Railways,Pipelines",,pipeline_installed,4,bcdata
+"Roads,Railways,Pipelines",,pipeline_permit,5,bcdata
+"Roads,Railways,Pipelines",,pipeline_application,6,bcdata
+"Roads,Railways,Pipelines",,transmission_line,7,bcdata
+"Roads,Railways,Pipelines",,trails,8,osm
+"Forms",,form_pscis,1,local
+"Forms",,form_fiss_site,2,local
+"Forms",,form_edna,3,local
+"Forms",,form_monitoring,4,local
+"Floodplain",,floodplains,1,bcdata
+"Restoration",,harvest_area,1,local
+"Restoration",,planting_site,2,local
+"Web Mapping Services",,fire_perimeters_current,1,wms
+"Web Mapping Services",,frep_rip2021_mar2022,2,wms
+"Base - misc",,habitat_lateral,1,local
+"Base - misc",,utm_zones,2,bcdata
+"Base - misc",,terrestrial_ecosystem_information_scanned_map_boundary,3,bcdata
+"Base - misc",,terrain_mapping_project_boundaries,4,bcdata
+"Base - misc",,esri_world_topo,5,wms
+"Base - misc",,bing_aerial,6,wms
+"Base - misc",,esri_satellite,7,wms
+"Base - misc",,google_satellite,8,wms
