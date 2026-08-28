@@ -16,7 +16,7 @@ The name is a reference — it's all about style.
 |------|--------------|
 | `soul` | Parent ecosystem — conventions, skills (including `cartography` skill) |
 | `soul/skills/cartography` | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
-| `sred` | R&D tracking — Experiment 6.11 (#13), Experiment 6.17 (#19, QWC2) |
+| `sred` | R&D tracking (private) — experiment refs in machine-local memory |
 | `rtj` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
 | `nrp-nutrient-loading-2025` | First consumer project (tmap watershed maps) |
 | All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects) |
@@ -26,10 +26,15 @@ The name is a reference — it's all about style.
 
 Tag SRED on **PRs only** (not issues or commits) so all commits stay in lineage and are discrete.
 
-PR body: `Relates to NewGraphEnvironment/sred#13`
+PR body: `Relates to NewGraphEnvironment/sred#<N>`
 
-- Experiment 6.11: sred#13 — gq core
-- Experiment 6.17: sred#19 — QWC2
+The experiment-number-to-issue mapping lives in **machine-local memory**
+(`sred-experiment-refs`), not here: this repo is public, so `CLAUDE.md` is
+world-readable on GitHub regardless of the pkgdown build stripping it from the
+docs site. The issue references are already public through merged PR bodies and
+resolve to nothing externally, since `sred` is private — the experiment
+*numbering* is claim structure, and that is what stays out. Check memory before
+writing a PR body.
 
 ## Architecture
 
