@@ -14,3 +14,15 @@
 - Scaffolded PWF baseline with the approved phases.
 - Next: Phase 1 — `qgs_group_table()` and the vendored
   `inst/registry/template_groups.csv`.
+
+### Phase 1 — extractor and vendored artifact
+
+- `R/utils_qgs_groups.R`: `qgs_group_table()` plus `read_template_groups_csv()`.
+- `data-raw/reg_extract_template_groups.R`, `RFP_TEMPLATE_DIR` preamble copied
+  from `reg_extract_themes.R`.
+- `inst/registry/template_groups.csv` — 31 groups, bcfishpass 15 /
+  bcrestoration 16, quoted.
+- Dropped a sibling-order uniqueness check from the extractor before committing:
+  `order` is the sibling loop index, so it is distinct by construction and the
+  assertion could not have failed.
+- Test baseline on this branch: 962 passing, 0 failures (the plan said 941).

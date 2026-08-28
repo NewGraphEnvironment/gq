@@ -26,18 +26,18 @@ tree**, which is beneath the opaque raster basemap the themes turn on.
 The QML-corpus shape: gq is public, rfp is private, so CI cannot read a `.qgs`.
 Vendor a committed artifact; the live comparison skips when rfp is absent.
 
-- [ ] `R/utils_qgs_groups.R` — internal `qgs_group_table(path)` walking
+- [x] `R/utils_qgs_groups.R` — internal `qgs_group_table(path)` walking
       `/qgis/layer-tree-group/layer-tree-group`, returning `group_path`, `depth`,
       `order`. Names byte-exact. `order` indexes group **and** layer element
       children (rfp `data-raw/qgs/extract_roster.R:50-53` — indexing layers alone
       cannot place a subgroup). In `R/`, not `data-raw/`, so the alarm-can-fire
       test can call it.
-- [ ] `data-raw/reg_extract_template_groups.R` — `RFP_TEMPLATE_DIR`, then
+- [x] `data-raw/reg_extract_template_groups.R` — `RFP_TEMPLATE_DIR`, then
       installed rfp, then stop with instructions. Copy `reg_extract_themes.R`'s
       preamble; the reason is identical.
-- [ ] `inst/registry/template_groups.csv`, **quoted**. `Roads,Railways,Pipelines`
+- [x] `inst/registry/template_groups.csv`, **quoted**. `Roads,Railways,Pipelines`
       carries a comma; `Model Parameters - bcfishpass ` a trailing space.
-- [ ] Read with `utils::read.csv()`, never `readr` — `trim_ws = TRUE` eats the
+- [x] Read with `utils::read.csv()`, never `readr` — `trim_ws = TRUE` eats the
       trailing space and silently breaks every path match.
 
 ## Phase 2: Guards, each seen to fail
@@ -113,7 +113,7 @@ Vendor a committed artifact; the live comparison skips when rfp is absent.
 
 ## Validation
 
-- [ ] `devtools::test()` — 941 passing plus new
+- [ ] `devtools::test()` — 962 passing plus new
 - [ ] `lintr` clean on changed files (baseline 0)
 - [ ] `devtools::check()` no new ERROR/WARNING/NOTE against main's 0/2/2
 - [ ] `/code-check` clean on each commit

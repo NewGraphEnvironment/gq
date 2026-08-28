@@ -1,0 +1,32 @@
+"template","group_path","depth","order"
+"bcfishpass_mobile","Base - lidar",1,9
+"bcfishpass_mobile","Base - misc",1,10
+"bcfishpass_mobile","Basemap",1,7
+"bcfishpass_mobile","Basemap/Waterbodies",2,4
+"bcfishpass_mobile","Crossings",1,3
+"bcfishpass_mobile","Forms",1,1
+"bcfishpass_mobile","Other point features",1,4
+"bcfishpass_mobile","Project Specific",1,2
+"bcfishpass_mobile","Project Specific/Field Data",2,2
+"bcfishpass_mobile","Project Specific/Model Parameters - bcfishpass ",2,3
+"bcfishpass_mobile","Roads,Railways,Pipelines",1,5
+"bcfishpass_mobile","Streams",1,6
+"bcfishpass_mobile","Streams/Habitat models",2,2
+"bcfishpass_mobile","Streams/Stream labels",2,1
+"bcfishpass_mobile","Web Mapping Services",1,8
+"bcrestoration_mobile","Base - lidar",1,9
+"bcrestoration_mobile","Base - misc",1,10
+"bcrestoration_mobile","Basemap",1,7
+"bcrestoration_mobile","Basemap/Terrestrial Ecology",2,14
+"bcrestoration_mobile","Basemap/Waterbodies",2,4
+"bcrestoration_mobile","Crossings",1,3
+"bcrestoration_mobile","Forms",1,1
+"bcrestoration_mobile","Other point features",1,4
+"bcrestoration_mobile","Project Specific",1,2
+"bcrestoration_mobile","Project Specific/Field Data",2,2
+"bcrestoration_mobile","Project Specific/Model Parameters - bcfishpass ",2,3
+"bcrestoration_mobile","Roads,Railways,Pipelines",1,5
+"bcrestoration_mobile","Streams",1,6
+"bcrestoration_mobile","Streams/Habitat models",2,2
+"bcrestoration_mobile","Streams/Stream labels",2,1
+"bcrestoration_mobile","Web Mapping Services",1,8
