@@ -240,8 +240,12 @@ too many.
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (47 layers)
 - `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source
-- `groups.csv` — layer group membership, nesting and z-order (62 rows, 11 groups)
-- `templates.csv` — which groups compose each QGIS project template
+- `groups.csv` — layer group membership, nesting and z-order (64 rows, 10 groups),
+  quoted: the correct group name is `Roads,Railways,Pipelines`
+- `templates.csv` — which groups compose each QGIS project template, quoted
+- `template_groups.csv` — the group tree of each shipped `.qgs`, vendored by
+  `data-raw/reg_extract_template_groups.R`. The witness `templates.csv` is
+  checked against; gq is public and rfp is private, so CI can never read a `.qgs`
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
   (232 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
 - `xref_layers.csv` — prose cross-reference, read by humans not code

@@ -13,6 +13,30 @@ A data.frame with columns: template, group, group_order.
 Returns a data.frame of all templates defined in the registry, showing
 which groups each template includes and their order.
 }
+\section{Ordering}{
+
+\code{group_order} is a \strong{sort key and nothing else}. It is per-template, and it
+requires none of: contiguity, a 1-based start, uniqueness across templates,
+or agreement between templates on where a shared group sits. A template is
+free to number its groups 10/20/30 to leave room for insertions, or to use a
+group vocabulary no other template shares.
+
+This is written down because the two templates shipped today are numbered
+1..N and agree on most of their vocabulary, which invites the inference that
+those properties are required. They are not: \code{bcrestoration_mobile} declares
+\code{Floodplain} and \code{Restoration}, which \code{bcfishpass_mobile} does not, so the
+two already disagree about both membership and every position after group 5.
+Do not add a contiguity check; it would break the first project type that
+does not look like these two.
+
+An earlier version of this section cited a Roads-before-Streams asymmetry
+between the templates as the evidence. There was none — both shipped \code{.qgs}
+order \verb{Roads,Railways,Pipelines} before \code{Streams}, and the asymmetry was
+unchecked drift in this registry, cited as a fact about the projects it
+describes. gq#66 adopted the template order and added
+\code{tests/testthat/test-template_drift.R} so the next such claim is measured.
+}
+
 \examples{
 gq_templates()
 

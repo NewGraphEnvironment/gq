@@ -7,10 +7,18 @@
 # simply contributes no rows.
 #
 # The visible cost (gq#40): a project built from `bcrestoration_mobile` shows
-# cartography for five layers it never downloaded, and `Base - Orthoimagery` has
+# cartography for five layers it never downloaded, and `Base - Orthoimagery` had
 # been mapped to zero templates for the entire history of the file with a green
 # suite. Nothing here is clever -- these are the assertions whose absence let
 # that happen.
+#
+# gq#40's fix then declared `Base - Orthoimagery` without checking any template,
+# where it had never existed. gq#66 deleted the group and moved
+# `orthophoto_tiles` to `Basemap/Terrestrial Ecology`, which is where the
+# template keeps it; test-template_drift.R is the guard that would have caught
+# it. These assertions and those are complementary -- this file checks the
+# registry against itself, that one checks it against the projects it
+# describes.
 
 # `source_type` is the discriminator for whether a layer needs a source_layer,
 # so it has to be trustworthy before anything keys on it. It is otherwise
