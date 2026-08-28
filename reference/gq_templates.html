@@ -9,7 +9,7 @@ which groups each template includes and their order."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,31 +53,52 @@ which groups each template includes and their order.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with columns: template, group, group_order.</p>
     </div>
+    <div class="section level2">
+    <h2 id="ordering">Ordering<a class="anchor" aria-label="anchor" href="#ordering"></a></h2>
+
+
+<p><code>group_order</code> is a <strong>sort key and nothing else</strong>. It is per-template, and it
+requires none of: contiguity, a 1-based start, uniqueness across templates,
+or agreement between templates on where a shared group sits. A template is
+free to number its groups 10/20/30 to leave room for insertions, or to use a
+group vocabulary no other template shares.</p>
+<p>This is written down because the two templates shipped today are numbered
+1..N and agree on most of their vocabulary, which invites the inference that
+those properties are required. They are not: <code>bcrestoration_mobile</code> declares
+<code>Floodplain</code> and <code>Restoration</code>, which <code>bcfishpass_mobile</code> does not, so the
+two already disagree about both membership and every position after group 5.
+Do not add a contiguity check; it would break the first project type that
+does not look like these two.</p>
+<p>An earlier version of this section cited a Roads-before-Streams asymmetry
+between the templates as the evidence. There was none — both shipped <code>.qgs</code>
+order <code>Roads,Railways,Pipelines</code> before <code>Streams</code>, and the asymmetry was
+unchecked drift in this registry, cited as a fact about the projects it
+describes. gq#66 adopted the template order and added
+<code>tests/testthat/test-template_drift.R</code> so the next such claim is measured.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">gq_templates</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                template                 group group_order</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     bcfishpass_mobile                 Forms           1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     bcfishpass_mobile             Crossings           2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     bcfishpass_mobile  Other Point Features           3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     bcfishpass_mobile Roads/Rails/Pipelines           4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     bcfishpass_mobile               Streams           5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     bcfishpass_mobile               Basemap           6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     bcfishpass_mobile  Web Mapping Services           7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     bcfishpass_mobile           Base - misc           8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9     bcfishpass_mobile   Base - Orthoimagery           9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 bcrestoration_mobile                 Forms           1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 bcrestoration_mobile             Crossings           2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 bcrestoration_mobile  Other Point Features           3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 bcrestoration_mobile               Streams           4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 bcrestoration_mobile Roads/Rails/Pipelines           5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 bcrestoration_mobile               Basemap           6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 bcrestoration_mobile            Floodplain           7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17 bcrestoration_mobile           Restoration           8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18 bcrestoration_mobile  Web Mapping Services           9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19 bcrestoration_mobile           Base - misc          10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20 bcrestoration_mobile   Base - Orthoimagery          11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                template                    group group_order</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     bcfishpass_mobile                    Forms           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     bcfishpass_mobile                Crossings           2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     bcfishpass_mobile     Other point features           3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     bcfishpass_mobile Roads,Railways,Pipelines           4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     bcfishpass_mobile                  Streams           5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     bcfishpass_mobile                  Basemap           6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     bcfishpass_mobile     Web Mapping Services           7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     bcfishpass_mobile              Base - misc           8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  bcrestoration_mobile                    Forms           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 bcrestoration_mobile                Crossings           2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 bcrestoration_mobile     Other point features           3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 bcrestoration_mobile Roads,Railways,Pipelines           4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 bcrestoration_mobile                  Streams           5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 bcrestoration_mobile               Floodplain           6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 bcrestoration_mobile              Restoration           7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 bcrestoration_mobile                  Basemap           8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 bcrestoration_mobile     Web Mapping Services           9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 bcrestoration_mobile              Base - misc          10</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

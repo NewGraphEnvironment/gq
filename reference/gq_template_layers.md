@@ -32,68 +32,68 @@ layer_key, order, source_layer, source_type, type.
 
 ``` r
 gq_template_layers("bcfishpass_mobile")
-#>             template                 group group_order       subgroup
-#> 1  bcfishpass_mobile                 Forms           1           <NA>
-#> 2  bcfishpass_mobile                 Forms           1           <NA>
-#> 3  bcfishpass_mobile                 Forms           1           <NA>
-#> 4  bcfishpass_mobile                 Forms           1           <NA>
-#> 5  bcfishpass_mobile             Crossings           2           <NA>
-#> 6  bcfishpass_mobile             Crossings           2           <NA>
-#> 7  bcfishpass_mobile             Crossings           2           <NA>
-#> 8  bcfishpass_mobile             Crossings           2           <NA>
-#> 9  bcfishpass_mobile             Crossings           2           <NA>
-#> 10 bcfishpass_mobile             Crossings           2           <NA>
-#> 11 bcfishpass_mobile             Crossings           2           <NA>
-#> 12 bcfishpass_mobile             Crossings           2           <NA>
-#> 13 bcfishpass_mobile             Crossings           2           <NA>
-#> 14 bcfishpass_mobile  Other Point Features           3           <NA>
-#> 15 bcfishpass_mobile  Other Point Features           3           <NA>
-#> 16 bcfishpass_mobile  Other Point Features           3           <NA>
-#> 17 bcfishpass_mobile  Other Point Features           3           <NA>
-#> 18 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 19 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 20 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 21 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 22 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 23 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 24 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 25 bcfishpass_mobile Roads/Rails/Pipelines           4           <NA>
-#> 26 bcfishpass_mobile               Streams           5           <NA>
-#> 27 bcfishpass_mobile               Streams           5           <NA>
-#> 28 bcfishpass_mobile               Streams           5           <NA>
-#> 29 bcfishpass_mobile               Streams           5 Habitat Models
-#> 30 bcfishpass_mobile               Streams           5 Habitat Models
-#> 31 bcfishpass_mobile               Streams           5 Habitat Models
-#> 32 bcfishpass_mobile               Basemap           6           <NA>
-#> 33 bcfishpass_mobile               Basemap           6           <NA>
-#> 34 bcfishpass_mobile               Basemap           6           <NA>
-#> 35 bcfishpass_mobile               Basemap           6           <NA>
-#> 36 bcfishpass_mobile               Basemap           6           <NA>
-#> 37 bcfishpass_mobile               Basemap           6           <NA>
-#> 38 bcfishpass_mobile               Basemap           6           <NA>
-#> 39 bcfishpass_mobile               Basemap           6           <NA>
-#> 40 bcfishpass_mobile               Basemap           6           <NA>
-#> 41 bcfishpass_mobile               Basemap           6           <NA>
-#> 42 bcfishpass_mobile               Basemap           6           <NA>
-#> 43 bcfishpass_mobile               Basemap           6           <NA>
-#> 44 bcfishpass_mobile               Basemap           6           <NA>
-#> 45 bcfishpass_mobile               Basemap           6            BEC
-#> 46 bcfishpass_mobile               Basemap           6            BEC
-#> 47 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 48 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 49 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 50 bcfishpass_mobile               Basemap           6    Waterbodies
-#> 51 bcfishpass_mobile  Web Mapping Services           7           <NA>
-#> 52 bcfishpass_mobile  Web Mapping Services           7           <NA>
-#> 53 bcfishpass_mobile           Base - misc           8           <NA>
-#> 54 bcfishpass_mobile           Base - misc           8           <NA>
-#> 55 bcfishpass_mobile           Base - misc           8           <NA>
-#> 56 bcfishpass_mobile           Base - misc           8           <NA>
-#> 57 bcfishpass_mobile           Base - misc           8           <NA>
-#> 58 bcfishpass_mobile           Base - misc           8           <NA>
-#> 59 bcfishpass_mobile           Base - misc           8           <NA>
-#> 60 bcfishpass_mobile           Base - misc           8           <NA>
-#> 61 bcfishpass_mobile   Base - Orthoimagery           9           <NA>
+#>             template                    group group_order            subgroup
+#> 1  bcfishpass_mobile                    Forms           1                <NA>
+#> 2  bcfishpass_mobile                    Forms           1                <NA>
+#> 3  bcfishpass_mobile                    Forms           1                <NA>
+#> 4  bcfishpass_mobile                    Forms           1                <NA>
+#> 5  bcfishpass_mobile                Crossings           2                <NA>
+#> 6  bcfishpass_mobile                Crossings           2                <NA>
+#> 7  bcfishpass_mobile                Crossings           2                <NA>
+#> 8  bcfishpass_mobile                Crossings           2                <NA>
+#> 9  bcfishpass_mobile                Crossings           2                <NA>
+#> 10 bcfishpass_mobile                Crossings           2                <NA>
+#> 11 bcfishpass_mobile                Crossings           2                <NA>
+#> 12 bcfishpass_mobile                Crossings           2                <NA>
+#> 13 bcfishpass_mobile                Crossings           2                <NA>
+#> 14 bcfishpass_mobile     Other point features           3                <NA>
+#> 15 bcfishpass_mobile     Other point features           3                <NA>
+#> 16 bcfishpass_mobile     Other point features           3                <NA>
+#> 17 bcfishpass_mobile     Other point features           3                <NA>
+#> 18 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 19 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 20 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 21 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 22 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 23 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 24 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 25 bcfishpass_mobile Roads,Railways,Pipelines           4                <NA>
+#> 26 bcfishpass_mobile                  Streams           5                <NA>
+#> 27 bcfishpass_mobile                  Streams           5                <NA>
+#> 28 bcfishpass_mobile                  Streams           5                <NA>
+#> 29 bcfishpass_mobile                  Streams           5      Habitat models
+#> 30 bcfishpass_mobile                  Streams           5      Habitat models
+#> 31 bcfishpass_mobile                  Streams           5      Habitat models
+#> 32 bcfishpass_mobile                  Basemap           6                <NA>
+#> 33 bcfishpass_mobile                  Basemap           6                <NA>
+#> 34 bcfishpass_mobile                  Basemap           6                <NA>
+#> 35 bcfishpass_mobile                  Basemap           6                <NA>
+#> 36 bcfishpass_mobile                  Basemap           6                <NA>
+#> 37 bcfishpass_mobile                  Basemap           6                <NA>
+#> 38 bcfishpass_mobile                  Basemap           6                <NA>
+#> 39 bcfishpass_mobile                  Basemap           6                <NA>
+#> 40 bcfishpass_mobile                  Basemap           6                <NA>
+#> 41 bcfishpass_mobile                  Basemap           6                <NA>
+#> 42 bcfishpass_mobile                  Basemap           6                <NA>
+#> 43 bcfishpass_mobile                  Basemap           6                <NA>
+#> 44 bcfishpass_mobile                  Basemap           6                <NA>
+#> 45 bcfishpass_mobile                  Basemap           6 Terrestrial Ecology
+#> 46 bcfishpass_mobile                  Basemap           6 Terrestrial Ecology
+#> 47 bcfishpass_mobile                  Basemap           6 Terrestrial Ecology
+#> 48 bcfishpass_mobile                  Basemap           6         Waterbodies
+#> 49 bcfishpass_mobile                  Basemap           6         Waterbodies
+#> 50 bcfishpass_mobile                  Basemap           6         Waterbodies
+#> 51 bcfishpass_mobile                  Basemap           6         Waterbodies
+#> 52 bcfishpass_mobile     Web Mapping Services           7                <NA>
+#> 53 bcfishpass_mobile     Web Mapping Services           7                <NA>
+#> 54 bcfishpass_mobile              Base - misc           8                <NA>
+#> 55 bcfishpass_mobile              Base - misc           8                <NA>
+#> 56 bcfishpass_mobile              Base - misc           8                <NA>
+#> 57 bcfishpass_mobile              Base - misc           8                <NA>
+#> 58 bcfishpass_mobile              Base - misc           8                <NA>
+#> 59 bcfishpass_mobile              Base - misc           8                <NA>
+#> 60 bcfishpass_mobile              Base - misc           8                <NA>
+#> 61 bcfishpass_mobile              Base - misc           8                <NA>
 #>                                                 layer_key order
 #> 1                                              form_pscis     1
 #> 2                                          form_fiss_site     2
@@ -139,23 +139,23 @@ gq_template_layers("bcfishpass_mobile")
 #> 42                                          fire_severity    11
 #> 43                                               glaciers    12
 #> 44                                                   town    13
-#> 45                                               bec_zone     1
-#> 46                biogeoclimatic_ecosystem_classification     2
-#> 47                                                   lake     1
-#> 48                                                wetland     2
-#> 49                                            rivers_poly     3
-#> 50                                    manmade_waterbodies     4
-#> 51                                fire_perimeters_current     1
-#> 52                                   frep_rip2021_mar2022     2
-#> 53                                        habitat_lateral     1
-#> 54                                              utm_zones     2
-#> 55 terrestrial_ecosystem_information_scanned_map_boundary     3
-#> 56                     terrain_mapping_project_boundaries     4
-#> 57                                        esri_world_topo     5
-#> 58                                            bing_aerial     6
-#> 59                                         esri_satellite     7
-#> 60                                       google_satellite     8
-#> 61                                       orthophoto_tiles     1
+#> 45                                       orthophoto_tiles     1
+#> 46                                               bec_zone     2
+#> 47                biogeoclimatic_ecosystem_classification     3
+#> 48                                                   lake     1
+#> 49                                                wetland     2
+#> 50                                            rivers_poly     3
+#> 51                                    manmade_waterbodies     4
+#> 52                                fire_perimeters_current     1
+#> 53                                   frep_rip2021_mar2022     2
+#> 54                                        habitat_lateral     1
+#> 55                                              utm_zones     2
+#> 56 terrestrial_ecosystem_information_scanned_map_boundary     3
+#> 57                     terrain_mapping_project_boundaries     4
+#> 58                                        esri_world_topo     5
+#> 59                                            bing_aerial     6
+#> 60                                         esri_satellite     7
+#> 61                                       google_satellite     8
 #>                                                    source_layer source_type
 #> 1                                                    form_pscis       local
 #> 2                                                form_fiss_site       local
@@ -201,23 +201,23 @@ gq_template_layers("bcfishpass_mobile")
 #> 42                  whse_forest_vegetation.veg_burn_severity_sp      bcdata
 #> 43                           whse_basemapping.fwa_glaciers_poly      bcdata
 #> 44                   whse_basemapping.gns_geographical_names_sp      bcdata
-#> 45               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 45        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly      bcdata
 #> 46               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
-#> 47                              whse_basemapping.fwa_lakes_poly      bcdata
-#> 48                           whse_basemapping.fwa_wetlands_poly      bcdata
-#> 49                             whse_basemapping.fwa_rivers_poly      bcdata
-#> 50                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
-#> 51                                                         <NA>         wms
+#> 47               whse_forest_vegetation.bec_biogeoclimatic_poly      bcdata
+#> 48                              whse_basemapping.fwa_lakes_poly      bcdata
+#> 49                           whse_basemapping.fwa_wetlands_poly      bcdata
+#> 50                             whse_basemapping.fwa_rivers_poly      bcdata
+#> 51                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
 #> 52                                                         <NA>         wms
-#> 53                                                         <NA>       local
-#> 54                           whse_basemapping.utmg_utm_zones_sp      bcdata
-#> 55         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
-#> 56      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
-#> 57                                                         <NA>         wms
+#> 53                                                         <NA>         wms
+#> 54                                                         <NA>       local
+#> 55                           whse_basemapping.utmg_utm_zones_sp      bcdata
+#> 56         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
+#> 57      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata
 #> 58                                                         <NA>         wms
 #> 59                                                         <NA>         wms
 #> 60                                                         <NA>         wms
-#> 61        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly      bcdata
+#> 61                                                         <NA>         wms
 #>       type
 #> 1    point
 #> 2    point
@@ -269,15 +269,15 @@ gq_template_layers("bcfishpass_mobile")
 #> 48 polygon
 #> 49 polygon
 #> 50 polygon
-#> 51    <NA>
-#> 52   point
-#> 53    <NA>
-#> 54 polygon
+#> 51 polygon
+#> 52    <NA>
+#> 53   point
+#> 54    <NA>
 #> 55 polygon
 #> 56 polygon
-#> 57    <NA>
+#> 57 polygon
 #> 58    <NA>
 #> 59    <NA>
 #> 60    <NA>
-#> 61 polygon
+#> 61    <NA>
 ```

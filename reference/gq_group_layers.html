@@ -9,7 +9,7 @@ Layers are ordered by z-order within the group."><meta property="og:image" conte
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,26 +72,27 @@ not found.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">gq_group_layers</span><span class="op">(</span><span class="st">"Basemap"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      group    subgroup                               layer_key order</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Basemap        &lt;NA&gt;                watershed_group_boundary     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Basemap        &lt;NA&gt;                          municipalities     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Basemap        &lt;NA&gt;                         provincial_park     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Basemap        &lt;NA&gt;                           national_park     4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Basemap        &lt;NA&gt;                             conservancy     5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Basemap        &lt;NA&gt;             old_growth_management_areas     6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Basemap        &lt;NA&gt;                    first_nation_reserve     7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Basemap        &lt;NA&gt;                            range_tenure     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Basemap        &lt;NA&gt;                          land_ownership     9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Basemap        &lt;NA&gt;                    fire_historical_burn    10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Basemap        &lt;NA&gt;                           fire_severity    11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Basemap        &lt;NA&gt;                                glaciers    12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Basemap        &lt;NA&gt;                                    town    13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Basemap         BEC                                bec_zone     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Basemap         BEC biogeoclimatic_ecosystem_classification     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Basemap Waterbodies                                    lake     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17 Basemap Waterbodies                                 wetland     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18 Basemap Waterbodies                             rivers_poly     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19 Basemap Waterbodies                     manmade_waterbodies     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      group            subgroup                               layer_key order</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Basemap                &lt;NA&gt;                watershed_group_boundary     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Basemap                &lt;NA&gt;                          municipalities     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Basemap                &lt;NA&gt;                         provincial_park     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Basemap                &lt;NA&gt;                           national_park     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Basemap                &lt;NA&gt;                             conservancy     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Basemap                &lt;NA&gt;             old_growth_management_areas     6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Basemap                &lt;NA&gt;                    first_nation_reserve     7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Basemap                &lt;NA&gt;                            range_tenure     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Basemap                &lt;NA&gt;                          land_ownership     9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Basemap                &lt;NA&gt;                    fire_historical_burn    10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Basemap                &lt;NA&gt;                           fire_severity    11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Basemap                &lt;NA&gt;                                glaciers    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Basemap                &lt;NA&gt;                                    town    13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Basemap Terrestrial Ecology                        orthophoto_tiles     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Basemap Terrestrial Ecology                                bec_zone     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Basemap Terrestrial Ecology biogeoclimatic_ecosystem_classification     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 Basemap         Waterbodies                                    lake     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 Basemap         Waterbodies                                 wetland     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19 Basemap         Waterbodies                             rivers_poly     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 Basemap         Waterbodies                     manmade_waterbodies     4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    source_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2       bcdata</span>
@@ -112,14 +113,15 @@ not found.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20      bcdata</span>
 <span class="r-in"><span><span class="fu">gq_group_layers</span><span class="op">(</span><span class="st">"Streams"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     group       subgroup                      layer_key order source_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 Streams           &lt;NA&gt;                    streams_all     1         aws</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 Streams           &lt;NA&gt;                  stream_labels     2         fwa</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 Streams           &lt;NA&gt; fisheries_sensitive_watersheds     3      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Streams Habitat Models                     streams_bt     1         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Streams Habitat Models                 streams_salmon     2         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Streams Habitat Models                     streams_st     3         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Streams Habitat models                     streams_bt     1         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Streams Habitat models                 streams_salmon     2         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Streams Habitat models                     streams_st     3         aws</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With source_layer info</span></span></span>
 <span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="gq_reg_main.html">gq_reg_main</a></span><span class="op">(</span><span class="op">)</span></span></span>

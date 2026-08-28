@@ -29,71 +29,71 @@ optionally source_layer and type.
 ``` r
 # All groups and their layers
 gq_groups()
-#>                    group       subgroup
-#> 1                Basemap           <NA>
-#> 2                Basemap           <NA>
-#> 3                Basemap           <NA>
-#> 4                Basemap           <NA>
-#> 5                Basemap           <NA>
-#> 6                Basemap           <NA>
-#> 7                Basemap           <NA>
-#> 8                Basemap           <NA>
-#> 9                Basemap           <NA>
-#> 10               Basemap           <NA>
-#> 11               Basemap           <NA>
-#> 12               Basemap           <NA>
-#> 13               Basemap           <NA>
-#> 14               Basemap    Waterbodies
-#> 15               Basemap    Waterbodies
-#> 16               Basemap    Waterbodies
-#> 17               Basemap    Waterbodies
-#> 18               Basemap            BEC
-#> 19               Basemap            BEC
-#> 20             Crossings           <NA>
-#> 21             Crossings           <NA>
-#> 22             Crossings           <NA>
-#> 23             Crossings           <NA>
-#> 24             Crossings           <NA>
-#> 25             Crossings           <NA>
-#> 26             Crossings           <NA>
-#> 27             Crossings           <NA>
-#> 28             Crossings           <NA>
-#> 29               Streams           <NA>
-#> 30               Streams           <NA>
-#> 31               Streams           <NA>
-#> 32               Streams Habitat Models
-#> 33               Streams Habitat Models
-#> 34               Streams Habitat Models
-#> 35  Other Point Features           <NA>
-#> 36  Other Point Features           <NA>
-#> 37  Other Point Features           <NA>
-#> 38  Other Point Features           <NA>
-#> 39 Roads/Rails/Pipelines           <NA>
-#> 40 Roads/Rails/Pipelines           <NA>
-#> 41 Roads/Rails/Pipelines           <NA>
-#> 42 Roads/Rails/Pipelines           <NA>
-#> 43 Roads/Rails/Pipelines           <NA>
-#> 44 Roads/Rails/Pipelines           <NA>
-#> 45 Roads/Rails/Pipelines           <NA>
-#> 46 Roads/Rails/Pipelines           <NA>
-#> 47                 Forms           <NA>
-#> 48                 Forms           <NA>
-#> 49                 Forms           <NA>
-#> 50                 Forms           <NA>
-#> 51            Floodplain           <NA>
-#> 52           Restoration           <NA>
-#> 53           Restoration           <NA>
-#> 54  Web Mapping Services           <NA>
-#> 55  Web Mapping Services           <NA>
-#> 56   Base - Orthoimagery           <NA>
-#> 57           Base - misc           <NA>
-#> 58           Base - misc           <NA>
-#> 59           Base - misc           <NA>
-#> 60           Base - misc           <NA>
-#> 61           Base - misc           <NA>
-#> 62           Base - misc           <NA>
-#> 63           Base - misc           <NA>
-#> 64           Base - misc           <NA>
+#>                       group            subgroup
+#> 1                   Basemap                <NA>
+#> 2                   Basemap                <NA>
+#> 3                   Basemap                <NA>
+#> 4                   Basemap                <NA>
+#> 5                   Basemap                <NA>
+#> 6                   Basemap                <NA>
+#> 7                   Basemap                <NA>
+#> 8                   Basemap                <NA>
+#> 9                   Basemap                <NA>
+#> 10                  Basemap                <NA>
+#> 11                  Basemap                <NA>
+#> 12                  Basemap                <NA>
+#> 13                  Basemap                <NA>
+#> 14                  Basemap         Waterbodies
+#> 15                  Basemap         Waterbodies
+#> 16                  Basemap         Waterbodies
+#> 17                  Basemap         Waterbodies
+#> 18                  Basemap Terrestrial Ecology
+#> 19                  Basemap Terrestrial Ecology
+#> 20                  Basemap Terrestrial Ecology
+#> 21                Crossings                <NA>
+#> 22                Crossings                <NA>
+#> 23                Crossings                <NA>
+#> 24                Crossings                <NA>
+#> 25                Crossings                <NA>
+#> 26                Crossings                <NA>
+#> 27                Crossings                <NA>
+#> 28                Crossings                <NA>
+#> 29                Crossings                <NA>
+#> 30                  Streams                <NA>
+#> 31                  Streams                <NA>
+#> 32                  Streams                <NA>
+#> 33                  Streams      Habitat models
+#> 34                  Streams      Habitat models
+#> 35                  Streams      Habitat models
+#> 36     Other point features                <NA>
+#> 37     Other point features                <NA>
+#> 38     Other point features                <NA>
+#> 39     Other point features                <NA>
+#> 40 Roads,Railways,Pipelines                <NA>
+#> 41 Roads,Railways,Pipelines                <NA>
+#> 42 Roads,Railways,Pipelines                <NA>
+#> 43 Roads,Railways,Pipelines                <NA>
+#> 44 Roads,Railways,Pipelines                <NA>
+#> 45 Roads,Railways,Pipelines                <NA>
+#> 46 Roads,Railways,Pipelines                <NA>
+#> 47 Roads,Railways,Pipelines                <NA>
+#> 48                    Forms                <NA>
+#> 49                    Forms                <NA>
+#> 50                    Forms                <NA>
+#> 51                    Forms                <NA>
+#> 52               Floodplain                <NA>
+#> 53              Restoration                <NA>
+#> 54              Restoration                <NA>
+#> 55     Web Mapping Services                <NA>
+#> 56     Web Mapping Services                <NA>
+#> 57              Base - misc                <NA>
+#> 58              Base - misc                <NA>
+#> 59              Base - misc                <NA>
+#> 60              Base - misc                <NA>
+#> 61              Base - misc                <NA>
+#> 62              Base - misc                <NA>
+#> 63              Base - misc                <NA>
+#> 64              Base - misc                <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -112,45 +112,45 @@ gq_groups()
 #> 15                                                wetland     2      bcdata
 #> 16                                            rivers_poly     3      bcdata
 #> 17                                    manmade_waterbodies     4      bcdata
-#> 18                                               bec_zone     1      bcdata
-#> 19                biogeoclimatic_ecosystem_classification     2      bcdata
-#> 20                             crossings_pscis_assessment     1      bcdata
-#> 21                           crossings_pscis_confirmation     2      bcdata
-#> 22                                 crossings_pscis_design     3      bcdata
-#> 23                             crossings_pscis_remedation     4      bcdata
-#> 24                                     crossings_modelled     5         aws
-#> 25                          crossings_pscis_modelled_dams     6         aws
-#> 26                                          moti_culverts     7      bcdata
-#> 27                                  moti_major_structures     8      bcdata
-#> 28                                                    dam     9         aws
-#> 29                                            streams_all     1         aws
-#> 30                                          stream_labels     2         fwa
-#> 31                         fisheries_sensitive_watersheds     3      bcdata
-#> 32                                             streams_bt     1         aws
-#> 33                                         streams_salmon     2         aws
-#> 34                                             streams_st     3         aws
-#> 35                               fiss_stream_sample_sites     1      bcdata
-#> 36                       bcfishobs_fiss_fish_observations     2         aws
-#> 37                                         fiss_obstacles     3         aws
-#> 38                hydrometric_stations_environment_canada     4      bcdata
-#> 39                                              roads_dra     1         aws
-#> 40                                             roads_ften     2         aws
-#> 41                                                railway     3      bcdata
-#> 42                                     pipeline_installed     4      bcdata
-#> 43                                        pipeline_permit     5      bcdata
-#> 44                                   pipeline_application     6      bcdata
-#> 45                                      transmission_line     7      bcdata
-#> 46                                                 trails     8         osm
-#> 47                                             form_pscis     1       local
-#> 48                                         form_fiss_site     2       local
-#> 49                                              form_edna     3       local
-#> 50                                        form_monitoring     4       local
-#> 51                                            floodplains     1      bcdata
-#> 52                                           harvest_area     1       local
-#> 53                                          planting_site     2       local
-#> 54                                fire_perimeters_current     1         wms
-#> 55                                   frep_rip2021_mar2022     2         wms
-#> 56                                       orthophoto_tiles     1      bcdata
+#> 18                                       orthophoto_tiles     1      bcdata
+#> 19                                               bec_zone     2      bcdata
+#> 20                biogeoclimatic_ecosystem_classification     3      bcdata
+#> 21                             crossings_pscis_assessment     1      bcdata
+#> 22                           crossings_pscis_confirmation     2      bcdata
+#> 23                                 crossings_pscis_design     3      bcdata
+#> 24                             crossings_pscis_remedation     4      bcdata
+#> 25                                     crossings_modelled     5         aws
+#> 26                          crossings_pscis_modelled_dams     6         aws
+#> 27                                          moti_culverts     7      bcdata
+#> 28                                  moti_major_structures     8      bcdata
+#> 29                                                    dam     9         aws
+#> 30                                            streams_all     1         aws
+#> 31                                          stream_labels     2         fwa
+#> 32                         fisheries_sensitive_watersheds     3      bcdata
+#> 33                                             streams_bt     1         aws
+#> 34                                         streams_salmon     2         aws
+#> 35                                             streams_st     3         aws
+#> 36                               fiss_stream_sample_sites     1      bcdata
+#> 37                       bcfishobs_fiss_fish_observations     2         aws
+#> 38                                         fiss_obstacles     3         aws
+#> 39                hydrometric_stations_environment_canada     4      bcdata
+#> 40                                              roads_dra     1         aws
+#> 41                                             roads_ften     2         aws
+#> 42                                                railway     3      bcdata
+#> 43                                     pipeline_installed     4      bcdata
+#> 44                                        pipeline_permit     5      bcdata
+#> 45                                   pipeline_application     6      bcdata
+#> 46                                      transmission_line     7      bcdata
+#> 47                                                 trails     8         osm
+#> 48                                             form_pscis     1       local
+#> 49                                         form_fiss_site     2       local
+#> 50                                              form_edna     3       local
+#> 51                                        form_monitoring     4       local
+#> 52                                            floodplains     1      bcdata
+#> 53                                           harvest_area     1       local
+#> 54                                          planting_site     2       local
+#> 55                                fire_perimeters_current     1         wms
+#> 56                                   frep_rip2021_mar2022     2         wms
 #> 57                                        habitat_lateral     1       local
 #> 58                                              utm_zones     2      bcdata
 #> 59 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
@@ -163,71 +163,71 @@ gq_groups()
 # With style registry info joined
 reg <- gq_reg_main()
 gq_groups(registry = reg)
-#>                    group       subgroup
-#> 1                Basemap           <NA>
-#> 2                Basemap           <NA>
-#> 3                Basemap           <NA>
-#> 4                Basemap           <NA>
-#> 5                Basemap           <NA>
-#> 6                Basemap           <NA>
-#> 7                Basemap           <NA>
-#> 8                Basemap           <NA>
-#> 9                Basemap           <NA>
-#> 10               Basemap           <NA>
-#> 11               Basemap           <NA>
-#> 12               Basemap           <NA>
-#> 13               Basemap           <NA>
-#> 14               Basemap    Waterbodies
-#> 15               Basemap    Waterbodies
-#> 16               Basemap    Waterbodies
-#> 17               Basemap    Waterbodies
-#> 18               Basemap            BEC
-#> 19               Basemap            BEC
-#> 20             Crossings           <NA>
-#> 21             Crossings           <NA>
-#> 22             Crossings           <NA>
-#> 23             Crossings           <NA>
-#> 24             Crossings           <NA>
-#> 25             Crossings           <NA>
-#> 26             Crossings           <NA>
-#> 27             Crossings           <NA>
-#> 28             Crossings           <NA>
-#> 29               Streams           <NA>
-#> 30               Streams           <NA>
-#> 31               Streams           <NA>
-#> 32               Streams Habitat Models
-#> 33               Streams Habitat Models
-#> 34               Streams Habitat Models
-#> 35  Other Point Features           <NA>
-#> 36  Other Point Features           <NA>
-#> 37  Other Point Features           <NA>
-#> 38  Other Point Features           <NA>
-#> 39 Roads/Rails/Pipelines           <NA>
-#> 40 Roads/Rails/Pipelines           <NA>
-#> 41 Roads/Rails/Pipelines           <NA>
-#> 42 Roads/Rails/Pipelines           <NA>
-#> 43 Roads/Rails/Pipelines           <NA>
-#> 44 Roads/Rails/Pipelines           <NA>
-#> 45 Roads/Rails/Pipelines           <NA>
-#> 46 Roads/Rails/Pipelines           <NA>
-#> 47                 Forms           <NA>
-#> 48                 Forms           <NA>
-#> 49                 Forms           <NA>
-#> 50                 Forms           <NA>
-#> 51            Floodplain           <NA>
-#> 52           Restoration           <NA>
-#> 53           Restoration           <NA>
-#> 54  Web Mapping Services           <NA>
-#> 55  Web Mapping Services           <NA>
-#> 56   Base - Orthoimagery           <NA>
-#> 57           Base - misc           <NA>
-#> 58           Base - misc           <NA>
-#> 59           Base - misc           <NA>
-#> 60           Base - misc           <NA>
-#> 61           Base - misc           <NA>
-#> 62           Base - misc           <NA>
-#> 63           Base - misc           <NA>
-#> 64           Base - misc           <NA>
+#>                       group            subgroup
+#> 1                   Basemap                <NA>
+#> 2                   Basemap                <NA>
+#> 3                   Basemap                <NA>
+#> 4                   Basemap                <NA>
+#> 5                   Basemap                <NA>
+#> 6                   Basemap                <NA>
+#> 7                   Basemap                <NA>
+#> 8                   Basemap                <NA>
+#> 9                   Basemap                <NA>
+#> 10                  Basemap                <NA>
+#> 11                  Basemap                <NA>
+#> 12                  Basemap                <NA>
+#> 13                  Basemap                <NA>
+#> 14                  Basemap         Waterbodies
+#> 15                  Basemap         Waterbodies
+#> 16                  Basemap         Waterbodies
+#> 17                  Basemap         Waterbodies
+#> 18                  Basemap Terrestrial Ecology
+#> 19                  Basemap Terrestrial Ecology
+#> 20                  Basemap Terrestrial Ecology
+#> 21                Crossings                <NA>
+#> 22                Crossings                <NA>
+#> 23                Crossings                <NA>
+#> 24                Crossings                <NA>
+#> 25                Crossings                <NA>
+#> 26                Crossings                <NA>
+#> 27                Crossings                <NA>
+#> 28                Crossings                <NA>
+#> 29                Crossings                <NA>
+#> 30                  Streams                <NA>
+#> 31                  Streams                <NA>
+#> 32                  Streams                <NA>
+#> 33                  Streams      Habitat models
+#> 34                  Streams      Habitat models
+#> 35                  Streams      Habitat models
+#> 36     Other point features                <NA>
+#> 37     Other point features                <NA>
+#> 38     Other point features                <NA>
+#> 39     Other point features                <NA>
+#> 40 Roads,Railways,Pipelines                <NA>
+#> 41 Roads,Railways,Pipelines                <NA>
+#> 42 Roads,Railways,Pipelines                <NA>
+#> 43 Roads,Railways,Pipelines                <NA>
+#> 44 Roads,Railways,Pipelines                <NA>
+#> 45 Roads,Railways,Pipelines                <NA>
+#> 46 Roads,Railways,Pipelines                <NA>
+#> 47 Roads,Railways,Pipelines                <NA>
+#> 48                    Forms                <NA>
+#> 49                    Forms                <NA>
+#> 50                    Forms                <NA>
+#> 51                    Forms                <NA>
+#> 52               Floodplain                <NA>
+#> 53              Restoration                <NA>
+#> 54              Restoration                <NA>
+#> 55     Web Mapping Services                <NA>
+#> 56     Web Mapping Services                <NA>
+#> 57              Base - misc                <NA>
+#> 58              Base - misc                <NA>
+#> 59              Base - misc                <NA>
+#> 60              Base - misc                <NA>
+#> 61              Base - misc                <NA>
+#> 62              Base - misc                <NA>
+#> 63              Base - misc                <NA>
+#> 64              Base - misc                <NA>
 #>                                                 layer_key order source_type
 #> 1                                watershed_group_boundary     1      bcdata
 #> 2                                          municipalities     2      bcdata
@@ -246,45 +246,45 @@ gq_groups(registry = reg)
 #> 15                                                wetland     2      bcdata
 #> 16                                            rivers_poly     3      bcdata
 #> 17                                    manmade_waterbodies     4      bcdata
-#> 18                                               bec_zone     1      bcdata
-#> 19                biogeoclimatic_ecosystem_classification     2      bcdata
-#> 20                             crossings_pscis_assessment     1      bcdata
-#> 21                           crossings_pscis_confirmation     2      bcdata
-#> 22                                 crossings_pscis_design     3      bcdata
-#> 23                             crossings_pscis_remedation     4      bcdata
-#> 24                                     crossings_modelled     5         aws
-#> 25                          crossings_pscis_modelled_dams     6         aws
-#> 26                                          moti_culverts     7      bcdata
-#> 27                                  moti_major_structures     8      bcdata
-#> 28                                                    dam     9         aws
-#> 29                                            streams_all     1         aws
-#> 30                                          stream_labels     2         fwa
-#> 31                         fisheries_sensitive_watersheds     3      bcdata
-#> 32                                             streams_bt     1         aws
-#> 33                                         streams_salmon     2         aws
-#> 34                                             streams_st     3         aws
-#> 35                               fiss_stream_sample_sites     1      bcdata
-#> 36                       bcfishobs_fiss_fish_observations     2         aws
-#> 37                                         fiss_obstacles     3         aws
-#> 38                hydrometric_stations_environment_canada     4      bcdata
-#> 39                                              roads_dra     1         aws
-#> 40                                             roads_ften     2         aws
-#> 41                                                railway     3      bcdata
-#> 42                                     pipeline_installed     4      bcdata
-#> 43                                        pipeline_permit     5      bcdata
-#> 44                                   pipeline_application     6      bcdata
-#> 45                                      transmission_line     7      bcdata
-#> 46                                                 trails     8         osm
-#> 47                                             form_pscis     1       local
-#> 48                                         form_fiss_site     2       local
-#> 49                                              form_edna     3       local
-#> 50                                        form_monitoring     4       local
-#> 51                                            floodplains     1      bcdata
-#> 52                                           harvest_area     1       local
-#> 53                                          planting_site     2       local
-#> 54                                fire_perimeters_current     1         wms
-#> 55                                   frep_rip2021_mar2022     2         wms
-#> 56                                       orthophoto_tiles     1      bcdata
+#> 18                                       orthophoto_tiles     1      bcdata
+#> 19                                               bec_zone     2      bcdata
+#> 20                biogeoclimatic_ecosystem_classification     3      bcdata
+#> 21                             crossings_pscis_assessment     1      bcdata
+#> 22                           crossings_pscis_confirmation     2      bcdata
+#> 23                                 crossings_pscis_design     3      bcdata
+#> 24                             crossings_pscis_remedation     4      bcdata
+#> 25                                     crossings_modelled     5         aws
+#> 26                          crossings_pscis_modelled_dams     6         aws
+#> 27                                          moti_culverts     7      bcdata
+#> 28                                  moti_major_structures     8      bcdata
+#> 29                                                    dam     9         aws
+#> 30                                            streams_all     1         aws
+#> 31                                          stream_labels     2         fwa
+#> 32                         fisheries_sensitive_watersheds     3      bcdata
+#> 33                                             streams_bt     1         aws
+#> 34                                         streams_salmon     2         aws
+#> 35                                             streams_st     3         aws
+#> 36                               fiss_stream_sample_sites     1      bcdata
+#> 37                       bcfishobs_fiss_fish_observations     2         aws
+#> 38                                         fiss_obstacles     3         aws
+#> 39                hydrometric_stations_environment_canada     4      bcdata
+#> 40                                              roads_dra     1         aws
+#> 41                                             roads_ften     2         aws
+#> 42                                                railway     3      bcdata
+#> 43                                     pipeline_installed     4      bcdata
+#> 44                                        pipeline_permit     5      bcdata
+#> 45                                   pipeline_application     6      bcdata
+#> 46                                      transmission_line     7      bcdata
+#> 47                                                 trails     8         osm
+#> 48                                             form_pscis     1       local
+#> 49                                         form_fiss_site     2       local
+#> 50                                              form_edna     3       local
+#> 51                                        form_monitoring     4       local
+#> 52                                            floodplains     1      bcdata
+#> 53                                           harvest_area     1       local
+#> 54                                          planting_site     2       local
+#> 55                                fire_perimeters_current     1         wms
+#> 56                                   frep_rip2021_mar2022     2         wms
 #> 57                                        habitat_lateral     1       local
 #> 58                                              utm_zones     2      bcdata
 #> 59 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
@@ -311,45 +311,45 @@ gq_groups(registry = reg)
 #> 15                           whse_basemapping.fwa_wetlands_poly polygon
 #> 16                             whse_basemapping.fwa_rivers_poly polygon
 #> 17                whse_basemapping.fwa_manmade_waterbodies_poly polygon
-#> 18               whse_forest_vegetation.bec_biogeoclimatic_poly polygon
+#> 18        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly polygon
 #> 19               whse_forest_vegetation.bec_biogeoclimatic_poly polygon
-#> 20                               whse_fish.pscis_assessment_svw   point
-#> 21                     whse_fish.pscis_habitat_confirmation_svw   point
-#> 22                          whse_fish.pscis_design_proposal_svw   point
-#> 23                              whse_fish.pscis_remediation_svw   point
-#> 24                                      bcfishpass.crossings_vw   point
+#> 20               whse_forest_vegetation.bec_biogeoclimatic_poly polygon
+#> 21                               whse_fish.pscis_assessment_svw   point
+#> 22                     whse_fish.pscis_habitat_confirmation_svw   point
+#> 23                          whse_fish.pscis_design_proposal_svw   point
+#> 24                              whse_fish.pscis_remediation_svw   point
 #> 25                                      bcfishpass.crossings_vw   point
-#> 26                   whse_imagery_and_base_maps.mot_culverts_sp   point
-#> 27             whse_imagery_and_base_maps.mot_road_structure_sp    line
-#> 28                                              bcfishpass.dams   point
-#> 29                                        bcfishpass.streams_vw    line
-#> 30                           whse_basemapping.fwa_named_streams    line
-#> 31          whse_wildlife_management.wcp_fish_sensitive_ws_poly polygon
-#> 32                                        bcfishpass.streams_vw    line
+#> 26                                      bcfishpass.crossings_vw   point
+#> 27                   whse_imagery_and_base_maps.mot_culverts_sp   point
+#> 28             whse_imagery_and_base_maps.mot_road_structure_sp    line
+#> 29                                              bcfishpass.dams   point
+#> 30                                        bcfishpass.streams_vw    line
+#> 31                           whse_basemapping.fwa_named_streams    line
+#> 32          whse_wildlife_management.wcp_fish_sensitive_ws_poly polygon
 #> 33                                        bcfishpass.streams_vw    line
 #> 34                                        bcfishpass.streams_vw    line
-#> 35                        whse_fish.fiss_stream_sample_sites_sp   point
-#> 36                        bcfishobs.fiss_fish_obsrvtn_events_vw   point
-#> 37                              whse_fish.fiss_obstacles_pnt_sp   point
-#> 38      whse_environmental_monitoring.envcan_hydrometric_stn_sp   point
-#> 39                              whse_basemapping.transport_line    line
-#> 40               whse_forest_tenure.ften_road_section_lines_svw    line
-#> 41                       whse_basemapping.gba_railway_tracks_sp    line
-#> 42            whse_mineral_tenure.og_pipeline_segment_permit_sp    line
-#> 43               whse_mineral_tenure.og_pipeline_area_permit_sp polygon
-#> 44                 whse_mineral_tenure.og_pipeline_area_appl_sp polygon
-#> 45                   whse_basemapping.gba_transmission_lines_sp    line
-#> 46                                                    osm.trail    line
-#> 47                                                   form_pscis   point
-#> 48                                               form_fiss_site   point
-#> 49                                                         <NA>    <NA>
+#> 35                                        bcfishpass.streams_vw    line
+#> 36                        whse_fish.fiss_stream_sample_sites_sp   point
+#> 37                        bcfishobs.fiss_fish_obsrvtn_events_vw   point
+#> 38                              whse_fish.fiss_obstacles_pnt_sp   point
+#> 39      whse_environmental_monitoring.envcan_hydrometric_stn_sp   point
+#> 40                              whse_basemapping.transport_line    line
+#> 41               whse_forest_tenure.ften_road_section_lines_svw    line
+#> 42                       whse_basemapping.gba_railway_tracks_sp    line
+#> 43            whse_mineral_tenure.og_pipeline_segment_permit_sp    line
+#> 44               whse_mineral_tenure.og_pipeline_area_permit_sp polygon
+#> 45                 whse_mineral_tenure.og_pipeline_area_appl_sp polygon
+#> 46                   whse_basemapping.gba_transmission_lines_sp    line
+#> 47                                                    osm.trail    line
+#> 48                                                   form_pscis   point
+#> 49                                               form_fiss_site   point
 #> 50                                                         <NA>    <NA>
-#> 51                 whse_basemapping.cwb_floodplains_bc_area_svw polygon
-#> 52                                                 harvest_area polygon
-#> 53                                                planting_site   point
-#> 54                                                         <NA>    <NA>
-#> 55                                                         <NA>   point
-#> 56        whse_imagery_and_base_maps.aimg_orthophoto_tiles_poly polygon
+#> 51                                                         <NA>    <NA>
+#> 52                 whse_basemapping.cwb_floodplains_bc_area_svw polygon
+#> 53                                                 harvest_area polygon
+#> 54                                                planting_site   point
+#> 55                                                         <NA>    <NA>
+#> 56                                                         <NA>   point
 #> 57                                                         <NA>    <NA>
 #> 58                           whse_basemapping.utmg_utm_zones_sp polygon
 #> 59         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon

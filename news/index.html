@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,34 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.11.0" id="gq-0110">gq 0.11.0<a class="anchor" aria-label="anchor" href="#gq-0110"></a></h2>
+<ul><li>
+<p><strong>Group names now match the shipped QGIS templates, and four of them changed.</strong> <code>rfp_project_create()</code> copies a template and trims it, so a project’s tree node is literally the template’s string. gq spelling a group differently made the join fail in both directions, silently.</p>
+<table class="table"><thead><tr><th>was</th>
+<th>is</th>
+</tr></thead><tbody><tr><td><code>Other Point Features</code></td>
+<td><code>Other point features</code></td>
+</tr><tr><td><code>Roads/Rails/Pipelines</code></td>
+<td><code>Roads,Railways,Pipelines</code></td>
+</tr><tr><td>
+<code>Streams</code> / <code>Habitat Models</code>
+</td>
+<td>
+<code>Streams</code> / <code>Habitat models</code>
+</td>
+</tr><tr><td>
+<code>Basemap</code> / <code>BEC</code>
+</td>
+<td>
+<code>Basemap</code> / <code>Terrestrial Ecology</code>
+</td>
+</tr></tbody></table><p><strong>Grep your code for the four old strings.</strong> <code><a href="../reference/gq_group_layers.html">gq_group_layers()</a></code> returns a zero-row data frame for an unknown group, with no error and no warning, so a hardcoded old name gets an empty result and no signal — the same silent-drop class this release exists to remove. <code>rfp</code> is the only known consumer and does not pass group names, so no shim is shipped.</p>
+</li>
+<li><p><strong><code>Base - Orthoimagery</code> is gone; it never existed in any template.</strong> 0.10.0 added its <code>templates.csv</code> row from <code>groups.csv</code> without checking a <code>.qgs</code>, at <code>group_order</code> 11 — <em>below</em> <code>Base - misc</code>, which holds all four opaque xyz basemaps. The registry was declaring <code>orthophoto_tiles</code> beneath ESRI World Topo, which is exactly the failure that has twice cost a field user a layer. <code>orthophoto_tiles</code> moves to <code>Basemap/Terrestrial Ecology</code>, where the template keeps it.</p></li>
+<li><p><strong><code>Floodplain</code> and <code>Restoration</code> move above <code>Basemap</code></strong> in <code>bcrestoration_mobile</code>. <code>Basemap</code> holds the waterbody fills that draw over a land-cover change product — 46% of one project’s change area is water-class.</p></li>
+<li><p><strong>New guard: <code>inst/registry/template_groups.csv</code> and <code>tests/testthat/test-template_drift.R</code>.</strong> The registry is now checked against the group tree of the shipped templates — composition both directions, byte- exact names, relative order on the intersection, and no group declared below the bottom of the template’s stack. Divergences are declared exemptions carrying a reason and an issue, each asserted still needed. <a href="https://github.com/NewGraphEnvironment/gq/issues/66" class="external-link">#66</a></p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.10.0" id="gq-0100">gq 0.10.0<a class="anchor" aria-label="anchor" href="#gq-0100"></a></h2>
 <ul><li><p><strong>Template composition is now guarded, and two groups that were never mapped are.</strong> <code><a href="../reference/gq_template_layers.html">gq_template_layers()</a></code> returns more layers for both shipped templates — <code>bcrestoration_mobile</code> 57 → 64, <code>bcfishpass_mobile</code> 58 → 61. A project built from a template was displaying cartography for data it never downloaded, because the chain <code>templates.csv → groups.csv → reg_main.json</code> is three joins deep and none of them reported a miss. <code>Base - Orthoimagery</code> had been mapped to zero templates for the entire history of the file with a green suite. <a href="https://github.com/NewGraphEnvironment/gq/issues/40" class="external-link">#40</a></p></li>

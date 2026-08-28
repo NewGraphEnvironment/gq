@@ -1,5 +1,49 @@
 # Changelog
 
+## gq 0.11.0
+
+- **Group names now match the shipped QGIS templates, and four of them
+  changed.** `rfp_project_create()` copies a template and trims it, so a
+  project’s tree node is literally the template’s string. gq spelling a
+  group differently made the join fail in both directions, silently.
+
+  | was                          | is                                |
+  |------------------------------|-----------------------------------|
+  | `Other Point Features`       | `Other point features`            |
+  | `Roads/Rails/Pipelines`      | `Roads,Railways,Pipelines`        |
+  | `Streams` / `Habitat Models` | `Streams` / `Habitat models`      |
+  | `Basemap` / `BEC`            | `Basemap` / `Terrestrial Ecology` |
+
+  **Grep your code for the four old strings.**
+  [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
+  returns a zero-row data frame for an unknown group, with no error and
+  no warning, so a hardcoded old name gets an empty result and no signal
+  — the same silent-drop class this release exists to remove. `rfp` is
+  the only known consumer and does not pass group names, so no shim is
+  shipped.
+
+- **`Base - Orthoimagery` is gone; it never existed in any template.**
+  0.10.0 added its `templates.csv` row from `groups.csv` without
+  checking a `.qgs`, at `group_order` 11 — *below* `Base - misc`, which
+  holds all four opaque xyz basemaps. The registry was declaring
+  `orthophoto_tiles` beneath ESRI World Topo, which is exactly the
+  failure that has twice cost a field user a layer. `orthophoto_tiles`
+  moves to `Basemap/Terrestrial Ecology`, where the template keeps it.
+
+- **`Floodplain` and `Restoration` move above `Basemap`** in
+  `bcrestoration_mobile`. `Basemap` holds the waterbody fills that draw
+  over a land-cover change product — 46% of one project’s change area is
+  water-class.
+
+- **New guard: `inst/registry/template_groups.csv` and
+  `tests/testthat/test-template_drift.R`.** The registry is now checked
+  against the group tree of the shipped templates — composition both
+  directions, byte- exact names, relative order on the intersection, and
+  no group declared below the bottom of the template’s stack.
+  Divergences are declared exemptions carrying a reason and an issue,
+  each asserted still needed.
+  [\#66](https://github.com/NewGraphEnvironment/gq/issues/66)
+
 ## gq 0.10.0
 
 - **Template composition is now guarded, and two groups that were never
