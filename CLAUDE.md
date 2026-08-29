@@ -157,7 +157,7 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 #### R Package (the package root IS the R package)
 
 **Registry functions:**
-- `gq_reg_main()` — load the master registry (54 layers, no arguments needed)
+- `gq_reg_main()` — load the master registry (56 layers, no arguments needed)
 - `gq_registry_read(path)` — read any registry JSON file
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
@@ -237,7 +237,7 @@ too many.
 #### Registry sources (`inst/registry/`)
 
 - `reg_main.json` — master merged registry (single source of truth)
-- `reg_qgis_restoration.json` — extracted from restoration QGIS project (47 layers)
+- `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers)
 - `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source
 - `groups.csv` — layer group membership, nesting and z-order (64 rows, 10 groups),
@@ -323,7 +323,7 @@ pak::pak("NewGraphEnvironment/gq")
 ### Dev workflow
 ```r
 devtools::load_all()
-devtools::test()        # 127+ tests
+devtools::test()        # 992 tests
 devtools::document()    # if roxygen changed
 devtools::check()       # before release
 ```
@@ -340,6 +340,33 @@ Teach extreme programming (XP) principles when relevant:
 - **KISS** — Simplest solution that works
 - **Small commits** — Atomic, focused changes
 - **Test early** — Verify as you go
+
+## Working Conventions
+
+### Reconciling a disagreement with another repo
+
+Only hold your side of a divergence where it was a **decision**. Wherever your
+value was never checked against anything, adopt the other side's.
+
+**Why:** the volume of downstream work is set by how each disagreement is
+classified, not by how many there are. Claiming another repo must change to match
+an accident is what turns one issue into twenty, and each one costs someone a
+judgement call they have no basis to make. On #66 this was the difference between
+one rfp issue carrying a table and a per-divergence queue.
+
+**How to apply:** before writing a divergence into a cross-repo issue, ask what
+evidence produced *your* side's value. "Nobody ever checked" is not a position —
+change it. gq's Roads-before-Streams group order was unchecked drift, so the
+template's order was adopted; `Floodplain` above `Basemap` had a measurement
+behind it (46% of one land-cover change product is water-class, hidden by the
+waterbody fills), so it stood and rfp#216 was asked to follow.
+
+State positions with a **location**. "Add group X" without one reproduces the bug
+where someone inserts it wherever they happen to be standing — which is the end
+of the tree, beneath the opaque basemaps.
+
+Generalises past this registry: schema vs migration, config vs deployed state,
+any two systems declaring overlapping structure.
 
 <!-- BEGIN SOUL CONVENTIONS — DO NOT EDIT BELOW THIS LINE -->
 
