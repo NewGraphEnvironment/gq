@@ -13,3 +13,17 @@
 - Created branch `77-re-extract-the-theme-roster-high-detail` off main
 - Scaffolded PWF baseline with approved phases
 - Next: Phase 1 — re-extract the roster
+
+### Phase 1 — roster re-extracted
+
+- `RFP_TEMPLATE_DIR=~/Projects/repo/rfp/inst/templates Rscript data-raw/reg_extract_themes.R`
+- `themes.csv built: 232 rows, 9 template-theme pairs`; diff is 27 insertions /
+  27 deletions in `inst/registry/themes.csv` only
+- Verified the diff contains nothing else: 0 changed lines outside the expected
+  block, 0 that are not a flag flip, identical key sets either side
+- rfp provenance: v0.47.0, `bb3862c`, templates byte-identical to `origin/main`
+  `da115d4` and clean. The checkout had moved off `main` mid-task; checked rather
+  than assumed
+- Suite is knowingly red at this commit: `test-gq_groups.R:149` asserts the stub.
+  Phase 2 replaces it.
+- Next: Phase 2 — rewrite the theme tests

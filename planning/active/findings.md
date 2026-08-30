@@ -79,6 +79,39 @@ justification loses its example. The key is still right, on two grounds:
 | Error | Resolution |
 |-------|------------|
 | A regex probe on the `.qgs` preset returned 0 layers | Attribute order is `expanded=... id=... style=... visible=...`, not `id=... visible=...`. Parsed with `ElementTree` instead of assuming attribute order. |
+| A `grep -v ',false$\|,true$'` filter matched nothing it should have excluded | `\|` is a GNU BRE extension; BSD grep on macOS reads it as a literal. Used `grep -Ev ',(false\|true)$'`. Already in `code-check.md`; met it anyway. |
+
+## The rfp checkout changed branch mid-task
+
+Between verification and the regeneration run, `~/Projects/repo/rfp` moved from
+`main` to `227-qgis-roundtrip-verification` — a parallel session sharing the one
+working tree, the hazard `karpathy.md` and the worktree convention both describe.
+
+It turned out harmless here, but only because that was **checked rather than
+assumed**:
+
+```
+HEAD bb3862c on 227-qgis-roundtrip-verification
+git diff --quiet origin/main HEAD -- inst/templates   -> identical
+git status --porcelain -- inst/templates              -> clean
+```
+
+So `themes.csv` is reproducible from rfp `origin/main` at `da115d4`, which is
+what provenance actually requires. Had the branch carried template edits, this
+roster would have been generated from work nobody had merged and the commit
+could not have been reproduced.
+
+## Phase 1 verification
+
+Beyond the counts the issue predicts, the diff was checked for what it should
+*not* contain:
+
+| assertion | result |
+|---|---|
+| changed lines outside `bcrestoration_mobile,High Detail - Crossings` | **0** |
+| changed lines that are not a `true`/`false` flip | **0** |
+| `layer_key` sets identical on the `-`/`+` sides of the flip | identical — a pure flag change, no row shuffle |
+| suite state after Phase 1 | `FAIL 1 | PASS 57` in `test-gq_groups.R`, the single failure being line 149 (`27` vs `0`) — exactly the predicted one, and nothing else |
 
 ## Issue context
 

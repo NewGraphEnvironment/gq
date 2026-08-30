@@ -34,14 +34,14 @@ exploration and are folded into Phases 2 and 3.
 
 ## Phase 1: Re-extract the roster
 
-- [ ] Run against the v0.47.0 checkout (env var is `RFP_TEMPLATE_DIR`, pointing at
+- [x] Run against the v0.47.0 checkout (env var is `RFP_TEMPLATE_DIR`, pointing at
       `inst/templates` — `data-raw/reg_extract_themes.R:37`)
-- [ ] Confirm the run message reads `themes.csv built: 232 rows, 9 template-theme pairs`
-- [ ] Confirm `git diff --stat` shows **27 insertions / 27 deletions**, in
+- [x] Confirm the run message reads `themes.csv built: 232 rows, 9 template-theme pairs`
+- [x] Confirm `git diff --stat` shows **27 insertions / 27 deletions**, in
       `inst/registry/themes.csv` **only** — `reg_main.json` and `groups.csv` untouched
-- [ ] Confirm `esri_world_topo` is still `false` in the changed block, and that the
+- [x] Confirm `esri_world_topo` is still `false` in the changed block, and that the
       27 flips are all `false` → `true`
-- [ ] Record the rfp version + sha in the commit message (the script prints it)
+- [x] Record the rfp version + sha in the commit message (the script prints it)
 
 ## Phase 2: Rewrite the theme tests
 
