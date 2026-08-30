@@ -53,3 +53,18 @@
   `test-gq_registry_read.R:25`), confirmed present on the pre-Phase-3 tree too
 - lintr on `R/gq_groups.R`: 1 at HEAD -> 0 now; test file 0
 - Next: Phase 4 — code-check, archive, PR
+
+### Phase 4 — review, hardening, release bookkeeping
+
+- Plan-agent review returned 1 blocker + 7 gaps (`review-plan.md`). Acted on all
+  but G4/G5 — moving `extract_themes()` into `R/` and adding a live-template
+  drift test — deferred as gq#78 rather than dropped
+- Test hardening, each proven to fail against a restored defect:
+  empty roster (previously **passed** the stub check) → 9 failures; a shared
+  theme dropped → the `shared` set pin; `esri_world_topo` on → the basemap
+  guard; a duplicate row → the dup pin. Control 0 fail / 73 pass
+- `tapply` now groups on a list rather than a pasted `" / "` key — a separator
+  in a name would have merged two pairs and masked a stub
+- NEWS 0.13.0 + DESCRIPTION bump. The entry corrects the 0.3.0 claim by
+  reference; that entry is left standing as the historical record
+- Filed gq#78 for the deferred work

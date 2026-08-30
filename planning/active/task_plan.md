@@ -41,6 +41,9 @@ exploration and are folded into Phases 2 and 3.
       `inst/registry/themes.csv` **only** — `reg_main.json` and `groups.csv` untouched
 - [x] Confirm `esri_world_topo` is still `false` in the changed block, and that the
       27 flips are all `false` → `true`
+- [x] Confirm the `layer_key` sets are identical either side of the flip. A
+      regeneration that changed a key *and* a flag is also 27 insertions /
+      27 deletions, so the counts alone do not establish it
 - [x] Record the rfp version + sha in the commit message (the script prints it)
 
 ## Phase 2: Rewrite the theme tests
@@ -92,14 +95,26 @@ belongs in `R/gq_groups.R` followed by `devtools::document()`.
 
 ## Phase 4: Verify and land
 
-- [ ] `devtools::test()` — expect ~1054 pass, 0 fail
-- [ ] `lintr::lint_package()` — diff against the `HEAD` baseline, not against zero
-- [ ] `/code-check` on the staged diff
+- [x] `devtools::test()` — acceptance is `test-gq_groups.R` at `FAIL 0 | PASS 73`
+      (12 tests → 15), not a whole-suite count: the split changed the assertion
+      count, so "~1054" from the issue cannot discriminate
+- [x] `lintr::lint_package()` — diff against the `HEAD` baseline, not against zero
+- [x] Plan-agent review — 1 blocker, 7 gaps; dispositions in `review-plan.md`.
+      Acted on all but G4/G5, deferred deliberately and filed as gq#78
+- [x] Test hardening from the review: pin the `shared` set, pin roster shape
+      (232/9, no duplicate key, `Land Tenure` 26/22), guard opaque basemaps,
+      `tapply` over a list rather than a pasted key. Each proven to fail.
+- [x] NEWS entry + `DESCRIPTION` 0.12.0 → 0.13.0. This changes the meaning of a
+      shipped `inst/` artifact, and `/gh-pr-merge`'s release gate has been
+      observed to misread exactly this diff shape (CLAUDE.md:622-624)
+- [ ] `devtools::check()` — this PR is the 0.13.0 release
+- [ ] Run rfp's `test-qgs_build_harness.R` **before** pushing, not after merge
+- [ ] `/code-check` on the branch diff
 - [ ] `/planning-archive`, then `/gh-pr-push`
 - [ ] PR body: `Relates to NewGraphEnvironment/rfp#217` **and** the sred ref from
       machine-local memory (`sred-experiment-refs`)
-- [ ] After merge, re-run rfp's `test-qgs_build_harness.R` with gq checked out —
-      that red cross-check is the only signal this fixed anything
+- [ ] After merge, confirm the pkgdown deploy landed on this HEAD (a green run is
+      not a current site — CLAUDE.md:531)
 
 ## Validation
 

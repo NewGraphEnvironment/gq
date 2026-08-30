@@ -153,6 +153,12 @@ test_that("a theme shipping in both templates agrees layer for layer", {
   # can move independently, and nothing structural keeps a shared theme in step.
   # A failure here means one template moved -- which is a decision for a human,
   # not necessarily a bug in either.
+  #
+  # So this is deliberately hard equality against an upstream free to diverge.
+  # If rfp legitimately gives one template different content under a shared
+  # name, the right response is to EDIT this test and record why -- not to
+  # delete it, and not to loosen it until it stops failing. Deleting it is how
+  # the assertion it replaced came to pin a bug as a design.
   xing <- gq_theme_layers("High Detail - Crossings")
   expect_setequal(unique(xing$template),
                   c("bcfishpass_mobile", "bcrestoration_mobile"))
@@ -160,22 +166,37 @@ test_that("a theme shipping in both templates agrees layer for layer", {
   df <- gq_themes()
   by_template <- split(df, df$template)
   shared <- Reduce(intersect, lapply(by_template, function(x) unique(x$theme)))
-  expect_gt(length(shared), 0L)
+
+  # Pin the SET, not that it is non-empty. `expect_gt(length(shared), 0L)` would
+  # pass having compared one theme if rfp dropped the other three from a
+  # template — a comparison over a shrunken set passes for almost nothing.
+  expect_setequal(shared, c("High Detail - Crossings",
+                            "Low Detail - Bull Trout Model",
+                            "Low Detail - Salmon Model",
+                            "Low Detail - Steelhead Model"))
 
   for (th in shared) {
     a <- df[df$theme == th & df$template == "bcfishpass_mobile", ]
     b <- df[df$theme == th & df$template == "bcrestoration_mobile", ]
 
-    # Compare by named lookup rather than merge(): merge silently drops a key
-    # present on one side only, which is the very drift this is here to report.
-    expect_setequal(a$layer_key, b$layer_key)
+    # Compare by named lookup rather than merge(): merge() defaults to
+    # all = FALSE, so a key present on one side only is dropped from the
+    # comparison — the drift being reported is exactly the drift that shrinks
+    # it. And because testthat continues past a failure, the flag check would
+    # then print a reassuring "no disagreement" beneath the set failure.
+    #
+    # Named lookup gives NA for a one-sided key, and identical(NA, TRUE) is
+    # FALSE, so it lands in `disagree`. First-wins on a duplicate key would be
+    # silent, which is why the roster test above pins there being none.
+    expect_setequal(a$layer_key, b$layer_key)  # theme named in the flag check
     va <- stats::setNames(a$visible, a$layer_key)
     vb <- stats::setNames(b$visible, b$layer_key)
     keys <- union(names(va), names(vb))
     disagree <- keys[!mapply(identical, va[keys], vb[keys])]
     expect_equal(
       length(disagree), 0L,
-      info = paste(th, "disagrees on:", paste(disagree, collapse = ", "))
+      info = paste0(th, ": key sets or flags differ between templates; ",
+                    "disagreeing keys: ", paste(disagree, collapse = ", "))
     )
   }
 })
@@ -187,14 +208,58 @@ test_that("no theme is a stub", {
   # Deliberately over ALL template-theme pairs, not only the shared ones. The
   # stub that prompted this shipped in one template, and `Land Tenure` is
   # restoration-only -- a check scoped to shared themes could not see either.
+  #
+  # Be honest about the reach: this is a cheap tripwire for ONE shape, the
+  # all-zero preset. A regression switching 24 of 25 layers off passes it, and
+  # would pass the agreement guard too if the theme is unshared. The property
+  # actually wanted is "themes.csv equals what the templates say", which needs a
+  # live-template drift test (gq#78) -- not this.
   df <- gq_themes()
-  visible_by_pair <- tapply(df$visible, paste(df$template, df$theme, sep = " / "),
-                            sum)
-  stubs <- names(visible_by_pair)[visible_by_pair == 0]
+  # tapply over a list, not a pasted key: a separator can appear in a name and
+  # silently merge two pairs into one group, masking a stub.
+  visible_by_pair <- tapply(df$visible, list(df$template, df$theme), sum)
+  zero <- which(visible_by_pair == 0, arr.ind = TRUE)
+  stubs <- paste(rownames(visible_by_pair)[zero[, "row"]],
+                 colnames(visible_by_pair)[zero[, "col"]], sep = " / ")
   expect_equal(
     length(stubs), 0L,
     info = paste("themes showing nothing:", paste(stubs, collapse = "; "))
   )
+})
+
+test_that("the roster's shape is what the generator reports", {
+  # `data-raw/reg_extract_themes.R` prints "232 rows, 9 template-theme pairs" as
+  # its acceptance criterion and nothing in the suite held it. Without this, a
+  # truncated or empty roster passes every theme test above: the stub check
+  # tapply()s over an empty frame and finds no stubs, which reads as health.
+  #
+  # These move when rfp changes a template, and are meant to be re-pinned
+  # deliberately when that happens -- not loosened until they stop failing.
+  df <- gq_themes()
+  expect_equal(nrow(df), 232L)
+  expect_equal(nrow(unique(df[c("template", "theme")])), 9L)
+
+  # No duplicate key within a pair. The generator refuses to emit one
+  # (data-raw/reg_extract_themes.R), and the agreement guard's named lookup is
+  # first-wins, so a duplicate would be silently invisible there. Asserting the
+  # premise here is what keeps that reliance from being undocumented.
+  expect_equal(anyDuplicated(df[c("template", "theme", "layer_key")]), 0L)
+
+  # Land Tenure is restoration-only and therefore never enters the agreement
+  # loop -- the one theme with no content assertion otherwise.
+  lt <- df[df$theme == "Land Tenure", ]
+  expect_equal(nrow(lt), 26L)
+  expect_equal(sum(lt$visible), 22L)
+})
+
+test_that("no theme turns an opaque basemap on", {
+  # The regression that would put an opaque raster over a field map. It is also
+  # the one row the re-extraction in gq#77 had to leave alone: esri_world_topo
+  # is named by all 9 pairs and is off in every one, in both templates.
+  df <- gq_themes()
+  topo <- df[df$layer_key == "esri_world_topo", ]
+  expect_equal(nrow(topo), 9L)
+  expect_false(any(topo$visible))
 })
 
 test_that("gq_theme_layers without template concatenates both templates", {
