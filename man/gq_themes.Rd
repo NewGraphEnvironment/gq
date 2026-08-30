@@ -20,9 +20,12 @@ template's map themes show or hide.
 \details{
 Themes are recorded per layer because that is how QGIS stores them — a
 \verb{<visibility-preset>} enumerates each layer it governs with an explicit
-visible flag. The same theme name can therefore carry different content in
-different templates, which is why \code{template} is part of the key rather than a
-filter applied afterwards.
+visible flag. \code{template} is part of the key rather than a filter applied
+afterwards because a theme name is not global: \verb{Land Tenure} ships in
+\code{bcrestoration_mobile} only. The templates are also separate files that can
+drift independently, so a name shipping in both is not guaranteed to carry
+the same content — at present every shared theme agrees layer for layer, and
+the test suite reports it if that stops being true.
 
 A theme governs only the layers it names. Templates carry more layers than
 any one theme lists, so a returned set is partial: a layer absent from a

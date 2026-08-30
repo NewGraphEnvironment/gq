@@ -187,9 +187,17 @@ sides.
 - `gq_theme_layers(theme, template)` — which layers a theme shows or hides
 
 Themes are per-layer because QGIS stores them that way, and keyed by template
-because the same theme name carries different content in different templates
-(`High Detail - Crossings` shows 27 layers in bcfishpass, 0 in bcrestoration). A
-theme governs only the layers it names — absence means unmanaged, not hidden.
+because a theme name is not global — `Land Tenure` ships in bcrestoration only.
+The templates are separate files that can drift independently, so a shared name
+is not guaranteed to carry the same content; every shared theme currently agrees
+layer for layer, and the suite reports it if one moves. A theme governs only the
+layers it names — absence means unmanaged, not hidden.
+
+That justification used to be `High Detail - Crossings` showing 27 layers in
+bcfishpass and 0 in bcrestoration. The zero was rfp shipping the preset as a
+**stub**, not a design, and pinning it as a test made a defect look deliberate
+for a release (gq#77, repaired upstream in rfp#217). When a registry difference
+is the *evidence* for a schema decision, check it is a decision.
 
 **Style resolvers:**
 - `gq_style(reg, name, field)` — backend-agnostic style resolver (colors, widths, classification)

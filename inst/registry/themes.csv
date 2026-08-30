@@ -102,34 +102,34 @@ bcfishpass_mobile,Low Detail - Steelhead Model,streams_st,true
 bcfishpass_mobile,Low Detail - Steelhead Model,transmission_line,true
 bcfishpass_mobile,Low Detail - Steelhead Model,watershed_group_boundary,true
 bcfishpass_mobile,Low Detail - Steelhead Model,wetland,true
-bcrestoration_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,false
-bcrestoration_mobile,High Detail - Crossings,conservancy,false
-bcrestoration_mobile,High Detail - Crossings,crossings_modelled,false
-bcrestoration_mobile,High Detail - Crossings,crossings_pscis_assessment,false
+bcrestoration_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,true
+bcrestoration_mobile,High Detail - Crossings,conservancy,true
+bcrestoration_mobile,High Detail - Crossings,crossings_modelled,true
+bcrestoration_mobile,High Detail - Crossings,crossings_pscis_assessment,true
 bcrestoration_mobile,High Detail - Crossings,esri_world_topo,false
-bcrestoration_mobile,High Detail - Crossings,first_nation_reserve,false
-bcrestoration_mobile,High Detail - Crossings,fiss_obstacles,false
-bcrestoration_mobile,High Detail - Crossings,fiss_stream_sample_sites,false
-bcrestoration_mobile,High Detail - Crossings,form_fiss_site,false
-bcrestoration_mobile,High Detail - Crossings,form_pscis,false
-bcrestoration_mobile,High Detail - Crossings,habitat_lateral,false
-bcrestoration_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,false
-bcrestoration_mobile,High Detail - Crossings,lake,false
-bcrestoration_mobile,High Detail - Crossings,manmade_waterbodies,false
-bcrestoration_mobile,High Detail - Crossings,moti_culverts,false
-bcrestoration_mobile,High Detail - Crossings,municipalities,false
-bcrestoration_mobile,High Detail - Crossings,pipeline_installed,false
-bcrestoration_mobile,High Detail - Crossings,pipeline_permit,false
-bcrestoration_mobile,High Detail - Crossings,provincial_park,false
-bcrestoration_mobile,High Detail - Crossings,railway,false
-bcrestoration_mobile,High Detail - Crossings,roads_dra,false
-bcrestoration_mobile,High Detail - Crossings,roads_ften,false
-bcrestoration_mobile,High Detail - Crossings,stream_labels,false
-bcrestoration_mobile,High Detail - Crossings,streams_all,false
-bcrestoration_mobile,High Detail - Crossings,streams_salmon,false
-bcrestoration_mobile,High Detail - Crossings,transmission_line,false
-bcrestoration_mobile,High Detail - Crossings,watershed_group_boundary,false
-bcrestoration_mobile,High Detail - Crossings,wetland,false
+bcrestoration_mobile,High Detail - Crossings,first_nation_reserve,true
+bcrestoration_mobile,High Detail - Crossings,fiss_obstacles,true
+bcrestoration_mobile,High Detail - Crossings,fiss_stream_sample_sites,true
+bcrestoration_mobile,High Detail - Crossings,form_fiss_site,true
+bcrestoration_mobile,High Detail - Crossings,form_pscis,true
+bcrestoration_mobile,High Detail - Crossings,habitat_lateral,true
+bcrestoration_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,true
+bcrestoration_mobile,High Detail - Crossings,lake,true
+bcrestoration_mobile,High Detail - Crossings,manmade_waterbodies,true
+bcrestoration_mobile,High Detail - Crossings,moti_culverts,true
+bcrestoration_mobile,High Detail - Crossings,municipalities,true
+bcrestoration_mobile,High Detail - Crossings,pipeline_installed,true
+bcrestoration_mobile,High Detail - Crossings,pipeline_permit,true
+bcrestoration_mobile,High Detail - Crossings,provincial_park,true
+bcrestoration_mobile,High Detail - Crossings,railway,true
+bcrestoration_mobile,High Detail - Crossings,roads_dra,true
+bcrestoration_mobile,High Detail - Crossings,roads_ften,true
+bcrestoration_mobile,High Detail - Crossings,stream_labels,true
+bcrestoration_mobile,High Detail - Crossings,streams_all,true
+bcrestoration_mobile,High Detail - Crossings,streams_salmon,true
+bcrestoration_mobile,High Detail - Crossings,transmission_line,true
+bcrestoration_mobile,High Detail - Crossings,watershed_group_boundary,true
+bcrestoration_mobile,High Detail - Crossings,wetland,true
 bcrestoration_mobile,Land Tenure,bcfishobs_fiss_fish_observations,false
 bcrestoration_mobile,Land Tenure,conservancy,true
 bcrestoration_mobile,Land Tenure,esri_world_topo,false

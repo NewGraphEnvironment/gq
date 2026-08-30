@@ -138,15 +138,205 @@ test_that("gq_themes filters by template, and Land Tenure is restoration-only", 
   expect_true("Land Tenure" %in% gq_themes("bcrestoration_mobile")$theme)
 })
 
-test_that("one theme name carries different content per template", {
-  # The case the old group-granular schema could not represent, and the reason
-  # `template` is part of the key rather than a filter.
+test_that("a theme shipping in both templates agrees layer for layer", {
+  # `template` is part of the key rather than a filter because a theme name is
+  # not global -- `Land Tenure` is restoration-only, asserted above. That is the
+  # surviving witness. It is NOT that the shared themes differ.
+  #
+  # This test used to demonstrate the point with `High Detail - Crossings`, whose
+  # restoration copy had every layer switched off. That was not a legitimate
+  # difference: bcrestoration shipped the preset as a STUB, enumerating 28 layers
+  # and showing none, and rfp#217 repaired it. Pinning the zero made a defect
+  # look like a design.
+  #
+  # What replaces it is a drift guard. The templates are separate .qgs files that
+  # can move independently, and nothing structural keeps a shared theme in step.
+  # A failure here means one template moved -- which is a decision for a human,
+  # not necessarily a bug in either.
+  #
+  # So this is deliberately hard equality against an upstream free to diverge.
+  # If rfp legitimately gives one template different content under a shared
+  # name, the right response is to EDIT this test and record why -- not to
+  # delete it, and not to loosen it until it stops failing. Deleting it is how
+  # the assertion it replaced came to pin a bug as a design.
   xing <- gq_theme_layers("High Detail - Crossings")
   expect_setequal(unique(xing$template),
                   c("bcfishpass_mobile", "bcrestoration_mobile"))
-  visible_by_template <- tapply(xing$visible, xing$template, sum)
-  expect_gt(visible_by_template[["bcfishpass_mobile"]], 0)
-  expect_equal(visible_by_template[["bcrestoration_mobile"]], 0)
+
+  df <- gq_themes()
+
+  # Assert the premise the comparison below rests on. `shared` is derived from
+  # EVERY template, but the loop compares two named ones -- so a third template
+  # sharing those themes would never be compared while this reported clean.
+  # That is the pooled-guard shape gq#66 recorded: a check that looks per-source
+  # and is not. Pinning the set means a third template fails here, naming the
+  # real cause, instead of passing silently.
+  expect_setequal(unique(df$template),
+                  c("bcfishpass_mobile", "bcrestoration_mobile"))
+
+  by_template <- split(df, df$template)
+  shared <- Reduce(intersect, lapply(by_template, function(x) unique(x$theme)))
+
+  # Pin the SET, not that it is non-empty. `expect_gt(length(shared), 0L)` would
+  # pass having compared one theme if rfp dropped the other three from a
+  # template — a comparison over a shrunken set passes for almost nothing.
+  expect_setequal(shared, c("High Detail - Crossings",
+                            "Low Detail - Bull Trout Model",
+                            "Low Detail - Salmon Model",
+                            "Low Detail - Steelhead Model"))
+
+  for (th in shared) {
+    a <- df[df$theme == th & df$template == "bcfishpass_mobile", ]
+    b <- df[df$theme == th & df$template == "bcrestoration_mobile", ]
+
+    # Compare by named lookup rather than merge(): merge() defaults to
+    # all = FALSE, so a key present on one side only is dropped from the
+    # comparison — the drift being reported is exactly the drift that shrinks
+    # it. And because testthat continues past a failure, the flag check would
+    # then print a reassuring "no disagreement" beneath the set failure.
+    #
+    # Named lookup gives NA for a one-sided key, and identical(NA, TRUE) is
+    # FALSE, so it lands in `disagree`. First-wins on a duplicate key would be
+    # silent, which is why "the roster's shape is what the generator reports"
+    # below pins there being none.
+    expect_setequal(a$layer_key, b$layer_key)  # theme named in the flag check
+    va <- stats::setNames(a$visible, a$layer_key)
+    vb <- stats::setNames(b$visible, b$layer_key)
+    keys <- union(names(va), names(vb))
+    disagree <- keys[!mapply(identical, va[keys], vb[keys])]
+    expect_equal(
+      length(disagree), 0L,
+      info = paste0(th, ": key sets or flags differ between templates; ",
+                    "disagreeing keys: ", paste(disagree, collapse = ", "))
+    )
+  }
+})
+
+test_that("no theme is a stub", {
+  # rfp#217's shape: a preset that enumerates layers and shows none of them. It
+  # reads as a deliberate minimal variant, so nothing downstream reports it.
+  #
+  # Deliberately over ALL template-theme pairs, not only the shared ones,
+  # because `Land Tenure` is restoration-only and a shared-scoped check cannot
+  # see an unshared theme at all.
+  #
+  # Note what that argument is NOT. `High Detail - Crossings` ships in both
+  # templates, so the shared-scoped version WOULD have caught rfp#217. The
+  # widening is not justified by the stub that prompted it; it is justified by
+  # the theme the stub happened to miss.
+  #
+  # Be honest about the reach: this is a cheap tripwire for ONE shape, the
+  # all-zero preset. A regression switching 24 of 25 layers off passes it, and
+  # would pass the agreement guard too if the theme is unshared. The property
+  # actually wanted is "themes.csv equals what the templates say", which needs a
+  # live-template drift test (gq#78) -- not this.
+  df <- gq_themes()
+  # tapply over a list, not a pasted key: a separator can appear in a name and
+  # silently merge two pairs into one group, masking a stub.
+  visible_by_pair <- tapply(df$visible, list(df$template, df$theme), sum)
+  zero <- which(visible_by_pair == 0, arr.ind = TRUE)
+  stubs <- paste(rownames(visible_by_pair)[zero[, "row"]],
+                 colnames(visible_by_pair)[zero[, "col"]], sep = " / ")
+  expect_equal(
+    length(stubs), 0L,
+    info = paste("themes showing nothing:", paste(stubs, collapse = "; "))
+  )
+})
+
+test_that("the roster's shape is what the generator reports", {
+  # `data-raw/reg_extract_themes.R` prints "232 rows, 9 template-theme pairs" as
+  # its acceptance criterion and nothing in the suite held it. Without this, a
+  # truncated or empty roster passes every theme test above: the stub check
+  # tapply()s over an empty frame and finds no stubs, which reads as health.
+  #
+  # These move when rfp changes a template, and are meant to be re-pinned
+  # deliberately when that happens -- not loosened until they stop failing.
+  df <- gq_themes()
+  expect_equal(nrow(df), 232L)
+  expect_equal(nrow(unique(df[c("template", "theme")])), 9L)
+
+  # No duplicate key within a pair. The generator refuses to emit one
+  # (data-raw/reg_extract_themes.R), and the agreement guard's named lookup is
+  # first-wins, so a duplicate would be silently invisible there. Asserting the
+  # premise here is what keeps that reliance from being undocumented.
+  expect_equal(anyDuplicated(df[c("template", "theme", "layer_key")]), 0L)
+
+  # Land Tenure is restoration-only and therefore never enters the agreement
+  # loop -- the one theme with no content assertion otherwise.
+  lt <- df[df$theme == "Land Tenure", ]
+  expect_equal(nrow(lt), 26L)
+  expect_equal(sum(lt$visible), 22L)
+})
+
+test_that("no theme turns an opaque basemap on", {
+  # The regression that would put an opaque raster over a field map -- NEWS
+  # records it as having twice cost a field user a layer.
+  #
+  # `Base - misc` holds FOUR opaque xyz basemaps. themes.csv names only
+  # esri_world_topo today, so asserting that key alone would scope the guard by
+  # coincidence rather than by the property. That coincidence has a known
+  # expiry: data-raw/reg_extract_themes.R:18-20 anticipates rfp#185 re-saving
+  # the presets "to include the other three xyz basemaps". At that regeneration
+  # the shape counts above would be re-pinned as routine roster growth -- which
+  # is what this file's own comment tells the next person to do -- and a live
+  # satellite layer would ride through on a green suite.
+  opaque <- c("esri_world_topo", "bing_aerial", "esri_satellite",
+              "google_satellite")
+  df <- gq_themes()
+
+  # Every wms layer must be declared opaque or overlay. Pinning the WHOLE wms
+  # set is the point: scoping the pin to `Base - misc` leaves the guard blind to
+  # an opaque basemap declared into any other group, and `Web Mapping Services`
+  # sits ABOVE `Base - misc` in both templates (group_order 7 vs 8, 9 vs 10), so
+  # an opaque layer there occludes MORE, not less.
+  #
+  # Kept as literals rather than derived from a filter: "is this opaque" is a
+  # judgement, and it belongs written down where a reviewer can disagree with
+  # it. Deriving would move the judgement into a query and make the guard agree
+  # with itself by construction.
+  #
+  # A new wms layer fails here until someone puts it in one list or the other.
+  # That is the intended cost -- `Base - misc` gained all four of its basemaps
+  # in a single commit, so this set moves in bursts.
+  # The candidate set is "anything that could cover the map": every wms layer,
+  # plus every raster. Scoping it to wms alone leaves a raster added with any
+  # other source_type uncovered -- habitat_lateral is `local`, and is the
+  # registry's only raster today, so that axis has exactly one member and no
+  # margin. Including `type == "raster"` makes the residual definitional rather
+  # than a data coincidence: to escape now, a layer would have to be an opaque
+  # basemap that is neither a wms nor a raster.
+  overlay <- c("fire_perimeters_current", "frep_rip2021_mar2022",
+               "habitat_lateral")  # habitat_lateral renders at 0.4 opacity
+  g <- gq_groups()
+  reg <- gq_reg_main()
+  is_raster <- vapply(reg$layers, function(l) identical(l$type, "raster"),
+                      logical(1))
+  rasters <- names(reg$layers)[is_raster]
+  expect_setequal(c(opaque, overlay),
+                  union(g$layer_key[g$source_type == "wms"], rasters))
+
+  # …and the opaque ones are where the z-order argument above assumes.
+  expect_setequal(opaque,
+                  g$layer_key[g$group == "Base - misc" &
+                                g$source_type == "wms"])
+
+  # And pin which of them the roster names today, so the regeneration that adds
+  # the other three (rfp#185) fails HERE, naming the reason, rather than
+  # silently enlarging what the check below is responsible for.
+  expect_setequal(intersect(unique(df$layer_key), opaque), "esri_world_topo")
+
+  # The property: whichever of the four the roster names, no theme shows it.
+  on <- df[df$layer_key %in% opaque & df$visible, ]
+  expect_equal(
+    nrow(on), 0L,
+    info = paste("opaque basemap switched on:",
+                 paste(unique(paste(on$template, on$theme, on$layer_key)),
+                       collapse = "; "))
+  )
+
+  # esri_world_topo specifically is named by all 9 pairs -- it is the one row
+  # gq#77's re-extraction had to leave alone.
+  expect_equal(nrow(df[df$layer_key == "esri_world_topo", ]), 9L)
 })
 
 test_that("gq_theme_layers without template concatenates both templates", {

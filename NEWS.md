@@ -1,3 +1,44 @@
+# gq 0.13.0
+
+- **`High Detail - Crossings` shows its layers in `bcrestoration_mobile` again.**
+  The roster recorded that theme as enumerating 28 layers and showing none of
+  them. That was a faithful extraction of a template rfp shipped as a stub,
+  repaired upstream in NewGraphEnvironment/rfp#217 and released in rfp v0.47.0.
+  27 rows flip to visible; `esri_world_topo` stays off, as it is in
+  `bcfishpass_mobile` too. Totals are unchanged at 232 rows over 9
+  template-theme pairs, and `reg_main.json` and `groups.csv` are untouched.
+
+  It is the most used theme in the fleet, so it is worth being right.
+
+- **The 0.3.0 note below is wrong, and is left standing as the record.** That
+  entry justified keying themes by template with "`High Detail - Crossings`
+  shows 27 layers in `bcfishpass_mobile` and 0 in `bcrestoration_mobile`". The
+  zero was the stub, not a design. `template` is still rightly part of the key —
+  `Land Tenure` ships in one template only, and the two templates are separate
+  files free to drift — but the illustration was a defect mistaken for evidence.
+
+  The general form is worth carrying: when a registry difference is the evidence
+  for a schema decision, check that it is a decision.
+
+- **The assertion that pinned the zero is replaced by two guards.** One reports
+  drift between templates sharing a theme name; one reports any theme that shows
+  nothing, over every template-theme pair rather than only the shared ones,
+  because `Land Tenure` is restoration-only and a shared-scoped check cannot see
+  an unshared theme at all. (Not because of the stub itself: `High Detail -
+  Crossings` ships in both templates, so a shared-scoped check would have caught
+  rfp#217. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
+  duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
+  opaque xyz basemaps — with every wms layer *and every raster* pinned as opaque
+  or overlay, and the subset the roster currently names pinned beside it, so
+  neither a new basemap nor the pending rfp#185 regeneration can be absorbed as
+  roster growth. To escape the guard now a layer would have to be an opaque
+  basemap that is neither a wms nor a raster, which is definitional rather than
+  a coincidence in the current data. Each
+  guard was run against a restored defect rather than assumed to work.
+
+  What none of them assert is that the roster still equals what the templates
+  say; that needs a live-template test and is tracked separately.
+
 # gq 0.12.0
 
 - **`gq_form_types()` — the roster of Mergin survey forms**, vendored from rfp
