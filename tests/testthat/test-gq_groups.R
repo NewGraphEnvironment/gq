@@ -164,6 +164,16 @@ test_that("a theme shipping in both templates agrees layer for layer", {
                   c("bcfishpass_mobile", "bcrestoration_mobile"))
 
   df <- gq_themes()
+
+  # Assert the premise the comparison below rests on. `shared` is derived from
+  # EVERY template, but the loop compares two named ones -- so a third template
+  # sharing those themes would never be compared while this reported clean.
+  # That is the pooled-guard shape gq#66 recorded: a check that looks per-source
+  # and is not. Pinning the set means a third template fails here, naming the
+  # real cause, instead of passing silently.
+  expect_setequal(unique(df$template),
+                  c("bcfishpass_mobile", "bcrestoration_mobile"))
+
   by_template <- split(df, df$template)
   shared <- Reduce(intersect, lapply(by_template, function(x) unique(x$theme)))
 
@@ -187,7 +197,8 @@ test_that("a theme shipping in both templates agrees layer for layer", {
     #
     # Named lookup gives NA for a one-sided key, and identical(NA, TRUE) is
     # FALSE, so it lands in `disagree`. First-wins on a duplicate key would be
-    # silent, which is why the roster test above pins there being none.
+    # silent, which is why "the roster's shape is what the generator reports"
+    # below pins there being none.
     expect_setequal(a$layer_key, b$layer_key)  # theme named in the flag check
     va <- stats::setNames(a$visible, a$layer_key)
     vb <- stats::setNames(b$visible, b$layer_key)
