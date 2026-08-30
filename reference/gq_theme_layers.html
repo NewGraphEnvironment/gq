@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,18 +68,20 @@ Returns an empty data.frame if the theme is not found.</p>
     <p>Without <code>template</code>, a theme name that ships in more than one template returns
 every template's rows concatenated — check the <code>template</code> column, or pass it,
 when you want one project's answer. <code>High Detail - Crossings</code> is the live
-example: it ships in both templates with materially different content.</p>
+example: it ships in both templates, so it returns 56 rows rather than 28.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># the same theme differs by template</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># both templates come back concatenated — check the template column</span></span></span>
 <span class="r-in"><span><span class="va">xing</span> <span class="op">&lt;-</span> <span class="fu">gq_theme_layers</span><span class="op">(</span><span class="st">"High Detail - Crossings"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">xing</span><span class="op">$</span><span class="va">visible</span>, <span class="va">xing</span><span class="op">$</span><span class="va">template</span>, <span class="va">sum</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    bcfishpass_mobile bcrestoration_mobile </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   27                    0 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">xing</span><span class="op">$</span><span class="va">template</span>, <span class="va">xing</span><span class="op">$</span><span class="va">visible</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        FALSE TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   bcfishpass_mobile        1   27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   bcrestoration_mobile     1   27</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># one template's answer</span></span></span>
+<span class="r-in"><span><span class="co"># a theme only one template ships</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">gq_theme_layers</span><span class="op">(</span><span class="st">"Land Tenure"</span>, template <span class="op">=</span> <span class="st">"bcrestoration_mobile"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               template       theme                        layer_key visible</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 bcrestoration_mobile Land Tenure bcfishobs_fiss_fish_observations   FALSE</span>

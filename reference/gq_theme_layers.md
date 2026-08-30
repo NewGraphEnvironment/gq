@@ -29,18 +29,20 @@ Without `template`, a theme name that ships in more than one template
 returns every template's rows concatenated — check the `template`
 column, or pass it, when you want one project's answer.
 `High Detail - Crossings` is the live example: it ships in both
-templates with materially different content.
+templates, so it returns 56 rows rather than 28.
 
 ## Examples
 
 ``` r
-# the same theme differs by template
+# both templates come back concatenated — check the template column
 xing <- gq_theme_layers("High Detail - Crossings")
-tapply(xing$visible, xing$template, sum)
-#>    bcfishpass_mobile bcrestoration_mobile 
-#>                   27                    0 
+table(xing$template, xing$visible)
+#>                       
+#>                        FALSE TRUE
+#>   bcfishpass_mobile        1   27
+#>   bcrestoration_mobile     1   27
 
-# one template's answer
+# a theme only one template ships
 head(gq_theme_layers("Land Tenure", template = "bcrestoration_mobile"))
 #>               template       theme                        layer_key visible
 #> 1 bcrestoration_mobile Land Tenure bcfishobs_fiss_fish_observations   FALSE
