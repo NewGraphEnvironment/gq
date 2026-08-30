@@ -27,3 +27,14 @@
 - Suite is knowingly red at this commit: `test-gq_groups.R:149` asserts the stub.
   Phase 2 replaces it.
 - Next: Phase 2 — rewrite the theme tests
+
+### Phase 2 — theme tests rewritten
+
+- Replaced the single `expect_equal(..., 0)` test with two named tests: a drift
+  guard (shared themes agree layer for layer) and a stub guard (no theme shows
+  nothing, over all 9 pairs)
+- Proved both can fail: pre-fix roster fires both; `Land Tenure` stubbed alone
+  fires only the stub guard, which is the case the issue's version could not reach
+- Used named-vector lookup rather than `merge()`, which drops one-sided keys
+- `test-gq_groups.R`: `FAIL 0 | PASS 66`
+- Next: Phase 3 — correct the stale prose

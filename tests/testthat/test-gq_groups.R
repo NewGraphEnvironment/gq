@@ -138,15 +138,63 @@ test_that("gq_themes filters by template, and Land Tenure is restoration-only", 
   expect_true("Land Tenure" %in% gq_themes("bcrestoration_mobile")$theme)
 })
 
-test_that("one theme name carries different content per template", {
-  # The case the old group-granular schema could not represent, and the reason
-  # `template` is part of the key rather than a filter.
+test_that("a theme shipping in both templates agrees layer for layer", {
+  # `template` is part of the key rather than a filter because a theme name is
+  # not global -- `Land Tenure` is restoration-only, asserted above. That is the
+  # surviving witness. It is NOT that the shared themes differ.
+  #
+  # This test used to demonstrate the point with `High Detail - Crossings`, whose
+  # restoration copy had every layer switched off. That was not a legitimate
+  # difference: bcrestoration shipped the preset as a STUB, enumerating 28 layers
+  # and showing none, and rfp#217 repaired it. Pinning the zero made a defect
+  # look like a design.
+  #
+  # What replaces it is a drift guard. The templates are separate .qgs files that
+  # can move independently, and nothing structural keeps a shared theme in step.
+  # A failure here means one template moved -- which is a decision for a human,
+  # not necessarily a bug in either.
   xing <- gq_theme_layers("High Detail - Crossings")
   expect_setequal(unique(xing$template),
                   c("bcfishpass_mobile", "bcrestoration_mobile"))
-  visible_by_template <- tapply(xing$visible, xing$template, sum)
-  expect_gt(visible_by_template[["bcfishpass_mobile"]], 0)
-  expect_equal(visible_by_template[["bcrestoration_mobile"]], 0)
+
+  df <- gq_themes()
+  by_template <- split(df, df$template)
+  shared <- Reduce(intersect, lapply(by_template, function(x) unique(x$theme)))
+  expect_gt(length(shared), 0L)
+
+  for (th in shared) {
+    a <- df[df$theme == th & df$template == "bcfishpass_mobile", ]
+    b <- df[df$theme == th & df$template == "bcrestoration_mobile", ]
+
+    # Compare by named lookup rather than merge(): merge silently drops a key
+    # present on one side only, which is the very drift this is here to report.
+    expect_setequal(a$layer_key, b$layer_key)
+    va <- stats::setNames(a$visible, a$layer_key)
+    vb <- stats::setNames(b$visible, b$layer_key)
+    keys <- union(names(va), names(vb))
+    disagree <- keys[!mapply(identical, va[keys], vb[keys])]
+    expect_equal(
+      length(disagree), 0L,
+      info = paste(th, "disagrees on:", paste(disagree, collapse = ", "))
+    )
+  }
+})
+
+test_that("no theme is a stub", {
+  # rfp#217's shape: a preset that enumerates layers and shows none of them. It
+  # reads as a deliberate minimal variant, so nothing downstream reports it.
+  #
+  # Deliberately over ALL template-theme pairs, not only the shared ones. The
+  # stub that prompted this shipped in one template, and `Land Tenure` is
+  # restoration-only -- a check scoped to shared themes could not see either.
+  df <- gq_themes()
+  visible_by_pair <- tapply(df$visible, paste(df$template, df$theme, sep = " / "),
+                            sum)
+  stubs <- names(visible_by_pair)[visible_by_pair == 0]
+  expect_equal(
+    length(stubs), 0L,
+    info = paste("themes showing nothing:", paste(stubs, collapse = "; "))
+  )
 })
 
 test_that("gq_theme_layers without template concatenates both templates", {

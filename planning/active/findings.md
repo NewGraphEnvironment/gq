@@ -233,3 +233,33 @@ not mean gq is the stale side by default; check which one moved.
 
 Relates to NewGraphEnvironment/rfp#217
 
+
+## Phase 2: proving the guards can fail
+
+`code-check.md` — a guard nobody has seen fail is decoration, and a fixture that
+cannot reach the failure mode is not validation. Both new tests were run against
+a restored defect:
+
+| roster | agreement guard | stub guard | result |
+|---|---|---|---|
+| as regenerated (control) | pass | pass | `FAIL 0 | PASS 66` |
+| pre-fix, from `HEAD~1` | **fires**, naming all 27 disagreeing keys | **fires**, naming `bcrestoration_mobile / High Detail - Crossings` | `FAIL 2 | PASS 64` |
+| `Land Tenure` rows forced to `false` | pass — correct, it is not a shared theme | **fires**, naming `bcrestoration_mobile / Land Tenure` | `FAIL 1 | PASS 65` |
+
+The third row is the whole argument for widening the stub check. `Land Tenure`
+ships in one template, so the issue's `for (t in shared)` loop never evaluates it
+— a stub there would have been invisible to a test written specifically to catch
+stubs.
+
+The defect was restored from `git show HEAD~1:inst/registry/themes.csv`, i.e. the
+exact committed bytes, not a hand-reconstruction — a reconstruction is a different
+program and tends to fail *more* tests than the real defect did.
+
+### `merge()` was rejected for the comparison
+
+The issue's diff joins the two templates' rows with `merge(a, b, by = "layer_key")`.
+An inner join **drops a key present on only one side**, which is precisely the
+drift the guard reports. `expect_setequal()` runs first and would usually catch it,
+but the two assertions would then be reporting the same fact by luck of ordering.
+Named-vector lookup over `union(names(va), names(vb))` compares every key on either
+side, so the count cannot be quietly right.

@@ -52,18 +52,21 @@ describing a bug. It is the **only** hard failure in the suite.
 Replaced by **two** separately-named tests, so a future failure names its own
 cause instead of one test meaning two things:
 
-- [ ] `"a theme name is keyed per template, and the shared ones agree"` — for each
+- [x] `"a theme shipping in both templates agrees layer for layer"` — for each
       of the 4 shared themes, `expect_setequal` on `layer_key` and zero
       visible-flag differences. This is the drift guard.
-- [ ] `"no theme is a stub"` — over **all 9** template-theme pairs, not just the
+- [x] `"no theme is a stub"` — over **all 9** template-theme pairs, not just the
       shared ones. The issue's version puts this inside the shared-themes loop, so
       `Land Tenure` (restoration-only) is never checked — which is *exactly* the
       shape rfp#217 had. Widening it is the point of splitting.
-- [ ] Keep the existing `"Land Tenure is restoration-only"` test (lines 134-139)
+- [x] Keep the existing `"Land Tenure is restoration-only"` test (lines 134-139)
       untouched — it becomes the surviving witness for why `template` is in the key
-- [ ] **Restore the bug and confirm the new stub test goes red**: stash the
-      regenerated `themes.csv`, run the file, assert failure, restore. A guard
-      nobody has seen fail is decoration.
+- [x] **Restore the bug and confirm the new stub test goes red.** Done three ways:
+      current roster `FAIL 0 | PASS 66`; pre-fix roster from `HEAD~1` fires **both**
+      guards naming all 27 keys; `Land Tenure` stubbed alone fires **only** the stub
+      guard — the case the issue's shared-only loop could not reach.
+- [x] Compare by named lookup, not `merge()` — `merge()` drops a key present on
+      one side only, which is the drift the guard exists to report.
 
 ## Phase 3: Correct the stale prose
 
