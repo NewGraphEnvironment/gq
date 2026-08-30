@@ -264,13 +264,38 @@ test_that("the roster's shape is what the generator reports", {
 })
 
 test_that("no theme turns an opaque basemap on", {
-  # The regression that would put an opaque raster over a field map. It is also
-  # the one row the re-extraction in gq#77 had to leave alone: esri_world_topo
-  # is named by all 9 pairs and is off in every one, in both templates.
+  # The regression that would put an opaque raster over a field map -- NEWS
+  # records it as having twice cost a field user a layer.
+  #
+  # `Base - misc` holds FOUR opaque xyz basemaps. themes.csv names only
+  # esri_world_topo today, so asserting that key alone would scope the guard by
+  # coincidence rather than by the property. That coincidence has a known
+  # expiry: data-raw/reg_extract_themes.R:18-20 anticipates rfp#185 re-saving
+  # the presets "to include the other three xyz basemaps". At that regeneration
+  # the shape counts above would be re-pinned as routine roster growth -- which
+  # is what this file's own comment tells the next person to do -- and a live
+  # satellite layer would ride through on a green suite.
+  opaque <- c("esri_world_topo", "bing_aerial", "esri_satellite",
+              "google_satellite")
   df <- gq_themes()
-  topo <- df[df$layer_key == "esri_world_topo", ]
-  expect_equal(nrow(topo), 9L)
-  expect_false(any(topo$visible))
+
+  # The premise, asserted beside the assertion: a regeneration that adds one of
+  # the other three fails HERE, naming the reason, rather than silently
+  # enlarging what the check below is responsible for.
+  expect_setequal(intersect(unique(df$layer_key), opaque), "esri_world_topo")
+
+  # The property: whichever of the four the roster names, no theme shows it.
+  on <- df[df$layer_key %in% opaque & df$visible, ]
+  expect_equal(
+    nrow(on), 0L,
+    info = paste("opaque basemap switched on:",
+                 paste(unique(paste(on$template, on$theme, on$layer_key)),
+                       collapse = "; "))
+  )
+
+  # esri_world_topo specifically is named by all 9 pairs -- it is the one row
+  # gq#77's re-extraction had to leave alone.
+  expect_equal(nrow(df[df$layer_key == "esri_world_topo", ]), 9L)
 })
 
 test_that("gq_theme_layers without template concatenates both templates", {

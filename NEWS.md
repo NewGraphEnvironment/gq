@@ -25,8 +25,11 @@
   nothing, over every template-theme pair rather than only the shared ones — the
   stub shipped in a single template, so a shared-only check could not have seen
   it. Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
-  duplicate key, `Land Tenure` at 26/22) and no theme may switch an opaque
-  basemap on. Each was run against a restored defect rather than assumed to work.
+  duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
+  four opaque xyz basemaps in `Base - misc` — with the set the roster currently
+  names pinned beside it, so the regeneration that adds the other three
+  (rfp#185) has to be looked at rather than absorbed as roster growth. Each
+  guard was run against a restored defect rather than assumed to work.
 
   What none of them assert is that the roster still equals what the templates
   say; that needs a live-template test and is tracked separately.
