@@ -106,29 +106,29 @@ commit either way, which the repo's own convention forbids.
 
 ## Phase 4: Bookkeeping
 
-- [ ] `NEWS.md` — an exported function added (`gq_form_types()`) and an exported
+- [x] `NEWS.md` — an exported function added (`gq_form_types()`) and an exported
       contract changed (`gq_tmap_style()` now errors where it returned `list()`)
-- [ ] `DESCRIPTION` version bump, as the final commit of the branch
+- [x] `DESCRIPTION` version bump, as the final commit of the branch
 
 ## Phase 5: Cross-repo issues
 
-- [ ] rfp issue — `edna` and `monitoring` have empty `symbol`/`color` and
+- [x] rfp issue — `edna` and `monitoring` have empty `symbol`/`color` and
       QGIS-default white QMLs; gq will not invent colours
-- [ ] gq issue — `gq_style()` drops per-class `opacity`. Found on the way past
+- [x] gq issue — `gq_style()` drops per-class `opacity`. Found on the way past
       and **not** introduced here: `bec_zone` carries `fill_opacity 0.25` on all
       15 rows, so every BEC zone renders at full opacity today
-- [ ] gq issue — widen `Floodplain` and register project rasters
-- [ ] gq issue — `Tracking`, `parameters_habitat_method`,
+- [x] gq issue — widen `Floodplain` and register project rasters
+- [x] gq issue — `Tracking`, `parameters_habitat_method`,
       `parameters_habitat_thresholds` ship with no `groups.csv` row; then update
       `test-template_drift.R`'s "Project Specific" reason which cites gq#64
-- [ ] Edit the #64 body so it reads correctly top to bottom
+- [x] Edit the #64 body so it reads correctly top to bottom
 
 ## Validation
 
-- [ ] Tests pass
-- [ ] `local_exempt` is empty and the "still needed" assertion passes
-- [ ] `reg_build_main.R` run twice → `cmp` reports no change
-- [ ] `lintr` compared against the `HEAD` baseline, not against zero
-- [ ] `/code-check` clean on each commit
-- [ ] PWF checkboxes match landed work
+- [x] Tests pass
+- [x] `local_exempt` is empty and the "still needed" assertion passes
+- [x] `reg_build_main.R` run twice → `cmp` reports no change
+- [x] `lintr` compared against the `HEAD` baseline, not against zero
+- [x] `/code-check` clean on each commit
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion

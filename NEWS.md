@@ -1,3 +1,37 @@
+# gq 0.12.0
+
+- **`gq_form_types()` — the roster of Mergin survey forms**, vendored from rfp
+  into `inst/registry/form_types.csv`. gq declared four forms; rfp registers
+  fourteen. The roster is a separate table from `groups.csv` because the two
+  answer different questions: `rfp_qgs_form_add()` injects forms per project and
+  a project's config selects which, while `groups.csv` models per-template
+  contents. Folding the roster in would have made `gq_template_layers()` report
+  thirteen forms for a template shipping two.
+
+  `form_edna` and `form_monitoring` leave `groups.csv` and land here. They are
+  real forms with collected field data; neither is in either shipped template.
+
+- **`habitat_lateral` is registered, and it is the registry's first raster.** It
+  carries the full QGIS palette — band values 1 and 2, the QML's colours and
+  labels, and the renderer's 0.4 opacity. `gq_tmap_classes()` reads it; the
+  translators do not render rasters, so `gq_style_qml()` remains the answer for
+  anything QGIS-facing.
+
+- **Breaking: `gq_tmap_style()` and `gq_mapgl_classes()` now refuse a layer
+  whose type they cannot render**, where both previously answered. The first
+  returned an empty argument list, which `do.call(tm_polygons, list())` turns
+  into tmap's own defaults — a map that looks fine and is not the registry's.
+  The second returned a well-formed MapLibre match expression whose
+  `["get", field]` reads a feature property, so on a raster source it resolved
+  against nothing and painted every pixel the fallback colour.
+
+  `gq_mapgl_classes()` also now requires a `type`, matching `gq_mapgl_style()`,
+  which has always required one.
+
+- `gq_reg_custom()` coerces `class_value` to character before using it as a
+  class key. It was positional assignment for a numeric key, which the new
+  raster convention — a paletted band keys on pixel value — invites.
+
 # gq 0.11.0
 
 - **Group names now match the shipped QGIS templates, and four of them

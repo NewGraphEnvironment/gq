@@ -84,7 +84,10 @@ group_exempt <- c(
 template_group_exempt <- c(
   "Project Specific" = paste(
     "holds Tracking, Field Data and Model Parameters - none of which has a",
-    "registry entry (gq#64). gq cannot order a group it styles nothing in."
+    "registry entry (gq#73). gq cannot order a group it styles nothing in.",
+    "Cited gq#64 until that closed; #64 was about form_edna, form_monitoring",
+    "and habitat_lateral, and closing it left this reason true and its",
+    "reference dangling."
   ),
   "Base - lidar" = paste(
     "EMPTY in both shipped templates - a placeholder a project drops lidar",

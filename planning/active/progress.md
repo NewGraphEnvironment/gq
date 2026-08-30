@@ -62,3 +62,19 @@
   escape hatch nearly shipped.
 - lintr down or equal on every changed file (7->5, 2->0); remainder are the
   documented installed-vs-source `object_usage_linter` false positives.
+
+### Phases 4 and 5 — bookkeeping and cross-repo issues (complete)
+
+- Filed gq#71 (per-class opacity dropped; bec_zone renders at full opacity),
+  gq#72 (widen Floodplain; needs a source_type for project rasters and a fix for
+  colliding layer names), gq#73 (Tracking + habitat parameters unregistered),
+  and rfp#229 (edna/monitoring have no declared symbology).
+- Repointed `test-template_drift.R`'s "Project Specific" exemption from gq#64 to
+  gq#73. The reason stayed true when #64 closed; only its citation went stale.
+- Rewrote the #64 body and title — it asserted nothing described the forms and
+  asked live-or-stale, both now answered, and offered themes absence as evidence
+  that does not hold.
+- NEWS.md entry and version bump to 0.12.0.
+- `R CMD check`: 0 errors. The 2 warnings and 2 notes are all pre-existing —
+  non-ASCII traced to a string literal on main, undocumented example datasets,
+  and two `.Rbuildignore` gaps.
