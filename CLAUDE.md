@@ -356,7 +356,7 @@ pak::pak("NewGraphEnvironment/gq")
 ### Dev workflow
 ```r
 devtools::load_all()
-devtools::test()        # 1039 tests
+devtools::test()        # ~1050 tests; exact count drifts every PR
 devtools::document()    # if roxygen changed
 devtools::check()       # before release
 ```
