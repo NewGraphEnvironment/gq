@@ -131,3 +131,62 @@ test_that("gq_reg_merge accepts csv parameter", {
 test_that("gq_reg_merge errors with no inputs", {
   expect_error(gq_reg_merge(), "No registries")
 })
+
+test_that("a numeric class_value keys the class list by name, not position", {
+  # `classes[[r$class_value]] <- cls` is POSITIONAL assignment for an integer.
+  # read.csv() types class_value by content, so a registry CSV whose class
+  # values are all numeric -- which the raster convention invites, since a
+  # paletted band keys on pixel value -- would produce an unnamed class list
+  # that every downstream lookup misses.
+  #
+  # reg_custom.csv is safe only by accident: bec_zone's "SBS"/"ESSF" keep the
+  # column character. A caller's own CSV has no such accident.
+  csv <- tempfile(fileext = ".csv")
+  on.exit(unlink(csv), add = TRUE)
+  # Built from the shipped file's own header rather than from a hand-listed set
+  # of columns. gq_reg_custom() validates only layer_key and type as required,
+  # then indexes the rest unguarded -- `is.na(NULL)` is logical(0), and `if` on
+  # that errors -- so a fixture missing any optional column fails for a reason
+  # that has nothing to do with what is under test. Deriving the header means
+  # this cannot rot when a column is added.
+  hdr <- names(utils::read.csv(
+    system.file("registry", "reg_custom.csv", package = "gq"),
+    stringsAsFactors = FALSE
+  ))
+  fx <- as.data.frame(
+    stats::setNames(rep(list(rep(NA_character_, 2L)), length(hdr)), hdr),
+    stringsAsFactors = FALSE
+  )
+  fx$layer_key <- "band"
+  fx$type <- "raster"
+  fx$source_layer <- "band"
+  fx$class_field <- "value"
+  fx$class_value <- c(1, 2)                 # numeric ON PURPOSE — the trap
+  fx$class_label <- c("Lo", "Hi")
+  fx$fill_color <- c("#000000", "#ffffff")
+  utils::write.csv(fx, csv, row.names = FALSE, quote = TRUE)
+
+  # Premise: the column really did come back numeric, so this fixture can reach
+  # the failure. A character column would make the test pass for nothing.
+  expect_true(is.numeric(utils::read.csv(csv)$class_value))
+
+  classes <- gq_reg_custom(csv)$layers$band$classification$classes
+  expect_equal(names(classes), c("1", "2"))
+  expect_equal(classes[["2"]]$color, "#ffffff")
+})
+
+test_that("habitat_lateral carries its palette in the master registry", {
+  # gq#64. The shipped raster, and the reason the exemption list is empty.
+  lyr <- gq_reg_main()$layers$habitat_lateral
+
+  expect_equal(lyr$type, "raster")
+  expect_equal(lyr$source_layer, "habitat_lateral")   # the `local` sentinel
+  expect_equal(lyr$classification$field, "value")
+
+  cls <- gq_tmap_classes(gq_reg_main(), "habitat_lateral")
+  expect_equal(unname(cls$values), c("#b2df8a", "#9f3cca"))
+  # The QML's labels, not to_title() of the band values. Without class_label
+  # this legend reads "1" and "2".
+  expect_equal(unname(cls$labels),
+               c("Floodplain", "Floodplain Disconnected by Railway"))
+})

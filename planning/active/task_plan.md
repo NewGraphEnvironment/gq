@@ -66,39 +66,39 @@ breaks six sweeps that the guard work fixes, and the sweep exclusions need the
 raster to exist for their premise assertions. Landing them apart leaves a red
 commit either way, which the repo's own convention forbids.
 
-- [ ] Two `reg_custom.csv` rows: `type="raster"`, sentinel `source_layer`,
+- [x] Two `reg_custom.csv` rows: `type="raster"`, sentinel `source_layer`,
       `class_field="value"`, values 1/2, **`class_label`** Floodplain /
       Floodplain Disconnected by Railway, `#b2df8a` / `#9f3cca`, opacity 0.4.
       `class_label` was missing from the first draft — without it `gq_style()`
       falls back to `to_title(keys)` and the legend reads "1 / 2"
-- [ ] `as.character()` at `R/gq_reg.R:114` — `classes[[r$class_value]]` is
+- [x] `as.character()` at `R/gq_reg.R:114` — `classes[[r$class_value]]` is
       **positional** for a numeric key, and Phase 3 publishes the
       numeric-class-value convention. Probed: an integer key yields
       `names(classes) == NULL`
-- [ ] Document the raster convention in `gq_reg_custom()` roxygen: why
+- [x] Document the raster convention in `gq_reg_custom()` roxygen: why
       `class_field` is a sentinel (a paletted raster keys on pixel value, and
       the classification branch requires a non-NA field), and what the schema
       cannot carry (the QML's 30% per-value transparency)
-- [ ] `gq_tmap_style()` errors for any type outside `polygon|line|point` even
+- [x] `gq_tmap_style()` errors for any type outside `polygon|line|point` even
       when classification is present (today it returns `list()` silently)
-- [ ] `gq_mapgl_classes()` — same hole, worse direction. Probed: it **silently
+- [x] `gq_mapgl_classes()` — same hole, worse direction. Probed: it **silently
       succeeds**, returning `["match", ["get","value"], ...]`, a `get`
       expression that is meaningless against a raster source
-- [ ] Restore the bug via `local_mocked_bindings(.package = "gq")` — a function
+- [x] Restore the bug via `local_mocked_bindings(.package = "gq")` — a function
       defined in the test file cannot see `tmap_classified()` (`@noRd`), so the
       naive patch dies with "could not find function" and reads as a false
       green. Assert `length(...) == 0L`, a value only the broken version yields
-- [ ] `test-gq_tmap_style.R:90` needs a **second fixture carrying a
+- [x] `test-gq_tmap_style.R:90` needs a **second fixture carrying a
       classification**, not a premise line. The existing one passes because it
       has none, which is exactly why it never caught the hole
-- [ ] Exclude raster from the sweeps the review found — `test-gq_tmap_legend.R`
+- [x] Exclude raster from the sweeps the review found — `test-gq_tmap_legend.R`
       `:269` and `:297`, `test-gq_tmap_style.R` `:316` **and `:355`** — each
       with a premise assertion that at least one raster exists
-- [ ] `helper-tmap_render.R` — `geom_for()` `:154` is what actually errors, and
+- [x] `helper-tmap_render.R` — `geom_for()` `:154` is what actually errors, and
       `tm_shape_classified()` `:146` defaults to `tm_dots`, so a raster would
       silently become a point layer if `geom_for()` did not error first
-- [ ] Rebuild `reg_main.json`; verify idempotence with a second run and `cmp`
-- [ ] Empty `local_exempt` as `stats::setNames(character(0), character(0))` —
+- [x] Rebuild `reg_main.json`; verify idempotence with a second run and `cmp`
+- [x] Empty `local_exempt` as `stats::setNames(character(0), character(0))` —
       probed: plain `character(0)` and `c()` both give `names() == NULL`, which
       `expect_setequal()` **refuses**, so the obvious spelling breaks the
       acceptance test. Remove the prose block describing the three exemptions

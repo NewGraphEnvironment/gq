@@ -39,3 +39,26 @@
 - Full suite green. Nothing else moved: the draw-order test does not require
   contiguity (and the removed rows were the tail anyway), uniqueness cannot
   break by removal, and the group survives so no template mapping changes.
+
+### Phase 3 — habitat_lateral + translator guards (complete, one commit)
+
+- reg_custom.csv gains two raster rows carrying the QGIS palette; reg_main.json
+  rebuilt to 57 layers, idempotent (two runs byte-identical).
+- `local_exempt` is now `setNames(character(0), character(0))` — **empty**.
+  The issue's acceptance criterion is met.
+- Three code fixes, each verified by restoring the bug: `gq_tmap_style()` type
+  check moved ahead of the classification branch (was returning `list()`),
+  `gq_mapgl_classes()` now refuses a raster (was returning a well-formed match
+  expression that resolves against nothing), and `classes[[class_value]]` gets
+  `as.character()` (was positional for a numeric key). Reverting each turned
+  2 / 1 / 1 tests red respectively.
+- Four whole-registry sweeps fixed, not the two the first plan named — the plan
+  review found `test-gq_tmap_style.R:355`. Routed through `drawable_keys()`,
+  which asserts the excluded SET equals `habitat_lateral` rather than merely
+  being non-empty; the weaker premise passed in both wrong directions.
+- Code review round 2 returned 3 findings, all applied. One of its claims was
+  wrong on probing — it said tightening the mapgl guard broke no existing test;
+  it broke one, whose fixture carried no `type` at all. That fixture was how the
+  escape hatch nearly shipped.
+- lintr down or equal on every changed file (7->5, 2->0); remainder are the
+  documented installed-vs-source `object_usage_linter` false positives.

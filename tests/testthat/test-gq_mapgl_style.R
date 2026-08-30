@@ -70,6 +70,12 @@ test_that("gq_mapgl_style errors on missing type", {
 
 test_that("gq_mapgl_classes builds match expression", {
   layer <- list(
+    # `type` added in #64. This fixture carried none, which is how the raster
+    # guard nearly shipped with a `!is.null(layer$type) &&` escape hatch that
+    # would have let an untyped layer through -- the same silent-wrong outcome
+    # the guard exists to stop, and a disagreement with gq_mapgl_style(), which
+    # has always required a type.
+    type = "line",
     classification = list(
       field = "road_type",
       classes = list(
@@ -93,4 +99,43 @@ test_that("gq_mapgl_classes builds match expression", {
 
 test_that("gq_mapgl_classes errors without classification", {
   expect_error(gq_mapgl_classes(list(type = "line")), "classification")
+})
+
+test_that("gq_mapgl_classes refuses a raster instead of answering", {
+  # The worse half of the gq_tmap_style hole, in the other backend. That one
+  # returned an empty list; this one returned a perfectly well-formed match
+  # expression -- ["match", ["get", "value"], "1", "#b2df8a", ...] -- whose
+  # ["get", ...] reads a FEATURE PROPERTY. A raster source has none, so the
+  # expression resolves against nothing and every pixel takes the fallback.
+  #
+  # Nothing errors, nothing warns, and the map draws one flat colour. Silent
+  # and wrong beats loud and wrong every time it is measured (#64).
+  raster <- list(
+    type = "raster",
+    classification = list(field = "value", classes = list(
+      `1` = list(color = "#b2df8a"), `2` = list(color = "#9f3cca")
+    ))
+  )
+  expect_error(gq_mapgl_classes(raster), "Unknown layer type")
+
+  # Premise: the classification is well-formed, so the refusal is about the
+  # TYPE and not about a malformed fixture that would fail either way.
+  vector_twin <- raster
+  vector_twin$type <- "polygon"
+  expect_equal(gq_mapgl_classes(vector_twin)[[1]], "match")
+})
+
+test_that("gq_mapgl_style refuses a raster", {
+  expect_error(gq_mapgl_style(list(type = "raster")), "Unknown layer type")
+})
+
+test_that("gq_mapgl_classes refuses a layer with no type at all", {
+  # Absent is not "fine", it is unknown -- and the permissive spelling of the
+  # raster guard (`!is.null(layer$type) && ...`) let exactly this through while
+  # gq_mapgl_style() refused the same input. A guard with an escape hatch that
+  # covers the untested case is where the guard goes to die.
+  untyped <- list(classification = list(field = "road_type",
+                                        classes = list(a = list(color = "#000"))))
+  expect_null(untyped$type)                                   # premise
+  expect_error(gq_mapgl_classes(untyped), "Unknown layer type")
 })

@@ -157,7 +157,7 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 #### R Package (the package root IS the R package)
 
 **Registry functions:**
-- `gq_reg_main()` — load the master registry (56 layers, no arguments needed)
+- `gq_reg_main()` — load the master registry (57 layers, no arguments needed)
 - `gq_registry_read(path)` — read any registry JSON file
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry

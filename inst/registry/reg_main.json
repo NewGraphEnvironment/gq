@@ -1727,6 +1727,25 @@
         "color": "#33a02c",
         "width": 1
       }
+    },
+    "habitat_lateral": {
+      "type": "raster",
+      "source_layer": "habitat_lateral",
+      "classification": {
+        "field": "value",
+        "classes": {
+          "1": {
+            "color": "#b2df8a",
+            "opacity": 0.4,
+            "label": "Floodplain"
+          },
+          "2": {
+            "color": "#9f3cca",
+            "opacity": 0.4,
+            "label": "Floodplain Disconnected by Railway"
+          }
+        }
+      }
     }
   }
 }

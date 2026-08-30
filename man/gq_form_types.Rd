@@ -41,7 +41,7 @@ forms[forms$form_type == "monitoring_fish_passage", c("form_type", "layer_key")]
 # which forms rfp has styled, and which are still undecided
 forms$layer_key[is.na(forms$color)]
 
-# the two the shipped templates actually carry
+# the subset the shipped templates actually carry
 intersect(forms$layer_key, gq_group_layers("Forms")$layer_key)
 
 }

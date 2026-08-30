@@ -131,6 +131,21 @@ gq_mapgl_classes <- function(layer, property = NULL) {
   cls <- layer$classification
   if (is.null(cls)) stop("Layer does not have classification")
 
+  # A match expression reads a FEATURE PROPERTY -- `["get", field]` -- so it is
+  # meaningful only for a vector source. Handed a raster it produced a perfectly
+  # well-formed expression that resolves against nothing, which is worse than
+  # the sibling error in gq_mapgl_style(): that one refuses, this one used to
+  # answer. Silent-wrong is the direction this whole guard exists to close (#64).
+  # isTRUE() rather than `!is.null(x) && !x %in% ...`: that spelling let a layer
+  # with NO type through, which is the same silent-wrong outcome by a different
+  # route, and it made this disagree with gq_mapgl_style() on identical input.
+  # Absent is not "fine", it is unknown.
+  if (!isTRUE(layer$type %in% c("polygon", "line", "point"))) {
+    stop("Unknown layer type: ", layer$type %||% "<none>",
+         " (a match expression reads a feature property, so it cannot address ",
+         "a raster band)")
+  }
+
   # build match expression: ["match", ["get", field], val1, color1, val2, color2, ..., fallback]
   expr <- list("match", list("get", cls$field))
 

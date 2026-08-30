@@ -59,18 +59,19 @@ test_that("every layer that needs a source to fetch from has one", {
   expect_setequal(services$layer_key[!is.na(services$source_layer)],
                   character(0))
 
-  # The exemption list. EMPTY IS THE CORRECT STATE -- every entry is a tracked
-  # decision, never a "not done yet", and each names the issue that will remove
-  # it. A list that grows silently turns this guard back into decoration.
+  # The exemption list, and it is EMPTY -- which is not an oversight, it is the
+  # state this guard is supposed to be in. Every entry was a tracked decision
+  # naming the issue that would remove it, and gq#64 removed the last three:
+  # form_edna and form_monitoring moved to form_types.csv (they are real forms,
+  # injected per project by rfp_qgs_form_add() rather than shipped in a
+  # template), and habitat_lateral gained a reg_custom.csv entry carrying its
+  # paletted symbology.
   #
-  # form_edna and form_monitoring left in gq#64. They are real forms -- rfp
-  # ships a gpkg and a QML for each -- but neither is in either template,
-  # because forms are injected per PROJECT by rfp_qgs_form_add() rather than
-  # baked into a template. They live in form_types.csv now; groups.csv carries
-  # what the templates ship.
-  local_exempt <- c(
-    habitat_lateral = "gq#64 - local raster; reg_custom has no raster type"
-  )
+  # setNames() rather than character(0), and this is not style. The assertion
+  # below calls names() on this, and names(character(0)) is NULL -- which
+  # expect_setequal() REFUSES ("`object` must be a vector, not `NULL`"). So the
+  # obvious spelling of "empty" makes this test error rather than pass.
+  local_exempt <- stats::setNames(character(0), character(0))
 
   local <- g[g$source_type == "local", ]
   expect_gt(nrow(local), 0)
