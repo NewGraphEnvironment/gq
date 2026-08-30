@@ -14,3 +14,21 @@
 - Created branch `64-three-local-layers-no-registry-entry` off main.
 - Scaffolded PWF baseline with approved phases.
 - Next: Phase 1, vendor rfp's form roster.
+
+### Phase 1 — vendor rfp's form roster (complete)
+
+- `data-raw/reg_extract_form_types.R` + `inst/registry/form_types.csv`
+  (13 spatial forms of 14 registered) + `gq_form_types()` + tests.
+- Code review round 1 returned 6 findings, all fixed: a provenance check that
+  could not distinguish a failed git command from a clean file; `system2()` args
+  unquoted so a checkout path with a space read as "not a git checkout"; a
+  pkgdown example captioned "the two" over code printing four; a round-trip
+  comment claiming a guard it does not have; `all(nzchar(x))` which cannot fail
+  because `nzchar(NA)` is TRUE; and a tripwire whose message excluded the
+  legitimate cause.
+- Provenance guard verified against three states — non-repo, clean repo at a
+  path containing a space, and a modified roster. The space case is what proves
+  the quoting fix.
+- Plan review returned 4 blockers and 6 gaps; all re-probed and confirmed. The
+  worst is that emptying `local_exempt` the obvious way *errors* the acceptance
+  test. Phases 3-5 rewritten accordingly; review saved to `review-64.md`.
