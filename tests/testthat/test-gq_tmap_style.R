@@ -87,7 +87,41 @@ test_that("gq_tmap_style errors on missing type", {
 })
 
 test_that("gq_tmap_style errors on unknown type", {
-  expect_error(gq_tmap_style(list(type = "raster")), "Unknown")
+  # Premise, stated beside the assertion: this fixture reaches the type switch
+  # because it has NO classification. That is exactly why it never caught the
+  # hole below, and why the sibling test exists. If a raster ever becomes a
+  # supported type, this fails on the premise line naming the real cause rather
+  # than on the behaviour line blaming the code.
+  fixture <- list(type = "raster")
+  expect_null(fixture$classification)
+  expect_error(gq_tmap_style(fixture), "Unknown")
+})
+
+test_that("a CLASSIFIED layer of an unhandled type errors rather than emptying", {
+  # The restore-the-bug test, and the defect is still directly observable
+  # rather than reconstructed through a mock -- which is what makes it evidence.
+  #
+  # gq_tmap_style() used to check classification BEFORE type, so a classified
+  # raster went to tmap_classified(), which has a branch per geometry and no
+  # default. The empty list it returns is still there in the internal:
+  raster <- list(
+    type = "raster",
+    classification = list(field = "value", classes = list(
+      `1` = list(color = "#b2df8a", label = "Floodplain"),
+      `2` = list(color = "#9f3cca", label = "Disconnected")
+    ))
+  )
+  expect_length(tmap_classified(gq_style(raster)), 0)   # <- the bug, exhibited
+
+  # An empty args list is not inert. do.call(tm_polygons, list()) draws tmap's
+  # own defaults, so the failure was a map that looked fine and was not the
+  # registry's -- invisible to every test that inspects a list.
+  expect_error(gq_tmap_style(raster), "Unknown layer type")
+
+  # And the fix did not cost the classified path for real geometries.
+  poly <- raster
+  poly$type <- "polygon"
+  expect_gt(length(gq_tmap_style(poly)), 0)
 })
 
 test_that("gq_tmap_classes returns classification info", {
@@ -313,9 +347,8 @@ test_that("every classified registry layer draws only its data's own labels", {
   # cannot reach the failure mode is not validation.
   skip_if_not_installed("tmap")
   reg <- gq_reg_main()
-  keys <- names(reg$layers)[vapply(reg$layers,
-                                   function(l) !is.null(l$classification),
-                                   logical(1))]
+  keys <- Filter(function(k) !is.null(reg$layers[[k]]$classification),
+                 drawable_keys(reg))
   expect_gt(length(keys), 0)
 
   discriminating <- 0L
@@ -352,9 +385,8 @@ test_that("every classified registry layer draws only its data's own labels", {
 test_that("no classified registry layer warns about label recycling", {
   skip_if_not_installed("tmap")
   reg <- gq_reg_main()
-  keys <- names(reg$layers)[vapply(reg$layers,
-                                   function(l) !is.null(l$classification),
-                                   logical(1))]
+  keys <- Filter(function(k) !is.null(reg$layers[[k]]$classification),
+                 drawable_keys(reg))
   for (k in keys) {
     pick <- utils::tail(names(gq_tmap_classes(reg, k)$values), 3)
     expect_no_warning(drawn_parts(render_classified(reg, k, pick)))

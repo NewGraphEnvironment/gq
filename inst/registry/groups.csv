@@ -48,8 +48,6 @@ group,subgroup,layer_key,order,source_type
 "Roads,Railways,Pipelines",,trails,8,osm
 "Forms",,form_pscis,1,local
 "Forms",,form_fiss_site,2,local
-"Forms",,form_edna,3,local
-"Forms",,form_monitoring,4,local
 "Floodplain",,floodplains,1,bcdata
 "Restoration",,harvest_area,1,local
 "Restoration",,planting_site,2,local

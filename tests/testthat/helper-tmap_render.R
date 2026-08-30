@@ -5,6 +5,37 @@
 # colours by name but labels by POSITION, so a correct-looking list drew the
 # wrong labels. Reading the rendered grob tree is the only way to catch it.
 
+# The drawable subset of a registry, for sweeps that hand every layer to a tmap
+# translator.
+#
+# reg_main.json carries a raster since #64 (habitat_lateral), and the tmap
+# translators refuse a raster by design -- there is no tm_raster branch, and the
+# QML is the lossless copy for anything QGIS-facing. So a whole-registry sweep
+# has to exclude it.
+#
+# The premise assertion is the point of routing this through a function, and it
+# names the excluded SET rather than merely requiring one to exist. Those are
+# different claims, and the weaker one is satisfiable by accident in both
+# directions:
+#
+#   - gq_qgs_extract() maps an unrecognised geometry to the literal "unknown"
+#     (R/gq_qgs_extract.R:49-54), so a layer that became non-drawable by mistake
+#     would drop out of every sweep with the premise still green -- the raster
+#     alone keeps it true.
+#   - when tm_raster support lands, a non-emptiness premise keeps passing while
+#     the sweeps quietly go on excluding the thing that is now supported.
+#
+# Naming the set makes both of those a failure that says what happened.
+drawable_expect_excluded <- "habitat_lateral"
+
+drawable_keys <- function(reg, keys = names(reg$layers)) {
+  types <- vapply(keys, function(k) reg$layers[[k]]$type %||% NA_character_,
+                  character(1))
+  drawable <- !is.na(types) & types %in% c("polygon", "line", "point")
+  testthat::expect_setequal(unname(keys[!drawable]), drawable_expect_excluded)
+  unname(keys[drawable])
+}
+
 # Walk a rendered map once, returning both the text drawn and the colours used.
 #
 # tmap_grob() needs an open device, hence the png()/dev.off() dance. Legend
@@ -143,8 +174,13 @@ local_tmap_scale <- function(scale = 1, envir = parent.frame()) {
 tm_shape_classified <- function(reg, key, codes, field = "code") {
   type <- reg$layers[[key]]$type
   args <- gq_tmap_style(reg, key, field = field)
+  # Named default rather than a bare `tm_dots` fallback. The fallback made a
+  # raster -- or any future type -- silently render as a point layer, and it was
+  # saved from doing so only by geom_for() erroring first. Two guards where one
+  # says what it means is how the wrong one gets removed.
   fn <- switch(type, line = tmap::tm_lines, polygon = tmap::tm_polygons,
-               tmap::tm_dots)
+               point = tmap::tm_dots,
+               stop("Unsupported type: ", type))
   tmap::tm_shape(geom_for(type, codes, field)) + do.call(fn, args)
 }
 

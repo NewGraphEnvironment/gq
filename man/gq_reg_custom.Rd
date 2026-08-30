@@ -23,6 +23,33 @@ Reads a hand-curated CSV file and converts it to the same list structure as
 and \code{class_value} produce a classification layer. Single rows produce
 simple fill/stroke/mark/label styles.
 }
+\section{Raster layers}{
+
+A \code{type} of \code{"raster"} carries a QGIS paletted renderer: one row per palette
+entry, \code{class_value} holding the band value and \code{class_label} the palette
+label. \code{habitat_lateral} is the shipped example.
+
+\code{class_field} is a \strong{sentinel} for a raster, not a column name. The
+classification branch here requires a non-NA \code{class_field}, and a paletted
+raster keys on pixel value rather than on any attribute — so the convention
+is the literal string \code{"value"}, meaning band 1. A consumer with a real band
+name passes it through \code{gq_style(field = )}.
+
+Give \code{class_value} at least one non-numeric value across the file, or accept
+that \code{read.csv()} will type the column as integer; the reader coerces back to
+character, but a numeric column reads as an ordinal in every other tool.
+
+What a raster row \strong{cannot} carry: QGIS's per-value \code{rasterTransparency}
+(\code{habitat_lateral} sets 30\% on top of the renderer's 0.4 opacity), multi-band
+renderers, and resampling. Those live in the QML, which is lossless — reach
+for \code{\link[=gq_style_qml]{gq_style_qml()}} whenever the consumer is QGIS itself.
+
+The tmap and mapgl translators do not render rasters. \code{\link[=gq_tmap_style]{gq_tmap_style()}},
+\code{\link[=gq_mapgl_style]{gq_mapgl_style()}} and \code{\link[=gq_mapgl_classes]{gq_mapgl_classes()}} all refuse a raster rather than
+returning something plausible; \code{\link[=gq_tmap_classes]{gq_tmap_classes()}} works, since a palette is
+a classification like any other.
+}
+
 \examples{
 path <- system.file("registry", "reg_custom.csv", package = "gq")
 reg <- gq_reg_custom(path)

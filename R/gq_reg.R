@@ -46,6 +46,31 @@ gq_reg_read <- function(path) {
 #' and `class_value` produce a classification layer. Single rows produce
 #' simple fill/stroke/mark/label styles.
 #'
+#' @section Raster layers:
+#' A `type` of `"raster"` carries a QGIS paletted renderer: one row per palette
+#' entry, `class_value` holding the band value and `class_label` the palette
+#' label. `habitat_lateral` is the shipped example.
+#'
+#' `class_field` is a **sentinel** for a raster, not a column name. The
+#' classification branch here requires a non-NA `class_field`, and a paletted
+#' raster keys on pixel value rather than on any attribute — so the convention
+#' is the literal string `"value"`, meaning band 1. A consumer with a real band
+#' name passes it through `gq_style(field = )`.
+#'
+#' Give `class_value` at least one non-numeric value across the file, or accept
+#' that `read.csv()` will type the column as integer; the reader coerces back to
+#' character, but a numeric column reads as an ordinal in every other tool.
+#'
+#' What a raster row **cannot** carry: QGIS's per-value `rasterTransparency`
+#' (`habitat_lateral` sets 30% on top of the renderer's 0.4 opacity), multi-band
+#' renderers, and resampling. Those live in the QML, which is lossless — reach
+#' for [gq_style_qml()] whenever the consumer is QGIS itself.
+#'
+#' The tmap and mapgl translators do not render rasters. [gq_tmap_style()],
+#' [gq_mapgl_style()] and [gq_mapgl_classes()] all refuse a raster rather than
+#' returning something plausible; [gq_tmap_classes()] works, since a palette is
+#' a classification like any other.
+#'
 #' @param path Path to a CSV file with columns: layer_key, type, source_layer,
 #'   class_field, class_value, fill_color, fill_opacity, stroke_color,
 #'   stroke_width, stroke_opacity, mark_color, mark_shape, mark_radius,
@@ -111,7 +136,14 @@ gq_reg_custom <- function(path) {
         if ("class_label" %in% names(r) && !is.na(r$class_label)) {
           cls$label <- r$class_label
         }
-        classes[[r$class_value]] <- cls
+        # as.character() is load-bearing, not defensive. read.csv() types a
+        # class_value column by content, so a CSV whose values are all numeric
+        # yields an integer -- and `classes[[1L]] <- x` is POSITIONAL
+        # assignment, producing an unnamed list that every downstream lookup
+        # misses. It works today only because bec_zone's "SBS"/"ESSF" keep this
+        # file's column character; a caller's own CSV of numeric raster classes
+        # would not (#64).
+        classes[[as.character(r$class_value)]] <- cls
       }
       entry$classification <- list(field = row1$class_field, classes = classes)
 

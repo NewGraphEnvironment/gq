@@ -266,7 +266,7 @@ test_that("every registry layer, and all of them at once, produce no NA", {
   # "Some rows have it and some do not" IS the failure condition, so checking
   # for NA is sufficient and needs no graphics device.
   reg <- gq_reg_main()
-  keys <- names(reg$layers)
+  keys <- drawable_keys(reg)   # raster excluded, premise asserted (#64)
 
   for (k in keys) {
     leg <- gq_tmap_legend(reg, k)
@@ -294,7 +294,7 @@ test_that("the whole-registry legend renders through tmap", {
   reg <- gq_reg_main()
   pts <- sf::st_as_sf(data.frame(x = c(0, 1), y = c(0, 1)),
                       coords = c("x", "y"), crs = 3005)
-  leg <- gq_tmap_legend(reg, names(reg$layers))
+  leg <- gq_tmap_legend(reg, drawable_keys(reg))
   m <- Reduce(`+`, c(list(tmap::tm_shape(pts) + tmap::tm_dots()),
                      lapply(leg, function(x) do.call(tmap::tm_add_legend, x))))
   f <- tempfile(fileext = ".png")

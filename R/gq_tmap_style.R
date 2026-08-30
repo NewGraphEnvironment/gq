@@ -39,6 +39,18 @@
 gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
   sty <- gq_style(layer_or_reg, name, field = field)
 
+  # The type check comes FIRST, ahead of the classification branch. It used to
+  # come second, so a classified layer of an unhandled type never reached the
+  # switch: tmap_classified() has a branch per geometry and no default, so it
+  # returned an empty list. do.call(tm_polygons, list()) then draws tmap's
+  # defaults, which is a map that looks fine and is not the registry's.
+  #
+  # Unreachable until #64 put the first raster in reg_main.json, and that is the
+  # point -- the hole was invisible for as long as nothing exercised it.
+  if (!sty$type %in% c("polygon", "line", "point")) {
+    stop("Unknown layer type: ", sty$type)
+  }
+
   if (!is.null(sty$classification)) {
     return(tmap_classified(sty))
   }
@@ -46,8 +58,7 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
   switch(sty$type,
     polygon = tmap_polygon_args(sty),
     line = tmap_line_args(sty),
-    point = tmap_point_args(sty),
-    stop("Unknown layer type: ", sty$type)
+    point = tmap_point_args(sty)
   )
 }
 
