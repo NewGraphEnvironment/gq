@@ -274,7 +274,16 @@ too many.
 - `templates.csv` — which groups compose each QGIS project template, quoted
 - `template_groups.csv` — the group tree of each shipped `.qgs`, vendored by
   `data-raw/reg_extract_template_groups.R`. The witness `templates.csv` is
-  checked against; gq is public and rfp is private, so CI can never read a `.qgs`
+  checked against; gq is public and rfp is private, so CI can never read a `.qgs`.
+
+  **The witness itself is unguarded, and has been stale.** `test-template_drift.R`
+  compares against this committed copy rather than the templates, so when the copy
+  freezes, the guard reports green for exactly the drift it exists to catch.
+  Measured 2026-08-30: it had missed rfp#216's `Floodplain` and `Restoration`
+  groups, and the suite was green throughout (gq#70). Two of the three
+  rfp-vendored artifacts were stale that day — `themes.csv` too (gq#77) — and
+  nothing reported either. Re-run the extractor before trusting a green drift
+  test, and see gq#78 for the currency guard that would make that unnecessary.
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
   (232 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
 - `form_types.csv` — the Mergin form roster, vendored from rfp's
