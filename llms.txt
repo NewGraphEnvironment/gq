@@ -191,6 +191,8 @@ MIT (see [`LICENSE`](https://newgraphenvironment.github.io/gq/LICENSE)).
 - [`gq_bbox_clip()`](https://newgraphenvironment.github.io/gq/reference/gq_bbox_clip.md)
   : Restrict features to a bounding box, returning NULL when nothing is
   left
+- [`gq_form_types()`](https://newgraphenvironment.github.io/gq/reference/gq_form_types.md)
+  : The roster of Mergin survey forms
 - [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
   : Get layers in a group
 - [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)

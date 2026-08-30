@@ -32,6 +32,39 @@ compatible with
 [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md),
 etc.
 
+## Raster layers
+
+A `type` of `"raster"` carries a QGIS paletted renderer: one row per
+palette entry, `class_value` holding the band value and `class_label`
+the palette label. `habitat_lateral` is the shipped example.
+
+`class_field` is a **sentinel** for a raster, not a column name. The
+classification branch here requires a non-NA `class_field`, and a
+paletted raster keys on pixel value rather than on any attribute — so
+the convention is the literal string `"value"`, meaning band 1. A
+consumer with a real band name passes it through `gq_style(field = )`.
+
+Give `class_value` at least one non-numeric value across the file, or
+accept that [`read.csv()`](https://rdrr.io/r/utils/read.table.html) will
+type the column as integer; the reader coerces back to character, but a
+numeric column reads as an ordinal in every other tool.
+
+What a raster row **cannot** carry: QGIS's per-value
+`rasterTransparency` (`habitat_lateral` sets 30% on top of the
+renderer's 0.4 opacity), multi-band renderers, and resampling. Those
+live in the QML, which is lossless — reach for
+[`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
+whenever the consumer is QGIS itself.
+
+The tmap and mapgl translators do not render rasters.
+[`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md),
+[`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
+and
+[`gq_mapgl_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.md)
+all refuse a raster rather than returning something plausible;
+[`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
+works, since a palette is a classification like any other.
+
 ## Examples
 
 ``` r
@@ -42,6 +75,7 @@ names(reg$layers)
 #> [3] "dam"                         "town"                       
 #> [5] "harvest_area"                "planting_site"              
 #> [7] "old_growth_management_areas" "national_park"              
+#> [9] "habitat_lateral"            
 
 # Classified layer (multiple rows per layer_key)
 reg$layers$bec_zone$classification$field

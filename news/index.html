@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,19 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.12.0" id="gq-0120">gq 0.12.0<a class="anchor" aria-label="anchor" href="#gq-0120"></a></h2>
+<ul><li>
+<p><strong><code><a href="../reference/gq_form_types.html">gq_form_types()</a></code> — the roster of Mergin survey forms</strong>, vendored from rfp into <code>inst/registry/form_types.csv</code>. gq declared four forms; rfp registers fourteen. The roster is a separate table from <code>groups.csv</code> because the two answer different questions: <code>rfp_qgs_form_add()</code> injects forms per project and a project’s config selects which, while <code>groups.csv</code> models per-template contents. Folding the roster in would have made <code><a href="../reference/gq_template_layers.html">gq_template_layers()</a></code> report thirteen forms for a template shipping two.</p>
+<p><code>form_edna</code> and <code>form_monitoring</code> leave <code>groups.csv</code> and land here. They are real forms with collected field data; neither is in either shipped template.</p>
+</li>
+<li><p><strong><code>habitat_lateral</code> is registered, and it is the registry’s first raster.</strong> It carries the full QGIS palette — band values 1 and 2, the QML’s colours and labels, and the renderer’s 0.4 opacity. <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code> reads it; the translators do not render rasters, so <code><a href="../reference/gq_style_qml.html">gq_style_qml()</a></code> remains the answer for anything QGIS-facing.</p></li>
+<li>
+<p><strong>Breaking: <code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> and <code><a href="../reference/gq_mapgl_classes.html">gq_mapgl_classes()</a></code> now refuse a layer whose type they cannot render</strong>, where both previously answered. The first returned an empty argument list, which <code>do.call(tm_polygons, list())</code> turns into tmap’s own defaults — a map that looks fine and is not the registry’s. The second returned a well-formed MapLibre match expression whose <code>["get", field]</code> reads a feature property, so on a raster source it resolved against nothing and painted every pixel the fallback colour.</p>
+<p><code><a href="../reference/gq_mapgl_classes.html">gq_mapgl_classes()</a></code> also now requires a <code>type</code>, matching <code><a href="../reference/gq_mapgl_style.html">gq_mapgl_style()</a></code>, which has always required one.</p>
+</li>
+<li><p><code><a href="../reference/gq_reg_custom.html">gq_reg_custom()</a></code> coerces <code>class_value</code> to character before using it as a class key. It was positional assignment for a numeric key, which the new raster convention — a paletted band keys on pixel value — invites.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.0" id="gq-0110">gq 0.11.0<a class="anchor" aria-label="anchor" href="#gq-0110"></a></h2>
 <ul><li>

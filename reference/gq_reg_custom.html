@@ -13,7 +13,7 @@ simple fill/stroke/mark/label styles."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,6 +72,30 @@ label_halo_color, label_halo_width, label_offset_x, label_offset_y, note.</p></d
     <p>A list with <code>name</code>, <code>version</code>, <code>source</code>, and <code>layers</code> elements,
 compatible with <code><a href="gq_tmap_style.html">gq_tmap_style()</a></code>, <code><a href="gq_mapgl_style.html">gq_mapgl_style()</a></code>, etc.</p>
     </div>
+    <div class="section level2">
+    <h2 id="raster-layers">Raster layers<a class="anchor" aria-label="anchor" href="#raster-layers"></a></h2>
+
+
+<p>A <code>type</code> of <code>"raster"</code> carries a QGIS paletted renderer: one row per palette
+entry, <code>class_value</code> holding the band value and <code>class_label</code> the palette
+label. <code>habitat_lateral</code> is the shipped example.</p>
+<p><code>class_field</code> is a <strong>sentinel</strong> for a raster, not a column name. The
+classification branch here requires a non-NA <code>class_field</code>, and a paletted
+raster keys on pixel value rather than on any attribute — so the convention
+is the literal string <code>"value"</code>, meaning band 1. A consumer with a real band
+name passes it through <code>gq_style(field = )</code>.</p>
+<p>Give <code>class_value</code> at least one non-numeric value across the file, or accept
+that <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv()</a></code> will type the column as integer; the reader coerces back to
+character, but a numeric column reads as an ordinal in every other tool.</p>
+<p>What a raster row <strong>cannot</strong> carry: QGIS's per-value <code>rasterTransparency</code>
+(<code>habitat_lateral</code> sets 30% on top of the renderer's 0.4 opacity), multi-band
+renderers, and resampling. Those live in the QML, which is lossless — reach
+for <code><a href="gq_style_qml.html">gq_style_qml()</a></code> whenever the consumer is QGIS itself.</p>
+<p>The tmap and mapgl translators do not render rasters. <code><a href="gq_tmap_style.html">gq_tmap_style()</a></code>,
+<code><a href="gq_mapgl_style.html">gq_mapgl_style()</a></code> and <code><a href="gq_mapgl_classes.html">gq_mapgl_classes()</a></code> all refuse a raster rather than
+returning something plausible; <code><a href="gq_tmap_classes.html">gq_tmap_classes()</a></code> works, since a palette is
+a classification like any other.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -82,6 +106,7 @@ compatible with <code><a href="gq_tmap_style.html">gq_tmap_style()</a></code>, <
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3] "dam"                         "town"                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [5] "harvest_area"                "planting_site"              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [7] "old_growth_management_areas" "national_park"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [9] "habitat_lateral"            </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Classified layer (multiple rows per layer_key)</span></span></span>
 <span class="r-in"><span><span class="va">reg</span><span class="op">$</span><span class="va">layers</span><span class="op">$</span><span class="va">bec_zone</span><span class="op">$</span><span class="va">classification</span><span class="op">$</span><span class="va">field</span></span></span>
