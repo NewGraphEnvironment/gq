@@ -3092,6 +3092,23 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
 
    Verify before acting, in both directions. Findings have been confidently wrong (a "BLOCKER" disproved by a 30-second probe) and confidently right about things nobody suspected. Reproduce the claim first.
 
+   **"Both directions" includes the reviewer's conclusions, not just its findings.**
+   A review is wrong in the *alarming* direction loudly — a BLOCKER you probe and
+   disprove costs one round-trip. It is wrong in the *reassuring* direction
+   silently, because nothing prompts you to check a sentence telling you that you
+   are finished. Measured 2026-08-30 in gq#77: round 4 fixed its own finding and
+   characterised the residual as "definitional". Two commands showed it was not —
+   the leftover axis had exactly one member and no margin, the same shape as the
+   instance that reviewer had just fixed. Treat *"this is now terminal / complete /
+   definitional"* as a claim with an author, exactly like an issue asserting a
+   question can only be answered by testing.
+
+   Corollary on when to stop: **convergence is not a reviewer saying you have
+   converged.** Across four rounds on that PR, five instances of one defect class
+   were found, and three separate "this is terminal now" claims — two of them mine
+   — were wrong. What ended it was enumerating the complete candidate set and
+   showing nothing sat above its source, not another round.
+
    **Spawn review agents UNNAMED.** Passing `name` to the `Agent` tool changes what you get: a named spawn becomes a persistent *teammate* that goes **idle** rather than completing, so there is no final report to auto-deliver and its output must be pulled with `SendMessage`. An unnamed spawn is a fire-and-return subagent whose report arrives on its own in the completion notification. Measured 2026-08-25 on one machine, one session, unchanged settings: the unnamed spawn returned in **6.4s**; three named reviewers returned nothing at all, sending only empty idle pings. Pass `name` only for a collaborator you intend to keep messaging, and shut it down when done — it pings indefinitely otherwise.
 
    That mis-spawn is what produced the silent-delivery failures below, so check `name` before suspecting settings. Teammate mode (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` + `teammateMode`, merged globally from `soul/settings/defaults.json`) shapes what a *named* spawn becomes; it is not by itself why findings go missing, and an unnamed spawn delivers fine with it enabled.
