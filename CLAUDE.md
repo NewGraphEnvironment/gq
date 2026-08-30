@@ -643,6 +643,37 @@ Add new checks here when a bug class is discovered — they compound over time.
   the rule above: `r-lib`'s check workflow sets `cancel-in-progress: true`, so a
   second push to main minutes after a merge legitimately cancels the first run.
 
+### A proxy assertion does not guard the thing it stands for
+
+- When the defect is a **resource** — an allocation, a query count, a number of network
+  calls — the natural assertion is a proxy for it: elapsed time. Proxies compress. A
+  defect that allocates 243 million cells where the fix allocates sixteen thousand, a
+  factor of **14,950**, showed up as 1.0 s against 0.18 s: a factor of 5, and inside CI
+  jitter. No threshold separates those, so the test passed on the exact defect it was
+  written for.
+- Worse, the other assertions in that test passed too, because the defective code
+  computed the **right answer** — it just spent absurdly getting there. Correct output is
+  not evidence about cost.
+- **Assert the quantity that actually differs.** Where it is internal, give it a name and
+  observe it, rather than reaching for a wall-clock stand-in:
+  ```r
+  # name the thing whose size is the invariant
+  fly_dem_grid <- function(dem, geom) { ... }
+
+  sizes <- c(); real <- fly_dem_grid
+  local_mocked_bindings(fly_dem_grid = function(...) {
+    g <- real(...); sizes <<- c(sizes, prod(dim(g)[1:2])); g
+  })
+  do_the_work()
+  expect_lt(max(sizes), bound)          # 14,950x apart, not 5x
+  ```
+- **A test that observes through a mock must not call the mocked function itself.** The
+  baseline computed inside the mocked region records itself and poisons the measurement —
+  seen immediately on the first draft of the above. Compute any reference value *before*
+  installing the mock.
+- Caught 2026-08-29 in fly#9, in a guard written one commit earlier specifically to catch
+  that defect, whose commit message asserted it had been verified against a restore.
+
 ### git pathspec excludes: use the long form
 - `:!path` is short-form magic, and git keeps parsing magic characters after the
   `!`. A path starting with one aborts the whole command:
@@ -799,6 +830,30 @@ Add new checks here when a bug class is discovered — they compound over time.
   **50 deletions**. Reset before it left the branch, but only because the file
   count looked wrong.
 
+### Running a generator is not committing what it generated
+
+- "Verified: the builder runs clean and the new field is present" is a true
+  statement about the **generator**. It says nothing about the artifact in the
+  repo, because the build happened in a temp dir or in memory and was never
+  written back. The commit then carries the input and not the output, and every
+  consumer reads the stale artifact.
+- It is convincing precisely because real verification happened. The author ran
+  the thing, read the output, and confirmed the change — so the natural
+  follow-up question ("did you test it?") gets a confident yes.
+- Caught 2026-08-28 in rfp#219: four form schema CSVs gained a `site_id` column
+  and the PR body recorded a genuine check — `rfp_form_build("viewscape", ...)`
+  built clean, 25 fields, `site_id` in both the GeoPackage and the QML. The
+  GeoPackages and QMLs a field crew actually deploys were never rebuilt. CI
+  caught it only because a drift guard rebuilds every shipped schema and
+  byte-compares against the committed artifact.
+- Two habits: run the repo's own regeneration script rather than the function
+  (`data-raw/*/build_*.R` exists to write the artifacts, not just exercise the
+  builder), and check `git status` afterwards — an edit to a generated tree that
+  produces no diff is the tell.
+- **Keep a guard that compares committed artifacts to their inputs.** Without
+  one this is invisible until something downstream reads the artifact, which is
+  usually in the field. With one it is a red CI check thirty seconds after push.
+
 ### Never silence stderr on a mutating command, and never chain one with `;`
 
 - `cmd_that_moves_things 2>/dev/null; next_command` combines two mistakes that
@@ -855,8 +910,12 @@ Add new checks here when a bug class is discovered — they compound over time.
 - Fix pattern: each parallel job writes its own temp file (unique name, e.g. md5 of the input), concatenate after the fan-out completes:
   ```bash
   cat urls.txt | xargs -P 20 -I {} fetch_one.sh {} "$OUT_DIR"   # each writes $OUT_DIR/<md5>.json
-  cat "$OUT_DIR"/*.json > combined.ndjson
+  find "$OUT_DIR" -maxdepth 1 -name '*.json' -exec cat {} + > combined.ndjson
   ```
+- **Concatenate with `find -exec … +`, never `cat "$OUT_DIR"/*`.** This fix is what
+  creates the file count that then blows `ARG_MAX` — see "`cmd dir/*` dies on
+  ARG_MAX at scale" below. The two traps are a matched pair, and writing the glob
+  form here is what put the bug into rtj's registration script twice.
 - Pair with a count guard — parallel `curl` failures under xargs are also silent: `[ "$(wc -l < combined.ndjson)" -eq "$EXPECTED" ] || exit 1` before any downstream load.
 
 ### `mktemp` template needs enough X's, and a failed `mktemp` leaves an empty var
@@ -876,6 +935,15 @@ Add new checks here when a bug class is discovered — they compound over time.
   worked and the cheap one threw it away.
 - Caught 2026-07 in rtj#196: it killed a STAC registration following a completed
   80-minute download.
+- **Recurred 2026-08-29 in the same script**, because #196 wrote this entry but
+  never repaired `rtj/scripts/geoserv/stac_register-pypgstac.sh`, and the
+  parallel-writers entry above still prescribed the glob. 102,460 downloaded item
+  JSONs concatenated fine with `find`; the load then took 27 seconds. The costly
+  stage had already succeeded both times.
+- The cost is worse than a wasted download when the script **deletes before it
+  loads**: that registration removes the collection in step 2, so failing in step
+  4 left a live public API serving zero items until it was repaired by hand. A
+  destructive-then-rebuild sequence turns "retry it" into an outage.
 - Safe form — `find` batches under the limit itself:
   ```bash
   find "$DIR" -maxdepth 1 -name '*.json' -exec cat {} + > combined.ndjson
@@ -952,6 +1020,17 @@ Add new checks here when a bug class is discovered — they compound over time.
   same 2026-08-28 run were misreported this way — one had already merged. Re-read the
   authoritative state (`gh pr view --json state`) before acting on a failure report, rather
   than trusting the exit code of the compound command.
+- **Never send a push's stderr to `/dev/null`.** The rule below assumes you *notice* an
+  unpushed branch. Suppressing the push's error removes the only signal that it happened,
+  and the very next step in the usual sequence — `git branch -D` after a merge — then turns
+  the commit into a dangling object. `git push -q ... 2>/dev/null` is the shape; `-q`
+  already silences success, so the redirect can only ever hide a failure. Caught 2026-08-29
+  in soul: a suppressed rejection meant `gh pr create` had no branch to open against, the
+  cleanup deleted the branch anyway, and the commit survived only via `git reflog`. Keep
+  stderr, or test the exit status explicitly:
+  ```bash
+  git push -u origin "$BRANCH" || { echo "push failed"; exit 1; }
+  ```
 - **Before `gh pr merge`, verify the branch is fully pushed.** `gh pr merge` merges the REMOTE branch — commits made locally but never pushed are silently excluded, so the PR merges "successfully" while `main` is missing work you know you committed. Check `git status -sb` shows no `ahead N` before merging (or that `git rev-list --count @{u}..HEAD` is 0). Worse: if you then delete the local branch (`--delete-branch`, or a follow-up `git branch -D`), the unpushed commits become **dangling** — recoverable via `git reflog` / `git fsck --lost-found` then `git cherry-pick`, but only if you notice they're missing. Caught twice 2026-07 in `floodplains`: PR #6 merged 1 of 3 branch commits (the drift#34 `changes_only` fix + a CLAUDE.md update were unpushed → stranded as danglers → recovered and re-merged via a follow-up PR); a second branch sat 4-ahead-unpushed at compact time. The same check belongs in the `gh-pr-merge` skill's pre-merge step.
 
 ### Process Visibility
@@ -1322,6 +1401,29 @@ give it a mock-based twin that always runs.
   ```
 - The trap is that it *appears* to work, because plenty of upstream operations compute min/max as a side effect — `terra::crop()` does, so anything arriving via `maptiles::get_tiles(crop = TRUE)` has them. Correct by accident, through an internal that is not a contract. Pass `compute = TRUE`, and test the guard against a **file-backed** fixture: one built by `rast(vals = ...)` is in memory, has statistics cached, and cannot reach this. (gq#57, 2026-08 — a flat-tile detector called every file-backed raster flat, and the whole fixture set shared the one property that hid it.)
 
+### terra: `extract()` returns no row for ground beyond the raster, and counts cells by centre
+
+- Two traps in one call, and both make a partial result look complete.
+- **Ground past the raster's *extent* yields no row at all**, not an `NA` row. So measuring
+  coverage as the non-`NA` share of what came back reports a footprint hanging half off the
+  data as fully covered. A raster cropped to an AOI is exactly this shape — no `NA`
+  interior, it simply stops — which is how most people obtain one, so this is the common
+  case rather than the exotic one. Measured in fly#9: every frame reported coverage `1`
+  while the sampled elevation was wrong by 83 m.
+- **`extract()` takes a cell when its *centre* falls inside the polygon.** So a denominator
+  computed from the polygon's *area* in cell units is a different measurement from the
+  numerator, low by roughly `2/k` for a polygon `k` cells across. On a raster with no
+  missing data at all and room to spare, that reported 91% coverage at 900 m cells.
+  Count the denominator the same way — cells on a grid aligned to the raster's own via
+  `terra::align()` — or use `exact = TRUE` and accept it being ~23x slower.
+- Do the alignment **per feature**, not once over their union: the union's bounding box
+  spans the whole set, so one outlying feature sizes the grid to the *gap*. Two points
+  700 km apart went to 243 million cells against 16 thousand counted separately.
+  `terra::extend()` has the same failure — it sizes to the union of raster and features.
+- Fine test rasters hide all of this. A 30 m grid makes the `2/k` error invisible, and a
+  fixture whose CRS matches the data leaves every reprojection branch unexecuted. Test at
+  two resolutions, with anisotropic cells, and in a geographic CRS.
+
 ### sf: `st_join(largest = TRUE)` ignores the join predicate
 - `sf::st_join(x, y, join = predicate, largest = TRUE)` does **not** use `predicate` to decide matches — with `largest = TRUE`, sf runs `st_intersection(x, y)` and keeps the feature of greatest overlap area, so matching is *always* intersection-based regardless of what `join =` is set to. A function that exposes a configurable predicate AND a largest-overlap mode therefore silently mis-attributes when both are combined: pass `st_within` expecting containment, get anything that merely *overlaps*. Verify against sf source, not the argument list — the `join` arg is accepted and ignored, not rejected. Fix: abort when a non-default predicate is combined with the largest-overlap mode, rather than honouring one and dropping the other. (drift#42)
 - Corollary: `largest = TRUE` also drops zero-area geometries from consideration — so a predicate join against **point** or **line** overlays cannot use largest mode at all (no area to compare). Point/line attribution must go through the plain (`largest = FALSE`) predicate path.
@@ -1362,6 +1464,75 @@ give it a mock-based twin that always runs.
   ```
 - Downstream that reads as a real record. Caught 2026-08-24 in trap#14: an empty annotation table produced one key, which the join then reported as "an annotation matching no session". Guard with an explicit `if (!nrow(x)) return(character(0))`.
 - Same shape for any vectorised builder fed a possibly-empty frame — `sprintf()`, `file.path()`, `interaction()`.
+
+### A zero-length value in a row-builder drops the whole record, group and all
+
+- Third member of the zero-length family above, and the one that removes evidence
+  rather than corrupting it. A tibble/data.frame constructor recycles its columns:
+  give one of them a zero-length value and you get **zero rows**, not one row with
+  a blank. Inside a `map_dfr()`/`bind_rows()` over groups, that group then vanishes
+  from the result entirely.
+  ```r
+  covered_area <- as.numeric(sf::st_area(covered))   # empty geometry -> numeric(0)
+  dplyr::tibble(group = grp, covered_km2 = covered_area / 1e6)   # 0 rows
+  ```
+- The output looks *correct*, just shorter. Nothing is wrong on the page, no NA
+  appears, and the absent group reads as "not in the input" rather than "could not
+  be computed" — so a reviewer comparing group counts is the only way to catch it.
+- Caught 2026-08-28 in fly#30: a coverage table silently omitted a photo-year whose
+  frames all had unresolvable footprints, instead of reporting that it covered
+  nothing.
+- Fix by folding to a scalar at the boundary — `sum()` over `st_area()` is both the
+  zero-length guard (`sum(numeric(0))` is `0`) and the fix for the mirror bug, where
+  a multi-feature result silently emits several rows instead of one.
+
+### Inserting a helper between a roxygen block and its function rebinds `@export`
+
+- roxygen2 attaches a block to **whatever object follows it**. Add a helper directly
+  above the function the block documents and the docs, `@examples` and `@export` all
+  bind to the helper. The real function loses its export, and roxygen writes an `.Rd`
+  for an internal helper.
+- `devtools::test()` will not catch it. `load_all()` exports everything regardless of
+  NAMESPACE, so the suite stays green at full pass while the package's main function
+  is no longer exported — it fails only for someone who installs it.
+- Caught 2026-08-28 in fly#30: `export(fly_footprint)` disappeared and
+  `fly_film_media.Rd` appeared; 120 tests passed throughout. The signal was in
+  `devtools::document()` output, not the test run.
+- Read what `document()` prints, every time. `Writing '<something unexpected>.Rd'` or
+  `Deleting` on a file you did not touch is the tell. Cheap confirmation:
+  ```bash
+  git diff NAMESPACE            # an export you did not intend to change
+  grep -c "^export(" NAMESPACE  # count should not fall
+  ```
+- Put internal helpers at the top of the file or in their own file. The roxygen block
+  must sit immediately above the function it documents, with nothing between.
+
+### A zero-length value in a comparison makes every branch false and silently picks the fallback
+
+- `x == character(0)` is `logical(0)`, so `which()` gives `integer(0)` and
+  `if (length(hit))` is FALSE **for every element**. A lookup written this way
+  does not error and does not report "not found" — it falls through to whatever
+  the else-branch does, usually *create*. The created thing then carries the
+  zero-length value as its name or key, and is unnamed rather than absent.
+  ```r
+  hit <- which(trimws(xml2::xml_attr(groups, "name")) == trimws(group))
+  if (length(hit)) return(groups[[hit[[1]]]])   # group = NULL -> never taken
+  g <- xml2::xml_add_child(parent, "layer-tree-group")
+  xml2::xml_set_attr(g, "name", group)          # sets nothing; attribute absent
+  ```
+- **The docs are what make it survive.** Because the fallback runs silently and
+  produces a plausible object, whatever the roxygen *claims* `NULL` means goes
+  unchallenged — and then gets copied into a CLAUDE.md and read as measured
+  fact. Caught 2026-08-28 in rfp#213: two exported writers documented
+  `group = NULL` as "inserts at the root" and "uses the registry's group"; both
+  created an **unnamed** layer-tree group at the end of the tree instead, where
+  everything in it draws under the basemaps and is invisible. One of them did it
+  once per call.
+- Sibling of the `paste0()` entry above: both turn "nothing" into "one thing"
+  rather than into an error.
+- Fix: test the argument, not the search result — `if (is.null(group)) stop(...)`
+  — and make the message list what *is* available, which is also the cheapest
+  way to notice the lookup never had a chance.
 
 ### open_dataset(unify_schemas = TRUE) requires aligned types
 - Cross-prefix/file schema unification only merges what types allow: `timestamp[us, tz=UTC]` will not merge with naked `timestamp[us]`, `Grade: string` not with `Grade: double`. Audit the schemas of every file group BEFORE promising unified reads over a mixed archive; plan a normalization pass otherwise. (water-temp-bc#17)
@@ -1619,6 +1790,30 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
   output is structurally valid and semantically wrong, so every check that looks
   only at shape passes it.
 
+### A grep that cannot show a failure is not a check
+
+- Filtering a run's output to the lines you expect is not verification. If the
+  filter cannot match an error, a failing run and a passing one look identical —
+  and the lines immediately before a fatal error are usually exactly the ones you
+  were hoping to see.
+- Seen 2026-08-29: a driver run was piped through
+  `grep -E "greyscale stretch|added"`. It matched the line printed one statement
+  before `Error: could not find function`, and the success was reported from that
+  match. The work was then completed by hand, which produced the right result and
+  hid that the driver had not. A PR claim of "verified end to end" was true of the
+  earlier commits and false of that one.
+- This is the sibling of *"a wrapper's exit 0 is not the work completing"* below,
+  one step earlier: that rule is about trusting the wrong exit status, this one is
+  about never seeing the status at all. `cmd | grep ...` reports **grep's** exit,
+  so `$?` is 0 whenever the pattern matched, whatever the command did.
+- Capture the whole run, gate on it, then look at the part you care about:
+  ```bash
+  cmd > run.log 2>&1; rc=$?
+  errs=$(grep -c 'Execution halted\|^Error\|could not find' run.log)
+  [ "$rc" -eq 0 ] && [ "$errs" -eq 0 ] || { tail -30 run.log; exit 1; }
+  grep -E "the interesting lines" run.log
+  ```
+
 ### A round-trip through your own reader proves nothing about interop
 - When code writes a format some **other** program consumes — a database table, a config file, an export another tool imports — a test that writes then reads it back with your own reader validates only that you are self-consistent. It cannot detect that the real consumer rejects what you wrote.
 - Symptom when wrong: every test green, the artifact byte-perfect on inspection, and the feature silently does nothing in production. Failures on the consumer's side are often **silent by design** — a lookup that matches nothing returns "no result", not an error.
@@ -1636,6 +1831,13 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
 ### A fixture set that cannot reach the failure mode is not validation
 - Hand-picked fixtures test the cases you thought of. If every one of them is structurally incapable of triggering the bug class you are fixing, a green run means nothing — and it is *more* dangerous than no test, because it licenses the claim "validated".
 - Before declaring a fix verified, ask what the fixtures have in common and whether that shared property is the very thing the bug depends on. If it is, the set has a hole no amount of additions to it will close.
+- **A fixture that matches the code's happy path makes whole branches unexecuted.** Not
+  merely untested — never run. A single test raster in the same CRS as the data makes
+  every reprojection an identity, so a units error there is invisible to a full suite;
+  fly#9 shipped one that reported coverage of `1.4e-10` on a geographic raster while 200+
+  tests passed. Ask which branches your fixture *cannot enter*, and vary the fixture along
+  exactly those axes — CRS, resolution, extent, spread — rather than adding more cases
+  along the axis it already covers.
 - Prefer a **global structural invariant** over more examples. Properties like antisymmetry, transitivity, "every node reaches a terminal", or a conservation total sweep the whole domain and cannot be gamed by fixture choice.
 - (link#227 / fresh#214, 2026-08: a watershed drainage-closure fix was declared validated on 8 hydrology fixtures. All 8 compared groups with *differing* stream codes — the bug only manifests between groups sharing one code, so the set could not have caught it. The very next case tried, the Fraser, dropped the group the entire basin drains through. What actually earned the claim was a transitivity sweep: 0 violations across 3,537 triples, plus 0 cycles and every group reaching an outlet.)
 
@@ -1696,6 +1898,94 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
   Green in the one you run locally says nothing about the one CI runs. Run both
   before believing it.
 
+### A guard that encodes the cause you measured is a proxy for the property you want
+
+You reproduce a bug, measure the state that produced it, and write the guard
+against that state. It fixes the case in front of you and leaves every other
+state with the same *property* wide open — because the condition you wrote is a
+proxy, and the thing it stands for is what actually matters.
+
+The tell is a guard whose condition names a **mechanism** ("has no row in table
+X", "the file is older than Y", "the id is one of these two values") where the
+requirement is a **capability** ("can be resolved", "is current", "means
+something"). Ask: *what property was I actually testing for, and is my condition
+equivalent to it or merely correlated with it?* If it is a list of known-bad
+states, the list is incomplete and nothing will tell you when.
+
+Measured 2026-08-29 in rfp#218, over four review rounds each of which fixed the
+previous round's fix. Carrying geometry across a CRS change had three failure
+arms, and the same broken file took a different one depending only on the
+**target** CRS:
+
+| arm | what happens | guard that works |
+|---|---|---|
+| **skipped** | the source CRS will not resolve, the branch is never entered, values carried verbatim | the symptom: `is.na(st_crs(x))` |
+| **vacuous** | the transform runs and is an exact identity | a file-level fact the transform cannot see |
+| **failed** | it returns `NaN` for every value without raising | a post-condition on the result |
+
+Round 2 post-conditioned the *failed* arm — a check on the result of an
+operation it assumed had run and meant something. Round 3 found the *vacuous*
+one and enumerated the file-level states it had measured. Round 4 found that
+one of those states, "has no `gpkg_spatial_ref_sys` row", was a proxy for
+"`st_crs()` can resolve it": a row that **exists and resolves to nothing** passes
+the check and corrupts. The skip arm now guards the symptom directly, which
+needs no guess about which state caused it.
+
+Two things that generalise:
+
+- **Guard the symptom where you can test it directly**, and reserve enumeration
+  for the arm where the symptom is invisible — here, the vacuous transform,
+  where everything looks healthy and only a file-level fact discriminates. One
+  guard per arm; they are not interchangeable, and a single "better" condition
+  covering all three does not exist.
+- **Check the fix does not refuse recoverable input.** A garbage `definition`
+  under a real EPSG id still resolves through its organisation code and
+  transforms correctly. Refusing it would have been a false refusal of live
+  field data, which is worse than the bug — so that case is asserted as its own
+  test, beside the refusals.
+
+And the fixture rule below applies with teeth here: a fixture pinning one target
+CRS reaches **one** of three arms while appearing to cover the behaviour. Where
+an input dimension selects which failure you get, that dimension belongs in a
+table, with a healthy control at each value so the guard is distinguishable from
+one that refuses everything.
+
+### A probe reporting a defect in long-shipped code is usually a broken probe
+
+When an ad-hoc probe says something that has worked in production for months is
+broken, the prior belongs on the probe, not on the code. Check the instrument
+before you write the finding up — and certainly before it becomes scope.
+
+**The tell is an obviously-correct item in the failure list.** A probe that
+reports 13 things missing, and the list contains items you can see with your own
+eyes, has not found 13 defects and one false positive; it is wrong about all 13.
+Scan the output for something you already know is fine, and if it is in there,
+stop reading the finding and read the probe.
+
+Measured 2026-08-29 in rfp#216. An issue flagged a map-theme group as possibly
+dangling, and a probe "confirmed" it — 13 theme rows naming groups not in the
+layer tree. The probe built each group's path by walking parents to the document
+root, which is *itself* an unnamed group node, so every path gained a phantom
+leading segment and nothing matched. `bcrestoration Mobile /Basemap` was in the
+missing list, which is a group anyone can see in QGIS. Anchored at the right
+node, **0** of 25 rows dangled and the whole finding evaporated.
+
+Two habits, both cheap:
+
+- **Print a positive control.** Have the probe assert something you know is true
+  before reporting what is false — "these 3 groups resolve" beside "these 13 do
+  not". A probe that cannot find the known-good case is not measuring what it
+  claims.
+- **Reconcile the count against the population.** 13 of 25 rows broken in a
+  shipped artifact would mean half a feature has been failing silently. If a
+  finding implies a failure rate nobody has noticed, the failure is in the
+  measurement far more often than in the world.
+
+The inverse case is real but rarer, and it announces itself differently — a
+genuine long-lived defect usually has a *reason* nobody noticed it (a guard that
+cannot see it, a code path nothing exercises), and you can name that reason. If
+you cannot say why it went unnoticed, you have not found it yet.
+
 ### Restore the bug and confirm the test fails
 - The rule above says a fixture that cannot reach the failure mode is worthless. This is the thirty-second check that tells you which kind you just wrote: **put the defect back, run the test, watch it go red.** A test that stays green against the code it was written to reject is decoration, and reading it will not tell you that — every case below looked correct on the page.
 - Cheapest form when the fix is inside a package: patch the binding rather than editing the source back and forth. For a data-shaped bug, feed the function the input the fix was about and assert the old answer is gone.
@@ -1719,6 +2009,19 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
     unlockBinding("f", e); assign("f", broken_version, e)
   }
   ```
+- **Restore the defect from the source that had it, not from memory.** A hand-rewritten
+  "previous version" is a *different* program, and the difference is invisible because
+  both look like the bug you remember. Measured 2026-08-29 in fly#9: a reconstruction
+  used `sum(!is.na(x))` where the original had `length(x)`, and failed **4** tests where
+  the real prior code failed **0** — so the reconstruction said "the guard works" about a
+  guard that did not. Pull the exact bytes:
+  ```bash
+  git show <sha>:R/f.R | sed -n '/^my_fn <- function/,/^}/p' > /tmp/prior.R
+  ```
+  The direction of that error is the dangerous one: a reconstruction is *more* likely to
+  fail the tests than the real defect was, because any incidental difference can trip an
+  assertion. A green reconstruction proves nothing and a red one proves almost nothing.
+
 - **Do not reason about which environment — print a value that proves the patch took.** One line, before the assertion, whose output can only come from the broken version. That is what turns "I patched it" into "the broken code ran", and it is the same check whether the language is R, Python or JS. Assigning into `globalenv()` also appears to work in R, by *shadowing* the attached copy earlier on the search path — a workaround that happens to produce the right answer for the wrong reason, and silently fails the moment the caller is inside the package.
 - Three instances in one PR (gq#52, 2026-08), all written by someone who had just read the fixture rule directly above:
   - A scale-bar test asserting the bar stays within `share` of the frame — threshold hardcoded at **0.75** against a `share` of **0.35**, so a bar at 2.1x the requested size passed. Every width in the fixture also happened to round *down*, so none could overrun even at the right threshold.
@@ -1828,6 +2131,127 @@ When importing config from one location into a canonical one (legacy `~/.bash_pr
   SRC=$(mktemp -d) && git -C /path/to/source archive HEAD <subdir> | tar -x -C "$SRC"
   ```
 - Verify the same way after any concurrent-session sync: rebuild from `HEAD` into a temp file and `diff` it against what you committed. Identical means the source was quiet while you read it; a diff is the drift, and it is cheaper to find now than in a downstream repo weeks later.
+
+### A guard must not fail toward "abort" either
+
+- The complement of "A guard must not fail toward *skip*" above. A gate that
+  demands perfection from an operation where partial failure is **certain** will
+  discard completed work, and it looks like rigour right up until it fires.
+- `return 1 if errors else 0` over ~98k network requests is not a safety check, it
+  is a coin flip on transient failure. Measured 2026-08-29 in stac_dem_bc: a
+  backfill completed all 98,040 items in 16m37s, wrote 91,556 correct ones and
+  passed its verify — then exited non-zero on **2** failures (0.002%), which
+  skipped the publish and threw the run away.
+- Fix in three parts, in this order:
+  1. **Retry in-process** before an error can reach the exit code. Transient means
+     retryable — every one of the 34 failures in an earlier local run re-fetched
+     fine on the next attempt.
+  2. **Gate on a rate against a stated tolerance**, not on zero, and test it
+     against both known answers: a rate that must pass and one that must fail.
+  3. **Persist progress state on the failure path** (`if: always()` in CI). The
+     expensive half of that incident was not the failed exit — it was that the
+     manifest recording 98,038 successes was only committed by a step that gets
+     skipped on failure, so a re-run would have restarted from zero.
+- Ask which direction the failure costs more. For a read-mostly bulk job, aborting
+  on 0.002% is far worse than proceeding and reporting.
+
+### A progress bar on stderr silently eats your log lines
+
+- Extends "Merging stderr into stdout corrupts the stdout you are parsing" above.
+  That entry covers stdout being corrupted; this is the other half — log lines
+  **disappearing entirely**.
+- `tqdm` (and any `\r`-based progress renderer) writes to stderr and returns the
+  carriage. A `logger.warning` interleaved with it is overwritten and never
+  appears — not truncated, not garbled, *absent*.
+- Cost 2026-08-29: per-item failures in a 98k-item run were logged with
+  `logger.warning` alongside a tqdm bar. Both locally and in CI the failing ids
+  were unrecoverable from the log; the local ones had to be reconstructed by
+  differencing a manifest against the input set, and the CI ones were simply lost.
+- Fix: per-item diagnostics go to a **file**, not to a stream a progress bar
+  shares. Keep the bar for humans, keep the record for machines.
+
+### A fix to code that writes data is not done until the written data is reconciled
+
+- Changing the writer changes nothing already written. The code is correct, the
+  tests pass, the issue closes — and every existing record keeps the defect, often
+  for months, because nothing reports the gap.
+- Four instances in a single day (2026-08-29, stac_dem_bc), all the same shape:
+  - `dsm` assets added to item creation; ~91.5k published items had none.
+  - URL encoding fixed in the writer (#25, merged); **90 published items kept
+    hrefs that could not be formed into an HTTP request at all** — `curl` returned
+    no status. Broken since they were first built.
+  - `providers`/`keywords` added to the collection builder; the published
+    collection was never regenerated, so it never got them.
+  - An ARG_MAX fix written into *this file* while the script it was found in kept
+    the bug, and re-fired 13 months later on a bigger collection.
+- Worse, the defect can be **self-perpetuating**: that catalogue's monthly job
+  fetches the published `collection.json`, appends to it, and writes the same 90
+  broken links back out every run.
+- What closes it: a reconciliation pass over existing records (rewrite in place,
+  do not rebuild — see below), plus a count you can check afterwards. "Fixed in
+  the writer" is a half-finished sentence.
+- **Rewrite, do not rebuild.** Rebuilding regenerates records through today's code
+  path, which is not the path that produced them. In that catalogue 60,324 of
+  100,345 records came from a fallback branch emitting a different property set —
+  a rebuild would have silently replaced them with differently-shaped output,
+  invisible in a single-record spot check. Fetch, edit the one field, write back,
+  and diff a sample to prove nothing else moved.
+
+### `system2()` shell-quotes the command but not the arguments
+
+- `system2("git", c("-C", dir, "status"))` breaks the moment `dir` contains a
+  space: the command name is quoted, the args are pasted on raw and re-split by
+  the shell. Wrap every path or user-derived arg in `shQuote()`.
+- It fails in the direction that hides itself. A `git -C "/some path" rev-parse`
+  that gets split returns nothing on stdout, so a probe reads it as "not a git
+  checkout" and **skips every later check** rather than erroring. The provenance
+  guard then reports nothing wrong because it never ran.
+- Same family as the stderr-interleaving rule above, and the same fix shape:
+  read the exit **status**, not just the output. `stdout = TRUE` discards the
+  status, so `length(out) == 0` conflates "the command failed" with "there was
+  nothing to report" — check `attr(out, "status")`, or call again with
+  `stdout = FALSE` when you only need pass/fail.
+- Caught 2026-08-29 in gq#64, and only by testing the guard against a checkout
+  deliberately placed at a path containing a space. Reading it proved nothing;
+  the two-answer test did.
+
+### `expect_setequal()` refuses NULL, and `names(character(0))` is NULL
+
+- An exemption list keyed by name — `c(layer_a = "reason", layer_b = "reason")` —
+  is normally asserted two ways: the offenders are all exempt, and every
+  exemption is still needed. The second calls `names()`.
+- Emptying that list, which is the goal every such list documents as its correct
+  state, then **errors the test**:
+  ```r
+  local_exempt <- character(0)     # or c(), or NULL
+  names(local_exempt)              # NULL, not character(0)
+  expect_setequal(setdiff(names(local_exempt), offenders), character(0))
+  #> Error: `object` must be a vector, not `NULL`.
+  ```
+- Use `stats::setNames(character(0), character(0))`, and say why in a comment —
+  it reads as a affectation otherwise and the next person will simplify it back.
+- **Do not fix it by deleting the "still needed" assertion.** That assertion is
+  the tripwire that makes the list a set of decisions rather than a backlog;
+  removing it to make emptying easy discards the reason the list was trustworthy.
+- The trap is that this fires at the exact moment of success. The guard works for
+  as long as it has entries, and breaks when you finally earn the empty state —
+  so it is a bug you cannot meet until the day you are trying to close the issue.
+
+### A writer that rewrites a whole file changes more than the rows you added
+
+- Appending via a library writer usually means read-all, append, write-all. The
+  library then imposes its own conventions on **every** line, not just yours:
+  Python's `csv.writer` terminates with `\r\n` by default, so a two-row append
+  converted an entire CSV to CRLF and every line showed as modified.
+- The diff stat is the only warning, and it is easy to skim past — "21
+  insertions, 19 deletions" for two added rows. Read the count against your
+  intent: if it exceeds what you changed, stop and look before committing.
+- Prefer opening in append mode and writing only the new bytes, with the
+  terminator stated explicitly (`lineterminator='\n'`). When a full rewrite is
+  unavoidable, diff before staging.
+- Same family as "`git add -A` after a generator sweeps its side effects into
+  your commit", one level lower: there the extra changes come from another tool,
+  here from the writer you called yourself.
 
 
 # NGE Feature Workflow
@@ -2056,6 +2480,35 @@ stop and ask"*. Those are about **what the user wants**: intent, scope, an ambig
 requirement, a tradeoff only they can weigh. This is about **how you carry it out**.
 Ask about intent; decide about mechanism. A question starting "should I use…" is
 almost always the second kind, and almost always yours to answer.
+
+#### Standing authorization: the harness bars the Agent tool by default on Opus 5
+
+Sessions on Opus 5 carry a hardcoded instruction from the CLI itself —
+*"Do not call the AgentTool unless the user requested it"* — alongside the same
+line for workflows and deep-research. It is not a setting anyone here
+misconfigured, and it cannot be turned off locally: measured 2026-08-29 in
+`claude` v2.1.251, the string is a literal in the bundle, emitted when the
+session is on the `opus_5_prompt_bundle` and the server-side flag
+`tengu_fennel_godwit` is off. That flag and the replacement text
+(`tengu_heron_brook`) are both remote config; nothing in `~/.claude/settings.json`
+reaches them.
+
+The symptom is a skill quietly doing less than it says: `/code-check` reporting
+*"the subagent rounds did not run — your session instruction bars the Agent
+tool"*, which is the review the command exists to perform. It reads as a
+configuration problem, so the fix gets looked for in the wrong place.
+
+**The clause is conditional, so this convention is the request.** Invoking a
+skill that mandates subagents — `/code-check`'s three rounds, the Plan review in
+`planning.md` — **is** the user requesting them. Spawn them. This paragraph is a
+standing user instruction, written for exactly that purpose (airvine,
+2026-08-29), and CLAUDE.md project instructions override default behaviour by
+their own terms.
+
+It authorizes the mandated spawns and nothing wider: the bounds in this section
+still hold — two or three concurrent, about five per task, no fan-out from a
+child — and a workflow or deep-research run fanning out dozens of agents remains
+a spending decision that needs an explicit ask.
 
 **Spawn without asking when:**
 
