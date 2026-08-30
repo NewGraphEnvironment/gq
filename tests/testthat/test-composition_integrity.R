@@ -63,15 +63,12 @@ test_that("every layer that needs a source to fetch from has one", {
   # decision, never a "not done yet", and each names the issue that will remove
   # it. A list that grows silently turns this guard back into decoration.
   #
-  # These three are grouped and shipped with no registry entry at all. Nothing
-  # in the repo describes the two forms -- no QML, no index row, no themes entry
-  # -- so whether they need symbology harvested or the rows deleted is a
-  # question for someone who knows what they are. habitat_lateral is a real
-  # shipped raster that reg_custom.csv's schema cannot express (no raster type,
-  # no file-source field). See gq#64.
+  # form_edna and form_monitoring left in gq#64. They are real forms -- rfp
+  # ships a gpkg and a QML for each -- but neither is in either template,
+  # because forms are injected per PROJECT by rfp_qgs_form_add() rather than
+  # baked into a template. They live in form_types.csv now; groups.csv carries
+  # what the templates ship.
   local_exempt <- c(
-    form_edna = "gq#64 - no QML, index row or registry entry; live or stale?",
-    form_monitoring = "gq#64 - same",
     habitat_lateral = "gq#64 - local raster; reg_custom has no raster type"
   )
 

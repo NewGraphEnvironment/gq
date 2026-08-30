@@ -51,11 +51,13 @@ returns to describing what the templates actually ship.
 
 ## Phase 2: groups.csv back to template contents
 
-- [ ] Remove `form_edna` and `form_monitoring` rows from `groups.csv`
-- [ ] Drop those two entries from `local_exempt`
-- [ ] `tests/testthat/test-forms_roster.R` — roster shape, the derived-key
-      oracle against `reg_main.json`, the `monitoring_fish_passage` pin, and
-      premise assertions so the `has_spatial` filter cannot become a no-op
+- [x] Remove `form_edna` and `form_monitoring` rows from `groups.csv`
+- [x] Drop those two entries from `local_exempt`, and the prose describing them
+- [x] The roster guards landed in `tests/testthat/test-gq_forms.R` with Phase 1
+      rather than in a separate `test-forms_roster.R` — one function, one test
+      file, per the repo convention. Covers roster shape, the derived-key
+      oracle, the `monitoring_fish_passage` pin, the spatial-only filter, and
+      the groups.csv-is-a-subset join
 
 ## Phase 3: habitat_lateral + the translator guards (ONE commit)
 

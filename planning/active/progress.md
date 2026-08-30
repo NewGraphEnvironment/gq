@@ -32,3 +32,10 @@
 - Plan review returned 4 blockers and 6 gaps; all re-probed and confirmed. The
   worst is that emptying `local_exempt` the obvious way *errors* the acceptance
   test. Phases 3-5 rewritten accordingly; review saved to `review-64.md`.
+
+### Phase 2 — groups.csv back to template contents (complete)
+
+- `Forms` drops to `form_pscis`, `form_fiss_site`. Two of three exemptions gone.
+- Full suite green. Nothing else moved: the draw-order test does not require
+  contiguity (and the removed rows were the tail anyway), uniqueness cannot
+  break by removal, and the group survives so no template mapping changes.
