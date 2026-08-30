@@ -162,6 +162,23 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
 - `gq_reg_merge(..., csv, priority)` — merge multiple registries
+- `gq_form_types()` — the roster of Mergin survey forms (13 spatial forms)
+
+Forms get their own table rather than a place in `groups.csv`, and the reason is
+structural. `rfp_qgs_form_add()` injects forms **per project** — rtj's
+`nelson/project.yml` carries `forms: [trail_feature, viewscape, cabin_visit]` —
+while `groups.csv` models **per-template** contents. The shipped templates carry
+only `form_pscis` and `form_fiss_site`, so folding the roster in would make
+`gq_template_layers()` report 13 forms for a template shipping 2: cartography for
+layers nobody downloaded, which is the defect the composition guards exist to
+catch (gq#40, gq#64).
+
+The layer key derives from rfp's own rule — `normalize_layer_name(paste0(" Form ",
+label))` — and **not** from the `type` column. Those disagree:
+`monitoring_fish_passage` is labelled "Fish Passage Monitoring", so its key is
+`form_fish_passage_monitoring`, reversed. A type-derived key matches nothing, and
+nothing downstream reports it, because every lookup goes through the key on both
+sides.
 
 **Composition functions (groups, templates, themes):**
 - `gq_groups(registry)` / `gq_group_layers(group, registry)` — group membership and z-order
@@ -239,8 +256,12 @@ too many.
 - `reg_main.json` — master merged registry (single source of truth)
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers)
 - `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
-- `reg_custom.csv` — hand-curated styles for layers without QGIS source
-- `groups.csv` — layer group membership, nesting and z-order (64 rows, 10 groups),
+- `reg_custom.csv` — hand-curated styles for layers without QGIS source.
+  Also carries the one `type = "raster"` entry (`habitat_lateral`): a QGIS
+  paletted renderer, one row per palette entry, `class_field` the sentinel
+  `"value"` meaning band 1. The QML remains the lossless copy — the schema
+  cannot express per-value transparency or a multi-band renderer
+- `groups.csv` — layer group membership, nesting and z-order (62 rows, 10 groups),
   quoted: the correct group name is `Roads,Railways,Pipelines`
 - `templates.csv` — which groups compose each QGIS project template, quoted
 - `template_groups.csv` — the group tree of each shipped `.qgs`, vendored by
@@ -248,6 +269,10 @@ too many.
   checked against; gq is public and rfp is private, so CI can never read a `.qgs`
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
   (232 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
+- `form_types.csv` — the Mergin form roster, vendored from rfp's
+  `inst/lookups/rfp_form_types.csv` by `data-raw/reg_extract_form_types.R`.
+  Non-spatial child tables (`cabin_visit_pebble`) are excluded; `symbol` and
+  `color` are `NA` for a form rfp has registered but not styled
 - `xref_layers.csv` — prose cross-reference, read by humans not code
 
 #### Build script (`data-raw/reg_build_main.R`)
@@ -323,7 +348,7 @@ pak::pak("NewGraphEnvironment/gq")
 ### Dev workflow
 ```r
 devtools::load_all()
-devtools::test()        # 992 tests
+devtools::test()        # 1039 tests
 devtools::document()    # if roxygen changed
 devtools::check()       # before release
 ```
