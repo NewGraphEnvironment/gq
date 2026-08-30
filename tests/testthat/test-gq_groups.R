@@ -216,9 +216,14 @@ test_that("no theme is a stub", {
   # rfp#217's shape: a preset that enumerates layers and shows none of them. It
   # reads as a deliberate minimal variant, so nothing downstream reports it.
   #
-  # Deliberately over ALL template-theme pairs, not only the shared ones. The
-  # stub that prompted this shipped in one template, and `Land Tenure` is
-  # restoration-only -- a check scoped to shared themes could not see either.
+  # Deliberately over ALL template-theme pairs, not only the shared ones,
+  # because `Land Tenure` is restoration-only and a shared-scoped check cannot
+  # see an unshared theme at all.
+  #
+  # Note what that argument is NOT. `High Detail - Crossings` ships in both
+  # templates, so the shared-scoped version WOULD have caught rfp#217. The
+  # widening is not justified by the stub that prompted it; it is justified by
+  # the theme the stub happened to miss.
   #
   # Be honest about the reach: this is a cheap tripwire for ONE shape, the
   # all-zero preset. A regression switching 24 of 25 layers off passes it, and
@@ -279,9 +284,25 @@ test_that("no theme turns an opaque basemap on", {
               "google_satellite")
   df <- gq_themes()
 
-  # The premise, asserted beside the assertion: a regeneration that adds one of
-  # the other three fails HERE, naming the reason, rather than silently
-  # enlarging what the check below is responsible for.
+  # Pin the list against groups.csv, which is where the set is actually
+  # defined. Kept as a literal rather than derived: `Base - misc` + wms is an
+  # exact proxy today, but it is a proxy, and "is this opaque" is a judgement
+  # that belongs written down rather than inferred from a filter. Pinning gets
+  # the coverage without moving the judgement into the query.
+  #
+  # Without this the guard is scoped by coincidence one level up: a fifth
+  # opaque basemap added to `Base - misc` and switched on in a theme passes
+  # every assertion here. `Base - misc` gained all four of its current basemaps
+  # in a single commit, so that is the demonstrated rate of change, not a
+  # hypothetical one.
+  g <- gq_groups()
+  expect_setequal(opaque,
+                  g$layer_key[g$group == "Base - misc" &
+                                g$source_type == "wms"])
+
+  # And pin which of them the roster names today, so the regeneration that adds
+  # the other three (rfp#185) fails HERE, naming the reason, rather than
+  # silently enlarging what the check below is responsible for.
   expect_setequal(intersect(unique(df$layer_key), opaque), "esri_world_topo")
 
   # The property: whichever of the four the roster names, no theme shows it.

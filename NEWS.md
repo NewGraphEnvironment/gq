@@ -22,9 +22,11 @@
 
 - **The assertion that pinned the zero is replaced by two guards.** One reports
   drift between templates sharing a theme name; one reports any theme that shows
-  nothing, over every template-theme pair rather than only the shared ones — the
-  stub shipped in a single template, so a shared-only check could not have seen
-  it. Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
+  nothing, over every template-theme pair rather than only the shared ones,
+  because `Land Tenure` is restoration-only and a shared-scoped check cannot see
+  an unshared theme at all. (Not because of the stub itself: `High Detail -
+  Crossings` ships in both templates, so a shared-scoped check would have caught
+  rfp#217. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
   duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
   four opaque xyz basemaps in `Base - misc` — with the set the roster currently
   names pinned beside it, so the regeneration that adds the other three
