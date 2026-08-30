@@ -47,4 +47,4 @@ derive from the same templates — so a failed cross-check does not mean gq is t
 stale side by default.
 
 **Commits:** `642b0dc` (re-extract), `1b1ee9b` (guards), `c29c02c` (docs),
-`0a5a20d` (hardening + release).
+`0a5a20d` (hardening + release), `ea901ce` (review fixes). PR #79.
