@@ -298,9 +298,22 @@ test_that("no theme turns an opaque basemap on", {
   # A new wms layer fails here until someone puts it in one list or the other.
   # That is the intended cost -- `Base - misc` gained all four of its basemaps
   # in a single commit, so this set moves in bursts.
-  overlay <- c("fire_perimeters_current", "frep_rip2021_mar2022")
+  # The candidate set is "anything that could cover the map": every wms layer,
+  # plus every raster. Scoping it to wms alone leaves a raster added with any
+  # other source_type uncovered -- habitat_lateral is `local`, and is the
+  # registry's only raster today, so that axis has exactly one member and no
+  # margin. Including `type == "raster"` makes the residual definitional rather
+  # than a data coincidence: to escape now, a layer would have to be an opaque
+  # basemap that is neither a wms nor a raster.
+  overlay <- c("fire_perimeters_current", "frep_rip2021_mar2022",
+               "habitat_lateral")  # habitat_lateral renders at 0.4 opacity
   g <- gq_groups()
-  expect_setequal(c(opaque, overlay), g$layer_key[g$source_type == "wms"])
+  reg <- gq_reg_main()
+  is_raster <- vapply(reg$layers, function(l) identical(l$type, "raster"),
+                      logical(1))
+  rasters <- names(reg$layers)[is_raster]
+  expect_setequal(c(opaque, overlay),
+                  union(g$layer_key[g$source_type == "wms"], rasters))
 
   # …and the opaque ones are where the z-order argument above assumes.
   expect_setequal(opaque,

@@ -28,10 +28,12 @@
   Crossings` ships in both templates, so a shared-scoped check would have caught
   rfp#217. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
   duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
-  opaque xyz basemaps — with every wms layer in `groups.csv` pinned as opaque or
-  overlay, and the subset the roster currently names pinned beside it, so
+  opaque xyz basemaps — with every wms layer *and every raster* pinned as opaque
+  or overlay, and the subset the roster currently names pinned beside it, so
   neither a new basemap nor the pending rfp#185 regeneration can be absorbed as
-  roster growth. Each
+  roster growth. To escape the guard now a layer would have to be an opaque
+  basemap that is neither a wms nor a raster, which is definitional rather than
+  a coincidence in the current data. Each
   guard was run against a restored defect rather than assumed to work.
 
   What none of them assert is that the roster still equals what the templates
