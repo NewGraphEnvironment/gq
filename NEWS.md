@@ -28,9 +28,10 @@
   Crossings` ships in both templates, so a shared-scoped check would have caught
   rfp#217. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
   duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
-  four opaque xyz basemaps in `Base - misc` — with the set the roster currently
-  names pinned beside it, so the regeneration that adds the other three
-  (rfp#185) has to be looked at rather than absorbed as roster growth. Each
+  opaque xyz basemaps — with every wms layer in `groups.csv` pinned as opaque or
+  overlay, and the subset the roster currently names pinned beside it, so
+  neither a new basemap nor the pending rfp#185 regeneration can be absorbed as
+  roster growth. Each
   guard was run against a restored defect rather than assumed to work.
 
   What none of them assert is that the roster still equals what the templates

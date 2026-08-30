@@ -284,18 +284,25 @@ test_that("no theme turns an opaque basemap on", {
               "google_satellite")
   df <- gq_themes()
 
-  # Pin the list against groups.csv, which is where the set is actually
-  # defined. Kept as a literal rather than derived: `Base - misc` + wms is an
-  # exact proxy today, but it is a proxy, and "is this opaque" is a judgement
-  # that belongs written down rather than inferred from a filter. Pinning gets
-  # the coverage without moving the judgement into the query.
+  # Every wms layer must be declared opaque or overlay. Pinning the WHOLE wms
+  # set is the point: scoping the pin to `Base - misc` leaves the guard blind to
+  # an opaque basemap declared into any other group, and `Web Mapping Services`
+  # sits ABOVE `Base - misc` in both templates (group_order 7 vs 8, 9 vs 10), so
+  # an opaque layer there occludes MORE, not less.
   #
-  # Without this the guard is scoped by coincidence one level up: a fifth
-  # opaque basemap added to `Base - misc` and switched on in a theme passes
-  # every assertion here. `Base - misc` gained all four of its current basemaps
-  # in a single commit, so that is the demonstrated rate of change, not a
-  # hypothetical one.
+  # Kept as literals rather than derived from a filter: "is this opaque" is a
+  # judgement, and it belongs written down where a reviewer can disagree with
+  # it. Deriving would move the judgement into a query and make the guard agree
+  # with itself by construction.
+  #
+  # A new wms layer fails here until someone puts it in one list or the other.
+  # That is the intended cost -- `Base - misc` gained all four of its basemaps
+  # in a single commit, so this set moves in bursts.
+  overlay <- c("fire_perimeters_current", "frep_rip2021_mar2022")
   g <- gq_groups()
+  expect_setequal(c(opaque, overlay), g$layer_key[g$source_type == "wms"])
+
+  # …and the opaque ones are where the z-order argument above assumes.
   expect_setequal(opaque,
                   g$layer_key[g$group == "Base - misc" &
                                 g$source_type == "wms"])
