@@ -22,14 +22,14 @@ Returns which layers a theme shows or hides.
 Without \code{template}, a theme name that ships in more than one template returns
 every template's rows concatenated — check the \code{template} column, or pass it,
 when you want one project's answer. \verb{High Detail - Crossings} is the live
-example: it ships in both templates with materially different content.
+example: it ships in both templates, so it returns 56 rows rather than 28.
 }
 \examples{
-# the same theme differs by template
+# both templates come back concatenated — check the template column
 xing <- gq_theme_layers("High Detail - Crossings")
-tapply(xing$visible, xing$template, sum)
+table(xing$template, xing$visible)
 
-# one template's answer
+# a theme only one template ships
 head(gq_theme_layers("Land Tenure", template = "bcrestoration_mobile"))
 
 }

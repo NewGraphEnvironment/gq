@@ -242,9 +242,12 @@ gq_template_layers <- function(template, registry = NULL) {
 #'
 #' Themes are recorded per layer because that is how QGIS stores them — a
 #' `<visibility-preset>` enumerates each layer it governs with an explicit
-#' visible flag. The same theme name can therefore carry different content in
-#' different templates, which is why `template` is part of the key rather than a
-#' filter applied afterwards.
+#' visible flag. `template` is part of the key rather than a filter applied
+#' afterwards because a theme name is not global: `Land Tenure` ships in
+#' `bcrestoration_mobile` only. The templates are also separate files that can
+#' drift independently, so a name shipping in both is not guaranteed to carry
+#' the same content — at present every shared theme agrees layer for layer, and
+#' the test suite reports it if that stops being true.
 #'
 #' A theme governs only the layers it names. Templates carry more layers than
 #' any one theme lists, so a returned set is partial: a layer absent from a
@@ -281,7 +284,7 @@ gq_themes <- function(template = NULL) {
 #' Without `template`, a theme name that ships in more than one template returns
 #' every template's rows concatenated — check the `template` column, or pass it,
 #' when you want one project's answer. `High Detail - Crossings` is the live
-#' example: it ships in both templates with materially different content.
+#' example: it ships in both templates, so it returns 56 rows rather than 28.
 #'
 #' @param theme Character. Theme name, e.g. `"High Detail - Crossings"`.
 #' @param template Character. Optional template name to restrict to.
@@ -289,11 +292,11 @@ gq_themes <- function(template = NULL) {
 #'   Returns an empty data.frame if the theme is not found.
 #'
 #' @examples
-#' # the same theme differs by template
+#' # both templates come back concatenated — check the template column
 #' xing <- gq_theme_layers("High Detail - Crossings")
-#' tapply(xing$visible, xing$template, sum)
+#' table(xing$template, xing$visible)
 #'
-#' # one template's answer
+#' # a theme only one template ships
 #' head(gq_theme_layers("Land Tenure", template = "bcrestoration_mobile"))
 #'
 #' @export

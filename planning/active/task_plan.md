@@ -73,21 +73,20 @@ cause instead of one test meaning two things:
 Four locations state the old fact. `man/*.Rd` are roxygen-generated — the fix
 belongs in `R/gq_groups.R` followed by `devtools::document()`.
 
-- [ ] `R/gq_groups.R:284-285` (`gq_theme_layers` roxygen) — "`High Detail -
-      Crossings` is the live example: it ships in both templates with **materially
-      different content**" is now flatly false. Repoint the concatenation caveat at
-      the behaviour itself rather than a per-template-content example.
-- [ ] `R/gq_groups.R:291-294` (`@examples`) — the comment `# the same theme differs
-      by template` becomes wrong, and the printed output changes `27 / 0` → `27 / 27`.
-- [ ] `R/gq_groups.R:243-247` (`gq_themes` roxygen) — "can therefore carry different
-      content" survives as a *capability* claim, but its rationale needs the
-      `Land Tenure` witness now that no shared theme differs.
-- [ ] `devtools::document()` → regenerates `man/gq_themes.Rd`, `man/gq_theme_layers.Rd`.
-      **Read what it prints** — an unexpected `Writing`/`Deleting` line is the tell
-      for a rebound `@export`.
-- [ ] `CLAUDE.md:191` — replace the now-false parenthetical with `Land Tenure`
-- [ ] `README.md:93` — restate against the surviving evidence
-- [ ] **Not touched:** `NEWS.md:340-341` (dated 0.3.0 entry — historical record) and
+- [x] `R/gq_groups.R:284-285` (`gq_theme_layers` roxygen) — "materially different
+      content" replaced; the caveat now points at the concatenation behaviour
+      itself (56 rows rather than 28), which is what the argument is about.
+- [x] `R/gq_groups.R:291-294` (`@examples`) — `tapply(...)` printing `27 / 0`
+      replaced by `table(xing$template, xing$visible)`, which shows the
+      concatenation the docs describe. Verified it runs: 56 rows, 27/1 either side.
+- [x] `R/gq_groups.R:243-247` (`gq_themes` roxygen) — rationale repointed at
+      `Land Tenure` plus independent template drift.
+- [x] `devtools::document()` — wrote exactly `gq_themes.Rd` and
+      `gq_theme_layers.Rd`, nothing else. NAMESPACE unchanged, 30 exports.
+- [x] `CLAUDE.md:191` — parenthetical replaced, plus a note recording that the
+      zero was a stub mistaken for a design (the transferable lesson)
+- [x] `README.md:93` — restated against the surviving evidence
+- [x] **Not touched:** `NEWS.md:340-341` (dated 0.3.0 entry — historical record) and
       `planning/archive/2026-08-issue-46-themes-roster/`. Confirmed unaffected:
       `CLAUDE.md:271` and `NEWS.md:336` both cite 232/9, which still hold.
 

@@ -38,3 +38,18 @@
 - Used named-vector lookup rather than `merge()`, which drops one-sided keys
 - `test-gq_groups.R`: `FAIL 0 | PASS 66`
 - Next: Phase 3 — correct the stale prose
+
+### Phase 3 — stale prose corrected
+
+- `R/gq_groups.R`: both roxygen blocks repointed at `Land Tenure` + independent
+  template drift; `@examples` now shows the concatenation (`table()`) instead of
+  the `27 / 0` split that no longer exists. Verified it runs — 56 rows, 27/1 each
+- `devtools::document()` wrote exactly the two expected `.Rd` files; NAMESPACE
+  unchanged at 30 exports
+- `CLAUDE.md` and `README.md` restated; `NEWS.md:340-341` deliberately left as
+  the dated historical record
+- Full suite: `FAIL 0 | WARN 1 | SKIP 0 | PASS 1047`. The one warning is
+  pre-existing (jsonlite warning alongside an `expect_error` in
+  `test-gq_registry_read.R:25`), confirmed present on the pre-Phase-3 tree too
+- lintr on `R/gq_groups.R`: 1 at HEAD -> 0 now; test file 0
+- Next: Phase 4 — code-check, archive, PR
