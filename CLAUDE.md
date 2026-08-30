@@ -1429,6 +1429,53 @@ prevented it.
   and reported clean. A reviewer found it, not the guard — which is the point:
   a pooled guard cannot catch its own author.
 
+### A guard that compares against a vendored copy cannot see the copy go stale
+
+A drift guard needs something to compare against. When the real source is
+unavailable in CI — a private repo, a licensed dataset, a machine that is not the
+build machine — the usual fix is to vendor a witness and compare against that.
+It works, and it introduces a failure the guard is structurally blind to: **the
+witness itself going stale.**
+
+The guard then reports green for exactly the drift it exists to catch, because
+both sides of its comparison are frozen together. Nothing is broken, nothing is
+mis-scoped, and no assertion is wrong — the reference is simply a photograph of
+the thing being checked.
+
+**The tell is a guard whose comparison never reads the upstream at all.** Ask
+what would have to change for it to go red, and if every answer is "someone
+re-runs the vendoring script", the guard is measuring the vendoring, not the
+drift.
+
+Measured 2026-08-30 in gq. Three artifacts are vendored from a private QGIS
+template repo, and **two of the three had silently drifted**:
+
+| artifact | state | how it surfaced |
+|---|---|---|
+| `themes.csv` | stale for a release | a *different* repo's cross-check, which skips in CI |
+| `template_groups.csv` | stale, still | re-running the extractor by hand during issue triage |
+| `form_types.csv` | current | the same hand check, which is the only reason this is known |
+
+The second is the instructive one. An issue had been filed saying the suite was
+red and the exemptions were stale; the suite was **green**, because the exemption
+test compares against the vendored `template_groups.csv` rather than the
+templates. The witness had frozen before the upstream change landed, so the guard
+could not fire, and the issue's own premise had gone stale in the same motion.
+
+Two things that work, and they are not alternatives:
+
+- **A currency check gated on the source being present** — extract live, compare
+  to the committed copy, `skip()` when the source is unavailable. It runs on a
+  developer machine and skips in CI, which is worth saying out loud in the test,
+  because a skip is not a pass.
+- **A date or upstream version stamped beside the witness**, so "when was this
+  last true?" is answerable without the source. A guard that cannot run in CI at
+  least stops claiming currency it has not checked.
+
+Generalises to any pinned reference: a checked-in golden file, a vendored schema,
+a recorded API response, a lockfile treated as documentation. If the copy is the
+only thing the test reads, the test is pinned to the copy, not to the world.
+
 ### A guard's scope is usually a coincidence, and it will not announce itself
 
 Sibling of the pooled-guard rule above, and the harder one to see. There the
