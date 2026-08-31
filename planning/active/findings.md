@@ -183,3 +183,16 @@ finding.
 | Error | Resolution |
 |-------|------------|
 | Baseline `R CMD check` showed 1 NOTE where the issue claims 2; `checking top-level files ... OK` | `--as-cran` (or `_R_CHECK_TOPLEVEL_FILES_=TRUE`) is required for that check. `devtools::check()` sets it by default; bare `R CMD check` does not. Re-ran both sides with `--as-cran` |
+| After-check reported `NOTE=0 WARNING=0`, including the two warnings known to be out of scope and unfixed | The run had aborted at `checking CRAN incoming feasibility` with `read.dcf: Line starting 'Package; ufs ...' is malformed` — a transient bad CRAN index fetch. The grep counted zero because the check never ran. Gate on `grep -q '^Status:'` before reading any count |
+| Counted `NOTE=2` from a log whose own `Status:` line said `3 NOTEs` | The regex `^\* checking .* \.\.\. NOTE$` misses `* checking CRAN incoming feasibility ... [4s/25s] NOTE` — some check lines carry a timing prefix between the `...` and the verdict. Use `grep -cE '(NOTE\|WARNING)$'`, and reconcile against the `Status:` line rather than trusting the count |
+
+### Three instrument errors in one verification, all silent
+
+Wrong flags, an aborted run read as a clean one, and a miscounting regex — none
+of which announced itself, and two of which produced a *reassuring* number. The
+pattern is the one `CLAUDE.md` names in "A probe reporting a defect in
+long-shipped code is usually a broken probe", and the cheap defence is the same
+in all three cases: **reconcile the measurement against something the tool
+states independently.** `R CMD check` prints its own `Status:` line; comparing a
+hand-rolled count against it caught the third error in one command, and would
+have caught the second too.

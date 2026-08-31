@@ -33,7 +33,7 @@
 # if a future R renames them this errors -- loudly, in the safe direction --
 # rather than quietly excluding nothing. The test below asserts they are still
 # there, so the failure names the cause.
-r_auto_excluded <- function(entries, isdir) {
+r_auto_excluded <- function(entries, isdir, pkgname = "gq") {
   if (!length(entries)) return(logical(0))
 
   pats <- tools:::get_exclude_patterns()
@@ -42,9 +42,19 @@ r_auto_excluded <- function(entries, isdir) {
                logical(1)))
   }, logical(1), USE.NAMES = FALSE)
 
+  # A tarball R CMD build itself dropped in the source tree. Without this rule a
+  # developer who runs `R CMD build .` in the repo -- which is exactly what the
+  # issue's own verification step tells them to do -- gets a red suite naming
+  # gq_0.13.0.tar.gz, for a file R excludes anyway. A guard that reddens on the
+  # act of verifying it is a guard people learn to ignore.
+  exts <- "\\.(tar\\.gz|tar|tar\\.bz2|tar\\.xz|tgz|zip)"
+  by_tarball <- grepl(paste0("^", pkgname, "_[0-9.-]+", exts, "$"), entries)
+
   # Transcribed from tools:::.build_packages, restricted to the rules that can
-  # apply to a TOP-LEVEL entry -- its src/ and inst/doc/ rules cannot.
-  by_pattern |
+  # apply to a TOP-LEVEL entry -- its src/ and inst/doc/ rules cannot. The
+  # `.Rcheck$` rule matters for the same reason as the tarball one: an in-tree
+  # R CMD check leaves gq.Rcheck/ behind.
+  by_pattern | by_tarball |
     (isdir & entries %in% c("check", "chm", tools:::.vc_dir_names)) |
     (isdir & grepl("([Oo]ld|\\.Rcheck)$", entries)) |
     entries %in% c("Read-and-delete-me", "GNUMakefile") |
@@ -84,6 +94,15 @@ generated <- c("build", "MD5", "INDEX")
 # The entries this guard exists to keep out. Named explicitly so tarball mode
 # has something to assert even if `ships` were somehow over-broad.
 forbidden <- c(".claude", "gq.Rproj")
+
+# SCOPE, stated rather than left to be discovered: this guard is TOP-LEVEL only.
+# `inst/.claude` or `R/.DS_Store` would ship and it would not notice. That is a
+# real residual, and it is covered -- R's own `checking for hidden files and
+# directories` walks recursively. What R's version does NOT do is fail the
+# build: .github/workflows/R-CMD-check.yaml sets error-on: '"error"', so the
+# NOTE has been printed on every run since CI landed and blocked nothing. A
+# test failure is an ERROR in `checking tests`, so this guard is what turns the
+# top-level case into a gate, and R's recursive check is what covers the rest.
 
 # ---------------------------------------------------------------------------
 # Locate the tree to inspect, and say which layout was found.
@@ -230,6 +249,43 @@ test_that("the guard fires on an undeclared top-level entry", {
   ignored_fixed <- rbuildignore_excluded(entries, patterns_fixed)
   expect_equal(entries[!auto & !ignored_fixed & !(entries %in% ships)],
                character(0))
+})
+
+test_that("R's own rules cover the build artifacts its verification step creates", {
+  # `R CMD build .` and an in-tree `R CMD check` leave a tarball and a .Rcheck
+  # directory in the repo root. Both are excluded by R, so neither may be
+  # reported as undeclared -- otherwise following the issue's own verification
+  # instructions reddens the suite.
+  entries <- c("gq_0.13.0.tar.gz", "gq_0.13.0.tgz", "gq.Rcheck", "gqOld",
+               ".claude")
+  isdir   <- c(FALSE, FALSE, TRUE, TRUE, TRUE)
+  auto <- r_auto_excluded(entries, isdir)
+
+  expect_true(all(auto[1:4]))
+  # ...and the rule is not so broad that it swallows the thing being guarded.
+  expect_false(auto[[5]])
+  # A tarball belonging to some OTHER package is not ours to excuse.
+  expect_false(r_auto_excluded("otherpkg_1.0.tar.gz", FALSE))
+})
+
+test_that(".claude/visibility is still tracked in git", {
+  # The fix excludes .claude from the TARBALL. The tempting wrong fix is to
+  # gitignore it, which would drop the visibility marker -- and its absence
+  # defaults claude-md-init to "internal", the wrong answer for a public repo.
+  # Prose in .gitignore says so; this asserts it.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), "needs a git checkout")
+  skip_if(!dir.exists(file.path(root$path, ".git")), "not a git checkout")
+
+  # shQuote the path: system2() quotes the command but pastes args on raw, so a
+  # repo checked out under a path containing a space would silently return
+  # nothing and this would pass for the wrong reason.
+  out <- suppressWarnings(system2(
+    "git", c("-C", shQuote(root$path), "ls-files", ".claude"),
+    stdout = TRUE, stderr = FALSE))
+  skip_if(!is.null(attr(out, "status")), "git unavailable")
+
+  expect_true(".claude/visibility" %in% out)
 })
 
 test_that("an .Rbuildignore pattern is matched the way R matches it", {
