@@ -227,6 +227,61 @@ recursion.
 
 ---
 
+---
+
+## Addendum — both fixes landed mid-review, and are verified
+
+The tree moved while this was being written (the same thing happened in rounds 1
+and 2). `ff8b89c` "Fold in review round 3: the sweep never looked at a directory"
+and `e3d55b3` "Make the sweep premise able to fail" applied both findings. Both
+re-measured against `e3d55b3`:
+
+**Finding 1 — closed, and closed by enumeration rather than by assertion.**
+`include.dirs = TRUE` added, redundant append at 361 removed. The sweep's path set
+is now **identical to R's own** for the shipped subtree:
+
+```
+paths: 219   duplicates: 0
+R's set: 219   sweep set: 219
+in R but NOT swept: 0      swept but not in R: 0      SETS IDENTICAL: TRUE
+```
+
+That is the termination condition — the sweep now matches the complete candidate
+set `tools:::.build_packages` builds at line 842, so there is no level above its
+source left to check.
+
+**The new premise is not decoration, which was the live risk in the fix.** The
+obvious form (`any(dir.exists(paths))`) would have passed under the restored bug,
+since the top-level `ships` entries satisfy it alone; the committed form requires a
+**nested** directory. Measured against both answers:
+
+| sweep | `nested_dirs` | `expect_gt(., 0)` |
+|---|---|---|
+| as committed (`include.dirs = TRUE`) | 13 | passes |
+| bug restored (files only) | **0** | **fails** |
+
+The restore-the-bug pair at the end (`expect_true("inst/registry" %in% paths)` then
+`expect_equal(paths[rbuildignore_excluded(paths, "^inst/registry$")],
+"inst/registry")`) also carries its own premise beside its assertion, so a future
+rename of that directory fails on the premise line naming the real cause rather
+than on the behaviour line blaming the sweep.
+
+**Finding 2 — closed.** `skip_if(!nzchar(Sys.which("git")), "git not installed")`
+now precedes the `system2()` call, so the error path is unreachable. Verified with
+`PATH` stripped of git: `Sys.which('git') = ''`, skip condition `TRUE`.
+`expect_null(attr(out, "status"))` retained, so a git that *ran* and reported a
+problem is still a failure rather than a skip.
+
+**Guard file at `e3d55b3`: `FAIL 0 | WARN 0 | SKIP 0 | PASS 38`** (35 before).
+
+**Revised verdict: converged**, on the ground I named above — the sweep's path set
+now provably equals the source of truth's, both new premises were tested against a
+must-pass and a must-fail tree, and the residual I flagged as moderate confidence
+(a later vignette-staging exclusion pass) is unaffected by anything in these two
+commits and is not a defect in them.
+
+---
+
 ## Method note
 
 The working tree was never modified. Both bug restorations used

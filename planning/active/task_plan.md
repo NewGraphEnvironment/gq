@@ -144,6 +144,28 @@ costs one command. Written up in `findings.md`.
       packaging internals
 - [ ] `/planning-archive`, then `/gh-pr-push`
 
+## Review — four `/code-check` rounds plus a plan review
+
+Spawned concurrently and not blocked on, per `planning.md`. Findings and triage
+in `review-plan.md` and `review-round1.md` … `review-round5.md`.
+
+**13 real defects.** The class that dominated was a defect sitting *inside* the
+previous round's fix — the gq#52 shape — which recurred **four** times:
+
+| round | defect inside the previous fix |
+|---|---|
+| 2 | round 1's silent-direction assertion landed in source mode, the mode `R CMD check` can never select — so it sat in the branch CI does not run |
+| 3 | round 2's path sweep used `list.files(recursive = TRUE)`, which returns files only, so a pattern naming a nested directory deleted it with the guard green |
+| 4 | round 3's `any(dir.exists(...))` premise was satisfied by the top-level entries alone, so it could not detect the regression it was added for |
+| 4→5 | fixing round 4's worktree skip made the guard *run* in a worktree, where it immediately caught R shipping the `.git` file |
+
+Three separate "this is now terminal" claims were made before the last one held,
+which is exactly the record `planning.md` warns about. What ended it was not a
+reviewer saying so: it was **enumeration** — the sweep's path set proved *equal*
+to R's own over the shipped subtrees, and `.Rbuildignore` shown by a
+namespace-wide walk to have exactly two consumers, the second a strict subset of
+the first. There is no level above that source.
+
 ## Validation
 
 - [ ] Tests pass

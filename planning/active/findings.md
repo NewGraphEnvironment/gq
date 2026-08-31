@@ -178,6 +178,37 @@ probe" rule firing in the reverse direction — a probe reporting that a *report
 defect does not exist. Same remedy: check the instrument before writing up the
 finding.
 
+## `R CMD build` ships the `.git` FILE when you build from a worktree
+
+Found by the guard itself, and only after a review round fixed a *different*
+defect that had been hiding it.
+
+R excludes version-control directories with `(isdir & bases %in% .vc_dir_names)`
+— gated on `isdir`. In a checkout created by `git worktree add`, `.git` is not a
+directory: it is a **file** containing `gitdir: /path/to/real/.git/worktrees/x`.
+The gate is false, nothing else matches it, and R ships it. Measured, building
+from a real worktree of this repo:
+
+```
+$ tar tzf gq_0.13.0.tar.gz | grep '^gq/\.git'
+gq/.git                      <- an absolute path to the developer's machine
+```
+
+`^\.git$` in `.Rbuildignore` fixes it; the tarball goes from one `.git` entry to
+zero. The pattern is narrow — verified it matches `.git` and **not** `.github`,
+`.gitignore`, `.gitattributes`, `.gitmodules`, `inst/.git` or `a.git`, and it
+matches none of the 226 paths that ship.
+
+**This matters beyond gq**, because `CLAUDE.md` prescribes one worktree per
+session. Any NGE R package built from a worktree has been shipping this.
+
+**How it stayed hidden is the more useful part.** The `.claude/visibility` guard
+tested `dir.exists(".git")`, which is false in a worktree — so in the very layout
+the conventions prescribe, that guard silently skipped, and so did the top-level
+sweep's ability to notice. Round 4 found the skip; fixing it made the guard run
+in a worktree for the first time, and it failed immediately on something real.
+A guard that cannot run is not a weaker guard, it is an absent one.
+
 ## Errors Encountered
 
 | Error | Resolution |
