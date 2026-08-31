@@ -1121,6 +1121,22 @@ one.
   same 2026-08-28 run were misreported this way — one had already merged. Re-read the
   authoritative state (`gh pr view --json state`) before acting on a failure report, rather
   than trusting the exit code of the compound command.
+- **And the same compound can half-succeed while reporting success.**
+  `gh pr merge --delete-branch` deletes the local branch before the remote one, so a local
+  delete that fails takes the remote delete with it — and the command still reports the
+  merge as done, because it was. Observed 2026-08-31: a **worktree** held the branch, `gh`
+  printed `failed to delete local branch ... used by worktree at ...`, and the remote
+  branch survived. Nothing else in the output suggested a branch had been left behind.
+  Benign in isolation; it matters because a surviving branch reads as unmerged work to the
+  next person, and because the `git worktree` advice elsewhere in this file makes the
+  trigger routine rather than exotic. Confirm the deletion rather than assuming it, and
+  verify the branch is merged before cleaning up by hand:
+  ```bash
+  gh pr merge "$PR" --merge --delete-branch
+  git ls-remote --heads origin "$BRANCH"        # expect empty
+  git merge-base --is-ancestor "$BRANCH_SHA" origin/main \
+    && git push origin --delete "$BRANCH"
+  ```
 - **Never send a push's stderr to `/dev/null`.** The rule below assumes you *notice* an
   unpushed branch. Suppressing the push's error removes the only signal that it happened,
   and the very next step in the usual sequence — `git branch -D` after a merge — then turns
@@ -1599,6 +1615,94 @@ give it a mock-based twin that always runs.
   R CMD build . >/dev/null && tar tzf pkg_*.tar.gz | grep -c '^pkg/comms/'   # expect 0
   ```
 
+### `R CMD build` ships the `.git` FILE when you build from a worktree
+
+The rule above covers directories someone added. This is the one nobody added:
+in a checkout made by `git worktree add`, `.git` is a **file** holding
+`gitdir: /absolute/path/to/the/developer/machine`, and it ships.
+
+R excludes version-control entries with an `isdir`-gated rule:
+
+```r
+isdir   <- dir.exists(allfiles)                                  # .build_packages
+exclude <- exclude | (isdir & (bases %in% c("check", "chm", .vc_dir_names)))
+```
+
+A worktree's `.git` is not a directory, so the gate is false and nothing else
+matches it. `.gitignore`, `.gitattributes` and `.gitmodules` are safe — they sit
+in `.hidden_file_exclusions`, which is **not** `isdir`-gated. `.git` is the only
+version-control name with a legitimate file form and no ungated rule, so it is
+the whole exposure. Fix is one anchored line, which touches neither `.github` nor
+`.gitignore`:
+
+```
+^\.git$
+```
+
+**This reaches every repo here, because `code-check.md` prescribes
+worktree-per-session.** Measured 2026-08-31 in gq#76: `gq/.git` present in the
+tarball, absent after the line. Sweep the R repos — any package built from a
+worktree has been shipping a developer path.
+
+Two things generalise past R:
+
+- **Ask which *layout* a guard runs in, not only what it asserts.** The guard
+  that would have caught this tested `dir.exists(".git")` — false in a worktree —
+  so in the checkout layout these conventions prescribe, it silently skipped.
+  Fixing the skip made it run there for the first time and it failed immediately
+  on something real. A guard that cannot run is not a weaker guard, it is an
+  absent one. Same family as the escape-hatch rule below, one level out: there
+  the lookup is wrong, here the whole test never executes.
+- **A fix that is invisible in the layout CI runs needs pinning.** Removing
+  `^\.git$` changes nothing in a `.git`-*directory* checkout — which is what
+  `actions/checkout` produces — because R excludes it anyway there. So the line
+  protecting the tarball was itself unguarded. Assert the property directly
+  (`expect_true(rbuildignore_excluded(".git", patterns))`), since it is a fact
+  about the pattern file rather than about this checkout.
+
+### `.Rbuildignore` has no comment syntax — every line is a live regex
+
+`tools:::inRbuildignore` loops over every non-empty line and ORs `grepl()` of it
+against the file list. It strips nothing and skips nothing, so a `# explanatory
+note` is a pattern. One containing `.*` or a leading `^` silently drops files
+from the tarball, and nothing reports it.
+
+Caught 2026-08-31 in gq#76, in prose added to that file the same day. Measured
+benign there (all five lines compiled, none matched any of 226 shipped paths) and
+removed regardless. Keep the rationale in the guard or the commit message.
+
+Generalises to any line-oriented config whose reader does not implement comments
+— check before assuming `#` is inert, because the failure is silent and the file
+*looks* documented.
+
+### A premise check satisfied by the happy path's own structure is decoration
+
+A guard that samples something — a path sweep, a file list, a query result —
+wants a premise asserting it actually looked. The obvious premise is usually
+satisfied by structure the sample carries either way, so it passes for the broken
+case and the correct one alike.
+
+Measured 2026-08-31 in gq#76. A sweep was fixed to include directories, and the
+premise added beside it was:
+
+```r
+expect_true(any(dir.exists(file.path(root, paths))))   # cannot fail
+```
+
+`paths` always contains the top-level shipped entries, six of which are
+directories, so `any(dir.exists(...))` is TRUE whether or not the sweep recursed
+into nested ones. It could not detect the regression it was added for. The
+premise has to name the property the fix supplies:
+
+```r
+nested <- paths[grepl("/", paths, fixed = TRUE) & dir.exists(file.path(root, paths))]
+expect_gt(length(nested), 0)                            # 0 before, 13 after
+```
+
+**Test the premise the same way as the assertion: restore the defect and watch
+the premise fail.** A count threshold is the usual offender — 206 clears
+`> 100` as comfortably as 218 does, so it discriminates nothing.
+
 ### Base name shadowing in formal args
 - Avoid `names`, `length`, `data`, `c`, `t`, `T`, `F`, etc. as formal argument names. R's function-lookup fallback often rescues `names(x)` calls inside a function whose arg is also called `names` — but it's a confusing read, breaks under refactors, and generates a real "could not find function" error when the lookup heuristic misses (e.g. inside lapply/vapply/match.fun chains). Prefer descriptive alternatives: `label_names`, `n`, `df`, etc.
 - Caught in mc#33 round 1 — `mc_label_ensure(names)` worked by luck when calling `names(existing)` to read a named-vector's names; renamed to `label_names` for safety.
@@ -1651,6 +1755,65 @@ give it a mock-based twin that always runs.
 - Fine test rasters hide all of this. A 30 m grid makes the `2/k` error invisible, and a
   fixture whose CRS matches the data leaves every reprojection branch unexecuted. Test at
   two resolutions, with anisotropic cells, and in a geographic CRS.
+
+### A `...` constructor may discard trailing arguments based on the class of the first one
+
+- A constructor that takes `...` is free to branch on **what its first argument
+  is** and build the result from that alone. Everything you passed after it is
+  then dropped — silently, with no warning and no error, because from the
+  constructor's point of view nothing went wrong.
+- The live case is `sf::st_sf()`, whose attribute frame is chosen by a chain
+  ending:
+  ```r
+  df = if (inherits(x, c("tbl_df", "tbl"))) x
+       else if (length(x) == 1) data.frame(row.names = row.names)
+       else if (!sfc_last && inherits(x, "data.frame")) x
+       else if (sfc_last  && inherits(x, "data.frame")) x[-all_sfc_columns]
+       else if (inherits(x[[1]], c("tbl_df", "tbl"))) x[[1]]     # <-- keeps ONLY arg 1
+       else cbind(data.frame(row.names = row.names), as.data.frame(x[-all_sfc_columns], ...))
+  ```
+  So `st_sf(df, a = , b = , geometry = )` keeps `a` and `b`, and
+  `st_sf(tbl, a = , b = , geometry = )` throws them away. **Same call, same
+  data, different class — different columns out.**
+- **The failure is invisible for as long as your fixtures share one class.** In
+  fly#35 four columns recording how each airphoto footprint had been sized never
+  reached a single caller of the package's own documented data source, because
+  `bcdata::collect()` returns a tibble and every fixture in the package read back
+  as plain `sf, data.frame`. Two releases shipped that way with a green suite:
+  geometry and every downstream number stayed correct, and only the audit trail
+  went missing, so nothing errored and nothing looked wrong.
+- **Fix: build the frame first, then hand the constructor one argument.** The
+  columns are then inside the argument the branch keeps, whichever branch it is,
+  and the caller's class is untouched:
+  ```r
+  attrs <- sf::st_drop_geometry(x)
+  attrs$a <- a
+  attrs$b <- b
+  result <- sf::st_sf(attrs, geometry = g)      # not st_sf(x, a =, b =, geometry =)
+  ```
+  Coercing instead — `st_sf(as.data.frame(st_drop_geometry(x)), a =, ...)` — also
+  restores the columns, but downgrades a tibble caller's class as a side effect.
+  Prefer the version that changes one thing.
+- **Test by sweeping the class axis, not by adding cases along it.** Assert
+  identical names *and values* across plain / tibble / grouped / vendor-classed
+  shapes of the same data. Read the tibble honestly (`st_read(as_tibble = TRUE)`)
+  rather than overwriting `class()`, and assert that premise inline so a future
+  upstream change fails by naming the real cause.
+- **Do not over-state what survives.** `sf::st_transform()` moves `sf` to the
+  front of the class vector, so `bcdc_sf, sf, ...` returns `sf, bcdc_sf, ...`.
+  The class *set* is carried; the order is not. An
+  `expect_identical(class(out), class(in))` written from three shapes that all
+  lead with `sf` passes, and then fails on the one real caller you wrote it for.
+- Swept 2026-08-29 across all 61 repos in `~/Projects/repo` — 1500 `.R` files and
+  389 purled `.Rmd` chunks, parsed with R rather than grepped, looking for
+  `st_sf()` with a non-literal first positional argument plus trailing column
+  arguments. **`fly` was the only instance.** A regex misses this: the original
+  defect was a multi-line call. Validate any such scanner against both known
+  answers before believing a clean result — the pre-fix file must be flagged and
+  the fixed one must not, or "no hits" is indistinguishable from a broken scan.
+- Generalizes past `sf`. Ask it of anything taking `...`: *does this constructor
+  decide what to keep by looking at the first argument?* Same shape in any
+  language where a variadic builder dispatches on an argument's type.
 
 ### sf: `st_join(largest = TRUE)` ignores the join predicate
 - `sf::st_join(x, y, join = predicate, largest = TRUE)` does **not** use `predicate` to decide matches — with `largest = TRUE`, sf runs `st_intersection(x, y)` and keeps the feature of greatest overlap area, so matching is *always* intersection-based regardless of what `join =` is set to. A function that exposes a configurable predicate AND a largest-overlap mode therefore silently mis-attributes when both are combined: pass `st_within` expecting containment, get anything that merely *overlaps*. Verify against sf source, not the argument list — the `join` arg is accepted and ignored, not rejected. Fix: abort when a non-default predicate is combined with the largest-overlap mode, rather than honouring one and dropping the other. (drift#42)
@@ -2358,7 +2521,7 @@ you cannot say why it went unnoticed, you have not found it yet.
   A probe run against a 2017 tile concluded "there is no surface model and no
   CHM", and that became the central constraint of a project plan — ruling out
   canopy measurement entirely — for weeks. Listing the prefix instead showed
-  `dem, dsm, orthophoto, pointcloud` immediately, with DSM present in 25 of 38
+  `dem, dsm, pointcloud` and more immediately, with DSM present in 25 of 38
   mapsheet-years.
 - **Enumerate the container** (`?list-type=2&delimiter=/&prefix=…`, `ls`, the
   API's own listing endpoint) and match on the fields that actually identify the
@@ -2510,6 +2673,21 @@ you cannot say why it went unnoticed, you have not found it yet.
 - Caught 2026-08-29 in gq#64, and only by testing the guard against a checkout
   deliberately placed at a path containing a space. Reading it proved nothing;
   the two-answer test did.
+- **And it *raises* rather than returning a status when the command does not
+  exist.** So a skip written after the call cannot be reached, and a machine
+  lacking the tool errors the test instead of skipping it — reported as
+  `error in running command`, which reads as a broken test rather than a missing
+  dependency. `suppressWarnings()` does not catch it; it is an error, not a
+  warning. Test for the tool **before** calling it:
+  ```r
+  skip_if(!nzchar(Sys.which("git")), "git not installed")
+  out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
+  expect_null(attr(out, "status"))   # a tool that RAN and failed is a failure
+  ```
+  Watch for a skip condition that cannot hold: `is.null(attr(out, "status"))`
+  means the command exited 0, which means it ran — so ANDing it with "the tool is
+  absent from `PATH`" is dead code that reads as careful. Caught 2026-08-31 in
+  gq#76, in the fix for a fail-toward-skip written one commit earlier.
 
 ### `expect_setequal()` refuses NULL, and `names(character(0))` is NULL
 
@@ -2548,6 +2726,171 @@ you cannot say why it went unnoticed, you have not found it yet.
 - Same family as "`git add -A` after a generator sweeps its side effects into
   your commit", one level lower: there the extra changes come from another tool,
   here from the writer you called yourself.
+
+### One fact derived twice, never reconciled
+
+- The bug shape is a **count taken from one artifact and the things counted
+  produced from another**, with a guard comparing the two. It fires on healthy
+  input, aborts a run in which nothing was wrong, and — because the guard looks
+  like diligence — the fix goes onto the *inputs* rather than the comparison. So
+  it comes back.
+- Measured 2026-08-30 in stac_dem_bc, three times in one change before anyone
+  looked at the mechanism:
+  1. a lookup asked about 600 ids and was compared against a page of 10;
+  2. a caller-supplied list with a duplicate counted twice and fetched once;
+  3. one id resolving to two hrefs counted once and fetched twice.
+  Fixes 1 and 2 deduped the inputs (`sort -u`, a set) and left the comparison
+  untouched. Of nine counts in that pipeline, **eight were structural** — count
+  and counted shared a producer — and every bug landed on the one pair that did
+  not.
+- **The fix is to derive the expectation from the artifact the consumer actually
+  consumes**, so the two cannot drift:
+  ```bash
+  cut -f2 hrefs.tsv | sort -u > urls.txt     # what the fetch loop iterates
+  N_URLS=$(count_lines urls.txt)             # ...so count THAT, not the id list
+  [ "$N_FETCHED" -eq "$N_URLS" ] || exit 1
+  ```
+- Review question that finds it, and it is not "are there more instances":
+  **for each guard, name the producer of each side. If they differ, the guard can
+  fire on good input.** Ask it once per comparison; it is a five-minute audit and
+  it terminates, where hunting instances does not.
+
+### A paginated API's default page size silently truncates a lookup used as a check
+
+- Asking an API about N things and getting its **default page** back is not an
+  error and does not look like one. The response is well-formed, the status is
+  200, and the missing items read as *absent from the server* rather than as
+  *not requested*. A verification built on it reports the subject as broken while
+  the subject is fine.
+- Measured 2026-08-30 against a pgstac/stac-fastapi API: `POST /search` with 600
+  ids and no `limit` returned **10** features; with `limit: 600`, all 600. The
+  verifier that shipped therefore failed on every run of more than ten items —
+  after the write it was verifying had already succeeded.
+- It survived review because the only exercise was **three** items, and 3 < 10.
+  A fixture smaller than the default page cannot reach the failure (see "A
+  fixture set that cannot reach the failure mode is not validation").
+- Rules: **set the page size explicitly on every request you treat as evidence**,
+  and assert it in a unit test at a size *larger than any plausible default*.
+  Test the body you build, not the response you mock — a transport mock never
+  constructs the request.
+- Related and worth checking in the same pass: whether the API omits unmatched
+  keys silently. If it does, a returned **count** proves nothing and only set
+  equality does.
+
+### Counting lines: `wc -l` and `grep -c` fail in opposite directions
+
+- Refines the count guard prescribed above under "Parallel writers sharing one
+  output file". `wc -l` counts **newlines**, so a final line with no trailing
+  newline is not counted — a caller-supplied list is then short by one and the
+  guard aborts a good run.
+- The obvious replacement is worse. `grep -c ''` counts that line, and **exits 1
+  on an empty file** — so under `set -e` it kills the script on the empty case,
+  which is usually the routine one ("nothing to do"). Verified: the statement
+  after the assignment never executed.
+- `grep -c` also counts **matching lines, not occurrences**. Counting records in
+  a compact single-line JSON with `grep -c` returns 1 for a file holding 102,460
+  of them — not off by a bit, structurally meaningless.
+- Safe helper, checked against all four inputs (empty, unterminated, terminated,
+  missing) rather than reasoned about:
+  ```bash
+  count_lines() {
+    local n
+    n=$(grep -c '' "$1" 2>/dev/null) || n="${n:-0}"
+    printf '%s' "${n:-0}"
+  }
+  ```
+- For records inside a structured file, do not count with a line tool at all —
+  parse it.
+
+### `local_mocked_bindings(.env = )` is the cleanup environment, not the target
+
+`.package` names the package to mock in; `.env` says what the mock **unwinds with**.
+Passing a namespace to `.env` installs the stub correctly and then never removes it,
+because a namespace does not exit — so every later test in the run keeps it.
+
+```r
+# WRONG: installs correctly, never unwinds. Every later test sees the stub.
+local_mocked_bindings(f = stub, .env = asNamespace("pkg"))
+
+# Right: mocks in the package, unwinds with the calling test.
+local_mocked_bindings(f = stub, .package = "pkg", .env = parent.frame())
+```
+
+It leaks in the direction that reads as **success**: a stub returning `TRUE` makes
+assertions pass, so the suite goes green and stays green. Nothing points at the mock.
+
+Bites hardest when the mock lives in a **test helper** rather than in a `test_that()`
+block — the helper's own frame exits before the assertions, so `.env` gets reached for,
+and the namespace looks like the obvious answer.
+
+Caught 2026-08-30 in fly#38, and only because a later test in the same file asserted a
+file existed that the stub had never written. The tell was a *contradiction*:
+`expect_true(f(...))` passing while `expect_true(file.exists(out))` failed. If you see a
+function report success without its side effect, suspect a live mock before suspecting
+the function. Confirm by printing something only the real implementation can produce.
+
+Companion to the restore-the-bug entry above — same family, opposite direction. There
+the mock fails to take; here it never lets go.
+
+### Check a threshold against the least favourable case, computed — not a remembered example
+
+A tolerance, timeout, or size limit is only correct relative to the **binding** member of
+the population it governs. Reaching for the vivid example instead is how it gets set
+wrong, and the test written to guard it inherits the same mistake, so nothing fires.
+
+The tell: the guard's test asserts against the case that is easiest to picture — the
+biggest, the most extreme, the one from the bug report. Any threshold clears that one.
+Ask which member is **closest to the line**, and compute it over the whole set:
+
+```r
+# Wrong: the most eccentric camera, which any tolerance clears
+expect_gt(abs(log(1654 / 1063)), tol)              # 0.442
+
+# Right: every shipped row, so none may slip
+aspect <- read.csv(system.file("extdata/table.csv", package = "pkg"))$aspect
+expect_true(all(abs(log(aspect)) > tol))           # binding case is 0.095
+```
+
+Measured 2026-08-30 in fly#38: a stretch tolerance was set to 1.10 against a remembered
+0.442, while the binding case was 0.0949 and `log(1.10)` is 0.0953 — **0.4% too loose**,
+and it let through exactly the input the tolerance had been widened to catch. One row of
+nineteen. Both the threshold and its test were written by someone who had just measured
+the right numbers and reached for the wrong one.
+
+State the admissible band, both ends, wherever the threshold is defined. If the band is
+narrow, say so — that is a property of the problem worth knowing, not a detail.
+
+### A `case` allowlist matches a substring, not a token
+
+`case " $allowed " in *" $item "*)` reads like set membership and is not: it matches any
+contiguous run of the list, so an item whose name spans two entries passes.
+
+```bash
+allowed="404 authors index LICENSE"
+b="authors index"                       # passes; it is a substring of the list
+case " $allowed " in *" $b "*) echo "allowed" ;; esac
+```
+
+Fails toward **pass**, and the padding-with-spaces idiom is what makes it look rigorous.
+Use an explicit loop:
+
+```bash
+is_allowed() { for a in $allowed; do [ "$a" = "$1" ] && return 0; done; return 1; }
+```
+
+Same class as the exact-vs-substring rule for snapshot names in `code-check-infra.md`,
+generalised: **whenever a guard decides membership, check that a value spanning two
+legitimate entries is refused.** Reachability is often low — `R CMD check` rejects a
+filename containing a space, for instance — but a guard is only worth its maintenance if
+it is trusted, and one that reads stronger than it is will be.
+
+While you are there: strip only the suffix that actually matched. `b="${b%.html}";
+b="${b%.md}"` applied unconditionally reduces `index.md.html` to `index`.
+
+Caught 2026-08-31 in fly#42, in the second draft of a guard whose first draft had already
+failed the empty-result check above. Two rounds, both invisible by reading, both found by
+running the shipped script against inputs built to break it rather than against the one
+case it was written for.
 
 
 # NGE Feature Workflow
