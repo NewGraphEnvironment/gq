@@ -141,7 +141,7 @@
 <p><strong>The composition vignette’s map now describes itself.</strong> Its most prominent feature — a 397-feature salmon habitat network — was styled from the registry and missing from the legend entirely, while the prose beneath described its widths and dashes. Fixed, along with the reason it went unnoticed: a new test parses the map chunk and fails the build if any layer drawn from the registry is absent from the legend.</p>
 <p>The map also gained AOI containment, type sized for the width it is published at, and an editorial cut — 130 of 146 crossings are modelled candidates rather than surveyed sites, and at their correct size they buried the network the map exists to show. <a href="https://github.com/NewGraphEnvironment/gq/issues/61" class="external-link">#61</a>.</p>
 </li>
-<li><p>Both vignettes moved to <code><a href="https://rdrr.io/pkg/bookdown/man/html_document2.html" class="external-link">bookdown::html_vignette2</a></code> with numbered figure captions; <code>bookdown</code> added to <code>Suggests</code>.</p></li>
+<li><p>Both vignettes moved to <code><a href="https://pkgs.rstudio.com/bookdown/reference/html_document2.html" class="external-link">bookdown::html_vignette2</a></code> with numbered figure captions; <code>bookdown</code> added to <code>Suggests</code>.</p></li>
 <li><p>Removed the dead <code>registry/</code> directory at the repo root — a build-ignored fossil superseded by <code>inst/registry/</code> at the original scaffold.</p></li>
 </ul></div>
     <div class="section level2">

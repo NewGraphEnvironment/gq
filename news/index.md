@@ -269,7 +269,7 @@
   [\#61](https://github.com/NewGraphEnvironment/gq/issues/61).
 
 - Both vignettes moved to
-  [`bookdown::html_vignette2`](https://rdrr.io/pkg/bookdown/man/html_document2.html)
+  [`bookdown::html_vignette2`](https://pkgs.rstudio.com/bookdown/reference/html_document2.html)
   with numbered figure captions; `bookdown` added to `Suggests`.
 
 - Removed the dead `registry/` directory at the repo root — a
