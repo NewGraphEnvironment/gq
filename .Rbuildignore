@@ -4,6 +4,9 @@
 ^pkgdown$
 ^\.github$
 ^CLAUDE\.md$
+^\.claude$
+^gq\.Rproj$
+^\.git$
 ^dev$
 ^python$
 ^scripts$
@@ -13,3 +16,10 @@
 ^doc$
 ^Meta$
 ^Rplots\.pdf$
+^\.venv$
+^__pycache__$
+^[^/]+\.egg-info$
+^dist$
+^\.vscode$
+^\.idea$
+^Thumbs\.db$

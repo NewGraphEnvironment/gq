@@ -1,0 +1,501 @@
+# Nothing may reach the package tarball that gq did not decide to publish.
+#
+# R CMD build ships every top-level entry not excluded, so a directory added at
+# the repo root lands in the library of anyone installing gq from GitHub. gq#76:
+# .claude/ and gq.Rproj were doing exactly that, and R CMD check --as-cran had
+# been reporting both as NOTEs.
+#
+# CLAUDE.md records this class finding 20 hits across 16 repos when it was last
+# swept, and gq came back CLEAN on that sweep -- because the sweep looked for
+# comms/ research/ planning/ dev/ by name, and .claude is none of them. A guard
+# that enumerates the top level cannot go stale that way: it fails on ANYTHING
+# undeclared, including the directory nobody has invented yet.
+
+# ---------------------------------------------------------------------------
+# What R excludes on its own, taken from R rather than from memory.
+#
+# `.gitignore` is absent from the tarball despite having no .Rbuildignore
+# pattern, so a guard that models exclusion as "matched by .Rbuildignore" alone
+# reports it as undeclared and fails on a correct tree. R applies three separate
+# mechanisms, and these are its own objects, not a transcription of them:
+#
+#   get_exclude_patterns()   regexes prepended to .Rbuildignore's own lines
+#                            (this is what excludes .Rbuildignore itself)
+#   .vc_dir_names            .git, .svn, CVS, ... -- directories only
+#   .hidden_file_exclusions  .gitignore, .Rprofile, .Rproj.user, ...
+#
+# Hardcoding the two entries this repo happens to have today (.git, .gitignore)
+# would be the coincidental-scope defect CLAUDE.md describes: a literal set that
+# matches the current data and silently stops covering anything new. Pinning to
+# the source of truth is the documented remedy.
+#
+# Reading unexported objects is deliberate. They ARE the consumer's rules, and
+# if a future R renames them this errors -- loudly, in the safe direction --
+# rather than quietly excluding nothing. The test below asserts they are still
+# there, so the failure names the cause.
+r_auto_excluded <- function(entries, isdir, pkgname = "gq") {
+  if (!length(entries)) return(logical(0))
+
+  pats <- tools:::get_exclude_patterns()
+  by_pattern <- vapply(entries, function(e) {
+    any(vapply(pats, function(p) grepl(p, e, perl = TRUE, ignore.case = TRUE),
+               logical(1)))
+  }, logical(1), USE.NAMES = FALSE)
+
+  # A tarball R CMD build itself dropped in the source tree. Without this rule a
+  # developer who runs `R CMD build .` in the repo -- which is exactly what the
+  # issue's own verification step tells them to do -- gets a red suite naming
+  # gq_0.13.0.tar.gz, for a file R excludes anyway. A guard that reddens on the
+  # act of verifying it is a guard people learn to ignore.
+  exts <- "\\.(tar\\.gz|tar|tar\\.bz2|tar\\.xz|tgz|zip)"
+  by_tarball <- grepl(paste0("^", pkgname, "_[0-9.-]+", exts, "$"), entries)
+  by_index <- grepl("^.Rbuildindex[.]", entries)
+
+  # Transcribed from tools:::.build_packages, restricted to the rules that can
+  # apply to a TOP-LEVEL entry -- its src/ and inst/doc/ rules cannot. The
+  # `.Rcheck$` rule matters for the same reason as the tarball one: an in-tree
+  # R CMD check leaves gq.Rcheck/ behind.
+  #
+  # Note `isdir &` on the version-control rule. That gate is R's, not ours, and
+  # it has a real consequence: in a git WORKTREE, `.git` is a file rather than a
+  # directory, so R does not exclude it and `R CMD build` ships it -- measured,
+  # `gq/.git` in the tarball, containing an absolute path to the developer's
+  # machine. This guard found that by failing in a worktree; `^\.git$` in
+  # .Rbuildignore is what fixes it.
+  by_pattern | by_tarball | by_index |
+    (isdir & entries %in% c("check", "chm", tools:::.vc_dir_names)) |
+    (isdir & grepl("([Oo]ld|\\.Rcheck)$", entries)) |
+    entries %in% c("Read-and-delete-me", "GNUMakefile") |
+    startsWith(entries, "._") |
+    entries %in% tools:::.hidden_file_exclusions
+}
+
+# Matched by one of the repo's OWN .Rbuildignore lines.
+#
+# Same call R makes: Perl regex, case-insensitive, and a PARTIAL match rather
+# than an anchored one -- which is why every line in gq's .Rbuildignore carries
+# ^...$. A pattern written without them would exclude far more than intended.
+rbuildignore_excluded <- function(entries, patterns) {
+  if (!length(entries)) return(logical(0))
+  patterns <- patterns[nzchar(patterns)]
+  vapply(entries, function(e) {
+    any(vapply(patterns, function(p) grepl(p, e, perl = TRUE, ignore.case = TRUE),
+               logical(1)))
+  }, logical(1), USE.NAMES = FALSE)
+}
+
+# What gq intends to publish. Every one of these is on R's own `known`
+# top-level list in tools:::.check_packages, which is why none of them NOTEs.
+#
+# This is an allowlist, not an exemption list: adding a name here says "gq ships
+# this on purpose", and the test below fails if a name here has stopped
+# existing, so a stale entry cannot sit unnoticed.
+ships <- c(
+  "DESCRIPTION", "NAMESPACE", "LICENSE", "NEWS.md", "README.md",
+  "R", "data", "inst", "man", "tests", "vignettes"
+)
+
+# Generated by R CMD build into the tarball, absent from the source tree. Only
+# meaningful in tarball mode below. Kept to what R CMD build actually creates --
+# MD5 and INDEX were in an earlier draft and neither is reachable without
+# --md5, so they widened the allowlist for nothing.
+generated <- "build"
+
+# The entries this guard exists to keep out. Named explicitly so tarball mode
+# has something to assert even if `ships` were somehow over-broad.
+forbidden <- c(".claude", "gq.Rproj")
+
+# SCOPE, stated rather than left to be discovered: this guard is TOP-LEVEL only.
+# `inst/.claude` or `R/.DS_Store` would ship and it would not notice. That is a
+# real residual, and it is covered -- R's own `checking for hidden files and
+# directories` walks recursively. What R's version does NOT do is fail the
+# build: .github/workflows/R-CMD-check.yaml sets error-on: '"error"', so the
+# NOTE has been printed on every run since CI landed and blocked nothing. A
+# test failure is an ERROR in `checking tests`, so this guard is what turns the
+# top-level case into a gate, and R's recursive check is what covers the rest.
+
+# ---------------------------------------------------------------------------
+# Locate the tree to inspect, and say which layout was found.
+#
+# Test for the .Rbuildignore FILE, never for a directory of the right name.
+# test-vignette_legend_coverage.R in this suite carries the scar: its first
+# version walked up looking for a `vignettes/` directory, matched an unrelated
+# one in R CMD check's temp tree, reported "found", then died in readLines().
+# Requiring DESCRIPTION to name gq is what makes a match evidence rather than a
+# coincidence -- a stranger's package one level up satisfies neither.
+#
+# Two layouts reach real evidence, and they assert the same property from
+# opposite ends:
+#
+#   source   devtools::test() from tests/testthat/. .Rbuildignore is present, so
+#            every top-level entry can be classified. This is the mode that
+#            catches a new directory at the moment it is added.
+#   tarball  R CMD check unpacks the built package to <pkg>.Rcheck/00_pkg_src/gq
+#            -- that tree IS the shipped artifact. It carries no .Rbuildignore
+#            (verified: get_exclude_patterns() excludes it), so nothing can be
+#            classified there; what CAN be asserted is that only declared
+#            entries are present, which is the stronger claim anyway.
+names_gq <- function(d) {
+  f <- file.path(d, "DESCRIPTION")
+  if (!file.exists(f)) return(FALSE)
+  any(grepl("^Package:[[:space:]]*gq[[:space:]]*$", readLines(f, warn = FALSE)))
+}
+
+build_root <- function() {
+  up <- c("..", "../..", "../../..")
+
+  # Tarball FIRST, deliberately. Searching source-first looks natural and is
+  # wrong: `R CMD check` run from inside the repo puts gq.Rcheck/ in the repo,
+  # so the walk reaches the real gq root, .Rbuildignore is there, and source
+  # mode wins -- meaning the only assertions that read the built ARTIFACT never
+  # execute in the most common local check. 00_pkg_src/gq exists only inside a
+  # check directory, so preferring it is unambiguous and costs nothing in a
+  # plain source tree, where it never exists.
+  shipped <- file.path(up, "00_pkg_src", "gq")
+  hit <- shipped[vapply(shipped, names_gq, logical(1))]
+  if (length(hit)) {
+    return(list(mode = "tarball", path = normalizePath(hit[[1]])))
+  }
+
+  src <- up[file.exists(file.path(up, ".Rbuildignore")) &
+              vapply(up, names_gq, logical(1))]
+  if (length(src)) {
+    return(list(mode = "source", path = normalizePath(src[[1]])))
+  }
+
+  list(mode = NA_character_, path = NA_character_)
+}
+
+top_level <- function(path) {
+  setdiff(list.files(path, all.files = TRUE, no.. = TRUE), c(".", ".."))
+}
+
+# ---------------------------------------------------------------------------
+
+test_that("R still exposes the exclusion rules this guard is pinned to", {
+  # If a future R renames or drops these, r_auto_excluded() errors and every
+  # test below fails with a stack trace pointing at tools. This one names the
+  # cause instead, so nobody goes looking in gq for the breakage.
+  expect_type(tools:::get_exclude_patterns(), "character")
+  expect_type(tools:::.vc_dir_names, "character")
+  expect_type(tools:::.hidden_file_exclusions, "character")
+
+  # And they still cover what gq relies on them covering. Without this the
+  # lists could empty out and the guard would silently widen.
+  expect_true(".git" %in% tools:::.vc_dir_names)
+  expect_true(".gitignore" %in% tools:::.hidden_file_exclusions)
+  covers_rbuildignore <- vapply(tools:::get_exclude_patterns(), function(p) {
+    grepl(p, ".Rbuildignore", perl = TRUE, ignore.case = TRUE)
+  }, logical(1))
+  expect_true(any(covers_rbuildignore))
+})
+
+test_that("every top-level entry is either shipped on purpose or excluded on purpose", {
+  root <- build_root()
+
+  skip_if(is.na(root$mode),
+          paste("no gq tree found: expected a source checkout with",
+                ".Rbuildignore, or R CMD check's 00_pkg_src/gq, within three",
+                "levels of tests/testthat"))
+
+  entries <- top_level(root$path)
+  # A tree with nothing in it would pass every assertion below for nothing.
+  expect_gt(length(entries), 5)
+
+  if (identical(root$mode, "source")) {
+    isdir <- dir.exists(file.path(root$path, entries))
+    patterns <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
+
+    auto <- r_auto_excluded(entries, isdir)
+    ignored <- rbuildignore_excluded(entries, patterns)
+
+    # The classification must actually be doing work. If .Rbuildignore stopped
+    # being read -- wrong path, empty file -- `ignored` goes all-FALSE and the
+    # failure would read as "everything is undeclared" rather than "the guard
+    # is broken".
+    expect_gt(sum(ignored), 5)
+    expect_gt(sum(auto), 0)
+
+    # `.git` as a FILE -- a git worktree -- is not covered by R's isdir-gated
+    # version-control rule, so the ^\.git$ line is the only thing excluding it.
+    # Asserted unconditionally because the property is a fact about the pattern
+    # file, not about this checkout: in a .git-DIRECTORY clone (what
+    # actions/checkout produces) R excludes it anyway, so deleting that line is
+    # invisible there, and CI would never notice it go.
+    expect_true(rbuildignore_excluded(".git", patterns))
+
+    unexplained <- entries[!auto & !ignored & !(entries %in% ships)]
+    expect_equal(unexplained, character(0))
+
+    # The other half of the property, and the half that fails SILENTLY.
+    #
+    # Everything above asks "is anything shipping that shouldn't". Nothing asked
+    # "is anything NOT shipping that should" -- and because .Rbuildignore
+    # patterns are unanchored partial matches, a bare `test` line excludes
+    # tests/ from the tarball entirely. Measured: every assertion above still
+    # passes in that state, and `sum(ignored)` goes UP, so the premise check is
+    # satisfied more comfortably by the broken tree than by the correct one.
+    # `auto` as well as `ignored`: R's own rules would drop a top-level `check`,
+    # `chm` or anything ending `Old` too, so testing only .Rbuildignore would
+    # leave that half unguarded. Not reachable with today's `ships` -- measured,
+    # none of the eleven is touched by any R rule -- which is exactly why it
+    # needs pinning rather than leaving to inspection.
+    shipped_but_excluded <- entries[(ignored | auto) & entries %in% ships]
+    expect_equal(shipped_but_excluded, character(0))
+
+    # A name in `ships` that no longer exists is a decision nobody re-made.
+    # NOT applied to .Rbuildignore patterns: ^Rplots\.pdf$, ^doc$ and ^Meta$
+    # are transient build artifacts that legitimately do not exist.
+    expect_equal(setdiff(ships, entries), character(0))
+  } else {
+    # The artifact itself. Anything here is in someone's library.
+    expect_equal(setdiff(entries, c(ships, generated)), character(0))
+    expect_equal(intersect(entries, forbidden), character(0))
+
+    # No dot-file survived the build, whatever it is called.
+    expect_equal(entries[startsWith(entries, ".")], character(0))
+
+    # ...and the silent direction, which for a long time was asserted ONLY in
+    # source mode -- the mode R CMD check can never select, since rcmdcheck
+    # always checks a tarball and 00_pkg_src exists whenever it does. So the
+    # half of the property that catches an over-broad .Rbuildignore line lived
+    # exclusively in the branch CI does not run, while the branch CI does run
+    # held the artifact and never made the check.
+    #
+    # setdiff() this way round is the point. The assertion above is empty for a
+    # SUBSET as readily as for the full set, so dropping tests/, man/ or
+    # vignettes/ from the tarball left all three assertions green -- measured.
+    expect_equal(setdiff(ships, entries), character(0))
+  }
+})
+
+test_that("the guard fires on an undeclared top-level entry", {
+  # Restore the bug. gq#76 was exactly this shape: two entries that no
+  # .Rbuildignore line matched, that R does not exclude on its own, and that
+  # nobody had declared. Runs unconditionally on synthetic input, so the logic
+  # is still exercised in a build where the test above can only skip.
+  entries <- c("DESCRIPTION", "R", "man", "planning", ".git", ".gitignore",
+               ".Rbuildignore", ".claude", "gq.Rproj")
+  isdir <- c(FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, FALSE)
+  patterns <- c("^planning$", "^CLAUDE\\.md$")
+
+  auto <- r_auto_excluded(entries, isdir)
+  ignored <- rbuildignore_excluded(entries, patterns)
+
+  # R's own rules take .git, .gitignore and .Rbuildignore off the table --
+  # by three different mechanisms, which is the reason this category exists.
+  expect_true(all(auto[match(c(".git", ".gitignore", ".Rbuildignore"), entries)]))
+  # ...and do NOT cover the two that shipped. If R ever did, gq#76 would not
+  # have happened and this guard would be unnecessary.
+  expect_false(any(auto[match(c(".claude", "gq.Rproj"), entries)]))
+
+  expect_true(ignored[match("planning", entries)])
+  # ^CLAUDE\.md$ matches nothing here, proving patterns are matched against the
+  # entry rather than assumed to hit.
+  expect_false(ignored[match("R", entries)])
+
+  unexplained <- entries[!auto & !ignored & !(entries %in% ships)]
+  expect_setequal(unexplained, c(".claude", "gq.Rproj"))
+
+  # And the fix clears it, rather than the guard being unable to reach green.
+  patterns_fixed <- c(patterns, "^\\.claude$", "^gq\\.Rproj$")
+  ignored_fixed <- rbuildignore_excluded(entries, patterns_fixed)
+  expect_equal(entries[!auto & !ignored_fixed & !(entries %in% ships)],
+               character(0))
+})
+
+test_that("R's own rules cover the build artifacts its verification step creates", {
+  # `R CMD build .` and an in-tree `R CMD check` leave a tarball and a .Rcheck
+  # directory in the repo root. Both are excluded by R, so neither may be
+  # reported as undeclared -- otherwise following the issue's own verification
+  # instructions reddens the suite.
+  entries <- c("gq_0.13.0.tar.gz", "gq_0.13.0.tgz", "gq.Rcheck", "gqOld",
+               ".claude")
+  isdir   <- c(FALSE, FALSE, TRUE, TRUE, TRUE)
+  auto <- r_auto_excluded(entries, isdir)
+
+  expect_true(all(auto[1:4]))
+  # ...and the rule is not so broad that it swallows the thing being guarded.
+  expect_false(auto[[5]])
+  # A tarball belonging to some OTHER package is not ours to excuse.
+  expect_false(r_auto_excluded("otherpkg_1.0.tar.gz", FALSE))
+})
+
+test_that("every .Rbuildignore line is anchored, and none is prose", {
+  # .Rbuildignore HAS NO COMMENT SYNTAX. tools:::inRbuildignore loops over every
+  # non-empty line and ORs grepl() of it against the file list -- it strips
+  # nothing and skips nothing.
+  #
+  # So every non-empty line is a live regex matched against every relative path
+  # in the package. A "# explanatory note" is a pattern, and one containing `.*`
+  # or a leading `^` would silently drop files from the tarball. Five such lines
+  # were added to this file during #76 and removed again on measuring that.
+  #
+  # Requiring a leading `^` excludes prose, since no sentence starts with `^`.
+  # It does NOT establish anchoring, and an earlier version of this comment
+  # claimed it did -- naming the mechanism where the requirement is the
+  # capability. `^test` starts with `^` and still excludes tests/; so does
+  # `^.*\.csv$`, which this file itself carried in the shape `^.*\.egg-info$`
+  # until it was measured. PCRE `.` matches `/`, so that pattern reached every
+  # path at any depth.
+  #
+  # The property is asserted directly in the test below instead. This one keeps
+  # only the claim it can support.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
+
+  lines <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
+  lines <- lines[nzchar(lines)]        # what R itself iterates
+
+  expect_gt(length(lines), 10)
+  expect_equal(lines[!startsWith(lines, "^")], character(0))
+})
+
+test_that("no .Rbuildignore pattern matches a file gq ships", {
+  # The direct form of the property the anchoring rule above only gestures at:
+  # a pattern must not remove anything we intend to publish. Checked against
+  # every real path under the shipped directories, at every depth -- so a
+  # depth-agnostic pattern is caught by what it actually matches rather than by
+  # how it is spelled.
+  #
+  # This is the direction R itself cannot cover. Its recursive hidden-files
+  # check catches things that ship and should not; nothing in R reports a file
+  # that quietly stopped shipping.
+  #
+  # STATED RESIDUAL: a DELIBERATE nested exclusion -- "we ship inst/, but not
+  # inst/examples/" -- reddens this test, and `ships` is a top-level allowlist
+  # with no way to express one. Nothing in gq needs such a line today (measured:
+  # 0 hits for every pattern in the file), and the direction is safe: it fails
+  # red, not green. If one is ever wanted, add a named exemption vector with a reason
+  # per entry rather than weakening the sweep, which is how a guard stops being
+  # a guard.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
+
+  patterns <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
+  patterns <- patterns[nzchar(patterns)]
+
+  # include.dirs = TRUE is load-bearing, and its absence was a silent hole.
+  # list.files(recursive = TRUE) returns FILES ONLY, but R builds its path set
+  # with dir(..., include.dirs = TRUE) and then unlinks a matched entry
+  # RECURSIVELY -- so a pattern naming a nested directory removes it and
+  # everything under it. Without this argument the sweep could not see that
+  # category at all: `^inst/registry$` is fully anchored, passes the rule above,
+  # deletes reg_main.json and every CSV beside it, and left this test green.
+  shipped_top <- intersect(ships, list.files(root$path))
+  paths <- unlist(lapply(shipped_top, function(d) {
+    rel <- list.files(file.path(root$path, d), recursive = TRUE,
+                      all.files = TRUE, no.. = TRUE, include.dirs = TRUE)
+    c(d, file.path(d, rel))
+  }))
+
+  # The sweep must actually be looking at something, NESTED directories
+  # included. Two premises, and the second has to name "nested" explicitly:
+  # `any(dir.exists(...))` was the obvious form and is decoration, because the
+  # top-level ships entries -- R, data, inst, man, tests, vignettes -- satisfy
+  # it on their own whether or not include.dirs is set. Measured: it returns
+  # TRUE for a files-only sweep and a complete one alike, so it cannot detect
+  # the regression it was added to detect.
+  expect_gt(length(paths), 100)
+  nested_dirs <- paths[grepl("/", paths, fixed = TRUE) &
+                         dir.exists(file.path(root$path, paths))]
+  expect_gt(length(nested_dirs), 0)
+
+  hit <- paths[rbuildignore_excluded(paths, patterns)]
+  expect_equal(hit, character(0))
+
+  # Restore the bug: a nested directory the sweep must be able to see. Without
+  # include.dirs this returns nothing and the sweep is decoration.
+  expect_true("inst/registry" %in% paths)
+  expect_equal(paths[rbuildignore_excluded(paths, "^inst/registry$")],
+               "inst/registry")
+})
+
+test_that("the guard fires when a shipped directory is excluded by accident", {
+  # The silent direction. .Rbuildignore patterns are unanchored partial
+  # matches, so a bare `test` line -- a plausible edit for someone meaning to
+  # ignore a scratch file -- drops tests/ from the tarball entirely.
+  #
+  # Every "is anything shipping that shouldn't" assertion passes in that state,
+  # and sum(ignored) rises, so the premise checks are satisfied MORE by the
+  # broken tree than the correct one. Only the shipped_but_excluded assertion
+  # can see it.
+  entries <- c("DESCRIPTION", "R", "man", "tests", "vignettes")
+  isdir <- c(FALSE, TRUE, TRUE, TRUE, TRUE)
+
+  auto <- r_auto_excluded(entries, isdir)
+  ignored_ok <- rbuildignore_excluded(entries, "^planning$")
+  expect_equal(entries[ignored_ok & entries %in% ships], character(0))
+
+  ignored_bad <- rbuildignore_excluded(entries, c("^planning$", "test"))
+  expect_equal(entries[ignored_bad & entries %in% ships], "tests")
+
+  # The `auto` half of the same assertion, which had no restore-the-bug case:
+  # half of it had been seen to fail and half had not. Unreachable with today's
+  # `ships` -- measured, no R rule touches any of the eleven -- so it takes a
+  # widened `ships` to reach, which is exactly the change that would introduce
+  # the defect.
+  wider <- c(ships, "chm", "toolsOld")
+  odd <- c("DESCRIPTION", "chm", "toolsOld")
+  odd_auto <- r_auto_excluded(odd, c(FALSE, TRUE, TRUE))
+  expect_setequal(odd[odd_auto & odd %in% wider], c("chm", "toolsOld"))
+
+  # ...and the assertion it slips past, to show why the new one is needed.
+  expect_equal(entries[!auto & !ignored_bad & !(entries %in% ships)],
+               character(0))
+})
+
+test_that(".claude/visibility is still tracked in git", {
+  # The fix excludes .claude from the TARBALL. The tempting wrong fix is to
+  # gitignore it, which would drop the visibility marker -- and its absence
+  # defaults claude-md-init to "internal", the wrong answer for a public repo.
+  # Prose in .gitignore says so; this asserts it.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), "needs a git checkout")
+  # file.exists, NOT dir.exists. In a worktree created by `git worktree add`,
+  # .git is a FILE containing a gitdir: pointer -- so dir.exists() is FALSE and
+  # this guard silently skipped, in the checkout layout CLAUDE.md actually
+  # prescribes ("one worktree per session"). git works perfectly there and
+  # returns the right answer; only the guard was absent.
+  #
+  # The check still earns its place: a source tree obtained without git (a
+  # GitHub zip) has no .git at all, and `git ls-files` would exit 128 there,
+  # failing the assertion below for the wrong reason.
+  #
+  # It covers two states, not one. The third -- a .git FILE whose gitdir target
+  # is gone (a copied or rsynced worktree, a moved main repo, `COPY . /pkg` into
+  # a container) -- now FAILS where it used to skip. That is deliberate and it
+  # is the rule established above: a git that ran and reported a problem is a
+  # failure, not a skip. Exit 128 is exactly that.
+  skip_if(!file.exists(file.path(root$path, ".git")), "not a git checkout")
+
+  # shQuote the path: system2() quotes the command but pastes args on raw, so a
+  # repo checked out under a path containing a space would silently return
+  # nothing and this would pass for the wrong reason.
+  # Test for git BEFORE calling it. system2() raises an R error when the command
+  # does not exist -- it does not return a status attribute -- so a skip placed
+  # after the call cannot be reached, and a machine without git errored the test
+  # rather than skipping it. The condition was self-contradictory as well: an
+  # exit status of 0 means git ran, which cannot hold at the same time as git
+  # being absent from PATH.
+  skip_if(!nzchar(Sys.which("git")), "git not installed")
+
+  args <- c("-C", shQuote(root$path), "ls-files", ".claude")
+  out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
+
+  # A git that RAN and reported a problem is a failure, not a skip.
+  expect_null(attr(out, "status"))
+  expect_true(".claude/visibility" %in% out)
+})
+
+test_that("an .Rbuildignore pattern is matched the way R matches it", {
+  # Partial, not anchored: R uses grepl() with no implicit ^$. A pattern
+  # written without them excludes more than its author meant, and this is the
+  # cheapest place to see that.
+  expect_true(rbuildignore_excluded("planning", "plan"))
+  expect_false(rbuildignore_excluded("planning", "^plan$"))
+  # Case-insensitive, which is easy to forget when reading .Rbuildignore.
+  expect_true(rbuildignore_excluded("CLAUDE.md", "^claude\\.md$"))
+  # An empty line in .Rbuildignore must not match everything.
+  expect_false(rbuildignore_excluded("R", c("", "^nope$")))
+})
