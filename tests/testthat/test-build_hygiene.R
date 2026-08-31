@@ -352,19 +352,34 @@ test_that("no .Rbuildignore pattern matches a file gq ships", {
   patterns <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
   patterns <- patterns[nzchar(patterns)]
 
-  shipped_dirs <- intersect(ships, list.files(root$path))
-  paths <- unlist(lapply(shipped_dirs, function(d) {
+  # include.dirs = TRUE is load-bearing, and its absence was a silent hole.
+  # list.files(recursive = TRUE) returns FILES ONLY, but R builds its path set
+  # with dir(..., include.dirs = TRUE) and then unlinks a matched entry
+  # RECURSIVELY -- so a pattern naming a nested directory removes it and
+  # everything under it. Without this argument the sweep could not see that
+  # category at all: `^inst/registry$` is fully anchored, passes the rule above,
+  # deletes reg_main.json and every CSV beside it, and left this test green.
+  shipped_top <- intersect(ships, list.files(root$path))
+  paths <- unlist(lapply(shipped_top, function(d) {
     rel <- list.files(file.path(root$path, d), recursive = TRUE,
-                      all.files = TRUE, no.. = TRUE)
+                      all.files = TRUE, no.. = TRUE, include.dirs = TRUE)
     c(d, file.path(d, rel))
   }))
-  paths <- c(paths, intersect(ships, list.files(root$path)))
 
-  # The sweep must actually be looking at something.
+  # The sweep must actually be looking at something, directories included --
+  # a files-only sweep still clears 100 comfortably, so count alone is not
+  # enough of a premise.
   expect_gt(length(paths), 100)
+  expect_true(any(dir.exists(file.path(root$path, paths))))
 
   hit <- paths[rbuildignore_excluded(paths, patterns)]
   expect_equal(hit, character(0))
+
+  # Restore the bug: a nested directory the sweep must be able to see. Without
+  # include.dirs this returns nothing and the sweep is decoration.
+  expect_true("inst/registry" %in% paths)
+  expect_equal(paths[rbuildignore_excluded(paths, "^inst/registry$")],
+               "inst/registry")
 })
 
 test_that("the guard fires when a shipped directory is excluded by accident", {
@@ -413,17 +428,19 @@ test_that(".claude/visibility is still tracked in git", {
   # shQuote the path: system2() quotes the command but pastes args on raw, so a
   # repo checked out under a path containing a space would silently return
   # nothing and this would pass for the wrong reason.
+  # Test for git BEFORE calling it. system2() raises an R error when the command
+  # does not exist -- it does not return a status attribute -- so a skip placed
+  # after the call cannot be reached, and a machine without git errored the test
+  # rather than skipping it. The condition was self-contradictory as well: an
+  # exit status of 0 means git ran, which cannot hold at the same time as git
+  # being absent from PATH.
+  skip_if(!nzchar(Sys.which("git")), "git not installed")
+
   args <- c("-C", shQuote(root$path), "ls-files", ".claude")
   out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
 
-  # Skip only when git could not run at all. An earlier version skipped on ANY
-  # non-zero status, which is the fail-toward-skip shape: a git that ran and
-  # reported a problem would have been read as "git unavailable" and the
-  # assertion silently dropped.
-  skip_if(is.null(attr(out, "status")) && !length(out) &&
-            !nzchar(Sys.which("git")), "git not installed")
+  # A git that RAN and reported a problem is a failure, not a skip.
   expect_null(attr(out, "status"))
-
   expect_true(".claude/visibility" %in% out)
 })
 
