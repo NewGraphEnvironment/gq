@@ -17,7 +17,7 @@
 ^Rplots\.pdf$
 ^\.venv$
 ^__pycache__$
-^.*\.egg-info$
+^[^/]+\.egg-info$
 ^dist$
 ^\.vscode$
 ^\.idea$

@@ -239,6 +239,18 @@ test_that("every top-level entry is either shipped on purpose or excluded on pur
 
     # No dot-file survived the build, whatever it is called.
     expect_equal(entries[startsWith(entries, ".")], character(0))
+
+    # ...and the silent direction, which for a long time was asserted ONLY in
+    # source mode -- the mode R CMD check can never select, since rcmdcheck
+    # always checks a tarball and 00_pkg_src exists whenever it does. So the
+    # half of the property that catches an over-broad .Rbuildignore line lived
+    # exclusively in the branch CI does not run, while the branch CI does run
+    # held the artifact and never made the check.
+    #
+    # setdiff() this way round is the point. The assertion above is empty for a
+    # SUBSET as readily as for the full set, so dropping tests/, man/ or
+    # vignettes/ from the tarball left all three assertions green -- measured.
+    expect_equal(setdiff(ships, entries), character(0))
   }
 })
 
@@ -304,10 +316,16 @@ test_that("every .Rbuildignore line is anchored, and none is prose", {
   # or a leading `^` would silently drop files from the tarball. Five such lines
   # were added to this file during #76 and removed again on measuring that.
   #
-  # Requiring a leading `^` is the root-cause fix for the silent direction
-  # below: it is what makes a bare `test` line -- which drops tests/ from the
-  # tarball entirely -- impossible to add unnoticed. It also excludes prose,
-  # since no sentence starts with `^`.
+  # Requiring a leading `^` excludes prose, since no sentence starts with `^`.
+  # It does NOT establish anchoring, and an earlier version of this comment
+  # claimed it did -- naming the mechanism where the requirement is the
+  # capability. `^test` starts with `^` and still excludes tests/; so does
+  # `^.*\.csv$`, which this file itself carried in the shape `^.*\.egg-info$`
+  # until it was measured. PCRE `.` matches `/`, so that pattern reached every
+  # path at any depth.
+  #
+  # The property is asserted directly in the test below instead. This one keeps
+  # only the claim it can support.
   root <- build_root()
   skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
 
@@ -316,6 +334,37 @@ test_that("every .Rbuildignore line is anchored, and none is prose", {
 
   expect_gt(length(lines), 10)
   expect_equal(lines[!startsWith(lines, "^")], character(0))
+})
+
+test_that("no .Rbuildignore pattern matches a file gq ships", {
+  # The direct form of the property the anchoring rule above only gestures at:
+  # a pattern must not remove anything we intend to publish. Checked against
+  # every real path under the shipped directories, at every depth -- so a
+  # depth-agnostic pattern is caught by what it actually matches rather than by
+  # how it is spelled.
+  #
+  # This is the direction R itself cannot cover. Its recursive hidden-files
+  # check catches things that ship and should not; nothing in R reports a file
+  # that quietly stopped shipping.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
+
+  patterns <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
+  patterns <- patterns[nzchar(patterns)]
+
+  shipped_dirs <- intersect(ships, list.files(root$path))
+  paths <- unlist(lapply(shipped_dirs, function(d) {
+    rel <- list.files(file.path(root$path, d), recursive = TRUE,
+                      all.files = TRUE, no.. = TRUE)
+    c(d, file.path(d, rel))
+  }))
+  paths <- c(paths, intersect(ships, list.files(root$path)))
+
+  # The sweep must actually be looking at something.
+  expect_gt(length(paths), 100)
+
+  hit <- paths[rbuildignore_excluded(paths, patterns)]
+  expect_equal(hit, character(0))
 })
 
 test_that("the guard fires when a shipped directory is excluded by accident", {
@@ -337,6 +386,16 @@ test_that("the guard fires when a shipped directory is excluded by accident", {
   ignored_bad <- rbuildignore_excluded(entries, c("^planning$", "test"))
   expect_equal(entries[ignored_bad & entries %in% ships], "tests")
 
+  # The `auto` half of the same assertion, which had no restore-the-bug case:
+  # half of it had been seen to fail and half had not. Unreachable with today's
+  # `ships` -- measured, no R rule touches any of the eleven -- so it takes a
+  # widened `ships` to reach, which is exactly the change that would introduce
+  # the defect.
+  wider <- c(ships, "chm", "toolsOld")
+  odd <- c("DESCRIPTION", "chm", "toolsOld")
+  odd_auto <- r_auto_excluded(odd, c(FALSE, TRUE, TRUE))
+  expect_setequal(odd[odd_auto & odd %in% wider], c("chm", "toolsOld"))
+
   # ...and the assertion it slips past, to show why the new one is needed.
   expect_equal(entries[!auto & !ignored_bad & !(entries %in% ships)],
                character(0))
@@ -356,7 +415,14 @@ test_that(".claude/visibility is still tracked in git", {
   # nothing and this would pass for the wrong reason.
   args <- c("-C", shQuote(root$path), "ls-files", ".claude")
   out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
-  skip_if(!is.null(attr(out, "status")), "git unavailable")
+
+  # Skip only when git could not run at all. An earlier version skipped on ANY
+  # non-zero status, which is the fail-toward-skip shape: a git that ran and
+  # reported a problem would have been read as "git unavailable" and the
+  # assertion silently dropped.
+  skip_if(is.null(attr(out, "status")) && !length(out) &&
+            !nzchar(Sys.which("git")), "git not installed")
+  expect_null(attr(out, "status"))
 
   expect_true(".claude/visibility" %in% out)
 })
