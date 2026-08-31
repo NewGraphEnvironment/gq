@@ -55,6 +55,13 @@ r_auto_excluded <- function(entries, isdir, pkgname = "gq") {
   # apply to a TOP-LEVEL entry -- its src/ and inst/doc/ rules cannot. The
   # `.Rcheck$` rule matters for the same reason as the tarball one: an in-tree
   # R CMD check leaves gq.Rcheck/ behind.
+  #
+  # Note `isdir &` on the version-control rule. That gate is R's, not ours, and
+  # it has a real consequence: in a git WORKTREE, `.git` is a file rather than a
+  # directory, so R does not exclude it and `R CMD build` ships it -- measured,
+  # `gq/.git` in the tarball, containing an absolute path to the developer's
+  # machine. This guard found that by failing in a worktree; `^\.git$` in
+  # .Rbuildignore is what fixes it.
   by_pattern | by_tarball | by_index |
     (isdir & entries %in% c("check", "chm", tools:::.vc_dir_names)) |
     (isdir & grepl("([Oo]ld|\\.Rcheck)$", entries)) |
@@ -346,6 +353,14 @@ test_that("no .Rbuildignore pattern matches a file gq ships", {
   # This is the direction R itself cannot cover. Its recursive hidden-files
   # check catches things that ship and should not; nothing in R reports a file
   # that quietly stopped shipping.
+  #
+  # STATED RESIDUAL: a DELIBERATE nested exclusion -- "we ship inst/, but not
+  # inst/examples/" -- reddens this test, and `ships` is a top-level allowlist
+  # with no way to express one. Nothing in gq needs such a line today (measured:
+  # 0 hits per pattern across all 24), and the direction is safe: it fails red,
+  # not green. If one is ever wanted, add a named exemption vector with a reason
+  # per entry rather than weakening the sweep, which is how a guard stops being
+  # a guard.
   root <- build_root()
   skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
 
@@ -429,7 +444,16 @@ test_that(".claude/visibility is still tracked in git", {
   # Prose in .gitignore says so; this asserts it.
   root <- build_root()
   skip_if(!identical(root$mode, "source"), "needs a git checkout")
-  skip_if(!dir.exists(file.path(root$path, ".git")), "not a git checkout")
+  # file.exists, NOT dir.exists. In a worktree created by `git worktree add`,
+  # .git is a FILE containing a gitdir: pointer -- so dir.exists() is FALSE and
+  # this guard silently skipped, in the checkout layout CLAUDE.md actually
+  # prescribes ("one worktree per session"). git works perfectly there and
+  # returns the right answer; only the guard was absent.
+  #
+  # The check still earns its place: a source tree obtained without git (a
+  # GitHub zip) has no .git at all, and `git ls-files` would exit 128 there,
+  # failing the assertion below for the wrong reason.
+  skip_if(!file.exists(file.path(root$path, ".git")), "not a git checkout")
 
   # shQuote the path: system2() quotes the command but pastes args on raw, so a
   # repo checked out under a path containing a space would silently return
