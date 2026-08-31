@@ -4,6 +4,8 @@
 ^pkgdown$
 ^\.github$
 ^CLAUDE\.md$
+^\.claude$
+^gq\.Rproj$
 ^dev$
 ^python$
 ^scripts$

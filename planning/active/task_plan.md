@@ -93,10 +93,11 @@ would have matched today's repo exactly and covered nothing new.
 
 ## Phase 2: The fix
 
-- [ ] Add `^\.claude$` and `^gq\.Rproj$` to `.Rbuildignore`
-- [ ] `devtools::test()` — the guard from Phase 1 now passes
-- [ ] `/code-check` on the staged diff
-- [ ] Commit (fix + checkbox flip)
+- [x] Add `^\.claude$` and `^gq\.Rproj$` to `.Rbuildignore`
+- [x] `devtools::test()` — the guard from Phase 1 now passes (`FAIL 0 | PASS 21`;
+      the extra pass over Phase 1's 20 is the source-mode assertion going green)
+- [x] `/code-check` on the staged diff
+- [x] Commit (fix + checkbox flip)
 
 ## Phase 3: Verify against the artifacts, not the config
 
