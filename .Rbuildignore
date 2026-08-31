@@ -15,11 +15,6 @@
 ^doc$
 ^Meta$
 ^Rplots\.pdf$
-# Local dev detritus. .gitignore already decided none of this belongs to the
-# repo; .Rbuildignore had never been asked, so it shipped from any machine
-# where it happened to exist. R excludes .Rhistory/.RData/.Rproj.user/.DS_Store
-# on its own -- these are the rest. `build` is deliberately absent: R CMD build
-# creates build/ itself for vignette metadata.
 ^\.venv$
 ^__pycache__$
 ^.*\.egg-info$

@@ -177,10 +177,10 @@ test_that("R still exposes the exclusion rules this guard is pinned to", {
   # lists could empty out and the guard would silently widen.
   expect_true(".git" %in% tools:::.vc_dir_names)
   expect_true(".gitignore" %in% tools:::.hidden_file_exclusions)
-  expect_true(any(vapply(tools:::get_exclude_patterns(),
-                         function(p) grepl(p, ".Rbuildignore", perl = TRUE,
-                                           ignore.case = TRUE),
-                         logical(1))))
+  covers_rbuildignore <- vapply(tools:::get_exclude_patterns(), function(p) {
+    grepl(p, ".Rbuildignore", perl = TRUE, ignore.case = TRUE)
+  }, logical(1))
+  expect_true(any(covers_rbuildignore))
 })
 
 test_that("every top-level entry is either shipped on purpose or excluded on purpose", {
@@ -220,7 +220,12 @@ test_that("every top-level entry is either shipped on purpose or excluded on pur
     # tests/ from the tarball entirely. Measured: every assertion above still
     # passes in that state, and `sum(ignored)` goes UP, so the premise check is
     # satisfied more comfortably by the broken tree than by the correct one.
-    shipped_but_excluded <- entries[ignored & entries %in% ships]
+    # `auto` as well as `ignored`: R's own rules would drop a top-level `check`,
+    # `chm` or anything ending `Old` too, so testing only .Rbuildignore would
+    # leave that half unguarded. Not reachable with today's `ships` -- measured,
+    # none of the eleven is touched by any R rule -- which is exactly why it
+    # needs pinning rather than leaving to inspection.
+    shipped_but_excluded <- entries[(ignored | auto) & entries %in% ships]
     expect_equal(shipped_but_excluded, character(0))
 
     # A name in `ships` that no longer exists is a decision nobody re-made.
@@ -289,6 +294,30 @@ test_that("R's own rules cover the build artifacts its verification step creates
   expect_false(r_auto_excluded("otherpkg_1.0.tar.gz", FALSE))
 })
 
+test_that("every .Rbuildignore line is anchored, and none is prose", {
+  # .Rbuildignore HAS NO COMMENT SYNTAX. tools:::inRbuildignore loops over every
+  # non-empty line and ORs grepl() of it against the file list -- it strips
+  # nothing and skips nothing.
+  #
+  # So every non-empty line is a live regex matched against every relative path
+  # in the package. A "# explanatory note" is a pattern, and one containing `.*`
+  # or a leading `^` would silently drop files from the tarball. Five such lines
+  # were added to this file during #76 and removed again on measuring that.
+  #
+  # Requiring a leading `^` is the root-cause fix for the silent direction
+  # below: it is what makes a bare `test` line -- which drops tests/ from the
+  # tarball entirely -- impossible to add unnoticed. It also excludes prose,
+  # since no sentence starts with `^`.
+  root <- build_root()
+  skip_if(!identical(root$mode, "source"), ".Rbuildignore is not shipped")
+
+  lines <- readLines(file.path(root$path, ".Rbuildignore"), warn = FALSE)
+  lines <- lines[nzchar(lines)]        # what R itself iterates
+
+  expect_gt(length(lines), 10)
+  expect_equal(lines[!startsWith(lines, "^")], character(0))
+})
+
 test_that("the guard fires when a shipped directory is excluded by accident", {
   # The silent direction. .Rbuildignore patterns are unanchored partial
   # matches, so a bare `test` line -- a plausible edit for someone meaning to
@@ -325,9 +354,8 @@ test_that(".claude/visibility is still tracked in git", {
   # shQuote the path: system2() quotes the command but pastes args on raw, so a
   # repo checked out under a path containing a space would silently return
   # nothing and this would pass for the wrong reason.
-  out <- suppressWarnings(system2(
-    "git", c("-C", shQuote(root$path), "ls-files", ".claude"),
-    stdout = TRUE, stderr = FALSE))
+  args <- c("-C", shQuote(root$path), "ls-files", ".claude")
+  out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
   skip_if(!is.null(attr(out, "status")), "git unavailable")
 
   expect_true(".claude/visibility" %in% out)
