@@ -366,11 +366,17 @@ test_that("no .Rbuildignore pattern matches a file gq ships", {
     c(d, file.path(d, rel))
   }))
 
-  # The sweep must actually be looking at something, directories included --
-  # a files-only sweep still clears 100 comfortably, so count alone is not
-  # enough of a premise.
+  # The sweep must actually be looking at something, NESTED directories
+  # included. Two premises, and the second has to name "nested" explicitly:
+  # `any(dir.exists(...))` was the obvious form and is decoration, because the
+  # top-level ships entries -- R, data, inst, man, tests, vignettes -- satisfy
+  # it on their own whether or not include.dirs is set. Measured: it returns
+  # TRUE for a files-only sweep and a complete one alike, so it cannot detect
+  # the regression it was added to detect.
   expect_gt(length(paths), 100)
-  expect_true(any(dir.exists(file.path(root$path, paths))))
+  nested_dirs <- paths[grepl("/", paths, fixed = TRUE) &
+                         dir.exists(file.path(root$path, paths))]
+  expect_gt(length(nested_dirs), 0)
 
   hit <- paths[rbuildignore_excluded(paths, patterns)]
   expect_equal(hit, character(0))
