@@ -99,6 +99,42 @@ Both apply to a top-level allowlist. The `ships` list must name only what gq
 genuinely intends to publish, and the root must be resolved by testing for
 `.Rbuildignore` itself.
 
+## R CMD build applies three exclusion mechanisms, not one
+
+Probed from `tools:::.build_packages` and `tools:::inRbuildignore` rather than
+written from memory. A top-level entry is dropped from the tarball if **any** of
+these hits:
+
+| mechanism | object | covers, of gq's top level |
+|---|---|---|
+| default patterns, prepended to `.Rbuildignore`'s own lines | `tools:::get_exclude_patterns()` | `.Rbuildignore` |
+| version-control directories (dirs only) | `tools:::.vc_dir_names` | `.git` |
+| hidden files | `tools:::.hidden_file_exclusions` | `.gitignore` |
+
+Plus `Read-and-delete-me`, `GNUMakefile`, anything starting `._`, `check`/`chm`
+dirs, `*Old`/`*.Rcheck` dirs, and some `src/` and `inst/doc/` rules that cannot
+apply at top level.
+
+Measured against the entries that matter:
+
+```
+                 .git  .gitignore  .Rbuildignore  .claude  gq.Rproj
+default patterns    -           -           TRUE        -         -
+.vc_dir_names    TRUE           -              -        -         -
+.hidden_file_...    -        TRUE              -        -         -
+```
+
+So `.claude` and `gq.Rproj` are excluded by **nothing**, which is the mechanism
+behind the tarball evidence, and `.Rproj.user` — which *is* in
+`.hidden_file_exclusions` — is why an RStudio project's state directory never
+NOTEs while `gq.Rproj` does.
+
+Consequence for the guard: it must model all three, and it pins to R's own
+objects rather than transcribing them. Hardcoding `c(".git", ".gitignore")`
+would have matched this repo exactly today and covered nothing added later —
+the coincidental-scope defect `CLAUDE.md` describes, where a literal set used as
+a filter looks like a deliberate enumeration.
+
 ## `.Rbuildignore` matching semantics
 
 Per R-exts: patterns are Perl-like regular expressions, matched against the

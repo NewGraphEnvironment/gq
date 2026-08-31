@@ -55,12 +55,13 @@ test fails naming it:
    (`DESCRIPTION`, `NAMESPACE`, `NEWS.md`, `README.md`, `LICENSE`, `R`, `data`,
    `inst`, `man`, `tests`, `vignettes`).
 
-- [ ] Write `test-build_hygiene.R` with the three-category assertion
-- [ ] Resolve the root by testing for the **`.Rbuildignore` file**, never for a
+- [x] Write `test-build_hygiene.R` with the three-category assertion
+- [x] Resolve the root by testing for the **`.Rbuildignore` file**, never for a
       directory of the right name — walk `..`, `../..`, `../../..`. Under
       `R CMD check` the source is at `../00_pkg_src/gq`, which is the second
-      mode below
-- [ ] Two modes, so the guard is not a pure skip:
+      mode below. Also requires `DESCRIPTION` to name `gq`, so a stranger's
+      tree one level up cannot satisfy it
+- [x] Two modes, so the guard is not a pure skip:
       - **source tree** (`.Rbuildignore` found) → the full three-category
         assertion above
       - **unpacked tarball** (`../00_pkg_src/gq` found, no `.Rbuildignore` —
@@ -68,18 +69,27 @@ test fails naming it:
         not present. This is evidence from the artifact itself
       - neither → `skip()` with a message naming the layouts expected, so a
         skip reads as a skip
-- [ ] Companion test on **synthetic** input that runs unconditionally: feed the
+- [x] Companion test on **synthetic** input that runs unconditionally: feed the
       matcher a fake top-level listing plus a fake `.Rbuildignore` and assert it
       reports the unexplained entry. Without this, a skip leaves the logic
       entirely unexercised
-- [ ] Assert every `ships` entry still exists — a stale allowlist entry is a
+- [x] Assert every `ships` entry still exists — a stale allowlist entry is a
       decision nobody re-made. Do **not** assert the same of `.Rbuildignore`
       patterns: `^Rplots\.pdf$`, `^doc$`, `^Meta$` are transient build artifacts
       that legitimately do not exist
-- [ ] Run `devtools::test()` and **confirm the new test FAILS**, naming
+- [x] Run `devtools::test()` and **confirm the new test FAILS**, naming
       `.claude` and `gq.Rproj`. If it passes here, the guard cannot fire and the
-      rest of this plan is theatre
-- [ ] Commit (test + checkbox flip)
+      rest of this plan is theatre — **confirmed**, `FAIL 1 | PASS 20`, the one
+      failure being `unexplained` = `.claude`, `gq.Rproj`
+- [x] Commit (test + checkbox flip)
+
+**Deviation from the plan, for the better.** The plan said to hardcode
+`auto_excluded` as R CMD build's built-in exclusions "citing R-exts". Probing
+`tools:::.build_packages` showed R applies **three** separate mechanisms, and
+pinning the guard to R's own objects (`get_exclude_patterns()`,
+`.vc_dir_names`, `.hidden_file_exclusions`) rather than transcribing them
+avoids the coincidental-scope defect: a hardcoded `c(".git", ".gitignore")`
+would have matched today's repo exactly and covered nothing new.
 
 ## Phase 2: The fix
 
