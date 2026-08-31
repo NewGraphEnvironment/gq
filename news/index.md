@@ -1,5 +1,46 @@
 # Changelog
 
+## gq 0.13.1
+
+- **`.claude/`, `gq.Rproj` and a worktree’s `.git` no longer ship in the
+  tarball.** `R CMD build` ships every top-level entry nothing excludes,
+  so all three were landing in the library of anyone installing gq from
+  GitHub, and `R CMD check --as-cran` reported the first two as NOTEs.
+  Three `.Rbuildignore` lines; `Status: 2 WARNINGs, 2 NOTEs` becomes
+  `Status: 2 WARNINGs`, and the tarball is otherwise unchanged at 226
+  paths — none lost, none gained. The two remaining WARNINGs are
+  separate and tracked in
+  [\#51](https://github.com/NewGraphEnvironment/gq/issues/51).
+
+- **`R CMD build` ships the `.git` file when you build from a git
+  worktree, and that is worth knowing outside gq.** R excludes
+  version-control entries with an `isdir`-gated rule, and a worktree’s
+  `.git` is a *file* containing an absolute path to the developer’s
+  machine — so nothing excluded it. `.gitignore`, `.gitattributes` and
+  `.gitmodules` are safe, being covered by an ungated rule; `.git` is
+  the only version-control name with a legitimate file form and no
+  ungated rule, so it is the whole exposure. Any package built from a
+  worktree has been shipping it.
+
+  It stayed hidden because the guard that would have caught it tested
+  `dir.exists(".git")`, which is false in a worktree — so in the
+  checkout layout our conventions prescribe, the guard silently skipped.
+  A guard that cannot run is not a weaker guard, it is an absent one.
+
+- **`tests/testthat/test-build_hygiene.R` fails the suite when a
+  top-level entry is neither shipped on purpose nor excluded on
+  purpose.** The NOTE this replaces is non-blocking under the workflow’s
+  deliberate `error-on: "error"`, so it had printed on every CI run
+  since CI landed and gated nothing; a test failure is an ERROR in
+  `checking tests`. The guard also asserts the other direction — that no
+  `.Rbuildignore` pattern matches a path we ship, checked at every
+  depth, since nothing in R reports a file that quietly stopped
+  shipping.
+
+  Also swept in: `.gitignore` excluded `.venv`, `__pycache__`, `dist`,
+  `.vscode`, `.idea`, `*.egg-info` and `Thumbs.db` while `.Rbuildignore`
+  excluded none of them, so any machine holding one shipped it.
+
 ## gq 0.13.0
 
 - **`High Detail - Crossings` shows its layers in `bcrestoration_mobile`
@@ -228,7 +269,7 @@
   [\#61](https://github.com/NewGraphEnvironment/gq/issues/61).
 
 - Both vignettes moved to
-  [`bookdown::html_vignette2`](https://pkgs.rstudio.com/bookdown/reference/html_document2.html)
+  [`bookdown::html_vignette2`](https://rdrr.io/pkg/bookdown/man/html_document2.html)
   with numbered figure captions; `bookdown` added to `Suggests`.
 
 - Removed the dead `registry/` directory at the repo root — a

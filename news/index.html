@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.13.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,18 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.13.1" id="gq-0131">gq 0.13.1<a class="anchor" aria-label="anchor" href="#gq-0131"></a></h2>
+<ul><li><p><strong><code>.claude/</code>, <code>gq.Rproj</code> and a worktree’s <code>.git</code> no longer ship in the tarball.</strong> <code>R CMD build</code> ships every top-level entry nothing excludes, so all three were landing in the library of anyone installing gq from GitHub, and <code>R CMD check --as-cran</code> reported the first two as NOTEs. Three <code>.Rbuildignore</code> lines; <code>Status: 2 WARNINGs, 2 NOTEs</code> becomes <code>Status: 2 WARNINGs</code>, and the tarball is otherwise unchanged at 226 paths — none lost, none gained. The two remaining WARNINGs are separate and tracked in <a href="https://github.com/NewGraphEnvironment/gq/issues/51" class="external-link">#51</a>.</p></li>
+<li>
+<p><strong><code>R CMD build</code> ships the <code>.git</code> file when you build from a git worktree, and that is worth knowing outside gq.</strong> R excludes version-control entries with an <code>isdir</code>-gated rule, and a worktree’s <code>.git</code> is a <em>file</em> containing an absolute path to the developer’s machine — so nothing excluded it. <code>.gitignore</code>, <code>.gitattributes</code> and <code>.gitmodules</code> are safe, being covered by an ungated rule; <code>.git</code> is the only version-control name with a legitimate file form and no ungated rule, so it is the whole exposure. Any package built from a worktree has been shipping it.</p>
+<p>It stayed hidden because the guard that would have caught it tested <code>dir.exists(".git")</code>, which is false in a worktree — so in the checkout layout our conventions prescribe, the guard silently skipped. A guard that cannot run is not a weaker guard, it is an absent one.</p>
+</li>
+<li>
+<p><strong><code>tests/testthat/test-build_hygiene.R</code> fails the suite when a top-level entry is neither shipped on purpose nor excluded on purpose.</strong> The NOTE this replaces is non-blocking under the workflow’s deliberate <code>error-on: "error"</code>, so it had printed on every CI run since CI landed and gated nothing; a test failure is an ERROR in <code>checking tests</code>. The guard also asserts the other direction — that no <code>.Rbuildignore</code> pattern matches a path we ship, checked at every depth, since nothing in R reports a file that quietly stopped shipping.</p>
+<p>Also swept in: <code>.gitignore</code> excluded <code>.venv</code>, <code>__pycache__</code>, <code>dist</code>, <code>.vscode</code>, <code>.idea</code>, <code>*.egg-info</code> and <code>Thumbs.db</code> while <code>.Rbuildignore</code> excluded none of them, so any machine holding one shipped it.</p>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.13.0" id="gq-0130">gq 0.13.0<a class="anchor" aria-label="anchor" href="#gq-0130"></a></h2>
 <ul><li>
@@ -129,7 +141,7 @@
 <p><strong>The composition vignette’s map now describes itself.</strong> Its most prominent feature — a 397-feature salmon habitat network — was styled from the registry and missing from the legend entirely, while the prose beneath described its widths and dashes. Fixed, along with the reason it went unnoticed: a new test parses the map chunk and fails the build if any layer drawn from the registry is absent from the legend.</p>
 <p>The map also gained AOI containment, type sized for the width it is published at, and an editorial cut — 130 of 146 crossings are modelled candidates rather than surveyed sites, and at their correct size they buried the network the map exists to show. <a href="https://github.com/NewGraphEnvironment/gq/issues/61" class="external-link">#61</a>.</p>
 </li>
-<li><p>Both vignettes moved to <code><a href="https://pkgs.rstudio.com/bookdown/reference/html_document2.html" class="external-link">bookdown::html_vignette2</a></code> with numbered figure captions; <code>bookdown</code> added to <code>Suggests</code>.</p></li>
+<li><p>Both vignettes moved to <code><a href="https://rdrr.io/pkg/bookdown/man/html_document2.html" class="external-link">bookdown::html_vignette2</a></code> with numbered figure captions; <code>bookdown</code> added to <code>Suggests</code>.</p></li>
 <li><p>Removed the dead <code>registry/</code> directory at the repo root — a build-ignored fossil superseded by <code>inst/registry/</code> at the original scaffold.</p></li>
 </ul></div>
     <div class="section level2">
