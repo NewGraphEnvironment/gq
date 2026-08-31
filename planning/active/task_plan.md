@@ -104,21 +104,44 @@ would have matched today's repo exactly and covered nothing new.
 The `.Rbuildignore` regex is easy to get subtly wrong, so neither of these is
 optional and neither substitutes for the other.
 
-- [ ] Tarball: `R CMD build . && tar tzf gq_*.tar.gz | grep -cE '^gq/(\.claude|gq\.Rproj)'` → **0**
-- [ ] `R CMD check`: capture the NOTE count **before and after** and report both
-      numbers. Expect a drop of 2. Baseline taken against the `main` tarball
-      (`865ebd6`), so the comparison is measured rather than recalled
-- [ ] Full `devtools::test()` green (suite is ~1050 tests; the count drifts, so
-      compare against a run on `main`, not against a remembered number)
-- [ ] Commit any fallout + checkbox flip
+- [x] Tarball: forbidden entries → **0**. Also diffed the full listing against
+      the last known-good build: **226 entries, none lost, none gained**, so the
+      new patterns are provably inert rather than merely believed to be
+- [x] `R CMD check`: measured like-for-like, both sides `--as-cran` with
+      `_R_CHECK_CRAN_INCOMING_=FALSE` so the flaky network check cannot move the
+      count. **before `2 WARNINGs, 2 NOTEs` → after `2 WARNINGs`.** Asserted the
+      two specific NOTE texts rather than a count, per review — `--as-cran` adds
+      a CRAN-incoming NOTE of its own that flaps. The two out-of-scope WARNINGs
+      persisting on both sides is the positive control: it proves the check ran
+      those sections rather than aborting
+- [x] Full `devtools::test()`: **FAIL 0 | PASS 1089** (main 1058 + 31 from the
+      new file). The one `WARN` is in `test-gq_registry_read.R`, untouched here
+      — confirmed present on `main` in a worktree rather than assumed
+- [x] `lintr`: 0, matching the house baseline (three existing test files also
+      score 0, so the 2 lints an earlier draft carried were regressions rather
+      than house style)
+- [x] Commit any fallout + checkbox flip
+
+**Three instrument errors during this phase, all silent, two of them
+reassuring** — wrong flags, an aborted run whose grep returned 0 and read as a
+pass, and a count regex that missed a check line carrying a `[4s/25s]` timing
+prefix. Reconciling against the tool's own `Status:` line catches all three and
+costs one command. Written up in `findings.md`.
 
 ## Phase 4: Close-out
 
-- [ ] File follow-up issues for the two out-of-scope warnings the issue names:
-      non-ASCII in `R/gq_qgs_extract.R` / `R/gq_reg.R`, and the undocumented
-      example datasets `crossing`/`lake`/`road`/`stream`/`watershed`
-- [ ] `NEWS.md` — judgement call at the time; this is a packaging fix with no
-      user-visible API change, so probably no entry. Decide, don't drift
+- [x] Follow-up issues for the two out-of-scope warnings — **not filed, because
+      #51 already covers both** and has since the CI workflow landed. The issue
+      said "file them if they are worth fixing"; checking first avoided two
+      duplicates
+- [x] Filed **#80** instead, a genuinely new finding from the plan review:
+      `test-vignette_legend_coverage.R` resolves `00_pkg_src` one level too
+      shallow under `R CMD check`. Harmless today because a `system.file()`
+      fallback catches it, but the dead branch reads as live coverage
+- [x] `NEWS.md` — **no entry.** Decided, not drifted: this changes what the
+      tarball contains and adds a test, with no user-visible API change, and
+      gq's NEWS is written for people reading release notes rather than
+      packaging internals
 - [ ] `/planning-archive`, then `/gh-pr-push`
 
 ## Validation
