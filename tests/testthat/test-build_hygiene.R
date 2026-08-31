@@ -216,6 +216,14 @@ test_that("every top-level entry is either shipped on purpose or excluded on pur
     expect_gt(sum(ignored), 5)
     expect_gt(sum(auto), 0)
 
+    # `.git` as a FILE -- a git worktree -- is not covered by R's isdir-gated
+    # version-control rule, so the ^\.git$ line is the only thing excluding it.
+    # Asserted unconditionally because the property is a fact about the pattern
+    # file, not about this checkout: in a .git-DIRECTORY clone (what
+    # actions/checkout produces) R excludes it anyway, so deleting that line is
+    # invisible there, and CI would never notice it go.
+    expect_true(rbuildignore_excluded(".git", patterns))
+
     unexplained <- entries[!auto & !ignored & !(entries %in% ships)]
     expect_equal(unexplained, character(0))
 
@@ -357,8 +365,8 @@ test_that("no .Rbuildignore pattern matches a file gq ships", {
   # STATED RESIDUAL: a DELIBERATE nested exclusion -- "we ship inst/, but not
   # inst/examples/" -- reddens this test, and `ships` is a top-level allowlist
   # with no way to express one. Nothing in gq needs such a line today (measured:
-  # 0 hits per pattern across all 24), and the direction is safe: it fails red,
-  # not green. If one is ever wanted, add a named exemption vector with a reason
+  # 0 hits for every pattern in the file), and the direction is safe: it fails
+  # red, not green. If one is ever wanted, add a named exemption vector with a reason
   # per entry rather than weakening the sweep, which is how a guard stops being
   # a guard.
   root <- build_root()
@@ -453,6 +461,12 @@ test_that(".claude/visibility is still tracked in git", {
   # The check still earns its place: a source tree obtained without git (a
   # GitHub zip) has no .git at all, and `git ls-files` would exit 128 there,
   # failing the assertion below for the wrong reason.
+  #
+  # It covers two states, not one. The third -- a .git FILE whose gitdir target
+  # is gone (a copied or rsynced worktree, a moved main repo, `COPY . /pkg` into
+  # a container) -- now FAILS where it used to skip. That is deliberate and it
+  # is the rule established above: a git that ran and reported a problem is a
+  # failure, not a skip. Exit 128 is exactly that.
   skip_if(!file.exists(file.path(root$path, ".git")), "not a git checkout")
 
   # shQuote the path: system2() quotes the command but pastes args on raw, so a
