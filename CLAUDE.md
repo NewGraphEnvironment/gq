@@ -625,6 +625,28 @@ exists. The remedy is detection: check the deploy provenance, and re-dispatch
 commit changed nothing the site publishes — confirm via `.Rbuildignore` / `_pkgdown.yml`
 rather than assuming.
 
+## Don't push to the default branch between a merge and its CI settling
+
+The r-lib templates set `concurrency` with `cancel-in-progress: true`, so a second push
+to `main` cancels the first push's still-running workflows. That is correct behaviour and
+it is not the problem; the problem is that a **cancelled** run and a **failed** run look
+the same in the status column, so a routine follow-up push turns a green merge into
+something the next person has to go read a log about — and the log does not exist.
+
+The routine follow-up is the one that bites, because it is the one nobody counts as a
+push: a `CLAUDE.md` drift sync, a typo fix, a `.gitignore` line. `/compact-prep` step 6
+runs `claude_md_drift.sh apply`, which **pushes**, and after `/gh-pr-merge` that lands
+seconds after the merge.
+
+Order them: watch the merge's runs to completion, *then* push anything else. Measured
+2026-09-08 in gq — the merge's pkgdown and R-CMD-check were allowed to finish green and
+the deploy provenance checked before the sync went out, and the sync's own runs then went
+green on their own SHA. Holding it cost about three minutes.
+
+Where a push has already gone out and cancelled something, `/gh-pr-merge` step 10 has the
+reading: `cancelled`/`skipped` is `⊘ superseded`, not `✗ failed`, and the thing to confirm
+is that the **newer** SHA's run passed. Do not re-dispatch the cancelled one.
+
 ## Don't use `gh run watch` to wait
 
 It polls hard enough to trip GitHub's *secondary* rate limit, which `gh api
@@ -2166,6 +2188,10 @@ silent direction is the dangerous one.
 ### `gh` CLI
 - **`gh pr create` resolves branch from CWD, not `--repo`**. Specifying `--repo NewGraphEnvironment/X` does NOT switch branch resolution — the command still reads the current working directory's checked-out branch. To open a PR in repo X, `cd` into X's checkout first, or pass `--head <branch>` explicitly.
 - **`gh issue create` / `gh pr create` with heredoc bodies fail on prose containing special shell characters** (apostrophes, dollar signs, backticks). Use `--body-file /tmp/issue.md` instead — every project's `newgraph.md` convention specifies this; codified here for the underlying class. The two are written interchangeably, so the trap applies to both: `gh pr create --body "$(cat <<'EOF' … EOF)"` breaks the parser on a prose apostrophe and bash reports `unexpected EOF while looking for matching '"'`, aborting the whole command before anything runs.
+- **`gh issue create` resolves the target repo from the remotes, preferring `upstream` over `origin`.** A checkout that carries an `upstream` remote — a template it was seeded from, a fork parent — files the issue against **upstream**, not the repo you are working in. It is silent: the only tell is the URL that comes back. Pass `--repo OWNER/NAME` explicitly whenever a checkout has more than one remote.
+  - Detect before filing: `git remote -v | awk '{print $1}' | sort -u` — anything beyond `origin` means pass `--repo`.
+  - Recovery is not a transfer. `gh issue transfer` refuses to move an issue out of a private repo into a public one (`Old issue cannot be transferred from private repository to public repository`), which is exactly the direction this misfire takes when the template is private and the working repo is public. The fix is: create again with `--repo`, then close the stray with a comment naming where it went.
+  - Caught 2026-08-28 in `hsp`, which has `upstream = NewGraphEnvironment/mybookdown-template`: a CABIN/formalin safety issue filed from the `hsp` checkout landed on `mybookdown-template#94`.
 - **Do not let a base-branch deletion decide a stacked PR's fate.** Merging the base
   does not retarget the child: it still points at a merged branch, `gh pr view` reports
   it `MERGEABLE`/`CLEAN`, and merging it there is a no-op against history already on
