@@ -117,9 +117,11 @@ obs_key <- "bcfishobs_fiss_fish_observations"
 obs_old <- "bcfishobs.fiss_fish_obsrvtn_events_vw"
 obs_new <- "bcfishobs.observations"
 
-obs_have <- master$layers[[obs_key]]$source_layer   # `[[`, never `$`: a
-                                                    # partial match on a
-                                                    # sibling key would answer
+# `[[` on both hops, never `$`. A `$` read partial-matches, so if a future
+# extraction produced `source_layer_qgis` and no `source_layer`, `$source_layer`
+# would return it and the `else` arm below would stop with a message naming a
+# value that is not the one it thinks it read.
+obs_have <- master$layers[[obs_key]][["source_layer"]]
 if (identical(obs_have, obs_old)) {
   master$layers[[obs_key]]$source_layer <- obs_new
   message("bcfishobs source_layer corrected (gq#82): ", obs_old, " -> ", obs_new)

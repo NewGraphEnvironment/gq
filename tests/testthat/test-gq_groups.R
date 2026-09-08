@@ -104,6 +104,14 @@ test_that("gq_template_layers resolves full layer list", {
 test_that("gq_template_layers returns empty for unknown template", {
   df <- gq_template_layers("nonexistent")
   expect_equal(nrow(df), 0)
+
+  # Shape, not just row count. The empty frame omitted `source_type` until
+  # gq#82 while `@return` promised it, and `nrow == 0` cannot see that. It
+  # fails toward silence rather than error: `df$source_type == "aws"` on a
+  # frame without the column is `NULL == "aws"` -> `logical(0)` -> selects
+  # nothing, which is exactly what a caller filtering for downloadable layers
+  # would write.
+  expect_named(df, names(gq_template_layers("bcfishpass_mobile")))
 })
 
 test_that("bcrestoration_mobile has Floodplain and Restoration groups", {

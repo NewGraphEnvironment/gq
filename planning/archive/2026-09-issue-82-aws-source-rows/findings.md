@@ -68,18 +68,13 @@ rename unblocks it but does not by itself restore it. Hence the paired rfp issue
 
 ## `bcfishobs` is a confirmed rename — from the producer, not inferred
 
-`db_newgraph/jobs/dump_weekly:41-47`:
+`db_newgraph/jobs/dump_weekly:41-47` writes `bcfishobs.observations.fgb.zip` from the
+like-named table, and the repo carries a branch whose commit message records the rename
+as deliberate and staged.
 
-```bash
-aws s3 rm s3://newgraph/bcfishobs.observations.fgb.zip
-ogr2ogr -f FlatGeobuf /vsizip//vsis3/newgraph/bcfishobs.observations.fgb.zip \
-  PG:$DATABASE_URL -nln bcfishobs.observations \
-  -sql "select * from bcfishobs.observations"
-```
-
-The `db_newgraph` branch `aws_rename` carries `52f0280 change names to address #31 —
-should remove old files after they are all regenerated before closing`. So the rename
-was deliberate and staged.
+(Paraphrased rather than quoted. gq is **public** and `db_newgraph` is private — a
+file:line citation is the established precedent in these archives, reproducing the file's
+contents is not.)
 
 Read from the **producer** rather than inferred from the bucket listing, per
 `karpathy.md` §7 — the job that stages data says what exists.

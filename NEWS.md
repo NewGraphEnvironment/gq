@@ -19,10 +19,15 @@
     rfp does not know is silently dropped and the layer never downloads at all.
   - `bcfishobs_fiss_fish_observations` follows an upstream rename to
     `bcfishobs.observations`, read from the job that stages it rather than inferred
-    from a bucket listing. **The layer does not reappear on the map until rfp lands
-    its side** (NewGraphEnvironment/rfp#305): `source_layer` is the S3 object stem,
-    the GeoPackage table name *and* the `.qgs` `layername=` at once, so this fixes
-    the download only.
+    from a bucket listing. `source_layer` is the S3 object stem, the GeoPackage
+    table name *and* the `.qgs` `layername=` at once, so this fixes the download
+    only — and **it must not ship ahead of NewGraphEnvironment/rfp#305.** rfp drops
+    a maplayer whose target is absent and not in the requested set. Before this
+    change the old name was requested, so the 404 left the styled layer in place for
+    a later refresh; with the rename in and rfp's templates not, the old-named
+    maplayer is **removed from the project**, symbology and all, while the data
+    lands under a name nothing references. Projects built in that window need the
+    layer re-added by hand.
   - `dam` is unchanged on purpose. `bcfishpass.dams` is staged by no job on any
     branch — a gap, not a retirement — and dropping the row would have hidden it
     (NewGraphEnvironment/db_newgraph#20).
