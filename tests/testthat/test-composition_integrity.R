@@ -226,14 +226,19 @@ test_that("the bcfishobs correction in reg_build_main.R is still doing work", {
   # not rebuild, leaving a landmine: the next `source("data-raw/reg_build_main.R")`
   # stops with "rfp's templates have been regenerated -- delete this block"
   # about templates nobody regenerated.
+  # `[[` throughout, never `$`. These are lists parsed from JSON, where `$`
+  # partial-matches: a suffixed rename of this key would be silently answered
+  # by a sibling and the pin would pass on a layer that no longer exists --
+  # which is one of the states this guard exists to catch.
   rs <- gq_reg_read(system.file("registry", "reg_qgis_restoration.json",
                                package = "gq"))
-  expect_equal(rs$layers$bcfishobs_fiss_fish_observations$source_layer,
+  expect_equal(rs[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
                "bcfishobs.fiss_fish_obsrvtn_events_vw")
 
   # And the correction reached the master registry.
-  expect_equal(gq_reg_main()$layers$bcfishobs_fiss_fish_observations$source_layer,
-               "bcfishobs.observations")
+  expect_equal(
+    gq_reg_main()[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
+    "bcfishobs.observations")
 })
 
 test_that("renaming bcfishobs did not cost it its symbology", {
@@ -246,12 +251,14 @@ test_that("renaming bcfishobs did not cost it its symbology", {
   # These four values are that symbology. They are pinned here rather than
   # left implicit because the deletion is invisible: the layer would still
   # resolve, still have a source, and simply draw as nothing.
-  lyr <- gq_reg_main()$layers$bcfishobs_fiss_fish_observations
+  # `[[` for the same reason as the test above -- parsed JSON, where `$` would
+  # let a suffixed sibling answer for a key that has gone.
+  lyr <- gq_reg_main()[["layers"]][["bcfishobs_fiss_fish_observations"]]
 
-  expect_equal(lyr$type, "point")
-  expect_equal(lyr$mark$color, "#db1e2a")
-  expect_equal(lyr$mark$shape, "triangle")
-  expect_equal(lyr$label$font, "Courier")
+  expect_equal(lyr[["type"]], "point")
+  expect_equal(lyr[["mark"]][["color"]], "#db1e2a")
+  expect_equal(lyr[["mark"]][["shape"]], "triangle")
+  expect_equal(lyr[["label"]][["font"]], "Courier")
 })
 
 test_that("wms layers are exactly the services in the QML index", {

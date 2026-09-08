@@ -82,14 +82,24 @@ layer legitimately empty in the AOI are indistinguishable at that point.
 **On a device they stay indistinguishable.** That is the whole reason gq#82's two 404s
 survived unnoticed: the only signal is one line in a 16-minute log.
 
-## Two layers are not GeoPackage tables
+## Exactly one layer is not a GeoPackage table
 
-- `habitat_lateral.tif` — fetched with `rio mask` off `/vsicurl/`, AOI-clipped, written
-  as a standalone `.tif` beside the project under its own `RFP-LOADED-FILE:` sentinel
-  (`rfp_source_aws.sh:136-161`). Its gq `source_layer` is therefore a **filename**, the
-  only row in the registry that is not `schema.table`.
-- `whse_basemapping.fwa_named_streams` — not S3 at all; ogr2ogr against the hillcrestgeo
-  fwapg feature service.
+`habitat_lateral.tif` — fetched with `rio mask` off `/vsicurl/`, AOI-clipped, written as
+a standalone `.tif` beside the project under its own `RFP-LOADED-FILE:` sentinel
+(`rfp_source_aws.sh:136-161`). Its gq `source_layer` is therefore a **filename**, the
+only row in the registry that is not `schema.table`.
+
+The constraint is narrower than "rfp supports file targets": rfp hardcodes this exact
+string three times — the `has_source` gate, the `rio mask` call, and the `SPECIALS` skip
+list (`rfp_source_aws.sh:138,153,169`) — plus `.rfp_file_entries` on the R side. A second
+`.tif` row would fall through to the generic loop and be fetched as `<name>.tif.fgb.zip`
+→ 404. Check rfp's `SPECIALS` before adding one.
+
+`whse_basemapping.fwa_named_streams` is a **different** case and does not belong in this
+section, though an earlier draft of this file put it here. It is not S3 — ogr2ogr against
+the hillcrestgeo fwapg feature service — but it *is* written as an ordinary GeoPackage
+table via `-nln`, and gq types it `fwa` (`layer_key` `stream_labels`), so it never
+reaches the aws pass at all. It is not a second file-target candidate.
 
 Also list-gated rather than unconditional since rfp#12 phase 3: `habitat_lateral.tif`,
 `parameters_habitat_method`, `parameters_habitat_thresholds` and `fwa_named_streams` are

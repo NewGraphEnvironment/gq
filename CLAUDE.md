@@ -280,7 +280,9 @@ too many.
   quoted: the correct group name is `Roads,Railways,Pipelines`. This is the only
   file carrying `source_type`, and that column is what decides whether rfp
   downloads a layer at all — `rfp_project_create()` intersects it against
-  `rfp_manifest_types()`, so **a value rfp does not know is dropped silently**,
+  `rfp_manifest_types()` minus `frozen` — membership in that vector is not on its
+  own the rule, since `frozen` is in it and deliberately does not download — so
+  **a value rfp does not know is dropped silently**,
   with no error and no warning. That is not hypothetical: `local` and `wms` are
   dropped this way on every build today, and it is why gq cannot invent a
   project-raster term ahead of rfp (gq#72). `habitat_lateral` is `aws` rather

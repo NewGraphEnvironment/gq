@@ -15,7 +15,9 @@
     whose `source_layer` is a **filename** rather than a `schema.table`: rfp fetches
     it with `rio mask` and writes a standalone `.tif` beside the project. This is
     not the project-raster `source_type` #72 wants, and deliberately so — rfp
-    computes its passes as `intersect(rfp_manifest_types(), source_type)`, so a term
+    computes its passes as `intersect(setdiff(rfp_manifest_types(), "frozen"),
+    source_type)` — note the `setdiff`, since `frozen` is in that vector and still
+    does not download, so vector membership alone is not the rule — and a term
     rfp does not know is silently dropped and the layer never downloads at all.
   - `bcfishobs_fiss_fish_observations` follows an upstream rename to
     `bcfishobs.observations`, read from the job that stages it rather than inferred
