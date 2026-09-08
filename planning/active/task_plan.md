@@ -20,16 +20,16 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 1: Tests first (failing)
 
-- [ ] Split the `aws` rule in `tests/testthat/test-composition_integrity.R` into
+- [x] Split the `aws` rule in `tests/testthat/test-composition_integrity.R` into
       table-targets (`^schema.table$`) and a named file-target exemption, so
       `habitat_lateral.tif` is deliberate rather than an accidental pass of
       `grepl(".", fixed = TRUE)`
-- [ ] Pin the three registry values: `habitat_lateral` -> `aws` / `habitat_lateral.tif`;
+- [x] Pin the three registry values: `habitat_lateral` -> `aws` / `habitat_lateral.tif`;
       `bcfishobs_fiss_fish_observations` -> `bcfishobs.observations`; `dam` ->
       `bcfishpass.dams` unchanged, citing the db_newgraph issue
-- [ ] Pin that `bcfishobs_fiss_fish_observations` still carries its `mark` and `label`
+- [x] Pin that `bcfishobs_fiss_fish_observations` still carries its `mark` and `label`
       (the `gq_reg_merge()` replace-semantics trap)
-- [ ] Confirm every new assertion FAILS against HEAD before implementing
+- [x] Confirm every new assertion FAILS against HEAD before implementing
 
 ## Phase 2: habitat_lateral -> aws
 
