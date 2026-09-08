@@ -54,13 +54,12 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 4: Cross-repo issues and body reconciliation
 
-- [ ] File rfp issue — the two `.qgs` template datasource lines, with `source_layer`'s
-      three jobs explained
-- [ ] File NewGraphEnvironment/db_newgraph issue — `bcfishpass.dams_vw` not staged by
-      `jobs/dump_weekly`
-- [ ] Edit gq#82's body — correct the `rfp_source_aws.txt` premise, record the
-      measurements and the four decisions
-- [ ] Comment on rtj#318 pointing at the resolution
+- [x] File rfp issue — rfp#305. FOUR lines, not two: each template carries the old
+      name in both the `<datasource>` element and the layer-tree `source=` attribute
+- [x] File NewGraphEnvironment/db_newgraph issue — db_newgraph#20
+- [x] Edit gq#82's body — corrected in place, and retitled: the counterparty is the
+      bucket, not rfp's list
+- [x] Comment on rtj#318 pointing at the resolution
 
 ## Phase 5: Release and PR
 
