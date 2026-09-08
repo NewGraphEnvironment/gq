@@ -63,12 +63,13 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 5: Release and PR
 
-- [ ] `NEWS.md` + `DESCRIPTION` bump as the final commit
+- [x] `NEWS.md` + `DESCRIPTION` bump as the final commit
 - [ ] `/planning-archive`, then `/gh-pr-push`
 
 ## Validation
 
-- [ ] `devtools::test()` green
-- [ ] `devtools::document()` clean; `pkgdown::check_pkgdown()` clean
-- [ ] `/code-check` on each commit
-- [ ] PWF checkboxes match landed work
+- [x] `devtools::test()` — 1111 pass; the 2 failures are pre-existing on origin/main
+      (gq#70, gq#78 stale vendored artifacts), verified in a worktree at e3b0178
+- [x] `devtools::document()` clean; `pkgdown::check_pkgdown()` clean
+- [x] `/code-check` on each commit
+- [x] PWF checkboxes match landed work

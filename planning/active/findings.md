@@ -145,9 +145,42 @@ dropped** by the `intersect()` — no error, no warning, the layer simply never
 downloads. So gq cannot introduce a term before rfp knows it. That is gq#72's blocker,
 and `aws` sidesteps it: `habitat_lateral.tif` genuinely is an S3 object.
 
+## Verification at merge
+
+Re-probed with the corrected registry, same method, 2026-09-07. gq now carries **10**
+distinct `aws` source_layers (`habitat_lateral.tif` joined the set):
+
+| | before | after |
+|---|---|---|
+| resolve 200 | 7 of 9 | **9 of 10** |
+| 404 | `bcfishobs.fiss_fish_obsrvtn_events_vw`, `bcfishpass.dams` | `bcfishpass.dams` only |
+
+The one remaining 404 is the deliberately-kept row, filed at
+NewGraphEnvironment/db_newgraph#20. `habitat_lateral.tif` is probed with its own
+extension, not `.fgb.zip`.
+
+End-to-end through the composition rfp actually consumes — `gq_template_layers()`, both
+templates, 14 `aws` rows each (was 13):
+
+```
+dam                              bcfishpass.dams
+bcfishobs_fiss_fish_observations bcfishobs.observations
+habitat_lateral                  habitat_lateral.tif
+```
+
+`devtools::document()` leaves NAMESPACE unchanged at 30 exports;
+`pkgdown::check_pkgdown()` clean. Full suite 1111 pass, 2 fail — both pre-existing on
+`origin/main` at identical lines (`test-gq_style_qml.R:201`, `test-template_drift.R:353`),
+confirmed by running those two files in a throwaway worktree detached at `e3b0178`.
+They are the stale rfp-vendored artifacts of gq#70 and gq#78; this branch touches
+neither test's inputs. They only fire at all because rfp is checked out on this machine
+— in CI both skip, which is the weakness gq#78 exists for.
+
 ## Errors Encountered
 
 | Error | Resolution |
 |-------|------------|
 | `gh issue view 31 --repo NewGraphEnvironment/db_newgraph` — "Could not resolve" | #31 is smnorris's numbering; our fork has its own. Issues ARE enabled on the fork (`hasIssuesEnabled=true`, 4 open) |
 | First bucket read used `aws s3 ls`, which needs credentials | Anonymous `curl -I` against the https endpoint works and is what rfp itself does (`wget`), so it is the honest probe of what a build sees |
+| An assertion that the file target does NOT match `^schema.table$` went red on correct data | `habitat_lateral.tif` matches it — `tif` is a valid table token. No regex separates a filename from a qualified table, which is why the exemption has to be a named list. The comment now says so instead of implying a shape test could do the work |
+| The first plan-review agent died mid-run (`ENOTFOUND`) and reported nothing | Re-run rather than recorded as clean — an agent that returns nothing is indistinguishable from one that found nothing, and only one of those is a pass |
