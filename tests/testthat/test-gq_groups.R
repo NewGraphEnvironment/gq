@@ -300,7 +300,9 @@ test_that("no theme turns an opaque basemap on", {
   # in a single commit, so this set moves in bursts.
   # The candidate set is "anything that could cover the map": every wms layer,
   # plus every raster. Scoping it to wms alone leaves a raster added with any
-  # other source_type uncovered -- habitat_lateral is `local`, and is the
+  # other source_type uncovered -- habitat_lateral is `aws` (it was `local`
+  # until gq#82, and that retyping is the move this sentence anticipated;
+  # the guard did not have to change, which is the point of it) and is the
   # registry's only raster today, so that axis has exactly one member and no
   # margin. Including `type == "raster"` makes the residual definitional rather
   # than a data coincidence: to escape now, a layer would have to be an opaque

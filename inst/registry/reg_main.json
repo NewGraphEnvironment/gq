@@ -1730,7 +1730,7 @@
     },
     "habitat_lateral": {
       "type": "raster",
-      "source_layer": "habitat_lateral",
+      "source_layer": "habitat_lateral.tif",
       "classification": {
         "field": "value",
         "classes": {

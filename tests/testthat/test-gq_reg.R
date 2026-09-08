@@ -180,7 +180,10 @@ test_that("habitat_lateral carries its palette in the master registry", {
   lyr <- gq_reg_main()$layers$habitat_lateral
 
   expect_equal(lyr$type, "raster")
-  expect_equal(lyr$source_layer, "habitat_lateral")   # the `local` sentinel
+  # Was the `local` sentinel (source_layer == layer_key). gq#82 retyped it
+  # `aws`: rfp has always fetched it from s3://newgraph/habitat_lateral.tif,
+  # and typing it `local` was what stopped rfp_project_create() asking for it.
+  expect_equal(lyr$source_layer, "habitat_lateral.tif")
   expect_equal(lyr$classification$field, "value")
 
   cls <- gq_tmap_classes(gq_reg_main(), "habitat_lateral")

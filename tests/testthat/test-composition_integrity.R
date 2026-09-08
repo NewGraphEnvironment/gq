@@ -79,14 +79,21 @@ test_that("every layer that needs a source to fetch from has one", {
   expect_setequal(tables$layer_key[!grepl(re_table, tables$source_layer)],
                   character(0))
 
-  # A named file target must actually BE one, or the entry is dead wood that
-  # silently exempts a layer from the table rule. Same shape as the "must still
-  # be needed" half under local_exempt below.
+  # Shape does NOT separate the two, and it is worth being blunt about that:
+  # `habitat_lateral.tif` matches re_table as readily as re_file, because `tif`
+  # is a perfectly good table token. That is the whole reason the list above
+  # exists rather than a cleverer regex -- there is no expression that reads
+  # `schema.table` and refuses `name.tif`, so the discriminator has to be a
+  # human naming the row. (An assertion that the file target does not match
+  # re_table was written here first and went red on correct data.)
+  #
+  # What the extension check buys is the other direction: a named entry whose
+  # value has stopped looking like a file is dead wood silently exempting a
+  # layer from the table rule. Same job as the "must still be needed" half
+  # under local_exempt below.
   files <- needs[needs$layer_key %in% names(file_target_reason), ]
   expect_setequal(files$layer_key, names(file_target_reason))
   expect_setequal(files$layer_key[!grepl(re_file, files$source_layer)],
-                  character(0))
-  expect_setequal(files$layer_key[grepl(re_table, files$source_layer)],
                   character(0))
 
   services <- g[g$source_type == "wms", ]

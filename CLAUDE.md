@@ -273,7 +273,21 @@ too many.
   Also carries the one `type = "raster"` entry (`habitat_lateral`): a QGIS
   paletted renderer, one row per palette entry, `class_field` the sentinel
   `"value"` meaning band 1. The QML remains the lossless copy — the schema
-  cannot express per-value transparency or a multi-band renderer
+  cannot express per-value transparency or a multi-band renderer.
+
+  Its `source_type` is `aws` and its `source_layer` is the **filename**
+  `habitat_lateral.tif`, not a `schema.table` — the only such row. rfp fetches
+  it with `rio mask` off `/vsicurl/` and writes a standalone `.tif` beside the
+  project rather than a GeoPackage table, under its own `RFP-LOADED-FILE:`
+  sentinel. It was typed `local` until gq#82, which is what stopped
+  `rfp_project_create()` ever asking for it, so every project clipped the
+  raster by hand. `test-composition_integrity.R` names it as the one file
+  target rather than letting a filename pass a schema-qualification check.
+
+  This is *not* the project-raster `source_type` gq#72 wants. A new term would
+  be silently dropped by rfp — `rfp_project_create()` computes its passes as
+  `intersect(rfp_manifest_types(), source_type)`, so a value rfp does not know
+  means the layer never downloads, with no error
 - `groups.csv` — layer group membership, nesting and z-order (62 rows, 10 groups),
   quoted: the correct group name is `Roads,Railways,Pipelines`
 - `templates.csv` — which groups compose each QGIS project template, quoted

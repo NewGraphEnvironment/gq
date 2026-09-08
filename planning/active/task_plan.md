@@ -33,12 +33,12 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 2: habitat_lateral -> aws
 
-- [ ] `inst/registry/groups.csv` — `habitat_lateral` `local` -> `aws`
-- [ ] `inst/registry/reg_custom.csv` — `source_layer` -> `habitat_lateral.tif` on both
+- [x] `inst/registry/groups.csv` — `habitat_lateral` `local` -> `aws`
+- [x] `inst/registry/reg_custom.csv` — `source_layer` -> `habitat_lateral.tif` on both
       palette rows
-- [ ] Rebuild `reg_main.json` via `data-raw/reg_build_main.R`
-- [ ] Update `tests/testthat/test-gq_reg.R` if it asserts the old `source_layer`
-- [ ] `CLAUDE.md` — record that `habitat_lateral` is `aws` with a file target
+- [x] Rebuild `reg_main.json` via `data-raw/reg_build_main.R`
+- [x] Update `tests/testthat/test-gq_reg.R` if it asserts the old `source_layer`
+- [x] `CLAUDE.md` — record that `habitat_lateral` is `aws` with a file target
 
 ## Phase 3: bcfishobs rename
 
