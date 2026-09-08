@@ -11,6 +11,7 @@
 ^python$
 ^scripts$
 ^planning$
+^research$
 ^registry$
 ^data-raw$
 ^doc$
