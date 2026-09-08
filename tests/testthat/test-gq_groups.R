@@ -104,6 +104,14 @@ test_that("gq_template_layers resolves full layer list", {
 test_that("gq_template_layers returns empty for unknown template", {
   df <- gq_template_layers("nonexistent")
   expect_equal(nrow(df), 0)
+
+  # Shape, not just row count. The empty frame omitted `source_type` until
+  # gq#82 while `@return` promised it, and `nrow == 0` cannot see that. It
+  # fails toward silence rather than error: `df$source_type == "aws"` on a
+  # frame without the column is `NULL == "aws"` -> `logical(0)` -> selects
+  # nothing, which is exactly what a caller filtering for downloadable layers
+  # would write.
+  expect_named(df, names(gq_template_layers("bcfishpass_mobile")))
 })
 
 test_that("bcrestoration_mobile has Floodplain and Restoration groups", {
@@ -300,7 +308,9 @@ test_that("no theme turns an opaque basemap on", {
   # in a single commit, so this set moves in bursts.
   # The candidate set is "anything that could cover the map": every wms layer,
   # plus every raster. Scoping it to wms alone leaves a raster added with any
-  # other source_type uncovered -- habitat_lateral is `local`, and is the
+  # other source_type uncovered -- habitat_lateral is `aws` (it was `local`
+  # until gq#82, and that retyping is the move this sentence anticipated;
+  # the guard did not have to change, which is the point of it) and is the
   # registry's only raster today, so that axis has exactly one member and no
   # margin. Including `type == "raster"` makes the residual definitional rather
   # than a data coincidence: to escape now, a layer would have to be an opaque

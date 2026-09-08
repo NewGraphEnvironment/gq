@@ -41,7 +41,7 @@ test_that("every layer that needs a source to fetch from has one", {
   # extended for each new layer, so a layer added tomorrow defaults to *exempt*.
   # Under a derived rule it defaults to *checked*.
   #
-  #   aws/bcdata/fwa/osm -> a real, schema-qualified table
+  #   aws/bcdata/fwa/osm -> a real, schema-qualified table, or a named file
   #   wms                -> no table; these are tile/service endpoints
   #   local              -> source_layer == layer_key, the sentinel convention
   #                         already used by form_pscis and form_fiss_site
@@ -51,7 +51,72 @@ test_that("every layer that needs a source to fetch from has one", {
   needs <- g[g$source_type %in% c("aws", "bcdata", "fwa", "osm"), ]
   expect_gt(nrow(needs), 0)
   expect_setequal(needs$layer_key[is.na(needs$source_layer)], character(0))
-  expect_setequal(needs$layer_key[!grepl(".", needs$source_layer, fixed = TRUE)],
+
+  # This check used to be `grepl(".", source_layer, fixed = TRUE)` -- "contains
+  # a dot" standing in for "is schema-qualified". The two part company the
+  # moment a source is a FILE rather than a table: gq#82 typed habitat_lateral
+  # `aws` with source_layer `habitat_lateral.tif`, which satisfies the dot
+  # check by accident and would have gone in unexamined. A rule that blesses
+  # any string containing a dot is not testing what its own comment claims.
+  #
+  # So the shapes are spelled out, and a file target additionally has to be
+  # NAMED below. That keeps the derived-rule property this test argues for at
+  # :39-42 -- a layer added tomorrow must either look like schema.table or be
+  # a deliberate entry, never exempt by default.
+  #
+  # `re_table` alone CANNOT deliver that, and the first version of this block
+  # wrongly claimed it could: `habitat_lateral.tif` matches `^word.word$` as
+  # readily as a filename regex does, because `tif` is a perfectly good table
+  # token. So does `dem.tif`, `roads.shp`, `data.gpkg`. Shape does not separate
+  # a file from a qualified table and no expression will -- which left the
+  # naming requirement enforcing nothing, since an UNNAMED filename still sailed
+  # through as a table. `re_file_ext` is what closes it: a value that looks like
+  # a file is refused on the table side, so it can only pass by being named.
+  re_table <- "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+  re_file <- "^[a-z][a-z0-9_]*\\.(tif|tiff)$"
+  re_file_ext <- "\\.(tif|tiff|gpkg|fgb|shp|zip|vrt|json|csv|laz|pmtiles)$"
+
+  # rfp fetches this one with `rio mask` straight off /vsicurl/ and writes a
+  # standalone .tif beside the project rather than a GeoPackage table -- its
+  # own sentinel, `RFP-LOADED-FILE:`, in inst/scripts/rfp_source_aws.sh.
+  # There is no schema to qualify it with.
+  #
+  # The real constraint is NARROWER than "is a file", and adding a second row
+  # here is not enough to make one work. rfp hardcodes this exact string three
+  # times -- the `has_source "habitat_lateral.tif"` gate, the `rio mask` call,
+  # and the `SPECIALS` skip list (inst/scripts/rfp_source_aws.sh:138,153,169),
+  # plus `.rfp_file_entries` on the R side. A second `.tif` row would pass
+  # everything here, fall through to the generic loop, and be fetched as
+  # `<name>.tif.fgb.zip` -> 404. Check rfp's SPECIALS before adding one.
+  # When gq#72 gives rasters their own source_type this list empties. Spell the
+  # empty form `stats::setNames(character(0), character(0))`, NOT `character(0)`
+  # -- `names(character(0))` is NULL and expect_setequal() REFUSES a NULL, so
+  # the obvious spelling makes this test error rather than pass. Same trap as
+  # local_exempt below, which is where it was learned.
+  file_target_reason <- c(
+    habitat_lateral = "gq#82: s3://newgraph/habitat_lateral.tif, clipped to AOI"
+  )
+
+  tables <- needs[!needs$layer_key %in% names(file_target_reason), ]
+  expect_gt(nrow(tables), 0)
+  expect_setequal(tables$layer_key[!grepl(re_table, tables$source_layer)],
+                  character(0))
+  # The half that makes the naming requirement load-bearing.
+  expect_setequal(tables$layer_key[grepl(re_file_ext, tables$source_layer)],
+                  character(0))
+
+  # And a named entry whose value has stopped looking like a file is dead wood
+  # silently exempting a layer from the table rule. Same job as the "must still
+  # be needed" half under local_exempt below.
+  #
+  # `re_table` is deliberately lowercase-only. Every source_layer is lowercase
+  # today and rfp lowercases on write, but the BC catalogue publishes these as
+  # `WHSE_BASEMAPPING.TRANSPORT_LINE` -- so someone pasting a catalogue name
+  # gets a red suite, and `info` is what tells them why rather than printing a
+  # bare layer key.
+  files <- needs[needs$layer_key %in% names(file_target_reason), ]
+  expect_setequal(files$layer_key, names(file_target_reason))
+  expect_setequal(files$layer_key[!grepl(re_file, files$source_layer)],
                   character(0))
 
   services <- g[g$source_type == "wms", ]
@@ -83,6 +148,117 @@ test_that("every layer that needs a source to fetch from has one", {
   # tells you to delete them -- rather than sitting here forever exempting
   # layers that stopped needing it.
   expect_setequal(setdiff(names(local_exempt), offenders), character(0))
+})
+
+test_that("the three aws rows gq#82 settled still say what was decided", {
+  # gq's registry is what rfp REQUESTS from the newgraph bucket -- not
+  # rfp/inst/lookups/rfp_source_aws.txt, which is only the gq-absent fallback.
+  # rfp_project_create() -> rfp_project_layers() -> gq::gq_template_layers(),
+  # and the aws source_layers go straight into RFP_SOURCES. So a wrong value
+  # here is a failed download on every project build, reported as one line in a
+  # 16-minute log and otherwise indistinguishable from a layer that is simply
+  # empty in the AOI.
+  #
+  # Measured against the bucket 2026-09-07 (anonymous HEAD, no credentials):
+  # 7 of 9 distinct aws source_layers resolved 200; these three are the ones
+  # that had to move or be explained.
+  g <- gq_groups(gq_reg_main())
+  row_for <- function(key) {
+    r <- g[g$layer_key == key, ]
+    expect_equal(nrow(r), 1L)   # not a set-membership question; a per-row pin
+    r
+  }
+
+  # Was `local` with the sentinel source_layer == layer_key, so
+  # rfp_project_create() never asked for it and every project hand-clipped the
+  # raster. It is an ordinary S3 object and always was.
+  hl <- row_for("habitat_lateral")
+  expect_equal(hl$source_type, "aws")
+  expect_equal(hl$source_layer, "habitat_lateral.tif")
+
+  # Renamed upstream. db_newgraph/jobs/dump_weekly writes
+  # bcfishobs.observations.fgb.zip from `select * from bcfishobs.observations`;
+  # the old name 404s. Read from the producer rather than inferred from a
+  # bucket listing.
+  #
+  # NOTE this value is deliberately AHEAD of rfp's templates, whose maplayer
+  # datasource still reads `layername=bcfishobs.fiss_fish_obsrvtn_events_vw`.
+  # source_layer is simultaneously the S3 object stem, the GeoPackage table
+  # name and that datasource, so the layer only resolves once rfp lands its
+  # side. This assertion is what turns a re-extraction that reverts us red.
+  #
+  # And being ahead is not free, which is worth stating precisely because the
+  # obvious reading understates it. `.qgs_trim_absent()` drops a maplayer whose
+  # target is absent AND not in the requested set (rfp/R/rfp_layout.R:725).
+  # Before this change the old name WAS requested, so the 404 left the styled
+  # layer in place with a "refresh can fill it" warning. Now the old name is
+  # not requested and its table is still absent, so the maplayer is DROPPED --
+  # the layer and its symbology are removed from the .qgs, not merely left
+  # empty. Projects built between this release and rfp#305 need the layer
+  # re-added by hand. Land rfp#305 first, or ship the two together.
+  ob <- row_for("bcfishobs_fiss_fish_observations")
+  expect_equal(ob$source_type, "aws")
+  expect_equal(ob$source_layer, "bcfishobs.observations")
+
+  # Deliberately UNCHANGED, and this pin is NOT self-retiring like the two
+  # above -- it will keep passing while the bucket keeps answering 404.
+  # Nothing stages it: no job on any db_newgraph branch uploads a dams object,
+  # and the database calls the view bcfishpass.dams_vw. That is a staging gap,
+  # and dropping the row here would hide it, since the project side assumes the
+  # layer exists. Filed at NewGraphEnvironment/db_newgraph#20.
+  #
+  # Note the expected resolution is a RENAME, not a restaging under this name:
+  # if db_newgraph#20 lands as `bcfishpass.dams_vw`, this value changes and the
+  # pin below is what has to be edited. Do not read it as "this is the name
+  # that will eventually work".
+  dm <- row_for("dam")
+  expect_equal(dm$source_type, "aws")
+  expect_equal(dm$source_layer, "bcfishpass.dams")
+})
+
+test_that("the bcfishobs correction in reg_build_main.R is still doing work", {
+  # The "must still be needed" half for a correction that lives in the build
+  # script rather than in the data. reg_main.json says `bcfishobs.observations`
+  # because data-raw/reg_build_main.R put it there; the EXTRACTED transcript
+  # must still carry the old name, or the correction is a no-op.
+  #
+  # Without this, someone can hand-edit the extracted JSON to the new name and
+  # not rebuild, leaving a landmine: the next `source("data-raw/reg_build_main.R")`
+  # stops with "rfp's templates have been regenerated -- delete this block"
+  # about templates nobody regenerated.
+  # `[[` throughout, never `$`. These are lists parsed from JSON, where `$`
+  # partial-matches: a suffixed rename of this key would be silently answered
+  # by a sibling and the pin would pass on a layer that no longer exists --
+  # which is one of the states this guard exists to catch.
+  rs <- gq_reg_read(system.file("registry", "reg_qgis_restoration.json",
+                               package = "gq"))
+  expect_equal(rs[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
+               "bcfishobs.fiss_fish_obsrvtn_events_vw")
+
+  # And the correction reached the master registry.
+  expect_equal(
+    gq_reg_main()[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
+    "bcfishobs.observations")
+})
+
+test_that("renaming bcfishobs did not cost it its symbology", {
+  # gq_reg_merge() REPLACES a layer entry rather than merging its fields --
+  # measured: an entry carrying only type + source_layer dropped `mark`
+  # entirely. So the obvious way to retarget this layer, a one-column
+  # reg_custom.csv row, would silently delete the symbology gq_qgs_extract()
+  # lifted from the .qgs.
+  #
+  # These four values are that symbology. They are pinned here rather than
+  # left implicit because the deletion is invisible: the layer would still
+  # resolve, still have a source, and simply draw as nothing.
+  # `[[` for the same reason as the test above -- parsed JSON, where `$` would
+  # let a suffixed sibling answer for a key that has gone.
+  lyr <- gq_reg_main()[["layers"]][["bcfishobs_fiss_fish_observations"]]
+
+  expect_equal(lyr[["type"]], "point")
+  expect_equal(lyr[["mark"]][["color"]], "#db1e2a")
+  expect_equal(lyr[["mark"]][["shape"]], "triangle")
+  expect_equal(lyr[["label"]][["font"]], "Courier")
 })
 
 test_that("wms layers are exactly the services in the QML index", {

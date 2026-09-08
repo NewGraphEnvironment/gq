@@ -1,3 +1,58 @@
+# gq 0.14.0
+
+- **Three `aws` rows now say what the bucket actually stages (#82).** gq's registry
+  is what rfp *requests* — `rfp_project_create()` resolves its layer set through
+  `gq_template_layers()`, not through rfp's own `rfp_source_aws.txt`, which is only
+  the gq-absent fallback. So a wrong `source_layer` here is a failed download on
+  every project build, reported as one line in a long log and otherwise
+  indistinguishable on a device from a layer that is empty in the AOI. Measured
+  against the bucket, **7 of 9 distinct `aws` source_layers resolved; now 9 of 10**,
+  and the one remaining 404 is deliberate and filed upstream.
+
+  - `habitat_lateral` was typed `local` with the sentinel `source_layer ==
+    layer_key`, which is what stopped rfp ever asking for it — so every project
+    clipped the raster by hand. It is now `aws` / `habitat_lateral.tif`, the one row
+    whose `source_layer` is a **filename** rather than a `schema.table`: rfp fetches
+    it with `rio mask` and writes a standalone `.tif` beside the project. This is
+    not the project-raster `source_type` #72 wants, and deliberately so — rfp
+    computes its passes as `intersect(setdiff(rfp_manifest_types(), "frozen"),
+    source_type)` — note the `setdiff`, since `frozen` is in that vector and still
+    does not download, so vector membership alone is not the rule — and a term
+    rfp does not know is silently dropped and the layer never downloads at all.
+  - `bcfishobs_fiss_fish_observations` follows an upstream rename to
+    `bcfishobs.observations`, read from the job that stages it rather than inferred
+    from a bucket listing. `source_layer` is the S3 object stem, the GeoPackage
+    table name *and* the `.qgs` `layername=` at once, so this fixes the download
+    only — and **it must not ship ahead of NewGraphEnvironment/rfp#305.** rfp drops
+    a maplayer whose target is absent and not in the requested set. Before this
+    change the old name was requested, so the 404 left the styled layer in place for
+    a later refresh; with the rename in and rfp's templates not, the old-named
+    maplayer is **removed from the project**, symbology and all, while the data
+    lands under a name nothing references. Projects built in that window need the
+    layer re-added by hand.
+  - `dam` is unchanged on purpose. `bcfishpass.dams` is staged by no job on any
+    branch — a gap, not a retirement — and dropping the row would have hidden it
+    (NewGraphEnvironment/db_newgraph#20).
+
+- **The `aws`/`bcdata`/`fwa`/`osm` source rule no longer blesses any string with a
+  dot in it.** It checked `grepl(".", source_layer, fixed = TRUE)` while its own
+  comment claimed "a real, schema-qualified table", and the two part company as soon
+  as a source is a file. It is now an explicit `schema.table` shape plus a *named*
+  file-target entry, so a layer added tomorrow must either look like a table or be a
+  deliberate decision — never exempt by default. Worth knowing that shape cannot
+  separate the two: `habitat_lateral.tif` matches a `^schema\.table$` regex as
+  readily as a filename one, because `tif` is a valid table token.
+
+- **The `bcfishobs` correction lives in `data-raw/reg_build_main.R`, not in the
+  extracted registry**, following the pattern that script already uses for
+  bcfishpass#13. The extracted JSON is a record of what rfp's template says, so
+  editing it would make the file lie about its provenance and be reverted by the
+  next re-extraction; `reg_custom.csv` is not the route either, because
+  `gq_reg_merge()` **replaces** a layer entry rather than merging its fields — a
+  one-column row would have deleted the layer's `mark` and `label` and it would have
+  drawn as nothing. The block is self-retiring: it stops the build with "delete this
+  block" once rfp's templates carry the new name.
+
 # gq 0.13.1
 
 - **`.claude/`, `gq.Rproj` and a worktree's `.git` no longer ship in the

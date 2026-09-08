@@ -1,6 +1,6 @@
 Package: gq
 Title: Cartographic Style Management Across Rendering Targets
-Version: 0.13.1
+Version: 0.14.0
 Date: 2026-08-31
 Authors@R: 
     person("Allan", "Irvine", , "al@newgraphenvironment.com", role = c("aut", "cre"),

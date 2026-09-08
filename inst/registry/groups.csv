@@ -53,7 +53,7 @@ group,subgroup,layer_key,order,source_type
 "Restoration",,planting_site,2,local
 "Web Mapping Services",,fire_perimeters_current,1,wms
 "Web Mapping Services",,frep_rip2021_mar2022,2,wms
-"Base - misc",,habitat_lateral,1,local
+"Base - misc",,habitat_lateral,1,aws
 "Base - misc",,utm_zones,2,bcdata
 "Base - misc",,terrestrial_ecosystem_information_scanned_map_boundary,3,bcdata
 "Base - misc",,terrain_mapping_project_boundaries,4,bcdata

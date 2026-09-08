@@ -273,9 +273,22 @@ too many.
   Also carries the one `type = "raster"` entry (`habitat_lateral`): a QGIS
   paletted renderer, one row per palette entry, `class_field` the sentinel
   `"value"` meaning band 1. The QML remains the lossless copy — the schema
-  cannot express per-value transparency or a multi-band renderer
+  cannot express per-value transparency or a multi-band renderer. Its
+  `source_layer` is the **filename** `habitat_lateral.tif`, the only row in the
+  registry that is not a `schema.table`
 - `groups.csv` — layer group membership, nesting and z-order (62 rows, 10 groups),
-  quoted: the correct group name is `Roads,Railways,Pipelines`
+  quoted: the correct group name is `Roads,Railways,Pipelines`. This is the only
+  file carrying `source_type`, and that column is what decides whether rfp
+  downloads a layer at all — `rfp_project_create()` intersects it against
+  `rfp_manifest_types()` minus `frozen` — membership in that vector is not on its
+  own the rule, since `frozen` is in it and deliberately does not download — so
+  **a value rfp does not know is dropped silently**,
+  with no error and no warning. That is not hypothetical: `local` and `wms` are
+  dropped this way on every build today, and it is why gq cannot invent a
+  project-raster term ahead of rfp (gq#72). `habitat_lateral` is `aws` rather
+  than a new term for exactly that reason; it was `local` until gq#82, which is
+  what stopped rfp ever asking for it, so every project clipped the raster by
+  hand
 - `templates.csv` — which groups compose each QGIS project template, quoted
 - `template_groups.csv` — the group tree of each shipped `.qgs`, vendored by
   `data-raw/reg_extract_template_groups.R`. The witness `templates.csv` is

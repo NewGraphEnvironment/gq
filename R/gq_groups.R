@@ -198,10 +198,17 @@ gq_template_layers <- function(template, registry = NULL) {
 
   tpl <- gq_template_groups(template)
   if (nrow(tpl) == 0) {
+    # Same columns, same order, as the populated return below -- `source_type`
+    # was missing here and the two shapes disagreed. That matters because
+    # `source_type` is what decides whether a layer downloads: a caller doing
+    # `df$source_type == "aws"` on the empty frame gets `NULL == "aws"`, which
+    # is `logical(0)`, which silently selects nothing rather than erroring
+    # (gq#82). `@return` promised the column all along.
     return(data.frame(
       template = character(), group = character(), group_order = integer(),
       subgroup = character(), layer_key = character(), order = integer(),
-      source_layer = character(), type = character(),
+      source_layer = character(), source_type = character(),
+      type = character(),
       stringsAsFactors = FALSE
     ))
   }
