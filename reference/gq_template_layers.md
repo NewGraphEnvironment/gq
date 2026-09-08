@@ -165,7 +165,7 @@ gq_template_layers("bcfishpass_mobile")
 #> 10             whse_imagery_and_base_maps.mot_road_structure_sp      bcdata
 #> 11                                              bcfishpass.dams         aws
 #> 12                        whse_fish.fiss_stream_sample_sites_sp      bcdata
-#> 13                        bcfishobs.fiss_fish_obsrvtn_events_vw         aws
+#> 13                                       bcfishobs.observations         aws
 #> 14                              whse_fish.fiss_obstacles_pnt_sp         aws
 #> 15      whse_environmental_monitoring.envcan_hydrometric_stn_sp      bcdata
 #> 16                              whse_basemapping.transport_line         aws
@@ -204,7 +204,7 @@ gq_template_layers("bcfishpass_mobile")
 #> 49                whse_basemapping.fwa_manmade_waterbodies_poly      bcdata
 #> 50                                                         <NA>         wms
 #> 51                                                         <NA>         wms
-#> 52                                              habitat_lateral       local
+#> 52                                          habitat_lateral.tif         aws
 #> 53                           whse_basemapping.utmg_utm_zones_sp      bcdata
 #> 54         whse_terrestrial_ecology.ste_scanned_map_boundary_sp      bcdata
 #> 55      whse_terrestrial_ecology.ste_ter_project_boundaries_svw      bcdata

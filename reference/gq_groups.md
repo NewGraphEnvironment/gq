@@ -147,7 +147,7 @@ gq_groups()
 #> 52                                          planting_site     2       local
 #> 53                                fire_perimeters_current     1         wms
 #> 54                                   frep_rip2021_mar2022     2         wms
-#> 55                                        habitat_lateral     1       local
+#> 55                                        habitat_lateral     1         aws
 #> 56                                              utm_zones     2      bcdata
 #> 57 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
 #> 58                     terrain_mapping_project_boundaries     4      bcdata
@@ -277,7 +277,7 @@ gq_groups(registry = reg)
 #> 52                                          planting_site     2       local
 #> 53                                fire_perimeters_current     1         wms
 #> 54                                   frep_rip2021_mar2022     2         wms
-#> 55                                        habitat_lateral     1       local
+#> 55                                        habitat_lateral     1         aws
 #> 56                                              utm_zones     2      bcdata
 #> 57 terrestrial_ecosystem_information_scanned_map_boundary     3      bcdata
 #> 58                     terrain_mapping_project_boundaries     4      bcdata
@@ -322,7 +322,7 @@ gq_groups(registry = reg)
 #> 34                                        bcfishpass.streams_vw    line
 #> 35                                        bcfishpass.streams_vw    line
 #> 36                        whse_fish.fiss_stream_sample_sites_sp   point
-#> 37                        bcfishobs.fiss_fish_obsrvtn_events_vw   point
+#> 37                                       bcfishobs.observations   point
 #> 38                              whse_fish.fiss_obstacles_pnt_sp   point
 #> 39      whse_environmental_monitoring.envcan_hydrometric_stn_sp   point
 #> 40                              whse_basemapping.transport_line    line
@@ -340,7 +340,7 @@ gq_groups(registry = reg)
 #> 52                                                planting_site   point
 #> 53                                                         <NA>    <NA>
 #> 54                                                         <NA>   point
-#> 55                                              habitat_lateral  raster
+#> 55                                          habitat_lateral.tif  raster
 #> 56                           whse_basemapping.utmg_utm_zones_sp polygon
 #> 57         whse_terrestrial_ecology.ste_scanned_map_boundary_sp polygon
 #> 58      whse_terrestrial_ecology.ste_ter_project_boundaries_svw polygon
