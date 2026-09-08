@@ -743,7 +743,7 @@
     },
     "bcfishobs_fiss_fish_observations": {
       "type": "point",
-      "source_layer": "bcfishobs.fiss_fish_obsrvtn_events_vw",
+      "source_layer": "bcfishobs.observations",
       "mark": {
         "color": "#db1e2a",
         "shape": "triangle",

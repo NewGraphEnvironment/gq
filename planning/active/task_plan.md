@@ -42,12 +42,15 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 3: bcfishobs rename
 
-- [ ] `inst/registry/reg_qgis_restoration.json` and `reg_qgis_fishpassage.json` —
-      `source_layer` -> `bcfishobs.observations`
-- [ ] Rebuild `reg_main.json`
-- [ ] Record in `data-raw/reg_extract_restoration.R` that the value is deliberately
-      ahead of rfp's templates until the rfp issue lands, so a re-extract that reverts
-      it is legible
+- [x] Correct `source_layer` -> `bcfishobs.observations` in `data-raw/reg_build_main.R`,
+      NOT in the extracted JSONs. Changed from the approved plan: the repo already has
+      this exact pattern (the bcfishpass#13 ACCESS block), and it is strictly better —
+      the transcript stays an honest record of the template, a re-extraction cannot
+      silently revert it, and the symbology is not duplicated
+- [x] Rebuild `reg_main.json` — one line moved
+- [x] Guard stops the build when rfp's templates are regenerated, or when the name
+      moves again; both arms proven to fire against a mutated source, then restored
+      byte-identical
 
 ## Phase 4: Cross-repo issues and body reconciliation
 
