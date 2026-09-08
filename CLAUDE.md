@@ -36,6 +36,11 @@ resolve to nothing externally, since `sred` is private — the experiment
 *numbering* is claim structure, and that is what stays out. Check memory before
 writing a PR body.
 
+The repo was renamed `sred-2025-2026` → `sred`. Use `NewGraphEnvironment/sred#N`
+for anything new; older `sred-2025-2026#N` references in commit history were
+never rewritten because GitHub's redirect still resolves them. Same rename
+pattern as awshak → rtj.
+
 ## Architecture
 
 ### The Problem
