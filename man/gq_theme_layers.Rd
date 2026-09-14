@@ -22,7 +22,7 @@ Returns which layers a theme shows or hides.
 Without \code{template}, a theme name that ships in more than one template returns
 every template's rows concatenated — check the \code{template} column, or pass it,
 when you want one project's answer. \verb{High Detail - Crossings} is the live
-example: it ships in both templates, so it returns 56 rows rather than 28.
+example: it ships in both templates, so it returns 64 rows rather than 32.
 }
 \examples{
 # both templates come back concatenated — check the template column
