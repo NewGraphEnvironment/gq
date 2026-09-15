@@ -29,7 +29,7 @@ Without `template`, a theme name that ships in more than one template
 returns every template's rows concatenated — check the `template`
 column, or pass it, when you want one project's answer.
 `High Detail - Crossings` is the live example: it ships in both
-templates, so it returns 56 rows rather than 28.
+templates, so it returns 64 rows rather than 32.
 
 ## Examples
 
@@ -39,16 +39,16 @@ xing <- gq_theme_layers("High Detail - Crossings")
 table(xing$template, xing$visible)
 #>                       
 #>                        FALSE TRUE
-#>   bcfishpass_mobile        1   27
-#>   bcrestoration_mobile     1   27
+#>   bcfishpass_mobile        5   27
+#>   bcrestoration_mobile     5   27
 
 # a theme only one template ships
 head(gq_theme_layers("Land Tenure", template = "bcrestoration_mobile"))
 #>               template       theme                        layer_key visible
 #> 1 bcrestoration_mobile Land Tenure bcfishobs_fiss_fish_observations   FALSE
-#> 2 bcrestoration_mobile Land Tenure                      conservancy    TRUE
-#> 3 bcrestoration_mobile Land Tenure                  esri_world_topo   FALSE
-#> 4 bcrestoration_mobile Land Tenure             first_nation_reserve    TRUE
-#> 5 bcrestoration_mobile Land Tenure                   fiss_obstacles   FALSE
-#> 6 bcrestoration_mobile Land Tenure         fiss_stream_sample_sites   FALSE
+#> 2 bcrestoration_mobile Land Tenure                      bing_aerial   FALSE
+#> 3 bcrestoration_mobile Land Tenure                      conservancy    TRUE
+#> 4 bcrestoration_mobile Land Tenure                   esri_satellite   FALSE
+#> 5 bcrestoration_mobile Land Tenure                  esri_world_topo   FALSE
+#> 6 bcrestoration_mobile Land Tenure             first_nation_reserve    TRUE
 ```

@@ -126,6 +126,9 @@ area map following New Graph cartographic conventions:
 ``` r
 
 library(tmap)
+#> Registered S3 method overwritten by 'stars':
+#>   method                  from
+#>   st_interpolate_aw.stars sf
 sf_use_s2(FALSE)
 #> Spherical geometry (s2) switched off
 

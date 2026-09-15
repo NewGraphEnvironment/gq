@@ -18,6 +18,9 @@ library(gq)
 library(sf)
 #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
 library(tmap)
+#> Registered S3 method overwritten by 'stars':
+#>   method                  from
+#>   st_interpolate_aw.stars sf
 
 sf_use_s2(FALSE)
 #> Spherical geometry (s2) switched off

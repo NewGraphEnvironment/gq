@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.14.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,14 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.15.0" id="gq-0150">gq 0.15.0<a class="anchor" aria-label="anchor" href="#gq-0150"></a></h2>
+<ul><li>
+<p><strong>The theme roster carries the three remaining xyz basemaps and <code>Trails</code> (<a href="https://github.com/NewGraphEnvironment/gq/issues/88" class="external-link">#88</a>).</strong> rfp#185 re-saved all nine visibility presets to hold every opaque basemap present-and-off, and <code>themes.csv</code> still recorded the pre-change membership, so gq and rfp disagreed about what nine themes contain. Re-extracted with <code>data-raw/reg_extract_themes.R</code> against rfp 0.76.0: <strong>232 to 268 rows</strong>, 36 additions and 0 removals, the 9 template-theme pairs unchanged. The added rows are <code>bing_aerial</code>, <code>esri_satellite</code>, <code>google_satellite</code> and <code>trails</code>, each at <code>false</code> in every preset of both templates.</p>
+<p>rfp carries the cross-repo drift guard for exactly this (<code>test-qgs_build_harness.R</code>), and it goes from <strong>FAIL 9 to FAIL 0</strong>. It <code>skip_if_not</code>s without a gq checkout, so it is green in CI and red only on a developer machine — the inverse of where a failure gets noticed, which is how the roster came to be stale in the first place.</p>
+</li>
+<li><p><strong>The opaque-basemap guard now covers all four basemaps by data rather than one by coincidence.</strong> <code>test-gq_groups.R</code> pinned that the roster named only <code>esri_world_topo</code>, with a comment recording that the pin existed to fail at this exact regeneration rather than let the shape counts be re-pinned as routine growth while a live satellite rode through on a green suite. It fired as designed. The set pin now names all four, and each is additionally asserted present in all 9 pairs: a key named by only <em>some</em> presets is unguarded in the rest, and the set pin alone cannot see that because the key is still present somewhere.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.14.0" id="gq-0140">gq 0.14.0<a class="anchor" aria-label="anchor" href="#gq-0140"></a></h2>
 <ul><li>

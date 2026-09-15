@@ -43,18 +43,18 @@ whatever state it had.
 head(gq_themes())
 #>            template                   theme                        layer_key
 #> 1 bcfishpass_mobile High Detail - Crossings bcfishobs_fiss_fish_observations
-#> 2 bcfishpass_mobile High Detail - Crossings                      conservancy
-#> 3 bcfishpass_mobile High Detail - Crossings               crossings_modelled
-#> 4 bcfishpass_mobile High Detail - Crossings       crossings_pscis_assessment
-#> 5 bcfishpass_mobile High Detail - Crossings                  esri_world_topo
-#> 6 bcfishpass_mobile High Detail - Crossings             first_nation_reserve
+#> 2 bcfishpass_mobile High Detail - Crossings                      bing_aerial
+#> 3 bcfishpass_mobile High Detail - Crossings                      conservancy
+#> 4 bcfishpass_mobile High Detail - Crossings               crossings_modelled
+#> 5 bcfishpass_mobile High Detail - Crossings       crossings_pscis_assessment
+#> 6 bcfishpass_mobile High Detail - Crossings                   esri_satellite
 #>   visible
 #> 1    TRUE
-#> 2    TRUE
+#> 2   FALSE
 #> 3    TRUE
 #> 4    TRUE
-#> 5   FALSE
-#> 6    TRUE
+#> 5    TRUE
+#> 6   FALSE
 
 # which themes a template ships
 unique(gq_themes("bcrestoration_mobile")$theme)
