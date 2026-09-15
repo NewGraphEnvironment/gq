@@ -291,7 +291,7 @@ gq_themes <- function(template = NULL) {
 #' Without `template`, a theme name that ships in more than one template returns
 #' every template's rows concatenated — check the `template` column, or pass it,
 #' when you want one project's answer. `High Detail - Crossings` is the live
-#' example: it ships in both templates, so it returns 56 rows rather than 28.
+#' example: it ships in both templates, so it returns 64 rows rather than 32.
 #'
 #' @param theme Character. Theme name, e.g. `"High Detail - Crossings"`.
 #' @param template Character. Optional template name to restrict to.

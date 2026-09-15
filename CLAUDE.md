@@ -303,7 +303,7 @@ too many.
   nothing reported either. Re-run the extractor before trusting a green drift
   test, and see gq#78 for the currency guard that would make that unnecessary.
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
-  (232 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
+  (268 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
 - `form_types.csv` — the Mergin form roster, vendored from rfp's
   `inst/lookups/rfp_form_types.csv` by `data-raw/reg_extract_form_types.R`.
   Non-spatial child tables (`cabin_visit_pebble`) are excluded; `symbol` and

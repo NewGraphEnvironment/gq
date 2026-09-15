@@ -252,7 +252,7 @@ test_that("no theme is a stub", {
 })
 
 test_that("the roster's shape is what the generator reports", {
-  # `data-raw/reg_extract_themes.R` prints "232 rows, 9 template-theme pairs" as
+  # `data-raw/reg_extract_themes.R` prints "268 rows, 9 template-theme pairs" as
   # its acceptance criterion and nothing in the suite held it. Without this, a
   # truncated or empty roster passes every theme test above: the stub check
   # tapply()s over an empty frame and finds no stubs, which reads as health.
@@ -260,7 +260,7 @@ test_that("the roster's shape is what the generator reports", {
   # These move when rfp changes a template, and are meant to be re-pinned
   # deliberately when that happens -- not loosened until they stop failing.
   df <- gq_themes()
-  expect_equal(nrow(df), 232L)
+  expect_equal(nrow(df), 268L)
   expect_equal(nrow(unique(df[c("template", "theme")])), 9L)
 
   # No duplicate key within a pair. The generator refuses to emit one
@@ -272,7 +272,7 @@ test_that("the roster's shape is what the generator reports", {
   # Land Tenure is restoration-only and therefore never enters the agreement
   # loop -- the one theme with no content assertion otherwise.
   lt <- df[df$theme == "Land Tenure", ]
-  expect_equal(nrow(lt), 26L)
+  expect_equal(nrow(lt), 30L)
   expect_equal(sum(lt$visible), 22L)
 })
 
@@ -280,14 +280,15 @@ test_that("no theme turns an opaque basemap on", {
   # The regression that would put an opaque raster over a field map -- NEWS
   # records it as having twice cost a field user a layer.
   #
-  # `Base - misc` holds FOUR opaque xyz basemaps. themes.csv names only
-  # esri_world_topo today, so asserting that key alone would scope the guard by
-  # coincidence rather than by the property. That coincidence has a known
-  # expiry: data-raw/reg_extract_themes.R:18-20 anticipates rfp#185 re-saving
-  # the presets "to include the other three xyz basemaps". At that regeneration
-  # the shape counts above would be re-pinned as routine roster growth -- which
-  # is what this file's own comment tells the next person to do -- and a live
-  # satellite layer would ride through on a green suite.
+  # `Base - misc` holds FOUR opaque xyz basemaps. The roster named only
+  # esri_world_topo until rfp#185, so asserting that key alone would have scoped
+  # the guard by coincidence rather than by the property. That expiry has now
+  # arrived: rfp#185 re-saved the presets to carry the other three
+  # present-and-off, and gq#88 re-extracted the roster. The shape counts above
+  # moved as routine roster growth -- exactly what this file's own comment tells
+  # the next person to do -- so had the set been pinned to esri_world_topo alone,
+  # a live satellite layer would now be riding through on a green suite. Pinning
+  # all four is what made that a failure instead.
   opaque <- c("esri_world_topo", "bing_aerial", "esri_satellite",
               "google_satellite")
   df <- gq_themes()
@@ -330,10 +331,12 @@ test_that("no theme turns an opaque basemap on", {
                   g$layer_key[g$group == "Base - misc" &
                                 g$source_type == "wms"])
 
-  # And pin which of them the roster names today, so the regeneration that adds
-  # the other three (rfp#185) fails HERE, naming the reason, rather than
-  # silently enlarging what the check below is responsible for.
-  expect_setequal(intersect(unique(df$layer_key), opaque), "esri_world_topo")
+  # And pin which of them the roster names, so a template change that adds or
+  # DROPS one fails HERE, naming the reason, rather than silently changing what
+  # the check below is responsible for. Post-rfp#185 that is all four; a drop is
+  # now the live direction, and it is the quiet one -- a key absent from the
+  # roster makes the property below vacuous for that key while staying green.
+  expect_setequal(intersect(unique(df$layer_key), opaque), opaque)
 
   # The property: whichever of the four the roster names, no theme shows it.
   on <- df[df$layer_key %in% opaque & df$visible, ]
@@ -344,9 +347,27 @@ test_that("no theme turns an opaque basemap on", {
                        collapse = "; "))
   )
 
-  # esri_world_topo specifically is named by all 9 pairs -- it is the one row
-  # gq#77's re-extraction had to leave alone.
-  expect_equal(nrow(df[df$layer_key == "esri_world_topo", ]), 9L)
+  # Each opaque basemap is named by all 9 pairs. esri_world_topo was the one row
+  # gq#77's re-extraction had to leave alone; rfp#185 brought the other three to
+  # the same shape. "Present in every preset, off in every preset" is rfp#185's
+  # stated design, and it is what keeps the property above non-vacuous: a key
+  # named by only some presets is unguarded in the rest, which the set pin above
+  # cannot see because the key is still present somewhere.
+  #
+  # Count DISTINCT pairs, not rows. A row count is a proxy for the coverage this
+  # is asserting, and the two part company: duplicate a key inside one preset and
+  # drop it from another and the row count still reads 9 while the key is
+  # genuinely unmanaged in one theme. The duplicate pin above catches that today,
+  # so this is belt-and-braces -- but a guard whose comment claims per-preset
+  # coverage should not be counting something else.
+  expect_equal(
+    vapply(opaque,
+           function(k) {
+             nrow(unique(df[df$layer_key == k, c("template", "theme")]))
+           },
+           integer(1)),
+    stats::setNames(rep(9L, length(opaque)), opaque)
+  )
 })
 
 test_that("gq_theme_layers without template concatenates both templates", {

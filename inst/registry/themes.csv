@@ -1,14 +1,17 @@
 template,theme,layer_key,visible
 bcfishpass_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,true
+bcfishpass_mobile,High Detail - Crossings,bing_aerial,false
 bcfishpass_mobile,High Detail - Crossings,conservancy,true
 bcfishpass_mobile,High Detail - Crossings,crossings_modelled,true
 bcfishpass_mobile,High Detail - Crossings,crossings_pscis_assessment,true
+bcfishpass_mobile,High Detail - Crossings,esri_satellite,false
 bcfishpass_mobile,High Detail - Crossings,esri_world_topo,false
 bcfishpass_mobile,High Detail - Crossings,first_nation_reserve,true
 bcfishpass_mobile,High Detail - Crossings,fiss_obstacles,true
 bcfishpass_mobile,High Detail - Crossings,fiss_stream_sample_sites,true
 bcfishpass_mobile,High Detail - Crossings,form_fiss_site,true
 bcfishpass_mobile,High Detail - Crossings,form_pscis,true
+bcfishpass_mobile,High Detail - Crossings,google_satellite,false
 bcfishpass_mobile,High Detail - Crossings,habitat_lateral,true
 bcfishpass_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,true
 bcfishpass_mobile,High Detail - Crossings,lake,true
@@ -24,18 +27,22 @@ bcfishpass_mobile,High Detail - Crossings,roads_ften,true
 bcfishpass_mobile,High Detail - Crossings,stream_labels,true
 bcfishpass_mobile,High Detail - Crossings,streams_all,true
 bcfishpass_mobile,High Detail - Crossings,streams_salmon,true
+bcfishpass_mobile,High Detail - Crossings,trails,false
 bcfishpass_mobile,High Detail - Crossings,transmission_line,true
 bcfishpass_mobile,High Detail - Crossings,watershed_group_boundary,true
 bcfishpass_mobile,High Detail - Crossings,wetland,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Bull Trout Model,bing_aerial,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,conservancy,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,esri_satellite,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,esri_world_topo,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,first_nation_reserve,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,fiss_obstacles,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,fiss_stream_sample_sites,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,form_fiss_site,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,google_satellite,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,habitat_lateral,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,lake,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,manmade_waterbodies,true
@@ -49,18 +56,22 @@ bcfishpass_mobile,Low Detail - Bull Trout Model,roads_ften,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,stream_labels,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,streams_all,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,streams_bt,true
+bcfishpass_mobile,Low Detail - Bull Trout Model,trails,false
 bcfishpass_mobile,Low Detail - Bull Trout Model,transmission_line,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,watershed_group_boundary,true
 bcfishpass_mobile,Low Detail - Bull Trout Model,wetland,true
 bcfishpass_mobile,Low Detail - Salmon Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Salmon Model,bing_aerial,false
 bcfishpass_mobile,Low Detail - Salmon Model,conservancy,true
 bcfishpass_mobile,Low Detail - Salmon Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Salmon Model,esri_satellite,false
 bcfishpass_mobile,Low Detail - Salmon Model,esri_world_topo,false
 bcfishpass_mobile,Low Detail - Salmon Model,first_nation_reserve,true
 bcfishpass_mobile,Low Detail - Salmon Model,fiss_obstacles,false
 bcfishpass_mobile,Low Detail - Salmon Model,fiss_stream_sample_sites,false
 bcfishpass_mobile,Low Detail - Salmon Model,form_fiss_site,true
 bcfishpass_mobile,Low Detail - Salmon Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Salmon Model,google_satellite,false
 bcfishpass_mobile,Low Detail - Salmon Model,habitat_lateral,true
 bcfishpass_mobile,Low Detail - Salmon Model,lake,true
 bcfishpass_mobile,Low Detail - Salmon Model,manmade_waterbodies,true
@@ -74,18 +85,22 @@ bcfishpass_mobile,Low Detail - Salmon Model,roads_ften,true
 bcfishpass_mobile,Low Detail - Salmon Model,stream_labels,true
 bcfishpass_mobile,Low Detail - Salmon Model,streams_all,true
 bcfishpass_mobile,Low Detail - Salmon Model,streams_salmon,true
+bcfishpass_mobile,Low Detail - Salmon Model,trails,false
 bcfishpass_mobile,Low Detail - Salmon Model,transmission_line,true
 bcfishpass_mobile,Low Detail - Salmon Model,watershed_group_boundary,true
 bcfishpass_mobile,Low Detail - Salmon Model,wetland,true
 bcfishpass_mobile,Low Detail - Steelhead Model,bcfishobs_fiss_fish_observations,false
+bcfishpass_mobile,Low Detail - Steelhead Model,bing_aerial,false
 bcfishpass_mobile,Low Detail - Steelhead Model,conservancy,true
 bcfishpass_mobile,Low Detail - Steelhead Model,crossings_pscis_assessment,true
+bcfishpass_mobile,Low Detail - Steelhead Model,esri_satellite,false
 bcfishpass_mobile,Low Detail - Steelhead Model,esri_world_topo,false
 bcfishpass_mobile,Low Detail - Steelhead Model,first_nation_reserve,true
 bcfishpass_mobile,Low Detail - Steelhead Model,fiss_obstacles,false
 bcfishpass_mobile,Low Detail - Steelhead Model,fiss_stream_sample_sites,false
 bcfishpass_mobile,Low Detail - Steelhead Model,form_fiss_site,true
 bcfishpass_mobile,Low Detail - Steelhead Model,form_pscis,true
+bcfishpass_mobile,Low Detail - Steelhead Model,google_satellite,false
 bcfishpass_mobile,Low Detail - Steelhead Model,habitat_lateral,true
 bcfishpass_mobile,Low Detail - Steelhead Model,lake,true
 bcfishpass_mobile,Low Detail - Steelhead Model,manmade_waterbodies,true
@@ -99,19 +114,23 @@ bcfishpass_mobile,Low Detail - Steelhead Model,roads_ften,true
 bcfishpass_mobile,Low Detail - Steelhead Model,stream_labels,true
 bcfishpass_mobile,Low Detail - Steelhead Model,streams_all,true
 bcfishpass_mobile,Low Detail - Steelhead Model,streams_st,true
+bcfishpass_mobile,Low Detail - Steelhead Model,trails,false
 bcfishpass_mobile,Low Detail - Steelhead Model,transmission_line,true
 bcfishpass_mobile,Low Detail - Steelhead Model,watershed_group_boundary,true
 bcfishpass_mobile,Low Detail - Steelhead Model,wetland,true
 bcrestoration_mobile,High Detail - Crossings,bcfishobs_fiss_fish_observations,true
+bcrestoration_mobile,High Detail - Crossings,bing_aerial,false
 bcrestoration_mobile,High Detail - Crossings,conservancy,true
 bcrestoration_mobile,High Detail - Crossings,crossings_modelled,true
 bcrestoration_mobile,High Detail - Crossings,crossings_pscis_assessment,true
+bcrestoration_mobile,High Detail - Crossings,esri_satellite,false
 bcrestoration_mobile,High Detail - Crossings,esri_world_topo,false
 bcrestoration_mobile,High Detail - Crossings,first_nation_reserve,true
 bcrestoration_mobile,High Detail - Crossings,fiss_obstacles,true
 bcrestoration_mobile,High Detail - Crossings,fiss_stream_sample_sites,true
 bcrestoration_mobile,High Detail - Crossings,form_fiss_site,true
 bcrestoration_mobile,High Detail - Crossings,form_pscis,true
+bcrestoration_mobile,High Detail - Crossings,google_satellite,false
 bcrestoration_mobile,High Detail - Crossings,habitat_lateral,true
 bcrestoration_mobile,High Detail - Crossings,hydrometric_stations_environment_canada,true
 bcrestoration_mobile,High Detail - Crossings,lake,true
@@ -127,11 +146,14 @@ bcrestoration_mobile,High Detail - Crossings,roads_ften,true
 bcrestoration_mobile,High Detail - Crossings,stream_labels,true
 bcrestoration_mobile,High Detail - Crossings,streams_all,true
 bcrestoration_mobile,High Detail - Crossings,streams_salmon,true
+bcrestoration_mobile,High Detail - Crossings,trails,false
 bcrestoration_mobile,High Detail - Crossings,transmission_line,true
 bcrestoration_mobile,High Detail - Crossings,watershed_group_boundary,true
 bcrestoration_mobile,High Detail - Crossings,wetland,true
 bcrestoration_mobile,Land Tenure,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Land Tenure,bing_aerial,false
 bcrestoration_mobile,Land Tenure,conservancy,true
+bcrestoration_mobile,Land Tenure,esri_satellite,false
 bcrestoration_mobile,Land Tenure,esri_world_topo,false
 bcrestoration_mobile,Land Tenure,first_nation_reserve,true
 bcrestoration_mobile,Land Tenure,fiss_obstacles,false
@@ -139,6 +161,7 @@ bcrestoration_mobile,Land Tenure,fiss_stream_sample_sites,false
 bcrestoration_mobile,Land Tenure,floodplains,true
 bcrestoration_mobile,Land Tenure,form_fiss_site,true
 bcrestoration_mobile,Land Tenure,form_pscis,true
+bcrestoration_mobile,Land Tenure,google_satellite,false
 bcrestoration_mobile,Land Tenure,habitat_lateral,true
 bcrestoration_mobile,Land Tenure,lake,true
 bcrestoration_mobile,Land Tenure,land_ownership,true
@@ -153,18 +176,22 @@ bcrestoration_mobile,Land Tenure,roads_ften,true
 bcrestoration_mobile,Land Tenure,stream_labels,true
 bcrestoration_mobile,Land Tenure,streams_all,true
 bcrestoration_mobile,Land Tenure,streams_st,true
+bcrestoration_mobile,Land Tenure,trails,false
 bcrestoration_mobile,Land Tenure,transmission_line,true
 bcrestoration_mobile,Land Tenure,watershed_group_boundary,true
 bcrestoration_mobile,Land Tenure,wetland,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Bull Trout Model,bing_aerial,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,conservancy,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,esri_satellite,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,esri_world_topo,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,first_nation_reserve,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,fiss_obstacles,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,fiss_stream_sample_sites,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,form_fiss_site,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,google_satellite,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,habitat_lateral,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,lake,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,manmade_waterbodies,true
@@ -178,18 +205,22 @@ bcrestoration_mobile,Low Detail - Bull Trout Model,roads_ften,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,stream_labels,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,streams_all,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,streams_bt,true
+bcrestoration_mobile,Low Detail - Bull Trout Model,trails,false
 bcrestoration_mobile,Low Detail - Bull Trout Model,transmission_line,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,watershed_group_boundary,true
 bcrestoration_mobile,Low Detail - Bull Trout Model,wetland,true
 bcrestoration_mobile,Low Detail - Salmon Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Salmon Model,bing_aerial,false
 bcrestoration_mobile,Low Detail - Salmon Model,conservancy,true
 bcrestoration_mobile,Low Detail - Salmon Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Salmon Model,esri_satellite,false
 bcrestoration_mobile,Low Detail - Salmon Model,esri_world_topo,false
 bcrestoration_mobile,Low Detail - Salmon Model,first_nation_reserve,true
 bcrestoration_mobile,Low Detail - Salmon Model,fiss_obstacles,false
 bcrestoration_mobile,Low Detail - Salmon Model,fiss_stream_sample_sites,false
 bcrestoration_mobile,Low Detail - Salmon Model,form_fiss_site,true
 bcrestoration_mobile,Low Detail - Salmon Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Salmon Model,google_satellite,false
 bcrestoration_mobile,Low Detail - Salmon Model,habitat_lateral,true
 bcrestoration_mobile,Low Detail - Salmon Model,lake,true
 bcrestoration_mobile,Low Detail - Salmon Model,manmade_waterbodies,true
@@ -203,18 +234,22 @@ bcrestoration_mobile,Low Detail - Salmon Model,roads_ften,true
 bcrestoration_mobile,Low Detail - Salmon Model,stream_labels,true
 bcrestoration_mobile,Low Detail - Salmon Model,streams_all,true
 bcrestoration_mobile,Low Detail - Salmon Model,streams_salmon,true
+bcrestoration_mobile,Low Detail - Salmon Model,trails,false
 bcrestoration_mobile,Low Detail - Salmon Model,transmission_line,true
 bcrestoration_mobile,Low Detail - Salmon Model,watershed_group_boundary,true
 bcrestoration_mobile,Low Detail - Salmon Model,wetland,true
 bcrestoration_mobile,Low Detail - Steelhead Model,bcfishobs_fiss_fish_observations,false
+bcrestoration_mobile,Low Detail - Steelhead Model,bing_aerial,false
 bcrestoration_mobile,Low Detail - Steelhead Model,conservancy,true
 bcrestoration_mobile,Low Detail - Steelhead Model,crossings_pscis_assessment,true
+bcrestoration_mobile,Low Detail - Steelhead Model,esri_satellite,false
 bcrestoration_mobile,Low Detail - Steelhead Model,esri_world_topo,false
 bcrestoration_mobile,Low Detail - Steelhead Model,first_nation_reserve,true
 bcrestoration_mobile,Low Detail - Steelhead Model,fiss_obstacles,false
 bcrestoration_mobile,Low Detail - Steelhead Model,fiss_stream_sample_sites,false
 bcrestoration_mobile,Low Detail - Steelhead Model,form_fiss_site,true
 bcrestoration_mobile,Low Detail - Steelhead Model,form_pscis,true
+bcrestoration_mobile,Low Detail - Steelhead Model,google_satellite,false
 bcrestoration_mobile,Low Detail - Steelhead Model,habitat_lateral,true
 bcrestoration_mobile,Low Detail - Steelhead Model,lake,true
 bcrestoration_mobile,Low Detail - Steelhead Model,manmade_waterbodies,true
@@ -228,6 +263,7 @@ bcrestoration_mobile,Low Detail - Steelhead Model,roads_ften,true
 bcrestoration_mobile,Low Detail - Steelhead Model,stream_labels,true
 bcrestoration_mobile,Low Detail - Steelhead Model,streams_all,true
 bcrestoration_mobile,Low Detail - Steelhead Model,streams_st,true
+bcrestoration_mobile,Low Detail - Steelhead Model,trails,false
 bcrestoration_mobile,Low Detail - Steelhead Model,transmission_line,true
 bcrestoration_mobile,Low Detail - Steelhead Model,watershed_group_boundary,true
 bcrestoration_mobile,Low Detail - Steelhead Model,wetland,true

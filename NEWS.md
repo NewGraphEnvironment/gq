@@ -1,3 +1,30 @@
+# gq 0.15.0
+
+- **The theme roster carries the three remaining xyz basemaps and `Trails` (#88).**
+  rfp#185 re-saved all nine visibility presets to hold every opaque basemap
+  present-and-off, and `themes.csv` still recorded the pre-change membership, so
+  gq and rfp disagreed about what nine themes contain. Re-extracted with
+  `data-raw/reg_extract_themes.R` against rfp 0.76.0: **232 to 268 rows**, 36
+  additions and 0 removals, the 9 template-theme pairs unchanged. The added rows
+  are `bing_aerial`, `esri_satellite`, `google_satellite` and `trails`, each at
+  `false` in every preset of both templates.
+
+  rfp carries the cross-repo drift guard for exactly this
+  (`test-qgs_build_harness.R`), and it goes from **FAIL 9 to FAIL 0**. It
+  `skip_if_not`s without a gq checkout, so it is green in CI and red only on a
+  developer machine — the inverse of where a failure gets noticed, which is how
+  the roster came to be stale in the first place.
+
+- **The opaque-basemap guard now covers all four basemaps by data rather than one
+  by coincidence.** `test-gq_groups.R` pinned that the roster named only
+  `esri_world_topo`, with a comment recording that the pin existed to fail at
+  this exact regeneration rather than let the shape counts be re-pinned as
+  routine growth while a live satellite rode through on a green suite. It fired
+  as designed. The set pin now names all four, and each is additionally asserted
+  present in all 9 pairs: a key named by only *some* presets is unguarded in the
+  rest, and the set pin alone cannot see that because the key is still present
+  somewhere.
+
 # gq 0.14.0
 
 - **Three `aws` rows now say what the bucket actually stages (#82).** gq's registry
