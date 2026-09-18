@@ -88,11 +88,11 @@ leg <- gq_tmap_legend(reg, c("lake", "railway", "roads_dra"))
 | Concept | What it is |
 |---|---|
 | **Registry** | The canonical JSON — per-layer styling (color, opacity, stroke, mark, font, label, classification breaks). Shipped under `inst/registry/`; one per QGIS project family (`reg_qgis_restoration`, `reg_qgis_fishpassage`) plus a merged `reg_main.json` master. |
-| **Groups** | Named bundles of layers with nesting + z-order (e.g. `Crossings`, `Streams`, `Base - misc`). Drives QGIS legend tree and front-end layer pickers. 11 groups; 62 layer rows. |
+| **Groups** | Named bundles of layers with nesting + z-order (e.g. `Crossings`, `Streams`, `Base - misc`). Drives QGIS legend tree and front-end layer pickers. |
 | **Templates** | Project-level compositions — which groups belong to which QGIS project (`bcfishpass_mobile`, `bcrestoration_mobile`). Project-assembly tools read templates to decide which layers belong in a new field project. |
 | **Themes** | Per-layer visibility presets, extracted from the templates (e.g. `High Detail - Crossings`, `Land Tenure`). Keyed by template as well as theme, because a theme name is not global — `Land Tenure` ships in one template only, and the templates can drift independently. Drives QGIS map themes and is exportable as QWC2 web-map visibility config. |
 | **xref_layers** | Cross-reference table mapping registry keys to source-system layer names (BC Data Catalogue WMS layers, fwapg views, internal pgsql schemas) so consumers can look up the underlying data when they want it. |
-| **QML corpus** | The same styles in QGIS's own format, shipped under `inst/styles/`. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. 50 shared vector styles, 3 per-template overrides, 1 raster, 6 services. |
+| **QML corpus** | The same styles in QGIS's own format, shipped under `inst/styles/`. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. Shared vector styles, with per-template overrides for the few layers whose symbology genuinely differs, plus raster and service styles. |
 
 ## Producer ⇄ consumer
 
