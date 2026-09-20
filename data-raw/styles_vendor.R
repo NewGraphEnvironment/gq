@@ -186,11 +186,21 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   }
 
   # Reported rather than fatal: rfp legitimately ships raster styles the
-  # templates do not use — dem_hillshade and dem_turbo back rfp_raster_styles(),
-  # whose renderer/companion/stretch dimension gq vendors none of. They are also
-  # the only files in the store that are QGIS-authored sidecars rather than
+  # templates do not use. Three today — airphoto_gray, dem_hillshade, dem_turbo.
+  #
+  # The skip rule is absence from the template roster, NOT membership in
+  # rfp_raster_styles(). Those are different sets and it matters:
+  # rfp_raster_styles() serves four, and the fourth is habitat_lateral, which a
+  # template DOES use and which gq therefore vendors as its one raster. All
+  # three skipped styles happen to back that roster, whose
+  # renderer/companion/stretch dimension gq models none of — context for what
+  # they are for, not the reason they are dropped.
+  #
+  # dem_hillshade and dem_turbo alone are QGIS-authored sidecars rather than
   # lifted <maplayer> blocks, which is why they alone open with
-  # <map-layer-style-manager> instead of <flags>. Not gq's to ship.
+  # <map-layer-style-manager> instead of <flags>. airphoto_gray was repaired out
+  # of that form upstream (rfp#235 follow-up) and is an ordinary QML.
+  # Not gq's to ship, either way.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {

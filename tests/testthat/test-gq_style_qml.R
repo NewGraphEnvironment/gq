@@ -43,13 +43,34 @@ test_that("index keys are the same normalization the registry uses", {
 })
 
 test_that("the corpus holds only styles the templates actually use", {
-  # rfp ships two raster styles no template references — dem_hillshade and
-  # dem_turbo, which back rfp_raster_styles() and carry a
-  # renderer/companion/stretch dimension gq vendors none of. Vendoring globbed
-  # the directory at first and took them; it resolves against rfp's roster now.
+  # rfp ships raster styles no template references; vendoring globbed the
+  # directory at first and took them, and resolves against rfp's roster now.
+  #
+  # This guard used to name the excluded styles — expect_false(any(c(
+  # "dem_hillshade", "dem_turbo") %in% ...)). That is a NEGATIVE LITERAL SET, and
+  # it goes blind precisely as upstream grows: rfp later added airphoto_gray,
+  # which no template uses either, the vendoring script's own message went from
+  # two names to three, and this test could not see it because airphoto_gray was
+  # not on a list written before it existed. Caught in #90, by reading the
+  # script's stdout rather than by anything in the suite.
+  #
+  # Pinned as a POSITIVE SET instead. Asserting what the corpus DOES hold cannot
+  # be outgrown — a raster or service that arrives upstream and is wrongly
+  # vendored fails here whether or not anyone anticipated its name, and one
+  # wrongly dropped fails too. Update these deliberately when a template really
+  # does start using a new one.
   idx <- read_styles_index()
-  expect_false(any(c("dem_hillshade", "dem_turbo") %in% idx$layer_key))
-  expect_true("habitat_lateral" %in% idx$layer_key)
+  expect_setequal(idx$layer_key[idx$kind == "raster"], "habitat_lateral")
+  expect_setequal(
+    idx$layer_key[idx$kind == "service"],
+    c("bing_aerial", "esri_satellite", "esri_world_topo",
+      "fire_perimeters_current", "frep_rip2021_mar2022", "google_satellite")
+  )
+  # The three rfp ships today that no template uses. Redundant against the
+  # positive pins above and kept as the named regression: these are the styles
+  # the vendoring script reports skipping, so a change here says which one moved.
+  expect_false(any(c("airphoto_gray", "dem_hillshade", "dem_turbo") %in%
+                     idx$layer_key))
 })
 
 test_that("no key is claimed twice for one template", {
