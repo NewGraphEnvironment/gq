@@ -54,11 +54,20 @@ test_that("the corpus holds only styles the templates actually use", {
   # not on a list written before it existed. Caught in #90, by reading the
   # script's stdout rather than by anything in the suite.
   #
-  # Pinned as a POSITIVE SET instead. Asserting what the corpus DOES hold cannot
-  # be outgrown — a raster or service that arrives upstream and is wrongly
-  # vendored fails here whether or not anyone anticipated its name, and one
-  # wrongly dropped fails too. Update these deliberately when a template really
-  # does start using a new one.
+  # Pinned as a POSITIVE SET instead. Asserting what the corpus DOES hold is not
+  # outgrown by a NAME nobody anticipated: a raster or service wrongly vendored
+  # fails here whatever it is called, and one wrongly dropped fails too. Update
+  # these deliberately when a template really does start using a new one.
+  #
+  # It IS outgrown along the `kind` axis, which is worth stating rather than
+  # implying otherwise: a raster misfiled as kind = "vector" evades both pins,
+  # and an unrecognised `kind` falls into neither partition. Neither is
+  # reachable — `kind` is written by styles_vendor.R (hardcoded "vector" for
+  # index rows, derived from the directory otherwise), rfp's exporter walks
+  # maplayer[@type='vector'] so a raster cannot enter vector/index.csv, and an
+  # unknown kind hits styles_rel()'s stop() via the resolve-every-row test
+  # above. Recorded because "cannot be outgrown" was the first wording and it
+  # was not true (#90 review round 3).
   idx <- read_styles_index()
   expect_setequal(idx$layer_key[idx$kind == "raster"], "habitat_lateral")
   expect_setequal(

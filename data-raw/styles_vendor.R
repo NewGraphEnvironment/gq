@@ -196,21 +196,36 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   # renderer/companion/stretch dimension gq models none of — context for what
   # they are for, not the reason they are dropped.
   #
-  # An observation about their form, with no cause attached: dem_hillshade and
-  # dem_turbo are the only two files in the store that open with
-  # <map-layer-style-manager> rather than <flags>. Measured 2026-09-20 with
-  # `grep -rl` across all 66 store QMLs. airphoto_gray is an ordinary <flags>
+  # dem_hillshade and dem_turbo are the only two files in the store that open
+  # with <map-layer-style-manager> rather than <flags> (measured 2026-09-20,
+  # `grep -rl` across all 66 store QMLs). airphoto_gray is an ordinary <flags>
   # QML. None of the three is gq's to ship, for the roster reason above.
   #
-  # The cause is deliberately NOT stated. This comment used to explain the split
-  # as "QGIS-authored sidecars rather than lifted <maplayer> blocks", and that is
-  # refuted by rfp's own reference nodes: all nine in inst/testdata/nodes/ are
-  # what QGIS itself writes, and all nine — raster_hillshade.qml included — open
-  # with <flags>. So authorship does not discriminate. A first pass at this
-  # comment kept that false cause and added a false history beside it
-  # ("airphoto_gray was repaired out of that form"); it was <flags> at every
-  # revision, including the one that created it. Both were caught in #90 review.
-  # If the mechanism is ever wanted, measure it rather than inferring it.
+  # The cause is authorship, and rfp documents it — those two are rfp's OWN
+  # export under an old `order =` override, not QGIS's output:
+  #   R/rfp_qgs_style_export.R        "those were exported by rfp, so they
+  #                                    report this scan back rather than QGIS's
+  #                                    opinion"
+  #   test-rfp_qgs_style_set.R:460    "rfp's own output under the old `order =`
+  #                                    override, not a pre-#130 leak"
+  #   inst/testdata/nodes/README.md   QGIS "begins at flags, exactly as a
+  #                                    vector's does"
+  # airphoto_gray opens with <flags> because it IS a QGIS-authored sidecar —
+  # git records it entering rfp as a 100% copy of the raster_gdal reference node
+  # (`C100` at 11ec65fc).
+  #
+  # Two earlier passes at this paragraph got the cause wrong in both directions,
+  # so it is written down rather than left to inference (#90 review):
+  #   - the original had the polarity BACKWARDS, calling the style-manager pair
+  #     the QGIS-authored ones;
+  #   - the first repair over-corrected to "authorship does not discriminate",
+  #     citing nine reference nodes that are all QGIS-authored AND all <flags>.
+  #     A sample with no variation in the thing being tested cannot separate
+  #     "authorship decides this" from "authorship is irrelevant"; the control
+  #     that settles it is dem_hillshade, in this same store.
+  # The rule that would have caught both: a CAUSAL claim about rfp is settled by
+  # reading rfp's own account of itself, never by re-measuring rfp's output —
+  # the output is what the claim is about.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {

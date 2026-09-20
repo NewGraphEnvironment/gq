@@ -151,14 +151,74 @@ own beside it. **Both halves are false**, and both are now measured:
   *deployment mode* — and I carried the word across from its commit title with the
   meaning inverted.
 
-The comment now states the **observation only**, with the date it was measured, and says
-explicitly that the cause is withheld. Two wrong causal claims in one paragraph is the
-argument for not writing a third.
+### …and the repair for THAT was also wrong (round 3)
 
-**The lesson is narrower than "check your claims".** A member list and a count are cheap
-to verify and I did verify them. A *causal* claim ("which is why") and a *historical* one
-("was repaired out of") read as context rather than as assertions, so neither got
-measured — and both were wrong while every countable thing beside them was right.
+The fix above replaced the false cause with "So authorship does not discriminate" and
+withheld any explanation. **That is false too**, and the reasoning behind it was invalid.
+
+rfp documents the cause, three times:
+
+| source | says |
+|---|---|
+| `R/rfp_qgs_style_export.R:31` | "those were exported by rfp, so they report this scan back rather than QGIS's opinion" |
+| `test-rfp_qgs_style_set.R:460` | "rfp's own output under the old `order =` override, not a pre-#130 leak" |
+| `inst/testdata/nodes/README.md:86` | QGIS "begins at `flags`, exactly as a vector's does" |
+
+And git supplies the other half: `airphoto_gray.qml` entered rfp as **`C100` — a 100% copy
+of `raster_gdal.qml`**, one of the QGIS-authored nodes. So the partition is authorship,
+cleanly:
+
+| file | first child | authored by |
+|---|---|---|
+| `airphoto_gray.qml` | `flags` | QGIS (C100 copy of a reference node) |
+| `habitat_lateral.qml` | `flags` | QGIS |
+| `dem_hillshade.qml` | `map-layer-style-manager` | **rfp's own export** |
+| `dem_turbo.qml` | `map-layer-style-manager` | **rfp's own export** |
+
+The original comment's error was **polarity** — it had the style-manager pair as the
+QGIS-authored ones. My repair threw out the variable instead of flipping it.
+
+**Why the measurement could not have shown what I read it as showing.** The evidence was
+"all nine reference nodes are QGIS-authored, and all nine open with `<flags>`". Every
+member of that sample has the **same value of the independent variable**. Such a sample is
+equally consistent with authorship discriminating perfectly (the truth) and with it not
+mattering at all. To conclude "does not discriminate" I needed a QGIS-authored file opening
+with `<map-layer-style-manager>`, or a non-QGIS-authored one opening with `<flags>`.
+Neither was looked for. The control was `dem_hillshade.qml`, in the store I had already
+grepped.
+
+### The mechanism behind all five
+
+Every one of these claims is about **rfp**, and every sweep measured rfp's **data** —
+`grep -rl` over the store, `ls` of the nodes directory, `nrow()` of an index,
+`Rscript -e 'rfp_raster_styles()'`. Not one read rfp's **prose**.
+
+That instrument settles three of the six axes and structurally cannot settle two:
+
+| axis | settled by | outcome here |
+|---|---|---|
+| count | measuring data | instances 1, 3 — found, fixed |
+| member list | measuring data | instance 2 — found, fixed |
+| superlative | measuring data | held |
+| **causal** | **reading the producer's own account** | instances 4 **and 5** |
+| **behaviour of a second system** | **reading that system** | settled by running commands, not by reading rfp |
+| universal quantifier | either | held |
+
+So the class did not recur because the sweep was narrow — round 2 widened it to all six
+axes — it recurred because the widened sweep **still used one instrument**, and that
+instrument cannot reach two of the axes.
+
+**The rule that ends it:** a causal or historical claim about rfp is settled by reading
+rfp's own account of itself — roxygen at the site, the test that pins the behaviour, the
+nearest README, then `git log -S` / `--follow --name-status` for provenance. Re-measuring
+rfp's output cannot settle it, because the output is what the claim is *about*. One
+`grep -rn '<token>' ~/Projects/repo/rfp/{R,tests}` returns all three sources above, and it
+is the call nobody made across two rounds.
+
+**The lesson is narrower than "check your claims".** A member list and a count are cheap to
+verify and I did verify them. A *causal* clause reads as context rather than as an
+assertion, so it never got measured — twice, in opposite directions, while every countable
+thing beside it was right.
 
 ### 2. The test guard was a negative literal set, and had gone blind
 

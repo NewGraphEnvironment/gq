@@ -57,9 +57,22 @@
   nine open with `<flags>` — and asserted that `airphoto_gray` had been "repaired out of
   that form", when it was `<flags>` at every revision including the one that created it.
 
-  Both are removed. The comment now states the observation, with the date it was
-  measured, and says explicitly that the cause is withheld. The re-run sweep covers all
-  six axes the convention names rather than the three that are greppable for digits.
+  The repair for *that* was then also wrong: it asserted "authorship does not
+  discriminate", reasoning from nine reference nodes that are **all** QGIS-authored and
+  **all** `<flags>` — a sample with no variation in the thing being tested, which cannot
+  separate "authorship decides this" from "authorship is irrelevant". rfp documents the
+  real cause in three places: the two style-manager files are rfp's own export, and
+  `airphoto_gray` is `<flags>` because git records it entering rfp as a 100% copy of a
+  QGIS-authored reference node. The original comment had the **polarity** backwards; the
+  first repair threw out the variable instead of flipping it. The cause is now stated and
+  cited.
+
+  The mechanism behind all five: every one of these claims is about rfp, and every sweep
+  measured rfp's **data** — never rfp's **prose**. That settles counts, member lists and
+  superlatives, and structurally cannot settle a causal or historical claim, because the
+  output is what such a claim is *about*. Those are settled by reading the producer's own
+  account: roxygen at the site, the test that pins the behaviour, the README, then
+  `git log --follow --name-status` for provenance.
 
 - Both this and #88 were invisible to CI for the same structural reason: the drift guard
   `skip_if_not`s without an rfp checkout, so it is green in CI and red only on a
