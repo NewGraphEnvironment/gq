@@ -108,13 +108,39 @@ this diff touches.
       expression resolves and it is **tier-1's naive rule that is wrong**, not the file
 - [ ] Comment on #86 pointing at this PR
 
+## Review rounds
+
+One Plan review plus four `/code-check` rounds. Past the usual bound, because rounds 2, 3
+and 4 each found a defect **inside the previous round's fix** — the skill's explicit
+trigger to continue.
+
+| round | findings | fixed | accepted | inside previous fix? |
+|---|---|---|---|---|
+| Plan | 9 | 7 | 2 (0.16.0 bump; index warrant) | — |
+| 1 | 2 | 2 | 0 | n (one was already fixed independently) |
+| 2 | 3 | 3 | 0 | **y** — a false cause preserved, plus a false history the fix added |
+| 3 | 2 | 2 | 0 | **y** — the repair for round 2 was itself false |
+| 4 | 1 | 1 | 0 | **y** — the repair for round 3 was itself false |
+
+**How it ended: by removing the surface, not by a quiet round.** All three of rounds 2–4
+found the same paragraph asserting a wrong *cause*, in three different shapes — polarity
+backwards, then a sample with no variation in the variable under test, then a sufficient
+condition stated as the cause. A fifth attempt was the wrong move. Nothing in the script
+reads the element order and the skip rule is the roster, so the comment now points at
+rfp's one-sentence explanation instead of carrying a fourth copy of it.
+
+The mechanism — every sweep measured rfp's *data*, never rfp's *prose* — is filed as #92
+for the sibling `data-raw/` scripts.
+
 ## Phase 4: Release bookkeeping
 
-- [ ] `NEWS.md` entry under `# gq 0.16.0` — **minor, not patch**. The directly analogous
+- [x] `NEWS.md` entry under `# gq 0.16.0` — **minor, not patch**. The directly analogous
       precedent is #88, an rfp re-extract into `inst/registry/themes.csv` that took
       0.15.0; this likewise changes bytes `gq_style_qml()` hands to consumers
-- [ ] Do **not** carry #90's "4 removed" into NEWS — the issue body says 4 and lists 5.
+- [x] Did **not** carry #90's "4 removed" into NEWS — the issue body says 4 and lists 5.
       The roster went 24 → 19, so it is **5**
+- [x] Every NEWS figure re-derived from the artifact, twice: by me, and independently by
+      rounds 2 and 3
 - [ ] Bump `DESCRIPTION` to `0.16.0` as the **final** commit of the branch
 
 ## Out of scope
