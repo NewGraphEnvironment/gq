@@ -408,13 +408,6 @@
         </config>
       </editWidget>
     </field>
-    <field configurationFlags="None" name="fish_obsrvtn_event_id">
-      <editWidget type="">
-        <config>
-          <Option/>
-        </config>
-      </editWidget>
-    </field>
     <field configurationFlags="None" name="linear_feature_id">
       <editWidget type="">
         <config>
@@ -422,28 +415,7 @@
         </config>
       </editWidget>
     </field>
-    <field configurationFlags="None" name="wscode_ltree">
-      <editWidget type="">
-        <config>
-          <Option/>
-        </config>
-      </editWidget>
-    </field>
-    <field configurationFlags="None" name="localcode_ltree">
-      <editWidget type="">
-        <config>
-          <Option/>
-        </config>
-      </editWidget>
-    </field>
     <field configurationFlags="None" name="blue_line_key">
-      <editWidget type="">
-        <config>
-          <Option/>
-        </config>
-      </editWidget>
-    </field>
-    <field configurationFlags="None" name="waterbody_key">
       <editWidget type="">
         <config>
           <Option/>
@@ -472,13 +444,6 @@
       </editWidget>
     </field>
     <field configurationFlags="None" name="watershed_group_code">
-      <editWidget type="">
-        <config>
-          <Option/>
-        </config>
-      </editWidget>
-    </field>
-    <field configurationFlags="None" name="species_id">
       <editWidget type="">
         <config>
           <Option/>
@@ -566,17 +531,12 @@
   <aliases>
     <alias field="fid" index="0" name=""/>
     <alias field="fish_observation_point_id" index="1" name=""/>
-    <alias field="fish_obsrvtn_event_id" index="2" name=""/>
     <alias field="linear_feature_id" index="3" name=""/>
-    <alias field="wscode_ltree" index="4" name=""/>
-    <alias field="localcode_ltree" index="5" name=""/>
     <alias field="blue_line_key" index="6" name=""/>
-    <alias field="waterbody_key" index="7" name=""/>
     <alias field="downstream_route_measure" index="8" name=""/>
     <alias field="distance_to_stream" index="9" name=""/>
     <alias field="match_type" index="10" name=""/>
     <alias field="watershed_group_code" index="11" name=""/>
-    <alias field="species_id" index="12" name=""/>
     <alias field="species_code" index="13" name=""/>
     <alias field="agency_id" index="14" name=""/>
     <alias field="observation_date" index="15" name=""/>
@@ -592,17 +552,12 @@
   <splitPolicies>
     <policy field="fid" policy="Duplicate"/>
     <policy field="fish_observation_point_id" policy="Duplicate"/>
-    <policy field="fish_obsrvtn_event_id" policy="Duplicate"/>
     <policy field="linear_feature_id" policy="Duplicate"/>
-    <policy field="wscode_ltree" policy="Duplicate"/>
-    <policy field="localcode_ltree" policy="Duplicate"/>
     <policy field="blue_line_key" policy="Duplicate"/>
-    <policy field="waterbody_key" policy="Duplicate"/>
     <policy field="downstream_route_measure" policy="Duplicate"/>
     <policy field="distance_to_stream" policy="Duplicate"/>
     <policy field="match_type" policy="Duplicate"/>
     <policy field="watershed_group_code" policy="Duplicate"/>
-    <policy field="species_id" policy="Duplicate"/>
     <policy field="species_code" policy="Duplicate"/>
     <policy field="agency_id" policy="Duplicate"/>
     <policy field="observation_date" policy="Duplicate"/>
@@ -618,17 +573,12 @@
   <defaults>
     <default applyOnUpdate="0" expression="" field="fid"/>
     <default applyOnUpdate="0" expression="" field="fish_observation_point_id"/>
-    <default applyOnUpdate="0" expression="" field="fish_obsrvtn_event_id"/>
     <default applyOnUpdate="0" expression="" field="linear_feature_id"/>
-    <default applyOnUpdate="0" expression="" field="wscode_ltree"/>
-    <default applyOnUpdate="0" expression="" field="localcode_ltree"/>
     <default applyOnUpdate="0" expression="" field="blue_line_key"/>
-    <default applyOnUpdate="0" expression="" field="waterbody_key"/>
     <default applyOnUpdate="0" expression="" field="downstream_route_measure"/>
     <default applyOnUpdate="0" expression="" field="distance_to_stream"/>
     <default applyOnUpdate="0" expression="" field="match_type"/>
     <default applyOnUpdate="0" expression="" field="watershed_group_code"/>
-    <default applyOnUpdate="0" expression="" field="species_id"/>
     <default applyOnUpdate="0" expression="" field="species_code"/>
     <default applyOnUpdate="0" expression="" field="agency_id"/>
     <default applyOnUpdate="0" expression="" field="observation_date"/>
@@ -644,17 +594,12 @@
   <constraints>
     <constraint constraints="3" exp_strength="0" field="fid" notnull_strength="1" unique_strength="1"/>
     <constraint constraints="0" exp_strength="0" field="fish_observation_point_id" notnull_strength="0" unique_strength="0"/>
-    <constraint constraints="0" exp_strength="0" field="fish_obsrvtn_event_id" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="linear_feature_id" notnull_strength="0" unique_strength="0"/>
-    <constraint constraints="0" exp_strength="0" field="wscode_ltree" notnull_strength="0" unique_strength="0"/>
-    <constraint constraints="0" exp_strength="0" field="localcode_ltree" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="blue_line_key" notnull_strength="0" unique_strength="0"/>
-    <constraint constraints="0" exp_strength="0" field="waterbody_key" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="downstream_route_measure" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="distance_to_stream" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="match_type" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="watershed_group_code" notnull_strength="0" unique_strength="0"/>
-    <constraint constraints="0" exp_strength="0" field="species_id" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="species_code" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="agency_id" notnull_strength="0" unique_strength="0"/>
     <constraint constraints="0" exp_strength="0" field="observation_date" notnull_strength="0" unique_strength="0"/>
@@ -670,17 +615,12 @@
   <constraintExpressions>
     <constraint desc="" exp="" field="fid"/>
     <constraint desc="" exp="" field="fish_observation_point_id"/>
-    <constraint desc="" exp="" field="fish_obsrvtn_event_id"/>
     <constraint desc="" exp="" field="linear_feature_id"/>
-    <constraint desc="" exp="" field="wscode_ltree"/>
-    <constraint desc="" exp="" field="localcode_ltree"/>
     <constraint desc="" exp="" field="blue_line_key"/>
-    <constraint desc="" exp="" field="waterbody_key"/>
     <constraint desc="" exp="" field="downstream_route_measure"/>
     <constraint desc="" exp="" field="distance_to_stream"/>
     <constraint desc="" exp="" field="match_type"/>
     <constraint desc="" exp="" field="watershed_group_code"/>
-    <constraint desc="" exp="" field="species_id"/>
     <constraint desc="" exp="" field="species_code"/>
     <constraint desc="" exp="" field="agency_id"/>
     <constraint desc="" exp="" field="observation_date"/>
@@ -746,7 +686,7 @@ def my_form_open(dialog, layer, feature):
   </reuseLastValue>
   <dataDefinedFieldProperties/>
   <widgets/>
-  <previewExpression>"fish_obsrvtn_pnt_distinct_id"</previewExpression>
+  <previewExpression>"species_name"</previewExpression>
   <mapTip/>
   <layerGeometryType>0</layerGeometryType>
 </qgis>
