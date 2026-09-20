@@ -201,42 +201,21 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   # `grep -rl` across all 66 store QMLs). airphoto_gray is an ordinary <flags>
   # QML. None of the three is gq's to ship, for the roster reason above.
   #
-  # The cause is the export BOUNDARY — where a positional scan stopped — not who
-  # ran the export. rfp states it in one sentence:
-  #   R/rfp_qgs_style_set.R:522  "`map-layer-style-manager` is a SOURCE tag and
-  #                               never a style child ... but rfp's own shipped
-  #                               raster styles carry it FIRST, because they were
-  #                               exported under the old `order =` override"
-  # Their child lists confirm it: both run `map-layer-style-manager, flags,
-  # temporal, ...` — the <maplayer> tail from the point the scan stopped, that
-  # tag being second-to-last in .rfp_qgs_style_src_tags().
+  # Why those two differ in shape is rfp's business, not gq's — nothing here
+  # reads it, and the skip rule above is the roster. rfp explains it in one
+  # sentence at R/rfp_qgs_style_set.R:522: they "carry it FIRST, because they
+  # were exported under the old `order =` override". Read that, not a copy of it.
   #
-  # Authorship is SUFFICIENT but is not the discriminator, and that is the trap.
-  # QGIS's own output always begins at `flags` (all nine sidecars in
-  # rfp/inst/testdata/nodes/) — but so does habitat_lateral, the raster gq DOES
-  # vendor, which rfp lifted out of both templates itself (54389cc0: "its
-  # boundary lands on `flags`"). QGIS-authored implies <flags>; <flags> implies
-  # nothing about the author.
-  #
-  # THREE earlier passes got this wrong, each in a different shape, so it is
-  # written down rather than left to inference (#90 review):
-  #   - the original had the polarity BACKWARDS, calling the style-manager pair
-  #     the QGIS-authored ones;
-  #   - the first repair over-corrected to "authorship does not discriminate",
-  #     from nine reference nodes that are all QGIS-authored AND all <flags> — a
-  #     sample with no variation in the thing being tested, which cannot separate
-  #     "authorship decides this" from "authorship is irrelevant". The control it
-  #     lacked is dem_hillshade;
-  #   - the second stated authorship AS the cause, which habitat_lateral refutes
-  #     from three lines up in this same comment. The control that stops that
-  #     over-correction is habitat_lateral.
-  # The rule that would have caught all three: a CAUSAL claim about rfp is
-  # settled by reading rfp's own account of itself, never by re-measuring rfp's
-  # output — the output is what the claim is about. Noting that the second
-  # repair broke that rule in its own last sentence, by citing git's `C100`
-  # copy-similarity score as provenance when 11ec65fc says it in words
-  # ("airphoto_gray, the raster_gdal.qml reference byte for byte"). A similarity
-  # heuristic is a measurement of the output; read the commit message instead.
+  # Do not re-derive the reason from the files. This comment asserted a cause
+  # three times and was wrong three different ways (#90 review): polarity
+  # backwards; then "authorship does not discriminate", inferred from nine
+  # reference nodes that are ALL QGIS-authored and ALL <flags>, a sample with no
+  # variation in the thing being tested; then authorship AS the cause, which
+  # habitat_lateral refutes — rfp lifted that one out of the templates itself and
+  # it opens with <flags>, so QGIS-authored implies <flags> and <flags> implies
+  # nothing. A causal claim about rfp is settled by reading rfp's own account of
+  # itself; re-measuring rfp's output cannot settle it, because the output is
+  # what the claim is about. That rule is gq#92.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {
