@@ -57,15 +57,19 @@
   nine open with `<flags>` — and asserted that `airphoto_gray` had been "repaired out of
   that form", when it was `<flags>` at every revision including the one that created it.
 
-  The repair for *that* was then also wrong: it asserted "authorship does not
-  discriminate", reasoning from nine reference nodes that are **all** QGIS-authored and
-  **all** `<flags>` — a sample with no variation in the thing being tested, which cannot
-  separate "authorship decides this" from "authorship is irrelevant". rfp documents the
-  real cause in three places: the two style-manager files are rfp's own export, and
-  `airphoto_gray` is `<flags>` because git records it entering rfp as a 100% copy of a
-  QGIS-authored reference node. The original comment had the **polarity** backwards; the
-  first repair threw out the variable instead of flipping it. The cause is now stated and
-  cited.
+  That paragraph then took two more attempts, each wrong in a different shape. The
+  original had the **polarity** backwards. The first repair **threw out the variable**
+  instead of flipping it — "authorship does not discriminate", reasoned from nine
+  reference nodes that are *all* QGIS-authored and *all* `<flags>`, a sample with no
+  variation in the thing being tested. The second stated **authorship as the cause**,
+  which `habitat_lateral` refutes from three lines up in the same comment: rfp lifted that
+  one out of the templates itself and it opens with `<flags>`, so QGIS-authored implies
+  `<flags>` while `<flags>` implies nothing.
+
+  The cause is the export **boundary**, and rfp states it in one sentence
+  (`R/rfp_qgs_style_set.R:522`): those two carry the tag first "because they were exported
+  under the old `order =` override". Their child lists are the `<maplayer>` tail from the
+  point a positional scan stopped. Now stated and cited.
 
   The mechanism behind all five: every one of these claims is about rfp, and every sweep
   measured rfp's **data** — never rfp's **prose**. That settles counts, member lists and

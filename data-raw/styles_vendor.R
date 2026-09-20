@@ -201,31 +201,42 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   # `grep -rl` across all 66 store QMLs). airphoto_gray is an ordinary <flags>
   # QML. None of the three is gq's to ship, for the roster reason above.
   #
-  # The cause is authorship, and rfp documents it — those two are rfp's OWN
-  # export under an old `order =` override, not QGIS's output:
-  #   R/rfp_qgs_style_export.R        "those were exported by rfp, so they
-  #                                    report this scan back rather than QGIS's
-  #                                    opinion"
-  #   test-rfp_qgs_style_set.R:460    "rfp's own output under the old `order =`
-  #                                    override, not a pre-#130 leak"
-  #   inst/testdata/nodes/README.md   QGIS "begins at flags, exactly as a
-  #                                    vector's does"
-  # airphoto_gray opens with <flags> because it IS a QGIS-authored sidecar —
-  # git records it entering rfp as a 100% copy of the raster_gdal reference node
-  # (`C100` at 11ec65fc).
+  # The cause is the export BOUNDARY — where a positional scan stopped — not who
+  # ran the export. rfp states it in one sentence:
+  #   R/rfp_qgs_style_set.R:522  "`map-layer-style-manager` is a SOURCE tag and
+  #                               never a style child ... but rfp's own shipped
+  #                               raster styles carry it FIRST, because they were
+  #                               exported under the old `order =` override"
+  # Their child lists confirm it: both run `map-layer-style-manager, flags,
+  # temporal, ...` — the <maplayer> tail from the point the scan stopped, that
+  # tag being second-to-last in .rfp_qgs_style_src_tags().
   #
-  # Two earlier passes at this paragraph got the cause wrong in both directions,
-  # so it is written down rather than left to inference (#90 review):
+  # Authorship is SUFFICIENT but is not the discriminator, and that is the trap.
+  # QGIS's own output always begins at `flags` (all nine sidecars in
+  # rfp/inst/testdata/nodes/) — but so does habitat_lateral, the raster gq DOES
+  # vendor, which rfp lifted out of both templates itself (54389cc0: "its
+  # boundary lands on `flags`"). QGIS-authored implies <flags>; <flags> implies
+  # nothing about the author.
+  #
+  # THREE earlier passes got this wrong, each in a different shape, so it is
+  # written down rather than left to inference (#90 review):
   #   - the original had the polarity BACKWARDS, calling the style-manager pair
   #     the QGIS-authored ones;
   #   - the first repair over-corrected to "authorship does not discriminate",
-  #     citing nine reference nodes that are all QGIS-authored AND all <flags>.
-  #     A sample with no variation in the thing being tested cannot separate
-  #     "authorship decides this" from "authorship is irrelevant"; the control
-  #     that settles it is dem_hillshade, in this same store.
-  # The rule that would have caught both: a CAUSAL claim about rfp is settled by
-  # reading rfp's own account of itself, never by re-measuring rfp's output —
-  # the output is what the claim is about.
+  #     from nine reference nodes that are all QGIS-authored AND all <flags> — a
+  #     sample with no variation in the thing being tested, which cannot separate
+  #     "authorship decides this" from "authorship is irrelevant". The control it
+  #     lacked is dem_hillshade;
+  #   - the second stated authorship AS the cause, which habitat_lateral refutes
+  #     from three lines up in this same comment. The control that stops that
+  #     over-correction is habitat_lateral.
+  # The rule that would have caught all three: a CAUSAL claim about rfp is
+  # settled by reading rfp's own account of itself, never by re-measuring rfp's
+  # output — the output is what the claim is about. Noting that the second
+  # repair broke that rule in its own last sentence, by citing git's `C100`
+  # copy-similarity score as provenance when 11ec65fc says it in words
+  # ("airphoto_gray, the raster_gdal.qml reference byte for byte"). A similarity
+  # heuristic is a measurement of the output; read the commit message instead.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {

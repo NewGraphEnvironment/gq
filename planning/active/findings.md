@@ -187,6 +187,46 @@ with `<map-layer-style-manager>`, or a non-QGIS-authored one opening with `<flag
 Neither was looked for. The control was `dem_hillshade.qml`, in the store I had already
 grepped.
 
+### …and THAT repair was wrong too (round 4) — a sufficient condition stated as the cause
+
+Attempt three said "the cause is authorship", with the polarity flipped. Round 4 falsified
+it with a file **named three lines earlier in the same comment**.
+
+| file | first child | how produced |
+|---|---|---|
+| `airphoto_gray.qml` | `flags` | QGIS sidecar (`11ec65fc`: "the raster_gdal.qml reference byte for byte") |
+| `habitat_lateral.qml` | `flags` | **rfp lifted it out of both templates** (`54389cc0`) |
+| `dem_hillshade.qml` | `map-layer-style-manager` | rfp export, old `order =` override |
+| `dem_turbo.qml` | `map-layer-style-manager` | rfp export, old `order =` override |
+
+`54389cc0`: *"habitat_lateral was already shipped, styled and paletted, inside both
+templates. Lifting it out … its boundary lands on `flags`."* An **rfp-produced file opens
+at `flags`**. So QGIS-authored ⟹ `flags` holds, and the converse does not — and
+"airphoto_gray opens with `<flags>` **because** it IS a QGIS-authored sidecar" asserts
+exactly that converse.
+
+**The real cause is the export boundary**, and rfp states it in one sentence I had not
+cited — `R/rfp_qgs_style_set.R:522`: *"rfp's own shipped raster styles carry it FIRST,
+because they were exported under the old `order =` override."* Confirmed in the bytes: both
+style-manager files' children run `map-layer-style-manager, flags, temporal, …` — the
+`<maplayer>` tail from the point a positional scan stopped, that tag being second-to-last
+in `.rfp_qgs_style_src_tags()`.
+
+Three wrong shapes in one paragraph, each a different error:
+
+1. **polarity backwards** — style-manager called the QGIS-authored form
+2. **variable thrown out** — "authorship does not discriminate", from a sample with no
+   variation in it
+3. **a sufficient condition stated as the cause** — authorship implies `flags`, `flags`
+   implies nothing
+
+And round 4 caught one more thing worth keeping: attempt three **broke its own closing rule
+in its own last sentence.** It cited git's `C100` copy-similarity score as provenance —
+a measurement of rfp's output — where `11ec65fc` states it in words. A similarity heuristic
+is not a provenance record, and the identical heuristic pointing the other way (`C077`,
+`dem_hillshade → raster_gdal`) would make the QGIS reference node a copy of an rfp export
+if read the same way. Now cited from the commit message.
+
 ### The mechanism behind all five
 
 Every one of these claims is about **rfp**, and every sweep measured rfp's **data** —
