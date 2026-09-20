@@ -4003,6 +4003,41 @@ Two related measurements from the same work, both worth not re-deriving:
 
 Measured 2026-09-08 in fly#23.
 
+### `parallel::mclapply()` over a remote raster aborts every fork on macOS, and the wrapper exits 0
+
+GDAL's curl handles do not survive a fork. Sampling a `/vsicurl/` raster from
+`parallel::mclapply()` — even with `terra::rast()` opened *inside* each child — killed
+every worker on macOS with `An irrecoverable exception occurred. R is aborting now ...`.
+Measured 2026-09-18 in fly#54: 104 of 104 chunks failed in two minutes, the script's own
+`stop()` fired, and the background task still reported *completed (exit code 0)* because
+the command ended in a `grep | tail`. No output file had been written.
+
+Use a PSOCK cluster, which starts fresh R processes rather than forking:
+
+```r
+cl <- parallel::makeCluster(6)
+got <- tryCatch(
+  parallel::parLapply(cl, chunks, function(d, src) {
+    dem <- terra::rast(src)          # opened in the worker, never passed in
+    ...
+  }, src = "/vsicurl/https://..."),
+  finally = parallel::stopCluster(cl)
+)
+```
+
+- **A `SpatRaster` cannot cross a process boundary either way** — it holds an external
+  pointer — so pass the path and open it in the worker.
+- **Return the error message from the worker** (`tryCatch(..., error = conditionMessage)`)
+  and check `is.data.frame()` on each result; a PSOCK failure otherwise arrives as a bare
+  `try-error` with no indication of which chunk.
+- **Gate on an in-band marker**, not the exit code — "A wrapper's exit is not the work" in
+  `code-check.md`. Here a `DEM DONE` line in the log, and the cache file existing.
+- Cache per run so a retry is incremental: 7,156 footprints took about 20 minutes at six
+  workers, and the first attempt's loss would have been the whole of it.
+
+Forking is fine for a **local** file; the trigger is the network driver. `future::plan(multicore)`
+and `furrr` on that plan fork the same way.
+
 
 # Code Check Conventions
 
