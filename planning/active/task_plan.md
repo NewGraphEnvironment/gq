@@ -58,11 +58,30 @@ record which rasters are excluded had gone stale, and neither could see it.
       installed rfp with no store, the guard skips, and the run still prints `FAIL 0`.
       That vacuous pass is the very inversion this issue is about
 - [x] Full `devtools::test()` for "nothing else moves" — a filtered run structurally cannot
-      show that. `FAIL 1 | WARN 1 | SKIP 0 | PASS 1116`, both pre-existing (below)
+      show that. `FAIL 1 | WARN 1 | SKIP 0 | PASS 1117`, both pre-existing (below)
 - [x] Use `devtools::test()`, never `testthat::test_file()`: the guard reads gq's copy via
       `system.file()`, which without `load_all()` resolves to the **installed** gq (0.14.0,
       still carrying the pre-repair bytes) and would report the drift as unfixed
-- [ ] `/code-check` on the staged diff
+- [x] `/code-check` — see "Review rounds" below
+
+## Phase 1c: A defect inside my own fix (review round 2)
+
+Round 2 found a **[bug] in the comment this branch rewrote**, on the one axis the
+enumeration had not swept — and half of it was a sentence the fix itself added.
+
+- [x] `data-raw/styles_vendor.R` — the comment explained the `<map-layer-style-manager>`
+      split as "QGIS-authored sidecars … **which is why**". False: all nine QGIS-authored
+      reference nodes in `rfp/inst/testdata/nodes/` open with `<flags>`, `raster_hillshade.qml`
+      included, so authorship does not discriminate. I preserved that clause while
+      correcting the member list around it
+- [x] …and added "`airphoto_gray` was repaired out of that form upstream (rfp#235
+      follow-up)". Also false — `<flags>` at `11ec65fc` (creation), `4938318c~1`,
+      `4938318c` and HEAD. rfp's "bare sidecar" names a *deployment mode*, not a document
+      form, and I inverted its meaning carrying it across from a commit title
+- [x] Both removed. The comment now states the **observation with its measurement date**
+      and says explicitly that the cause is withheld
+- [x] Re-ran the enumeration across **all six** axes the convention names, not the three
+      that are greppable for digits. Table in findings.md
 
 ### Pre-existing, not touched by this branch
 

@@ -196,11 +196,21 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   # renderer/companion/stretch dimension gq models none of — context for what
   # they are for, not the reason they are dropped.
   #
-  # dem_hillshade and dem_turbo alone are QGIS-authored sidecars rather than
-  # lifted <maplayer> blocks, which is why they alone open with
-  # <map-layer-style-manager> instead of <flags>. airphoto_gray was repaired out
-  # of that form upstream (rfp#235 follow-up) and is an ordinary QML.
-  # Not gq's to ship, either way.
+  # An observation about their form, with no cause attached: dem_hillshade and
+  # dem_turbo are the only two files in the store that open with
+  # <map-layer-style-manager> rather than <flags>. Measured 2026-09-20 with
+  # `grep -rl` across all 66 store QMLs. airphoto_gray is an ordinary <flags>
+  # QML. None of the three is gq's to ship, for the roster reason above.
+  #
+  # The cause is deliberately NOT stated. This comment used to explain the split
+  # as "QGIS-authored sidecars rather than lifted <maplayer> blocks", and that is
+  # refuted by rfp's own reference nodes: all nine in inst/testdata/nodes/ are
+  # what QGIS itself writes, and all nine — raster_hillshade.qml included — open
+  # with <flags>. So authorship does not discriminate. A first pass at this
+  # comment kept that false cause and added a false history beside it
+  # ("airphoto_gray was repaired out of that form"); it was <flags> at every
+  # revision, including the one that created it. Both were caught in #90 review.
+  # If the mechanism is ever wanted, measure it rather than inferring it.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {

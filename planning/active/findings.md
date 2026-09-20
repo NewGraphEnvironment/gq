@@ -123,8 +123,42 @@ The comment named a correlate and called it the cause.
 
 Its superlative held up: `grep -rl '<map-layer-style-manager'` over the store returns
 `dem_hillshade` and `dem_turbo` only, so "they alone" is still true — but only of those
-two. `airphoto_gray` is an ordinary QML; rfp repaired it out of the bare-sidecar form
-after rfp#235 ("`airphoto_gray` no longer renders flat as a bare sidecar", rfp NEWS).
+two, and **only the observation, not the explanation attached to it.** See below.
+
+### The correction round 2 found, inside this very fix
+
+The comment explained the split as "QGIS-authored sidecars rather than lifted
+`<maplayer>` blocks, which is why they alone open with `<map-layer-style-manager>`". I
+kept that clause while correcting the member list around it, and added a sentence of my
+own beside it. **Both halves are false**, and both are now measured:
+
+- **The cause.** All nine QGIS-authored reference nodes in `rfp/inst/testdata/nodes/`
+  open with `<flags>` — including `raster_hillshade.qml`. A QGIS-authored hillshade in
+  `<flags>` form, next to a shipped `dem_hillshade.qml` in style-manager form, means
+  authorship cannot be the discriminator.
+- **The history, which was mine.** "`airphoto_gray` was repaired out of that form
+  upstream (rfp#235 follow-up)" — it was never in that form:
+
+  ```
+  11ec65fc     <flags     (the commit that creates it)
+  4938318c~1   <flags
+  4938318c     <flags     (the "follow-up")
+  HEAD         <flags
+  ```
+
+  `4938318c` repaired the contrast **stretch**, not the document form. rfp's phrase
+  "bare sidecar" means a `.qml` applied directly to a raster file with no project — a
+  *deployment mode* — and I carried the word across from its commit title with the
+  meaning inverted.
+
+The comment now states the **observation only**, with the date it was measured, and says
+explicitly that the cause is withheld. Two wrong causal claims in one paragraph is the
+argument for not writing a third.
+
+**The lesson is narrower than "check your claims".** A member list and a count are cheap
+to verify and I did verify them. A *causal* claim ("which is why") and a *historical* one
+("was repaired out of") read as context rather than as assertions, so neither got
+measured — and both were wrong while every countable thing beside them was right.
 
 ### 2. The test guard was a negative literal set, and had gone blind
 
@@ -196,6 +230,52 @@ groups.csv keys with no QML (8 = 2 form, out of scope; 6 genuine): ...
 script's comments enumerate populations that live upstream, and every one of them is a
 restatement that ages silently. Two are now derived at run time; the raster one is
 pinned by a test.
+
+### Terminating by enumeration — and the first attempt at it was too narrow
+
+Three instances is the point at which "is that all of them?" stops being answerable by
+reading, so the candidate set was enumerated mechanically. **The first sweep swept three
+of the six axes** the convention names — count, member list, superlative — and declared
+the class closed. Round 2 then found a **[bug] on an unswept axis, inside the fix
+itself**: a causal claim and a historical claim, in the very paragraph the enumeration
+had ticked.
+
+Two ways that sweep was wrong, both worth keeping:
+
+1. **The axes.** The convention names six — count, member list, rank/superlative, what a
+   sibling assertion catches, behaviour of a second system, universal quantifier. Only a
+   regex for digits and superlatives was run. "Which is why…" matches none of them.
+2. **The `:199` row ticked a truncated reading of its own line.** It recorded
+   *"dem_hillshade and dem_turbo alone open with `<map-layer-style-manager>`" → ✓*. True.
+   The line in the file also said **why**, and that half was false. Enumerating the half
+   already believed is how a ✓ lands against a false sentence — the same shape as a guard
+   that cannot fail.
+
+Re-run across all six axes, against the final tree:
+
+| line | axis | claim | measured |
+|---|---|---|---|
+| :70 | count | "the two agree on all **53** current layer names" | rfp index 53, gq vector rows 53 ✓ |
+| :97 | count | "the **3** layers that genuinely differ" | 3 override rows, 3 distinct keys ✓ |
+| :189 | member list | "**Three** today — airphoto_gray, dem_hillshade, dem_turbo" | the run reports exactly those three ✓ |
+| :193 | 2nd system | "`rfp_raster_styles()` serves **four**, fourth is `habitat_lateral`" | `dem_turbo, dem_hillshade, habitat_lateral, airphoto_gray` ✓ |
+| :200 | superlative | "the only two files in the store that open with `<map-layer-style-manager>`" | `grep -rl` over all 66 returns exactly those two ✓ |
+| :207 | 2nd system | "all nine nodes in `inst/testdata/nodes/` open with `<flags>`" | all nine, `raster_hillshade.qml` included ✓ |
+| :55, :110 | 2nd system | "rfp's own guard walks index → file only" | both `store_qmls()` sweeps in rfp are *structural* (source-binding, flags-start); neither is a membership check ✓ |
+| :151 | 2nd system | "resolve against rfp's roster" | roster read and used ✓ |
+| :290 | 2nd system | "form layers are owned by `rfp_form_build()`" | exists, exported, and rfp's own test says the same ✓ |
+| — | member list | `orphans_known` = `vector/osm.trail.qml` | still present upstream; the script's `stale` message correctly stayed silent on all four runs ✓ |
+| old :199 | **causal** | "QGIS-authored sidecars … **which is why**" | **FALSE — removed** |
+| old :201 | **historical** | "airphoto_gray was repaired out of that form" | **FALSE — removed** |
+
+The remainder are time-qualified — "two were already getting through", and the
+form/gap comment's own past-tense note about what `groups.csv` used to carry — which the
+convention says are not re-pointed. (That note names the four old form keys but not the
+commit; the `6bf069d` citation lives in the commit message and here, not in the file.)
+
+What ends this is the two bottom rows being found and removed, and the axes that found
+them now being in the sweep. Not a reviewer returning quiet, and explicitly not the
+first enumeration, which returned quiet while being wrong.
 
 ## rfp#307 corrected my #86 re-scope — read the upstream issue before asserting
 

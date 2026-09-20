@@ -1,3 +1,70 @@
+# gq 0.16.0
+
+- **The QML corpus is re-vendored: rfp had repaired two styles and gq had not pulled
+  them (#90).** `vector/floodplains.qml` named `feature_name` as its
+  `previewExpression` where rfp had corrected it to `floodplain_name` — so a floodplain
+  identified itself by the wrong attribute in QGIS's identify panel and layer tree.
+  `vector/bcfishobs_fiss_fish_observations.qml` carried **5** fields the renamed
+  `bcfishobs.observations` no longer has (`fish_obsrvtn_event_id`, `wscode_ltree`,
+  `localcode_ltree`, `waterbody_key`, `species_id`), each across five blocks, and a
+  `previewExpression` naming a column that no longer exists. Its configured roster goes
+  **24 to 19**. Measured over the whole corpus, not just the two: **60 files checked, 2
+  drifted before, 0 after.**
+
+  The direction is upstream-fixed and gq-stale, so this is a re-run of
+  `data-raw/styles_vendor.R`, not an edit here. `inst/styles/index.csv` is byte-unchanged.
+
+  This resolves **part** of #86 — the preview expression, and 5 of the 7 fields it
+  listed. Four `fish_obsrvtn_pnt_distinct_id` references remain. Whether the other two
+  (`fid`, `linear_feature_id`) are dead **at all** is now an open question rather than a
+  finding: rfp#307 measured the surviving 19 against the live object and reports 0
+  dangling, which #86's original list contradicts. #86 has been re-scoped and retitled;
+  its premise — that the byte-identity guard was green because upstream was identically
+  wrong — expired when rfp moved.
+
+- **The raster-exclusion guard is a positive set pin rather than a list of the styles to
+  exclude.** `test-gq_style_qml.R` asserted
+  `expect_false(any(c("dem_hillshade", "dem_turbo") %in% ...))`. A **negative literal
+  set** goes blind exactly as upstream grows: rfp later added `airphoto_gray`, which no
+  template uses either, and the guard had nothing to say about a name written after the
+  list. It is now pinned by what the corpus **does** hold — `habitat_lateral`, and the
+  six services — which cannot be outgrown, since a raster arriving upstream and being
+  wrongly vendored fails whether or not anyone anticipated its name.
+
+  Demonstrated rather than asserted: the new guard fails on an unanticipated raster, on
+  `airphoto_gray` specifically, and on a wrongly dropped service, and the **old** guard
+  passes on `airphoto_gray`.
+
+  Nothing in the suite surfaced this — the vendoring script's own stdout did, reporting
+  three skipped rasters where its comment named two. That comment is corrected too, and
+  so is its stated reason: the skip rule is absence from the template roster, **not**
+  membership in `rfp_raster_styles()`. Those are different sets, and the fourth member
+  of that roster is `habitat_lateral`, which gq does vendor.
+
+- **The vendoring script's gap report derives its form/gap split instead of restating
+  it.** The comment said "the 4 forms are owned by `rfp_form_build()`", written when
+  `groups.csv` carried four form keys; it carries two today, so a reader of the message
+  was told 4 of the 8 reported gaps were out-of-scope forms when the truth was **2 forms
+  and 6 genuine**. The split is now counted at run time and cannot drift from the file it
+  describes.
+
+  That was the **third** stale population claim in this one script, and the enumeration
+  that followed found two more of a different kind. A first sweep covered counts, member
+  lists and superlatives and reported the class closed; review then found a **causal**
+  claim and a **historical** one, both false, in the very paragraph that sweep had
+  ticked. The comment had explained the `<map-layer-style-manager>` split as "QGIS-authored
+  sidecars", which rfp's own reference nodes refute — all nine are QGIS-written and all
+  nine open with `<flags>` — and asserted that `airphoto_gray` had been "repaired out of
+  that form", when it was `<flags>` at every revision including the one that created it.
+
+  Both are removed. The comment now states the observation, with the date it was
+  measured, and says explicitly that the cause is withheld. The re-run sweep covers all
+  six axes the convention names rather than the three that are greppable for digits.
+
+- Both this and #88 were invisible to CI for the same structural reason: the drift guard
+  `skip_if_not`s without an rfp checkout, so it is green in CI and red only on a
+  developer machine. That inversion is #78 and is not addressed here.
+
 # gq 0.15.0
 
 - **The theme roster carries the three remaining xyz basemaps and `Trails` (#88).**
