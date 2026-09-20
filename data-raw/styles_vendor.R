@@ -277,14 +277,23 @@ message("styles vendored: ", nrow(corpus), " files (",
         paste(sprintf("%s %s", table(corpus$kind), names(table(corpus$kind))),
               collapse = ", "), ")")
 
-# Reported, not fatal. The 4 forms are owned by rfp_form_build() and are out of
+# Reported, not fatal. Form layers are owned by rfp_form_build() and are out of
 # scope by design; the rest are genuine gaps worth naming rather than hiding.
+#
+# The split is DERIVED, not restated. This comment used to say "the 4 forms",
+# written when groups.csv carried four (form_edna, form_fiss_site,
+# form_monitoring, form_pscis). It carries two today, so a reader of the message
+# was told 4 of the 8 gaps were out-of-scope forms when the truth was 2 of 8 —
+# and nothing failed, because a comment is not executable. Counting them here
+# means the message cannot drift from the file it describes (#90).
 group_keys <- unique(utils::read.csv("inst/registry/groups.csv",
                                      stringsAsFactors = FALSE)$layer_key)
 gaps <- setdiff(group_keys, corpus$layer_key)
 if (length(gaps) > 0) {
-  message("groups.csv keys with no QML (", length(gaps), "): ",
-          paste(gaps, collapse = ", "))
+  is_form <- startsWith(gaps, "form_")
+  message("groups.csv keys with no QML (", length(gaps), " = ",
+          sum(is_form), " form, out of scope; ", sum(!is_form),
+          " genuine): ", paste(gaps, collapse = ", "))
 }
 extra <- setdiff(corpus$layer_key, group_keys)
 if (length(extra) > 0) {

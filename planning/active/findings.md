@@ -150,6 +150,53 @@ OLD guard, airphoto_gray vendored -> PASS  <- the blindness, demonstrated
 
 The last line is the point: the defect is not hypothetical, and the old guard passes it.
 
+Checked the empty-input hole too, since a set assertion is exactly where one hides:
+
+```
+expect_setequal(character(0), "habitat_lateral")    -> FAIL   (good: non-vacuous)
+expect_setequal(character(0), character(0))         -> PASS
+expect_false(any(c("a","b") %in% character(0)))     -> PASS   (vacuous on empty)
+```
+
+The new pin cannot go vacuous on a truncated or empty `index.csv`, because the
+**expected** side is a non-empty literal. The retained `expect_false` *is* vacuous on
+empty — which is precisely why it is retained as a named regression beside the setequal
+rather than in place of it. To be exact about the old guard: its exclusion half was
+vacuous on empty, its `expect_true("habitat_lateral" %in% ...)` half was not; what it
+could never do, empty or full, was notice a raster nobody had listed.
+
+### 3. A THIRD stale restatement, 90 lines below the one I fixed
+
+Found by review round 1, and it is the same class again:
+
+```r
+# Reported, not fatal. The 4 forms are owned by rfp_form_build() ...
+```
+
+Measured — `groups.csv` form keys at `6bf069d`, the commit that wrote the comment, vs
+today:
+
+```
+then: 4  [form_edna, form_fiss_site, form_monitoring, form_pscis]
+now:  2  [form_fiss_site, form_pscis]
+```
+
+The live message reports 8 gaps. A reader was told 4 of the 8 were out-of-scope forms;
+the truth is **2 forms and 6 genuine gaps**. Present tense, no time qualifier, so by the
+convention's own rule it is a claim that should have tracked and did not.
+
+Fixed by **deriving** the split rather than restating it — the message now counts
+`startsWith(gaps, "form_")` at run time, so it cannot drift from the file it describes:
+
+```
+groups.csv keys with no QML (8 = 2 form, out of scope; 6 genuine): ...
+```
+
+**Three instances of one class in one file.** That is the finding worth carrying: this
+script's comments enumerate populations that live upstream, and every one of them is a
+restatement that ages silently. Two are now derived at run time; the raster one is
+pinned by a test.
+
 ## rfp#307 corrected my #86 re-scope — read the upstream issue before asserting
 
 A first draft of the #86 edit reported a new finding: the repaired `previewExpression`
