@@ -531,7 +531,7 @@ def my_form_open(dialog, layer, feature):
   </reuseLastValue>
   <dataDefinedFieldProperties/>
   <widgets/>
-  <previewExpression>"feature_name"</previewExpression>
+  <previewExpression>"floodplain_name"</previewExpression>
   <mapTip/>
   <layerGeometryType>2</layerGeometryType>
 </qgis>

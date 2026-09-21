@@ -186,11 +186,36 @@ unindexed <- do.call(rbind, lapply(c("raster", "services"), function(dir_name) {
   }
 
   # Reported rather than fatal: rfp legitimately ships raster styles the
-  # templates do not use — dem_hillshade and dem_turbo back rfp_raster_styles(),
-  # whose renderer/companion/stretch dimension gq vendors none of. They are also
-  # the only files in the store that are QGIS-authored sidecars rather than
-  # lifted <maplayer> blocks, which is why they alone open with
-  # <map-layer-style-manager> instead of <flags>. Not gq's to ship.
+  # templates do not use. Three today — airphoto_gray, dem_hillshade, dem_turbo.
+  #
+  # The skip rule is absence from the template roster, NOT membership in
+  # rfp_raster_styles(). Those are different sets and it matters:
+  # rfp_raster_styles() serves four, and the fourth is habitat_lateral, which a
+  # template DOES use and which gq therefore vendors as its one raster. All
+  # three skipped styles happen to back that roster, whose
+  # renderer/companion/stretch dimension gq models none of — context for what
+  # they are for, not the reason they are dropped.
+  #
+  # dem_hillshade and dem_turbo are the only two files in the store that open
+  # with <map-layer-style-manager> rather than <flags> (measured 2026-09-20,
+  # `grep -rl` across all 66 store QMLs). airphoto_gray is an ordinary <flags>
+  # QML. None of the three is gq's to ship, for the roster reason above.
+  #
+  # Why those two differ in shape is rfp's business, not gq's — nothing here
+  # reads it, and the skip rule above is the roster. rfp explains it in one
+  # sentence at R/rfp_qgs_style_set.R:522: they "carry it FIRST, because they
+  # were exported under the old `order =` override". Read that, not a copy of it.
+  #
+  # Do not re-derive the reason from the files. This comment asserted a cause
+  # three times and was wrong three different ways (#90 review): polarity
+  # backwards; then "authorship does not discriminate", inferred from nine
+  # reference nodes that are ALL QGIS-authored and ALL <flags>, a sample with no
+  # variation in the thing being tested; then authorship AS the cause, which
+  # habitat_lateral refutes — rfp lifted that one out of the templates itself and
+  # it opens with <flags>, so QGIS-authored implies <flags> and <flags> implies
+  # nothing. A causal claim about rfp is settled by reading rfp's own account of
+  # itself; re-measuring rfp's output cannot settle it, because the output is
+  # what the claim is about. That rule is gq#92.
   extra <- setdiff(stem(Sys.glob(file.path(src, dir_name, "*.qml"))),
                    want$layer_key)
   if (length(extra) > 0) {
@@ -267,14 +292,23 @@ message("styles vendored: ", nrow(corpus), " files (",
         paste(sprintf("%s %s", table(corpus$kind), names(table(corpus$kind))),
               collapse = ", "), ")")
 
-# Reported, not fatal. The 4 forms are owned by rfp_form_build() and are out of
+# Reported, not fatal. Form layers are owned by rfp_form_build() and are out of
 # scope by design; the rest are genuine gaps worth naming rather than hiding.
+#
+# The split is DERIVED, not restated. This comment used to say "the 4 forms",
+# written when groups.csv carried four (form_edna, form_fiss_site,
+# form_monitoring, form_pscis). It carries two today, so a reader of the message
+# was told 4 of the 8 gaps were out-of-scope forms when the truth was 2 of 8 —
+# and nothing failed, because a comment is not executable. Counting them here
+# means the message cannot drift from the file it describes (#90).
 group_keys <- unique(utils::read.csv("inst/registry/groups.csv",
                                      stringsAsFactors = FALSE)$layer_key)
 gaps <- setdiff(group_keys, corpus$layer_key)
 if (length(gaps) > 0) {
-  message("groups.csv keys with no QML (", length(gaps), "): ",
-          paste(gaps, collapse = ", "))
+  is_form <- startsWith(gaps, "form_")
+  message("groups.csv keys with no QML (", length(gaps), " = ",
+          sum(is_form), " form, out of scope; ", sum(!is_form),
+          " genuine): ", paste(gaps, collapse = ", "))
 }
 extra <- setdiff(corpus$layer_key, group_keys)
 if (length(extra) > 0) {
