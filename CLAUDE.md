@@ -691,6 +691,12 @@ lintr, `data-raw/`, testthat, pak, and the DBI/duckdb/arrow data layer. Gated on
 reports that also carry a `DESCRIPTION`. Spatial entries (terra, sf, bcdata) are
 in `code-check-spatial.md`, which reports also load.
 
+Some rules here fence their citations in a `<!-- evidence -->` block, which a repo's
+`CLAUDE.md` omits and `/code-check` reads in full. A new citation goes inside that
+rule's block, creating one at the end of the rule if it has none; the remedy stays in
+the rule. `code-check.md`'s header states the rule once, and
+`skills/compact-prep/SKILL.md` step 5 carries the habit.
+
 ### Read-back shape must match write-back shape
 
 A script that reads a file, transforms it, and writes it **back to the same path** is
@@ -765,10 +771,11 @@ prevented it.
   xml2::xml_text(target) <- expr
   ```
 - The error names a function nobody wrote, which sends you looking for a missing
-  import or a typo rather than at the line's shape. Caught 2026-08-27 in rfp#201
-  with `xml2::xml_text(.qgs_preview_node(ml)) <- expr`.
+  import or a typo rather than at the line's shape.
 - Applies to every replacement form — `attr<-`, `[[<-`, `dim<-`, `st_crs<-`. If
   the left side has two calls, one of them has to move to its own line.
+
+*1 line of evidence for this rule is in `conventions/code-check-r.md`, which `/code-check` reads in full.*
 
 ### A replacement function on an `xml_missing` node is a silent no-op
 
@@ -910,16 +917,14 @@ have to parse; `curl_fetch_memory()` gives the code and `read_html(resp$content)
   sf::st_write(x, path, layer = lyr, delete_layer = TRUE, quiet = TRUE,
                config_options = c(OGR_CURRENT_DATE = "2000-01-01T00:00:00.000Z"))
   ```
-  Measured 2026-08-28 on GDAL 3.8.5: two writes of identical data differed
-  (`cdac16f3…` vs `2198f60c…`); pinned, they were byte-identical. Pin a
-  **constant**, not a run-derived value — the real write time already lives in
-  git, and a value that varies per run is the churn you were removing. COG via
-  `terra::writeRaster(filetype = "COG")` was deterministic under the same test
-  with no intervention, so not every regenerated binary churns; check the
-  format before adding a guard. Bounds: minimal fixtures (a 3-point layer, a
-  60×60 raster) — verify on a multi-layer GeoPackage with rtree indexes before
-  wording it as a guarantee; and it reaches only GDAL writes, so a `sqlite3`
-  write to the same file still moves the header change counter
+  Pin a **constant**, not a run-derived value — the real write time already lives
+  in git, and a value that varies per run is the churn you were removing. Not
+  every regenerated binary churns: COG via `terra::writeRaster(filetype = "COG")`
+  was deterministic with no intervention under the same write-it-twice test, so
+  check the format before adding a guard. Two bounds on both results: each was
+  measured on a minimal fixture, so verify on a multi-layer GeoPackage with rtree
+  indexes before wording it as a guarantee; and the pin reaches only GDAL writes, so a
+  `sqlite3` write to the same file still moves the header change counter
   (`code-check-spatial.md`, "A GeoPackage is a SQLite database, and that leaks in three
   ways"). (soul#153)
 - **Where the format is genuinely nondeterministic, write to a temp file,
@@ -930,6 +935,8 @@ have to parse; `curl_fetch_memory()` gives the code and `read_html(resp$content)
   appearing in the diff means something genuinely changed.
 - Text artifacts that are byte-stable can just be rewritten every time; the
   guard is only worth it where the format is not.
+
+*3 lines of evidence for this rule are in `conventions/code-check-r.md`, which `/code-check` reads in full.*
 
 ### Tests that silently do not run
 
@@ -1023,7 +1030,7 @@ which took CI red for a documentation-only change.
 ### `R CMD build` ships every top-level directory not in `.Rbuildignore`
 - Internal coordination directories — `comms/`, `research/`, `planning/`, `dev/` — land in the tarball and therefore in the library of anyone installing from GitHub. `R CMD check` only flags this as a NOTE ("Non-standard files/directories found at top level"), which is easy to scroll past among the notes you have decided to live with.
 - `.gitignore` does **not** cover this. A locally-gitignored file (e.g. `.aider.chat.history.md`) is still picked up by `R CMD build`.
-- The gap appears over time rather than at scaffold: found 2026-07-31 in rfp, where `planning`, `.claude`, `CLAUDE.md` and `dev` were all excluded but `comms` and `research` — added later — were not. 10 files of cross-repo coordination notes were shipping.
+- **The gap appears over time rather than at scaffold.** A repo whose `.Rbuildignore` was correct when it was written acquires a new top-level directory later, and nothing re-checks it.
 - This matters most for the three-layer repo split (see `newgraph.md`): `comms/` is internal-by-definition, so a public-flipped package that ships it leaks exactly what the flip was meant to purge.
 - Audit every R repo at once:
   ```bash
@@ -1036,12 +1043,13 @@ which took CI red for a documentation-only change.
     done
   done
   ```
-  Run 2026-07-31: 20 hits across 16 repos. `comms/` in `link`, `fish_passage_template_reporting`, `neexdzii_kwa_benthic_2025`; `research/` in `link`; the rest `planning/` or `dev/`.
 - Verify a fix against the tarball, not the config — the `.Rbuildignore` regex is easy to get subtly wrong:
   ```bash
   R CMD build . >/dev/null && tar tzf pkg_*.tar.gz | grep -c '^pkg/comms/'   # expect 0
   ```
-- **`.Rbuildignore` does not govern pkgdown, and `.gitignore` does not govern `R CMD build`.** Five fixes in one issue (ngr#7, merged as ngr#36, 2026-09-02), each correct on its own surface and silent on an adjacent one: `^CLAUDE\.md$` in `.Rbuildignore` while pkgdown rendered `CLAUDE.html` (200), served the verbatim `.md` (200) and indexed it in `search.json` on a public site; `README.html` in `.gitignore` while the tarball shipped it; `--no-build-vignettes` in `build_args` sparing five runners a live third-party API while `R CMD check` reported vignette sources with no `inst/doc` as 2 WARNINGs — failures under r-lib's `error_on: "warning"`. `.Rbuildignore`, `.gitignore`, pkgdown's root-page rendering and the deploy action's `clean:` are four enforcement points for "what ships and what publishes", and none consults the others. `pkgdown-publishing.md` prescribes the `rm -f CLAUDE.md` step and an allowlist gate. Verify each surface's own artifact — `tar tzf` the tarball, `curl` the published URL — with a positive control, because "everything 404s" and "the site is broken" are the same observation without one; and where two requirements conflict outright, as the vignettes did, find the third option: `vignettes/articles/`, which `R CMD build` does not build as vignettes — and which `usethis::use_article()` also adds to `.Rbuildignore`, so the sources do not ship either. The mechanism is in `code-check.md`, "A guard's scope, escape hatches, and remedies".
+- **`.Rbuildignore` does not govern pkgdown, and `.gitignore` does not govern `R CMD build`.** `.Rbuildignore`, `.gitignore`, pkgdown's root-page rendering and the deploy action's `clean:` are four enforcement points for "what ships and what publishes", and none consults the others — so a fix correct on its own surface is silent on an adjacent one. `pkgdown-publishing.md` prescribes the `rm -f CLAUDE.md` step and an allowlist gate. Verify each surface's own artifact — `tar tzf` the tarball, `curl` the published URL — with a positive control, because "everything 404s" and "the site is broken" are the same observation without one; and where two requirements conflict outright, find the third option: for vignettes that is `vignettes/articles/`, which `R CMD build` does not build as vignettes — and which `usethis::use_article()` also adds to `.Rbuildignore`, so the sources do not ship either. The mechanism is in `code-check.md`, "A guard's scope, escape hatches, and remedies".
+
+*13 lines of evidence for this rule are in `conventions/code-check-r.md`, which `/code-check` reads in full.*
 
 ### `R CMD build` ships the `.git` FILE when you build from a worktree
 
@@ -1128,18 +1136,11 @@ Generalises to any line-oriented config whose reader does not implement comments
   So "the row is absent, explain why" becomes "the row is present" and the code then reports every
   field of it missing — an error message pointing nowhere near the cause.
 - The sibling-key shape is common precisely where it hurts: `x`/`x_note`, `id`/`ids`,
-  `item_ids`/`item_ids_complete`, `path`/`pathname`, `count`/`counts`. Two of those were live in
-  one 80-line file (floodplains#33, 2026-09-01), and the first cost a failure three checks away
-  from its cause.
+  `item_ids`/`item_ids_complete`, `path`/`pathname`, `count`/`counts`.
 - **A data frame is a list, so this fires in package code with no JSON in sight** — and the
   arrival there is worse, because an API that documents "at least these columns" *invites*
-  the extra key. Measured 2026-09-08 in rfp#304: an internal writer read `rows$id` to
-  decide a layer's identity, and a caller frame carrying an unrelated `idx` column had that
-  column used as the id. Every map theme in the project was written with `id="1"`, `id="2"`,
-  …, the function reported success, the theme names were unchanged, and the layer count went
-  from 15 to **0** — every theme enumerating nothing and drawing nothing. Nothing errored.
-  The column the writer wanted did not exist on that path at all, which is exactly when
-  partial matching answers.
+  the extra key. When the column the writer wants is absent from the frame it was handed,
+  a sibling with a longer name answers for it — and nothing errors.
 - **Rule: read parsed documents with `[[`.** Reserve `$` for objects whose key set you control and
   that have no prefix pairs — and even then it is a habit worth not having, because the key set is
   controlled until someone adds `_note`. In package code the rule is stronger: if a documented
@@ -1153,6 +1154,7 @@ Generalises to any line-oriented config whose reader does not implement comments
   "this field is present when it should not be" symptom. It is off by default, so nothing tells
   you otherwise.
 
+*7 lines of evidence for this rule are in `conventions/code-check-r.md`, which `/code-check` reads in full.*
 
 ### A database driver's value is not a base R type — and it fails twice
 
@@ -1228,17 +1230,17 @@ Two different hazards, both worth refusing, and an earlier version of this entry
 - `devtools::test()` will not catch it. `load_all()` exports everything regardless of
   NAMESPACE, so the suite stays green at full pass while the package's main function
   is no longer exported — it fails only for someone who installs it.
-- Caught 2026-08-28 in fly#30: `export(fly_footprint)` disappeared and
-  `fly_film_media.Rd` appeared; 120 tests passed throughout. The signal was in
-  `devtools::document()` output, not the test run.
 - Read what `document()` prints, every time. `Writing '<something unexpected>.Rd'` or
-  `Deleting` on a file you did not touch is the tell. Cheap confirmation:
+  `Deleting` on a file you did not touch is the tell — the signal is in that output,
+  not in the test run. Cheap confirmation:
   ```bash
   git diff NAMESPACE            # an export you did not intend to change
   grep -c "^export(" NAMESPACE  # count should not fall
   ```
 - Put internal helpers at the top of the file or in their own file. The roxygen block
   must sit immediately above the function it documents, with nothing between.
+
+*2 lines of evidence for this rule are in `conventions/code-check-r.md`, which `/code-check` reads in full.*
 
 ### open_dataset(unify_schemas = TRUE) requires aligned types
 - Cross-prefix/file schema unification only merges what types allow: `timestamp[us, tz=UTC]` will not merge with naked `timestamp[us]`, `Grade: string` not with `Grade: double`. Audit the schemas of every file group BEFORE promising unified reads over a mixed archive; plan a normalization pass otherwise. (water-temp-bc#17)
@@ -2120,6 +2122,12 @@ commands in, not about `.sh` files in the repo.
 The general mechanisms — a guard that fails toward pass, a fixture that cannot
 reach the failure mode — live in `code-check.md`; this file is the quirks.
 
+Some rules here fence their citations in a `<!-- evidence -->` block, which a repo's
+`CLAUDE.md` omits and `/code-check` reads in full. A new citation goes inside that
+rule's block, creating one at the end of the rule if it has none; the remedy stays in
+the rule. `code-check.md`'s header states the rule once, and
+`skills/compact-prep/SKILL.md` step 5 carries the habit.
+
 ### `git diff a..b` compares TIPS; a change on `a` shows up as the branch's
 
 Two-dot is the difference between two commits. Three-dot (`a...b`) is the difference from
@@ -2200,16 +2208,13 @@ silent direction is the dangerous one.
 - `"echo '${VAR}'"` — if VAR contains `'`, shell syntax breaks
 - Use `printf '%s\n' "$VAR" | command` to pipe values safely
 - Heredocs: unquoted `<<EOF` expands variables locally, `<<'EOF'` does not — know which you need
-- Unquoted heredocs also run **command substitution**: backticks in prose (markdown code spans!) execute and are replaced by their output, usually empty. Writing markdown through an unquoted heredoc silently deletes every `` `word` `` in it — no error, and the damage only shows on re-read. Seen 2026-08-06 writing a memory index line: a markdown code span followed by "gone as a concept" landed as "gone as a concept", subject removed. Any heredoc carrying prose or markdown wants `<<'EOF'`.
+- Unquoted heredocs also run **command substitution**: backticks in prose (markdown code spans!) execute and are replaced by their output, usually empty. Writing markdown through an unquoted heredoc silently deletes every `` `word` `` in it — no error, and the damage only shows on re-read. Any heredoc carrying prose or markdown wants `<<'EOF'`.
   - **The rule collapses the moment you also need interpolation.** `<<'EOF'` is
     the fix for prose and `<<EOF` is the fix for variables, and a heredoc that
     needs both has no safe form — which is exactly when the trap fires, because
-    the quoting choice now looks forced rather than careless. Seen again
-    2026-08-26 in rfp#186 writing a findings file that had to carry a generated
-    project name: `` `normal` `` in a markdown table ran as a command and its
-    empty output replaced the word, leaving `| enabled, , **resolves** |`.
-    Escaping the backticks individually is not a fix either — you have to get
-    every one, and the misses are silent.
+    the quoting choice now looks forced rather than careless. Escaping the
+    backticks individually is not a fix either: you have to get every one, and
+    the misses are silent.
   - Fix: keep the heredoc quoted and substitute afterwards, or write the file
     from Python where there is no substitution layer at all:
     ```bash
@@ -2225,9 +2230,8 @@ silent direction is the dangerous one.
 - **A plain `git commit -m "…"` runs command substitution too, and unlike the heredoc cases it
   SUCCEEDS.** The rules above are about forms that fail loudly. This one does not: backticks in a
   double-quoted `-m` string execute, bash prints `something: command not found` to **stderr**, and
-  the commit lands anyway with the span replaced by empty output. Seen 2026-09-02 in floodplains:
-  a message reading ``prov_keys() now takes a `part` argument`` committed as "now takes a
-  argument". The only signal was one stderr line scrolling past above a successful commit.
+  the commit lands anyway with the span replaced by empty output. The only signal is one stderr
+  line scrolling past above a successful commit.
   - Markdown code spans are exactly what a good commit message is full of — function names,
     arguments, file paths — so the failure targets careful messages, not sloppy ones.
   - Fix is the one already prescribed for multi-line bodies, applied to single-line ones too:
@@ -2236,9 +2240,11 @@ silent direction is the dangerous one.
   - Detection, since the commit is already made: `git log -1 --format=%B | grep -n "  \|takes a $"`
     finds the collapsed double spaces an eaten span leaves behind.
 - `git commit -m "$(cat <<'EOF' ... EOF)"` chokes on apostrophes in prose bodies in some contexts — the bash parser surfaces an unmatched-quote error even though heredoc bodies should be quote-neutral. Resilient default for multi-line commit messages: write the body to `/tmp/msg.txt` and use `git commit -F /tmp/msg.txt`.
-- **The same trap has a silent variant: `Rscript -e` / `python -c` carrying backslash escapes.** The heredoc case above fails loudly, which costs a retry. Passing a regex inline does not: `\\b` reaches the interpreter mangled, so `grepl()` returns 0 matches against text it matches perfectly from a file. Nothing errors. Seen 2026-07-31 in rfp#93 — the 0 read as "my regex is wrong" and nearly triggered a rewrite of working code; the identical regex scored 4 matches the moment it ran from `/tmp/x.R`.
+- **The same trap has a silent variant: `Rscript -e` / `python -c` carrying backslash escapes.** The heredoc case above fails loudly, which costs a retry. Passing a regex inline does not: `\\b` reaches the interpreter mangled, so `grepl()` returns 0 matches against text it matches perfectly from a file. Nothing errors.
   - Rule: anything carrying a regex, nested quotes or backslashes gets written to a file and run (`Rscript /tmp/x.R`). Inline `-e` is for trivial one-liners only.
   - Diagnostic: when an inline command returns a surprising *result* rather than an error, suspect the quoting layer before the code, and re-run from a file to find out which is wrong. That one step separates a real bug from a shell artifact.
+
+*10 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### Heredoc precedence in pipelines
 - `cmd1 | cmd2 <<EOF` — the heredoc binds to `cmd2` (the rightmost simple command). If you intended `cmd1` to receive it, put `<<EOF` on cmd1 explicitly: `cmd1 <<EOF | cmd2`.
@@ -2263,15 +2269,12 @@ silent direction is the dangerous one.
   `for file in ~/.{path,exports,aliases,extra}; do source "$file"; done` loop in
   `.bash_profile` hides real `PATH=` assignments in files you never opened. Grep
   every sourced file, not just the rc files.
-- Caught 2026-08-19: a 39-entry PATH with 12 duplicates took **three** wrong
-  diagnoses — `.zprofile` (which did run `brew shellenv` five times, but the
-  interactive shell was bash, so it was irrelevant), then `.bashrc` sourcing
-  `.bash_profile`, then tmux inheriting a stale env. The cause was `~/.path`
-  hand-prepending what `brew shellenv` already sets, plus three directories that
-  no longer existed. One `env -i` run ended it.
-- The same mistake closed an infra issue prematurely: MacPorts was removed and
-  verified **in bash**, while `.zprofile` kept exporting `/opt/local/bin` on
-  every zsh login for months. Verified in one shell, broken in the one that runs.
+- **Verifying a removal in one shell says nothing about the other**, and that
+  direction closes issues prematurely: the thing is gone from the shell you tested
+  and still exported on every login of the shell the user actually gets. Re-run the
+  `env -i` check under both shells before calling a PATH change done.
+
+*9 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### Parallel writers sharing one output file interleave mid-record
 - `xargs -P N ... >> shared_file` (or any fan-out where N processes append to the same fd/path) is only safe while each record fits in a single `write()`. O_APPEND makes individual `write()` calls atomic, but a large record (anything beyond pipe/stdio buffer size, ~64 KB) spans multiple writes — concurrent jobs interleave mid-record and corrupt the file.
@@ -2302,17 +2305,17 @@ silent direction is the dangerous one.
   `cat "$DIR"/*.json` fails with `argument list too long` — **after** whatever
   produced those files already succeeded. Silent-after-success: the costly stage
   worked and the cheap one threw it away.
-- Caught 2026-07 in rtj#196: it killed a STAC registration following a completed
-  80-minute download.
-- **Recurred 2026-08-29 in the same script**, because #196 wrote this entry but
-  never repaired `rtj/scripts/geoserv/stac_register-pypgstac.sh`, and the
-  parallel-writers entry above still prescribed the glob. 102,460 downloaded item
-  JSONs concatenated fine with `find`; the load then took 27 seconds. The costly
-  stage had already succeeded both times.
+- **Writing the entry is not repairing the callers.** This rule was written once and the
+  registration script that hit it was left unchanged, so a later run of that same script
+  failed the same way. When a trap is recorded, grep for the shape and fix every site in the same
+  commit — and check what the neighbouring rules prescribe, because one of them was
+  still telling readers to use the glob.
 - The cost is worse than a wasted download when the script **deletes before it
-  loads**: that registration removes the collection in step 2, so failing in step
-  4 left a live public API serving zero items until it was repaired by hand. A
-  destructive-then-rebuild sequence turns "retry it" into an outage.
+  loads**: a registration that removes the collection in step 2 and fails in step
+  4 leaves a live public API serving zero items until it is repaired by hand. A
+  destructive-then-rebuild sequence turns "retry it" into an outage. Build the
+  replacement first and make the destructive step the last one, so a failure anywhere
+  above it leaves the live collection alone.
 - Safe form — `find` batches under the limit itself:
   ```bash
   find "$DIR" -maxdepth 1 -name '*.json' -exec cat {} + > combined.ndjson
@@ -2321,6 +2324,8 @@ silent direction is the dangerous one.
   per-file fan-out (see "Parallel writers sharing one output file interleave
   mid-record" above) is correct, and it is exactly what produces the file count
   that later blows argv. Small sets look proven for as long as you test on them.
+
+*6 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### A `curl` in a parallel fan-out needs `--max-time`
 
@@ -2388,17 +2393,16 @@ alias" below, arriving through PATH order rather than through a function — and
 - Fix: assign **before** the list — `VAR=$(...); cmd1 && nohup ... &` — or
   `printf` the resolved path from inside the backgrounded shell so the parent can
   read it from output.
-- Hit twice in one floodplains session (2026-08-27) launching detached runs.
 - **The same shape makes `$!` the wrong PID, and that failure hands you a plausible
   number instead of an error.** `mkdir -p "$D" && : > "$D/rss.txt" && Rscript job.R &`
   then `PID=$!` gives the *list's* subshell, not `Rscript` — so a sampler built on it
-  (`ps -o rss= -p $PID`) records the shell. Measured 2026-09-05 in drift#62: 39 samples
-  alternating 3104 / 1488 KiB, from a run whose R process peaked at 14.2 **GiB**. Nothing
-  errors, the trace is well-formed, and it was committed as the evidence record before a
-  reviewer compared its peak against the other three groups'. Start the long command
+  (`ps -o rss= -p $PID`) records the shell. Nothing errors and the trace is well-formed,
+  which is what gets it committed as an evidence record. Start the long command
   **alone** — `Rscript job.R > "$D/run.log" 2>&1 &` on its own line, every `mkdir`/`: >`
   before it — and sanity-check the first sample's magnitude against what the job should
   use, because the wrong-PID trace is off by three orders of magnitude and looks fine.
+
+*4 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### `gh` CLI
 - **`gh pr create` resolves branch from CWD, not `--repo`**. Specifying `--repo NewGraphEnvironment/X` does NOT switch branch resolution — the command still reads the current working directory's checked-out branch. To open a PR in repo X, `cd` into X's checkout first, or pass `--head <branch>` explicitly.
@@ -2406,18 +2410,15 @@ alias" below, arriving through PATH order rather than through a function — and
 - **`gh issue create` resolves the target repo from the remotes, preferring `upstream` over `origin`.** A checkout that carries an `upstream` remote — a template it was seeded from, a fork parent — files the issue against **upstream**, not the repo you are working in. It is silent: the only tell is the URL that comes back. Pass `--repo OWNER/NAME` explicitly whenever a checkout has more than one remote.
   - Detect before filing: `git remote -v | awk '{print $1}' | sort -u` — anything beyond `origin` means pass `--repo`.
   - Recovery is not a transfer. `gh issue transfer` refuses to move an issue out of a private repo into a public one (`Old issue cannot be transferred from private repository to public repository`), which is exactly the direction this misfire takes when the template is private and the working repo is public. The fix is: create again with `--repo`, then close the stray with a comment naming where it went.
-  - Caught 2026-08-28 in `hsp`, which has `upstream = NewGraphEnvironment/mybookdown-template`: a CABIN/formalin safety issue filed from the `hsp` checkout landed on `mybookdown-template#94`.
 - **Do not let a base-branch deletion decide a stacked PR's fate.** Merging the base
   does not retarget the child: it still points at a merged branch, `gh pr view` reports
   it `MERGEABLE`/`CLEAN`, and merging it there is a no-op against history already on
-  main (seen 2026-08-30 merging rfp#231 then rfp#234). GitHub documents auto-retargeting
-  when the base branch is *deleted*, and it is not dependable: measured 2026-08-31 in
-  rfp, `--delete-branch` on the base **closed** the child two seconds after the merge
-  (`base_ref_deleted` and `closed` share a timestamp), left `base` unchanged, and
-  `gh pr edit --base` then refused with *"Cannot change the base branch of a closed
-  pull request"*. Commits are safe either way — the head branch survives on origin —
-  but the PR, its review thread and its CI attach have to be recreated. Retarget
-  explicitly **while the child is still open**, then merge the base:
+  main. GitHub documents auto-retargeting when the base branch is *deleted*, and it is
+  not dependable: `--delete-branch` on the base has been observed to **close** the child
+  outright, leaving `base` unchanged and `gh pr edit --base` refusing with *"Cannot change
+  the base branch of a closed pull request"*. Commits are safe either way — the head branch
+  survives on origin — but the PR, its review thread and its CI attach have to be
+  recreated. Retarget explicitly **while the child is still open**, then merge the base:
   ```bash
   gh pr edit "$CHILD_PR" --base main      # FIRST, and while it is open
   gh pr merge "$BASE_PR" --merge --delete-branch
@@ -2429,19 +2430,17 @@ alias" below, arriving through PATH order rather than through a function — and
   open a fresh PR from the surviving head branch.
 - **Before you *cut* a branch, verify local is current with origin.** The mirror of the
   rule below, and easier to miss because everything about the working tree looks fine. A
-  clean tree and the right branch name say nothing about whether that branch is 19 commits
-  behind. A branch cut from a stale base regenerates its content from stale input, and the
-  PR either conflicts (loud, cheap) or auto-merges non-overlapping hunks and quietly
-  reverts someone's newer edit (silent, expensive). Assert it:
+  clean tree and the right branch name say nothing about how far behind that branch is. A
+  branch cut from a stale base regenerates its content from stale input, and the PR either
+  conflicts (loud, cheap) or auto-merges non-overlapping hunks and quietly reverts
+  someone's newer edit (silent, expensive). Assert it:
   ```bash
   git fetch -q origin
   [ "$(git rev-list --count HEAD..@{u})" -eq 0 ] || { echo "local behind origin"; exit 1; }
   ```
-  Caught 2026-08-28 syncing CLAUDE.md across 25 repos: preconditions checked clean-tree
-  and on-default-branch but not up-to-date. `nrp-nutrient-loading-2025` was 19 behind, one
-  of those commits having touched the same file, and the PR conflicted. The 24 that merged
-  cleanly still had to be proven safe after the fact — by asserting the sync commit changed
-  nothing above the CLAUDE.md marker, which is the invariant the operation actually claimed.
+  Where a fleet operation has already run from a stale base, prove the merged ones safe:
+  assert the commit changed nothing outside the region the operation claimed — for a CLAUDE.md sync, nothing above the marker —
+  which is the invariant the operation actually asserted.
 - **A per-item loop reports the wrapper's exit, not the items'.** `for r in ...; do
   script "$r"; done` exits 0 whenever the *last* item succeeds, however many failed before
   it. The task notification then says "completed (exit code 0)" over a batch with real
@@ -2452,20 +2451,17 @@ alias" below, arriving through PATH order rather than through a function — and
   succeeded".
 - **Distinguish "the action failed" from "the cleanup after it failed".** A wrapper that
   treats any non-zero from `gh pr merge` as *merge failed* will report a false negative
-  when the merge succeeded and only `--delete-branch` errored. Two of three failures in the
-  same 2026-08-28 run were misreported this way — one had already merged. Re-read the
-  authoritative state (`gh pr view --json state`) before acting on a failure report, rather
-  than trusting the exit code of the compound command.
+  when the merge succeeded and only `--delete-branch` errored. Re-read the authoritative
+  state (`gh pr view --json state`) before acting on a failure report, rather than
+  trusting the exit code of the compound command.
 - **And the same compound can half-succeed while reporting success.**
   `gh pr merge --delete-branch` deletes the local branch before the remote one, so a local
   delete that fails takes the remote delete with it — and the command still reports the
-  merge as done, because it was. Observed 2026-08-31: a **worktree** held the branch, `gh`
-  printed `failed to delete local branch ... used by worktree at ...`, and the remote
-  branch survived. Nothing else in the output suggested a branch had been left behind.
-  Benign in isolation; it matters because a surviving branch reads as unmerged work to the
-  next person, and because the worktree-per-session rule in `code-check.md` ("A shared
-  working tree") makes the trigger routine rather than exotic. Confirm the deletion rather than assuming it, and
-  verify the branch is merged before cleaning up by hand:
+  merge as done, because it was. Benign in isolation; it matters because a surviving
+  branch reads as unmerged work to the next person, and because the worktree-per-session
+  rule in `code-check.md` ("A shared working tree") makes the trigger routine rather than
+  exotic. Confirm the deletion rather than assuming it, and verify the branch is merged
+  before cleaning up by hand:
   ```bash
   gh pr merge "$PR" --merge --delete-branch
   git ls-remote --heads origin "$BRANCH"        # expect empty
@@ -2476,23 +2472,17 @@ alias" below, arriving through PATH order rather than through a function — and
   unpushed branch. Suppressing the push's error removes the only signal that it happened,
   and the very next step in the usual sequence — `git branch -D` after a merge — then turns
   the commit into a dangling object. `git push -q ... 2>/dev/null` is the shape; `-q`
-  already silences success, so the redirect can only ever hide a failure. Caught 2026-08-29
-  in soul: a suppressed rejection meant `gh pr create` had no branch to open against, the
-  cleanup deleted the branch anyway, and the commit survived only via `git reflog`. Keep
-  stderr, or test the exit status explicitly:
+  already silences success, so the redirect can only ever hide a failure. Keep stderr, or
+  test the exit status explicitly:
   ```bash
   git push -u origin "$BRANCH" || { echo "push failed"; exit 1; }
   ```
-- **Before `gh pr merge`, verify the branch is fully pushed.** `gh pr merge` merges the REMOTE branch — commits made locally but never pushed are silently excluded, so the PR merges "successfully" while `main` is missing work you know you committed. Check `git status -sb` shows no `ahead N` before merging (or that `git rev-list --count @{u}..HEAD` is 0). Worse: if you then delete the local branch (`--delete-branch`, or a follow-up `git branch -D`), the unpushed commits become **dangling** — recoverable via `git reflog` / `git fsck --lost-found` then `git cherry-pick`, but only if you notice they're missing. Caught twice 2026-07 in `floodplains`: PR #6 merged 1 of 3 branch commits (the drift#34 `changes_only` fix + a CLAUDE.md update were unpushed → stranded as danglers → recovered and re-merged via a follow-up PR); a second branch sat 4-ahead-unpushed at compact time. The same check belongs in the `gh-pr-merge` skill's pre-merge step.
+- **Before `gh pr merge`, verify the branch is fully pushed.** `gh pr merge` merges the REMOTE branch — commits made locally but never pushed are silently excluded, so the PR merges "successfully" while `main` is missing work you know you committed. Check `git status -sb` shows no `ahead N` before merging (or that `git rev-list --count @{u}..HEAD` is 0). Worse: if you then delete the local branch (`--delete-branch`, or a follow-up `git branch -D`), the unpushed commits become **dangling** — recoverable via `git reflog` / `git fsck --lost-found` then `git cherry-pick`, but only if you notice they're missing. The same check belongs in the `gh-pr-merge` skill's pre-merge step.
 
 - **GitHub does not parse negation in a closing keyword, so "does not close #N" closes #N.**
   The grep this skill prescribes above finds the line and a human reads it as a denial;
-  GitHub reads the adjacency. Measured 2026-09-07 on rtj#315, whose body carried the heading
-  `## This does not close #105` deliberately explaining why the issue should stay open — and
-  `closingIssuesReferences` reported #105 as a closing reference. Merging would have closed
-  the issue the PR existed to argue should remain open, and every text-based check passed.
-  The same trap fires on "no longer fixes #12", "this doesn't resolve #7", or a changelog line
-  quoting an older `Fixes #3`.
+  GitHub reads the adjacency. The same trap fires on "no longer fixes #12", "this doesn't
+  resolve #7", or a changelog line quoting an older `Fixes #3`.
   - Ask GitHub what it parsed, rather than grepping what you wrote. It is the only source
     that agrees with what the merge will do:
     ```bash
@@ -2506,6 +2496,8 @@ alias" below, arriving through PATH order rather than through a function — and
     the field updates on edit, but confirming is one call and assuming is how it ships.
   - Worth running whenever a PR deliberately does *not* close the issue it references. When it
     is meant to close it, the field failing to list it is the same check pointing the other way.
+
+*29 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### On a fork, `main` may track upstream by design — comparing it answers nothing
 
@@ -2606,6 +2598,33 @@ all_pids="$all_pids $!"
 for pid in $all_pids; do wait "$pid" 2>/dev/null || true; done
 ```
 
+### `if ! cmd; then rc=$?` captures the negation, not the command
+
+Inside the branch, `$?` is the status of the `!` compound — which is **0 by
+construction**, because the negation succeeded. So `rc` is always 0 there, and any arm
+built on it to tell one failure apart from another can never fire.
+
+```bash
+$ bash -c 'if ! awk "BEGIN{exit 3}"; then echo "inside then, \$?=$?"; fi'
+inside then, $?=0
+$ bash -c 'awk "BEGIN{exit 3}"; echo "plain, \$?=$?"'
+plain, $?=3
+```
+
+Capture before negating:
+
+```bash
+rc=0; cmd || rc=$?
+if [ "$rc" -ne 0 ]; then …; fi
+```
+
+Same for `while ! cmd`, `until ! cmd`, and `if ! cmd1 | cmd2` (where `$?` is the
+pipeline's, not `cmd1`'s). The direction is the expensive one: the branch *is* taken and
+the message *does* print, so the guard looks like it fired — only the number in it is
+wrong, and a reader chasing that number is sent somewhere the failure is not.
+
+*5 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
+
 ### A `pgrep -f` waiter matches its own command line, so it never exits
 
 `until ! pgrep -f "job" >/dev/null; do sleep 30; done` is the obvious way to wait for a
@@ -2692,6 +2711,8 @@ containing those digits.
 - That direction is survivable because it is loud. The dangerous one is a wrapper that exits 0 on a comparison it never performed, which reads as "verified".
 - For anything whose output you are about to treat as evidence, bypass the lookup: `command diff`, `\diff`, or a tool with no common wrapper — `cmp -s` for byte-equality, `md5` / `sha256sum` for a value you can print. Printing the digest beats printing a verdict: it stays checkable after the fact.
 - `type <cmd>` tells you what you actually have. Worth running the first time a verification step returns something surprising, before believing the surprise.
+
+*7 lines of evidence for this rule are in `conventions/code-check-shell.md`, which `/code-check` reads in full.*
 
 ### psql does not interpolate `:'var'` inside a dollar-quoted string, and `\quit N` exits 0
 
@@ -3041,6 +3062,12 @@ terra, sf, bcdata, GDAL/OGR CLIs. Same gate as `cartography.md`, verbatim: repor
 repos do spatial work without being packages, so this loads wherever a bookdown
 project, anything carrying a `DESCRIPTION`, or a QGIS project exists.
 
+Some rules here fence their citations in a `<!-- evidence -->` block, which a repo's
+`CLAUDE.md` omits and `/code-check` reads in full. A new citation goes inside that
+rule's block, creating one at the end of the rule if it has none; the remedy stays in
+the rule. `code-check.md`'s header states the rule once, and
+`skills/compact-prep/SKILL.md` step 5 carries the habit.
+
 ### Negative coordinates get parsed as CLI options — every BC bbox hits this
 - BC longitudes are all negative, so `--bounds -124.73 49.485 -124.595 49.565` fails with `Error: No such option: -1`. The parser sees a leading `-` and reads it as a flag. Affects click/argparse-based tools generally, not just bcdata.
 - Use the **bracketed single-argument form with `=`**: `--bounds="[-124.73, 49.485, -124.595, 49.565]"`. The `=` keeps the value attached to the option, and the brackets keep it one token. A bare comma-joined string (`--bounds "-124.73,49.485,..."`) is not equivalent — it threw an unrelated traceback.
@@ -3131,13 +3158,12 @@ rule.
   So `st_sf(df, a = , b = , geometry = )` keeps `a` and `b`, and
   `st_sf(tbl, a = , b = , geometry = )` throws them away. **Same call, same
   data, different class — different columns out.**
-- **The failure is invisible for as long as your fixtures share one class.** In
-  fly#35 four columns recording how each airphoto footprint had been sized never
-  reached a single caller of the package's own documented data source, because
-  `bcdata::collect()` returns a tibble and every fixture in the package read back
-  as plain `sf, data.frame`. Two releases shipped that way with a green suite:
-  geometry and every downstream number stayed correct, and only the audit trail
-  went missing, so nothing errored and nothing looked wrong.
+- **The failure is invisible for as long as your fixtures share one class**, and
+  it is invisible in the least alarming way: geometry and every downstream number
+  stay correct, and only the columns you added go missing. `bcdata::collect()`
+  returns a tibble while a fixture read back from disk can come back plain
+  `sf, data.frame`, so a documented data source and the fixtures standing in for it
+  take different branches.
 - **Fix: build the frame first, then hand the constructor one argument.** The
   columns are then inside the argument the branch keeps, whichever branch it is,
   and the caller's class is untouched:
@@ -3160,16 +3186,15 @@ rule.
   The class *set* is carried; the order is not. An
   `expect_identical(class(out), class(in))` written from three shapes that all
   lead with `sf` passes, and then fails on the one real caller you wrote it for.
-- Swept 2026-08-29 across all 61 repos in `~/Projects/repo` — 1500 `.R` files and
-  389 purled `.Rmd` chunks, parsed with R rather than grepped, looking for
-  `st_sf()` with a non-literal first positional argument plus trailing column
-  arguments. **`fly` was the only instance.** A regex misses this: the original
-  defect was a multi-line call. Validate any such scanner against both known
-  answers before believing a clean result — the pre-fix file must be flagged and
-  the fixed one must not, or "no hits" is indistinguishable from a broken scan.
+- **A scanner for this must be parsed, not grepped**: the call can span lines, and a
+  regex over one line misses it. Validate any such scanner against both known answers
+  before believing a clean result — the pre-fix file must be flagged and the fixed
+  one must not, or "no hits" is indistinguishable from a broken scan.
 - Generalizes past `sf`. Ask it of anything taking `...`: *does this constructor
   decide what to keep by looking at the first argument?* Same shape in any
   language where a variadic builder dispatches on an argument's type.
+
+*7 lines of evidence for this rule are in `conventions/code-check-spatial.md`, which `/code-check` reads in full.*
 
 ### terra: `mask()` is `touches = TRUE`, so two "clip to the polygon" routines disagree by a cell ring
 
@@ -3232,10 +3257,11 @@ polygon", assume they disagree at the boundary until measured. Count the cells.
 - If a function crops or reprojects before returning, `sources()` cannot answer this **at all** —
   do not reach for it. Record the resolver plus the raster's measurable geometry (`crs`, `res`,
   `ncell`, `ext`), or have the package expose what it resolved (`attr(out, "source") <- source`).
-- Caught 2026-09-01 in floodplains#33: `flooded::fl_dem_aoi()` builds its MRDEM-30 URL inside its
-  body, so `formals()` does not expose it either. `sources()` looked like the way to measure the
-  output instead of restating the input — the right instinct, applied to an object that cannot
-  carry the answer.
+- A function that builds its input URL inside its body does not expose it through `formals()`
+  either, so neither end of the call carries the answer. That is the case where the object has
+  to be taught to carry it.
+
+*4 lines of evidence for this rule are in `conventions/code-check-spatial.md`, which `/code-check` reads in full.*
 
 ### `sf::st_as_binary()` returns a LIST of raw vectors, so `is.raw()` on it is FALSE
 
@@ -3273,40 +3299,31 @@ different WKB and different hashes. A cache keyed that way misses on input that 
 geometrically the same; a content hash built that way reports a change where there is
 none.
 
-Prior art is `bcgov/FIT_changedetector` (GeoBC's change-detection tool,
-`src/fit_changedetector/changedetector.py` at `5adde29`; it was `diff.py` when #95 was
-filed and moved seven hours later), whose hash canonicalizes first — two steps, both
-load-bearing:
-
-```python
-df[df.geometry.name].normalize().set_precision(precision, mode="pointwise")
-```
+Two steps, both load-bearing:
 
 - **`normalize()`** — GEOS canonical form: consistent ring order and orientation.
 - **`set_precision()`** — snap coordinates to a stated grid, so floating-point noise
-  below the precision of the data does not register as a difference (they default to
-  0.01 m, 1e-7 for geographic CRS).
+  below the precision of the data does not register as a difference. `FIT_changedetector`
+  defaults to 0.01 m, and 1e-7 for a geographic CRS.
 
 **Record the precision alongside the hash** — a hash at an unstated precision is not
 comparable to one at another.
 
 The R side needs care, because the obvious name is wrong. **`sf::st_normalize()` is
-not GEOS normalize** — it rescales geometry to the unit bounding box, and recommending
+not GEOS normalize** — it rescales geometry to the unit bounding box, and reaching for
 it here would be actively wrong. sf 1.1.2 wraps GEOSNormalize as the internal
-`sf:::CPL_geos_normalize(sfc)` with no exported caller (swept the namespace, 2026-09-02).
-The exported route is the `geos` package: `geos::geos_normalize()` then
-`geos::geos_set_precision()`, then hash the WKB (`sf::st_as_binary()` also takes a
-`precision` argument for the second half on its own). Mind the two conventions for the
-number: sf's `precision` is a **scale factor** — `st_set_precision(x, 100)` rounds to
-0.01 units — while FIT_changedetector's `set_precision(0.01)` and
-`geos::geos_set_precision()` take a **grid size**. Record which one the stated
+`sf:::CPL_geos_normalize(sfc)` with no exported caller. The exported route is the
+`geos` package: `geos::geos_normalize()` then `geos::geos_set_precision()`, then hash
+the WKB (`sf::st_as_binary()` also takes a `precision` argument for the second half on
+its own). Mind the two conventions for the number: sf's `precision` is a **scale
+factor** — `st_set_precision(x, 100)` rounds to 0.01 units — while
+`set_precision(0.01)` and `geos::geos_set_precision()` take a **grid size**. The same
+0.01 is written two ways. Record which one the stated
 precision means, or a hash comparison across the two is off by orders of magnitude.
-Verify whichever you use against both known answers — one pair of polygons that differ only in ring order must hash
-equal, and one that differs in a vertex must not (the `geos` sequence passed both with
-default arguments, geos 0.2.5, 2026-09-03).
+Verify whichever you use against both known answers — one pair of polygons that differ
+only in ring order must hash equal, and one that differs in a vertex must not.
 
-Filed from floodplains#45, where byte-level determinism was the goal and this turned
-out to be the durable answer to the adjacent question — "did the *content* change?"
+*11 lines of evidence for this rule are in `conventions/code-check-spatial.md`, which `/code-check` reads in full.*
 
 ### sf: `st_join(largest = TRUE)` ignores the join predicate
 - `sf::st_join(x, y, join = predicate, largest = TRUE)` does **not** use `predicate` to decide matches — with `largest = TRUE`, sf runs `st_intersection(x, y)` and keeps the feature of greatest overlap area, so matching is *always* intersection-based regardless of what `join =` is set to. A function that exposes a configurable predicate AND a largest-overlap mode therefore silently mis-attributes when both are combined: pass `st_within` expecting containment, get anything that merely *overlaps*. Verify against sf source, not the argument list — the `join` arg is accepted and ignored, not rejected. Fix: abort when a non-default predicate is combined with the largest-overlap mode, rather than honouring one and dropping the other. (drift#42)
@@ -4038,6 +4055,39 @@ got <- tryCatch(
 Forking is fine for a **local** file; the trigger is the network driver. `future::plan(multicore)`
 and `furrr` on that plan fork the same way.
 
+### terra: `align()` defaults to `snap = "near"`, so the aligned window need not contain the input
+
+`terra::align(e, r)` snaps each edge of `e` to the **nearest** cell boundary of `r`, which moves
+an edge *inward* as readily as outward. So the returned extent is **not** a superset of what you
+gave it, and cropping a raster to it silently drops cells:
+
+```r
+fe <- terra::ext(c(950545.1, 950567.1, 1040258, 1040280))   # a small frame
+al <- terra::align(fe, dem)                                  # snap = "near" (the default)
+al[2] >= fe[2]                                               # FALSE -- xmax moved INWARD
+terra::align(fe, dem, snap = "out")                          # this one does contain fe
+```
+
+The failure is silent and lands on a **value**, not an error: a mean over the cropped window
+differs from a mean over the whole raster, and any coverage ratio capped with `pmin(1, ...)`
+hides the discrepancy entirely. `snap = "out"` is a superset of both the input extent and the
+near-snapped one, since the nearest boundary is never outside the boundary outside it —
+measured 0 violations over 4,000 random grid/frame geometries at resolutions 5-400 m.
+
+**Frame size is the wrong axis to test.** A near-snap only ever discards a column whose own
+centre is outside the polygon, and `terra::extract()` takes a cell by its centre, so discarding
+it usually changes nothing: interior frames a few cells across diverge **0 of 200** times.
+Divergence needs `extract()` to fall back from the centre rule to its touched-cells path, which
+happens only where the geometry's **overlap with the raster** covers no cell centre at all —
+a feature of any size sitting at the **edge of coverage**, which is the ordinary case for a
+raster cropped to an AOI.
+
+Use `snap = "out"` for any window you are going to *read* through. Keep `snap = "near"` only
+where the grid is itself the measurement and something downstream was calibrated against it —
+and then never read through it.
+
+*6 lines of evidence for this rule are in `conventions/code-check-spatial.md`, which `/code-check` reads in full.*
+
 
 # Code Check Conventions
 
@@ -4054,11 +4104,20 @@ When a bug class is discovered, add a **row** under the mechanism it instances. 
 new mechanism only when no row fits. Add to a tool file only when the rule is about
 that tool rather than about a shape.
 
-**The remedy goes in the mechanism, not in the row.** A repo's `CLAUDE.md` carries the
-mechanism paragraphs and omits the instance tables, which `/code-check` still reads in
-full (soul#214). So a fix written into a row reaches a diff review and reaches no session
-doing ordinary work. Put what someone must *do* in the rule, once; let the row carry the
-citation — date, repo, what broke, what it cost — at around the median 95 words.
+**The remedy goes in the rule, not in the evidence.** A repo's `CLAUDE.md` carries the
+rules and omits the evidence, which `/code-check` still reads in full. So a fix written
+into a citation reaches a diff review and reaches no session doing ordinary work. Put what
+someone must *do* in the rule, once; let the citation carry date, repo, what broke, what it
+cost — at around the median 95 words.
+
+**The separation has two forms, and which one a file uses is a property of the file.**
+Here the evidence is a **row** in the `date`/`where`/`instance` table under each
+mechanism, keyed on a header this file declares in its own frontmatter (soul#214). In the five conventions whose evidence is inline narrative —
+`code-check-shell.md`, `-r`, `-spatial`, `-infra` and `karpathy.md` — it is a **fenced
+block** at the end of the rule, `<!-- evidence -->` … `<!-- /evidence -->`, each marker
+alone on a line at column 0 (soul#216). A rule in those files that carries no block yet
+gains one the next time someone edits it. `skills/compact-prep/SKILL.md` step 5 carries the
+habit and what a malformed marker does.
 
 ## Mechanisms
 
@@ -4387,6 +4446,14 @@ enforced by several mechanisms, name every one and verify against the artifact e
 produces, with a positive control — and when two requirements conflict outright, find the
 third option rather than trading one off.
 
+**Compression runs both ways, and only one direction is guarded.** Promoting a remedy out
+of its evidence can drop the condition that made it true; demoting evidence out of a rule
+can add a claim that was never there — a count inferred from a label, a sample restated as
+a rate, an attribution widened to a second instance. Neither a citation-presence gate nor a
+code-span screen can see an addition, because both ask only what went missing. Re-read the
+source beside the compression **in both directions**, and treat any sentence that gained a
+quantifier, a tense change or a causal link as unsupported until the source is checked.
+
 Terminating means enumerating every claim a diff makes about behaviour elsewhere and
 executing each. Enumerating by the *place* a claim lives — error message, roxygen, comment,
 test comment, CLAUDE.md — is not enough. A restatement names its population **six** ways:
@@ -4401,7 +4468,7 @@ several sources — a rule promoted out of its instances, a summary over a measu
 execute it against each source rather than against itself: the compression reads correct on
 its own, and the condition it dropped is visible only in the thing it compressed.
 
-*23 recorded instances of this are in `conventions/code-check.md`, which `/code-check` reads in full.*
+*25 recorded instances of this are in `conventions/code-check.md`, which `/code-check` reads in full.*
 
 ### A fix lands in one of two callers that share a harness
 
@@ -5337,6 +5404,12 @@ We've hit snags repeatedly when half-doing this — branches that mix concerns, 
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
+Some rules here fence their citations in a `<!-- evidence -->` block, which a repo's
+`CLAUDE.md` omits and `/code-check` reads in full. A new citation goes inside that
+rule's block, creating one at the end of the rule if it has none; the remedy stays in
+the rule. `code-check.md`'s header states the rule once, and
+`skills/compact-prep/SKILL.md` step 5 carries the habit.
+
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
 ## 1. Think Before Coding
@@ -5493,12 +5566,9 @@ almost always the second kind, and almost always yours to answer.
 Sessions on Opus 5 carry a hardcoded instruction from the CLI itself —
 *"Do not call the AgentTool unless the user requested it"* — alongside the same
 line for workflows and deep-research. It is not a setting anyone here
-misconfigured, and it cannot be turned off locally: measured 2026-08-29 in
-`claude` v2.1.251, the string is a literal in the bundle, emitted when the
-session is on the `opus_5_prompt_bundle` and the server-side flag
-`tengu_fennel_godwit` is off. That flag and the replacement text
-(`tengu_heron_brook`) are both remote config; nothing in `~/.claude/settings.json`
-reaches them.
+misconfigured, and **it cannot be turned off locally**: the string is a literal in the
+CLI bundle, gated by remote config. Nothing in `~/.claude/settings.json` reaches it, so
+do not spend a turn looking there.
 
 The symptom is a skill quietly doing less than it says: `/code-check` reporting
 *"the subagent rounds did not run — your session instruction bars the Agent
@@ -5548,9 +5618,8 @@ a spending decision that needs an explicit ask.
   decides what it calls — so use the structure: the `Explore` and `Plan` types are
   defined without the `Agent` tool and *cannot* spawn. `general-purpose` can, so when
   you use it (as `/code-check` does), put "do not spawn subagents" in the prompt. The
-  one case on record — a research agent that had spawned 5 children and deadlocked
-  for **~3 hours** while still reporting as running (below) — never had a root cause
-  established, which is exactly why this bound is structural rather than advisory.
+  one case on record (see "Don't block" below) never had a root cause established, which
+  is exactly why this bound is structural rather than advisory.
 - Unnamed, delivering by file — `planning.md` carries the mechanics.
 - **Report after, not before.** Say what you spawned, and relay what it found (per
   `code-check/SKILL.md` — a subagent's report never reaches the user on its own). A
@@ -5561,11 +5630,11 @@ a spending decision that needs an explicit ask.
 deep-research run fanning out dozens of agents is a spending decision and needs an
 explicit ask. Two or three reviewers is not — that is just doing the work.
 
-Worth being concrete about the value, because the cost is the visible half and the
-benefit is not: on 2026-08-27 two reviewers over one conventions draft returned
-**20 findings**, caught **six** false factual claims in it, and killed a section that
-would otherwise have shipped contradicting `code-check.md`. None of that review
-happens if the spawn waits on a user who is away.
+The cost of a review is the visible half and the benefit is not. Two reviewers over one
+conventions draft returned **20 findings** and caught **six** false factual claims in it.
+None of that happens if the spawn waits on a user who is away.
+
+*9 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ### Don't block
 
@@ -5714,54 +5783,33 @@ Prose repeats; code does not, so the discriminating check is almost always to re
 the thing the prose describes.
 
 **The release note is where this costs the most, because its readers cannot check it.**
-Measured 2026-09-04 in stac_floodplains_bc#26: three claims in one set of release notes were
-wrong, each restated from a prior document rather than derived from the artifact — "18 items
-changed" (the count of upstream *re-runs*, six of which moved nothing; 13 changed), "5-33%"
-(the issue's own summary line, contradicted by its own per-item table; 1.5-33.5%), and worst,
-*"the correction is visible in the checksums, so a consumer can tell replaced data from
-unchanged"*. That last one measured **140 assets across 20 items, zero unchanged** — the
-re-encoding touched every byte, so the checksum answers "are my bytes current" and can never
-answer "did the values change". It would have sent every consumer to a signal that cannot
-answer the question they have.
+Where a release note is written from the issue rather than from the artifact, its numbers
+have been copied rather than derived, and no reader is positioned to notice.
 
-Two habits, both cheap:
+Five habits:
 
 - **Derive every number in a release note from the artifact it describes**, at the moment you
   write it. Not from the issue, not from the last release's notes, not from memory.
 - **For any sentence of the form "you can tell X by looking at Y", check that Y actually
   separates X from not-X.** A discriminator that fires on everything discriminates nothing,
-  and it reads as helpful right up until someone relies on it.
+  and it reads as helpful right up until someone relies on it. A checksum over a re-encoded
+  artifact is the standing example: it answers "are my bytes current" and can never answer
+  "did the values change".
 - **A carve-out is a number too, and reasoning one from the shape of a literal understates
-  it.** A release note recording someone else's regression said a broken smoke test "could
-  validate any group except the two named in `EXPECTED_DEPRECATED`" — reasoned from the
-  literal being the thing the check consults. Driven over one-group trees it could validate
-  **none**: the literal names two items, so a one-group tree is always missing at least one,
-  including each of those two, which are missing each other. Wrong in the direction that
-  understates the reach of a defect, in the document a reader uses to decide whether to
-  backport. Run the check over the population before writing the exception
-  (stac_floodplains_bc#61, 2026-09-05).
-
-Measured 2026-09-02 in link. `CLAUDE.md`, `research/study_area_run.md` and
-`research/recompute_parallel_2026_09_01.md` all stated that a post-consolidate
-recompute "runs over every WSG in the schema, not the run's own set, so it does not
-scale with scope". One line of shell disagreed — `ALL_WSGS` is the union of the host
-buckets — and the run's own log said `recompute (lnk_access, 34 WSGs)` against a
-95-WSG schema. Two later commits had changed the behaviour and none of the three
-documents was updated.
-
-It was quoted to the user twice in one session as a live planning input before anyone
-checked, and it was load-bearing: the claim was the *premise* for concluding that
-parallelising that stage beat adding machines. A false premise had produced a
-plausible roadmap.
-
-Two habits:
-
+  it.** Run the check over the population before writing the exception. A literal naming two
+  excluded items does not mean every other input is covered: it names *two*, so a one-item
+  tree is always missing at least one of them — including each of those two, which are
+  missing each other — and the coverage is **zero for every one-item tree**, not merely
+  capable of being zero. That error runs in the direction that understates the reach of a
+  defect, in the document a reader uses to decide whether to backport.
 - **When a document states a quantity or a scope, read the code that produces it
   before repeating it.** Especially a status section — it describes a moment, and
   nothing fails when the moment passes.
-- **When you find one instance stale, grep for the sentence, not the file.** The
-  claim above sat in three documents; fixing the one that was quoted would have left
-  two, both reading as authoritative.
+- **When you find one instance stale, grep for the sentence, not the file.** A claim that
+  sits in three documents is not fixed by repairing the one that was quoted; the other two
+  still read as authoritative.
+
+*24 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ### "It can only be answered by testing" is a claim with an author
 
@@ -5878,81 +5926,60 @@ ls ~/Projects/repo/rtj/scripts/gis/     # operational drivers live here, not in 
 ```
 
 **Then read the README ownership table and the above-marker `CLAUDE.md` of any package
-plausibly adjacent — exports understate remit.** `trap`'s README states it exists "so a
-report does not have to harvest its own copy", with a manifest pinning per-snapshot
-sources, schema, md5 and row count; no export says that. The old hardcoded list would
-not have searched it at all; the grep finds functions; the README is the load-bearing
-artifact. Measured 2026-09-04: a harvest-and-manifest layer was
-proposed across three issues before `trap/README.md` was opened, with `trap` checked out
-and current on the machine (soul#183).
+plausibly adjacent — exports understate remit.** A package README can state a remit no
+export names: that it exists so a report does not have to harvest its own copy, that it
+pins per-snapshot sources, schema, md5 and row count. The grep finds functions; the README
+is the load-bearing artifact, and it is the one nothing prompts you to open.
 
 The failure is not carelessness — it is that **a decision is invisible from where the work
 is happening**. The tool exists, is correct, and is three repos away in a directory you had
 no reason to open. So the path of least resistance builds it again, and the duplicate is
 plausible precisely because the original was never visible.
 
-Four instances in one session (2026-08/09), all by an agent that had just read the thread
-documenting the pattern:
-
-| Built or proposed | Already existed |
-|---|---|
-| a Mergin form-harvest script | `rtj/scripts/gis/mergin_data-harvest.R` — dry-run by default, parquet, photo manifest, excludes `.mergin/` cache copies |
-| ad-hoc project layer curation | `rtj/scripts/gis/mergin_manifest-create.R` + per-project manifests git-tracked in rtj |
-| "photo functions should go to ngr" | `sred#26` assigns photo batch ops to rfp |
-| "the source fetchers should go to ngr" | `spacehakr` already existed, holding all twelve `spk_*` |
-
 **Tell:** you are about to write something whose name is a verb the ecosystem already does
 somewhere. Fetch, sync, harvest, backup, source, register, publish.
 
 Two corollaries worth holding:
 
-- **A function existing in two places is worse than it existing in neither.** Measured on
-  `ngr_spk_geoserv_dlv` versus `spacehakr::spk_geoserv_dlv`: same name, same signature, and
-  by the time anyone looked the first printed an error and carried on where the second
-  aborts. Two live copies drift silently, and the drift is invisible until someone has both
-  installed — which nobody did.
-- **Check what the *architecture* says, not just what exists.** Two of the four above were
-  wrong-home *proposals*, not duplicate code. `sred#26` had already assigned the boundary;
-  reading it would have cost less than arguing the case from first principles.
+- **A function existing in two places is worse than it existing in neither.** Two live
+  copies drift silently, and the drift is invisible until someone has both installed.
+- **Check what the *architecture* says, not just what exists.** Not every instance is
+  duplicate code; a wrong-home *proposal* is the same failure, and an issue that already
+  assigned the boundary settles it for less than arguing from first principles costs.
 
 Sibling of *"An inventory is only complete relative to a boundary"* in `code-check.md`, one
 step earlier: that one is about a search that was complete for the wrong scope, this is
 about never having searched the scope where the answer lived.
 
+*18 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
+
 #### The storage version: one store is not the world
 
-The same error with buckets instead of packages, and it produced three wrong answers in
-one session (2026-09-04). Each was a single negative check reported as a fact:
+The same error with buckets instead of packages. The shape is a single negative check
+reported as a fact.
 
-| claim made | what was checked | where it actually was |
-|---|---|---|
-| "not an `aws` layer" | `rfp_source_aws.txt`, 11 entries | `db_newgraph/jobs/` — that list is what rfp *pulls*, not an inventory of what is staged |
-| "not staged anywhere" | one Postgres host, one S3 prefix | a **different bucket**, written by a job that drops its temp table afterwards |
-| "the imagery is not backed up" | `aws s3 ls` on two AWS buckets | **DigitalOcean Spaces** — 228 GB, reachable only via `s3cmd` |
-
-The third is the most general: **`aws s3` and `s3cmd` address different clouds and are
-invisible to each other.** A repo whose backup script uses `s3cmd` has stores that no
-`aws s3 ls` will ever list, so "I checked S3" is not a statement about where the data is.
+The most general case: **`aws s3` and `s3cmd` address different clouds and are invisible to
+each other.** A repo whose backup script uses `s3cmd` has stores that no `aws s3 ls` will
+ever list, so "I checked S3" is not a statement about where the data is.
 
 Two habits, each one command:
 
 - **Enumerate the stores before searching them.** `s3cmd ls` and `aws s3 ls` with no
   argument each list only their own provider's buckets; the backup script names the rest.
 - **Prefer the definition to the artifact.** The job that stages data says what exists; a
-  bucket only shows what some past run happened to leave. Checking artifacts returned
-  nothing three times here; reading the job answered it immediately.
+  bucket only shows what some past run happened to leave.
 
 A negative result is only ever as wide as the store you looked in. Stating it without that
-qualifier is how a gap in your own search becomes a fact in an issue body — which is where
-all three of these ended up before they were corrected.
+qualifier is how a gap in your own search becomes a fact in an issue body.
 
 And the same shape once more for **checkouts**: a `grep` across `~/Projects/repo` searches
 the repos this machine happens to have, not the ecosystem. Repos are cloned per-machine and
-the set differs between them — `stewardship_upper_wedzin_kwa` was absent on m4 while holding
-the answer to two separate questions on 2026-09-04, so a local grep returned clean twice and
-was reported as absence twice. Use `gh api -X GET search/code -f q="org:NewGraphEnvironment <term>"`,
+the set differs between them, so a local grep that returns clean has answered a question
+about this disk. Use `gh api -X GET search/code -f q="org:NewGraphEnvironment <term>"`,
 and note it indexes **default branches only**, so a file on a feature branch is invisible to it
 and needs `gh api repos/<owner>/<repo>/contents/<path>?ref=<branch>`.
+
+*12 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ## 8. Decisions Up Front, Then Run
 
@@ -5974,12 +6001,9 @@ spends attention already committed. Under **Always Away** the cautious answer is
 wrong one — the work stalls on a question the user answered by approving the plan.
 
 The instruction arrives as one short message covering many commits, reviews and
-repos: *"Go all phases to PR"* (airvine, flooded#49, 2026-08-31; flooded#47 and
-floodplains#33, 2026-09-01; trap, 2026-09-01; soul#169, 2026-09-04). One of those
-runs carried four phases, a plan review, four code-check rounds, two issue-body
-reconciliations and two cross-repo PRs with no further input. The merge is a separate
-instruction: on soul#188 the user typed `/gh-pr-merge` once the PR was open, and asked
-directly (2026-09-05) confirmed that *"to PR"* ends there.
+repos: *"Go all phases to PR"* (airvine). **The merge is a separate instruction** — *to the PR*
+ends at the open PR, and `/gh-pr-merge` runs when the user invokes it or the
+instruction says so.
 
 Two things are inside the mandate; these are not:
 
@@ -5989,15 +6013,15 @@ Two things are inside the mandate; these are not:
   key, an identifier, a schema), which goes back to the user. Blockers that cannot be resolved are filed as issues and
   named in the final report rather than held open.
 - **Our own repos are inside it.** Filing issues, opening PRs and editing bodies in
-  NGE repos is normal work; one run produced a follow-up issue and two cross-repo PRs
-  without asking, and that was right.
+  NGE repos is normal work.
 - **Outward-facing actions are not** — see "Never post outside our own repos" below.
-  Neither is anything a convention names as its own gate: **the merge** — *to the PR*
-  ends at the open PR; `/gh-pr-merge` runs when the user invokes it or the instruction
-  says so (airvine, 2026-09-05; `gh-pr-push/SKILL.md`, "Ask user before merging") — a change to the machine
+  Neither is anything a convention names as its own gate: the merge (airvine, 2026-09-05;
+  `gh-pr-push/SKILL.md`, "Ask user before merging"), a change to the machine
   (`newgraph.md`, "State the plan before changing the machine"), or a push into an
   artifact a human is testing on (`code-check.md`). A push to the feature branch is
   inside the mandate.
+
+*7 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ### Before a plan exists, a question wants an answer
 
@@ -6067,10 +6091,9 @@ sudo-needs-TTY operation, anything the Bash tool is blocked from running — giv
 **Why, twice over.** Default session guidance proposes the `!` prefix as a way to run
 a command in-session, so this recurs in every repo unless written down. On this
 operator's terminals it either does not run at all, or — where it does — **it ran from
-`$HOME` rather than the session's working directory** (one measurement, 2026-09-02): a
-handed-over `! mkdir -p pursuits/x && cp … pursuits/x/` created `~/pursuits/x` and the
-file had to be found and moved. Absolute paths are right whichever directory it
-resolves against. So:
+`$HOME` rather than the session's working directory** (one measurement, 2026-09-02), so a
+handed-over relative path created the file somewhere nobody was looking. Absolute paths are right whichever
+directory it resolves against. So:
 
 - Emit the command plain. Applies to fenced blocks and inline commands alike.
 - **Absolute paths** in any handed-over command that touches files
@@ -6079,13 +6102,14 @@ resolves against. So:
   single-quoted remote command, so the quoting survives the trip.
 
 **A file under `~/Downloads` is unreadable by the agent process, and no retry helps.**
-`Read`, `cp` and `pdftotext` on `~/Downloads/*` all fail with `Operation not permitted`
-(measured 2026-09-02). It is macOS folder protection (TCC) on the process, not a
-Claude Code permission mode, so `/permissions` does not change it; Desktop and
-Documents behave the same. Do not retry variants — ask for **one** copy into the repo,
-with absolute source and destination paths, then continue from the copy. (Granting
-the terminal app Full Disk Access removes it on one machine; the fallback stays for
-the next machine.)
+`Read`, `cp` and `pdftotext` on `~/Downloads/*` all fail with `Operation not permitted`.
+It is macOS folder protection (TCC) on the process, not a Claude Code permission mode, so
+`/permissions` does not change it; Desktop and Documents behave the same. Do not retry
+variants — ask for **one** copy into the repo, with absolute source and destination paths,
+then continue from the copy. (Granting the terminal app Full Disk Access removes it on one
+machine; the fallback stays for the next machine.)
+
+*4 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ### Link every issue and PR you name to the user
 
@@ -6108,20 +6132,18 @@ mult pages to find"* (airvine, 2026-09-05).
   soul.
 - **A bare `#N` is not ambiguous — it is a working link to the wrong repo.** The host
   resolves it against the session's own repo, so a bare number in a discussion *about* a
-  different repo silently retargets. Measured 2026-09-12: an rfp review written from an rtj
-  session rendered `#329`, `#221`, `#203` and four others as rtj links, and rtj#329 — *"its
-  group is ticked by none, so it is invisible everywhere"* — is close enough in subject to
-  rfp#329 to read as correct. Naming the collision in prose afterwards does not fix it; the
-  link has to be re-qualified.
+  different repo silently retargets, and the wrong repo's issue of that number can be close
+  enough in subject to read as correct. Naming the collision in prose afterwards does not
+  fix it; the link has to be re-qualified.
 - **Spot-check a subset, not every link.** Before sending a report with many numbers,
   resolve two or three through `gh` — the ones you typed from memory or whose type you
   inferred — and let the rest ride. Checking all of them would slow every message; checking
-  none is how a wrong repo or an issue-path link to a PR ships. Measured 2026-09-05: three
-  constructed links checked against `gh`, two matched, one was a PR filed under the issue
-  path.
+  none is how a wrong repo or an issue-path link to a PR ships.
 - **Scope is messages to the user** — terminal replies, the compact-prep report, PR and
   issue bodies where a reader lands from outside the repo. Commit messages and issue bodies
   read *on* GitHub autolink `#N` already; do not bloat those.
+
+*5 lines of evidence for this rule are in `conventions/karpathy.md`, which `/code-check` reads in full.*
 
 ### Surface upstream defects; do not work around them
 
@@ -6348,6 +6370,17 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
    - **Agent type that can write**: put the file-path instruction in the first prompt, not as a follow-up.
 
    Asking for a file the agent cannot produce costs a round-trip, and — worse — sets you up to read an absent file as an absent review. Check the agent type's tools before writing the instruction.
+
+   **A reviewer asked to prove a guard fires will patch your working tree, and that races
+   your own test runs.** "Restore the defect and watch it go red" is the right instruction
+   (`code-check.md`), and a subagent given it edits the same files the parent is testing.
+   From the parent's side the result is a test run that reports failures belonging to
+   nobody's code — the reviewer's planted defect, caught mid-flight. Tell reviewers to work
+   in a copy (`cp -r` to a temp dir, or a worktree) and say so in the prompt; they honour it
+   when asked. Then snapshot the files you care about and `cmp` them before **and after**
+   every run whose result you intend to act on, so "the tree was intact for this
+   measurement" is a fact rather than an assumption. Same hazard as a mid-flight edit in
+   `karpathy.md` §5, arriving from an agent instead of from you.
 
    **Review the fixes, not just the code.** The second pass is where the value concentrates, because a fix written under a wrong assumption reproduces the same defect. Measured on gq#52: pass 1 found 13 defects, pass 2 found 7 more — including a blocker sitting *inside the fix* for pass 1's blocker, the same class twice (`lty`, then `fill_alpha`) because completeness was reasoned about rather than computed. Pass 3, scoped narrowly to the file edited most, found no new instances; **convergence is the signal to stop, not a fixed number of rounds.**
 
