@@ -1,0 +1,28 @@
+# ------------------------------------------------
+# CITATION.cff file created with {cffr} R package
+# See also: https://docs.ropensci.org/cffr/
+# ------------------------------------------------
+ 
+cff-version: 1.2.0
+message: 'To cite package "gq" in publications use:'
+type: software
+license: MIT
+title: 'gq: Cartographic Style Management Across Rendering Targets'
+version: 0.16.0
+abstract: Extract symbology from QGIS projects, store in a canonical JSON registry,
+  and translate to tmap, leaflet, MapLibre GL, and ggplot2. One source of truth for
+  map styles across all rendering targets.
+authors:
+- family-names: Irvine
+  given-names: Allan
+  email: al@newgraphenvironment.com
+  orcid: https://orcid.org/0000-0002-3495-2128
+repository-code: https://github.com/NewGraphEnvironment/gq
+url: https://newgraphenvironment.github.io/gq/
+date-released: '2026-09-20'
+contact:
+- family-names: Irvine
+  given-names: Allan
+  email: al@newgraphenvironment.com
+  orcid: https://orcid.org/0000-0002-3495-2128
+
