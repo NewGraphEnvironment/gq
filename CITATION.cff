@@ -17,6 +17,23 @@ authors:
   given-names: Allan
   email: al@newgraphenvironment.com
   orcid: https://orcid.org/0000-0002-3495-2128
+  affiliation: New Graph Environment Ltd.
+preferred-citation:
+  title: 'gq: Cartographic Style Management Across Rendering Targets'
+  authors:
+  - family-names: Irvine
+    given-names: Allan
+    email: al@newgraphenvironment.com
+    orcid: https://orcid.org/0000-0002-3495-2128
+    affiliation: New Graph Environment Ltd.
+  version: 0.16.0
+  date-released: '2026-09-20'
+  url: https://newgraphenvironment.github.io/gq/
+  repository-code: https://github.com/NewGraphEnvironment/gq
+  license: MIT
+  type: software
+  publisher:
+    name: New Graph Environment Ltd.
 repository-code: https://github.com/NewGraphEnvironment/gq
 url: https://newgraphenvironment.github.io/gq/
 date-released: '2026-09-20'
@@ -25,4 +42,5 @@ contact:
   given-names: Allan
   email: al@newgraphenvironment.com
   orcid: https://orcid.org/0000-0002-3495-2128
+  affiliation: New Graph Environment Ltd.
 
