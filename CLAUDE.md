@@ -17,8 +17,8 @@ The name is a reference — it's all about style.
 | `soul` | Parent ecosystem — conventions, skills (including `cartography` skill) |
 | `soul/skills/cartography` | Codified map-making patterns for tmap + mapgl + fwapg (consumer of gq styles) |
 | `sred` | R&D tracking (private) — experiment refs in machine-local memory |
-| `rtj` | Infrastructure — QWC2 deployment (#61), geomapper (#58), future OGC API Styles |
-| `nrp-nutrient-loading-2025` | First consumer project (tmap watershed maps) |
+| infrastructure repo (private) | QWC2 deployment, geomapper, future OGC API Styles |
+| A nutrient-loading project | First consumer project (tmap watershed maps) |
 | All fish passage / restoration repos | Consumer projects (leaflet maps, QGIS projects) |
 | QWC2 (`qgis/qwc2`) | Browser-based viewer — serves `.qgs` via QGIS Server; gq extracts from same `.qgs` |
 
@@ -38,8 +38,7 @@ writing a PR body.
 
 The repo was renamed `sred-2025-2026` → `sred`. Use `NewGraphEnvironment/sred#N`
 for anything new; older `sred-2025-2026#N` references in commit history were
-never rewritten because GitHub's redirect still resolves them. Same rename
-pattern as awshak → rtj.
+never rewritten because GitHub's redirect still resolves them.
 
 ## Architecture
 
@@ -170,8 +169,8 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 - `gq_form_types()` — the roster of Mergin survey forms (13 spatial forms)
 
 Forms get their own table rather than a place in `groups.csv`, and the reason is
-structural. `rfp_qgs_form_add()` injects forms **per project** — rtj's
-`nelson/project.yml` carries `forms: [trail_feature, viewscape, cabin_visit]` —
+structural. `rfp_qgs_form_add()` injects forms **per project** — one project's config
+carries `forms: [trail_feature, viewscape, cabin_visit]` —
 while `groups.csv` models **per-template** contents. The shipped templates carry
 only `form_pscis` and `form_fiss_site`, so folding the roster in would make
 `gq_template_layers()` report 13 forms for a template shipping 2: cartography for
@@ -201,7 +200,7 @@ layers it names — absence means unmanaged, not hidden.
 That justification used to be `High Detail - Crossings` showing 27 layers in
 bcfishpass and 0 in bcrestoration. The zero was rfp shipping the preset as a
 **stub**, not a design, and pinning it as a test made a defect look deliberate
-for a release (gq#77, repaired upstream in rfp#217). When a registry difference
+for a release (gq#77, since repaired upstream in rfp). When a registry difference
 is the *evidence* for a schema decision, check it is a decision.
 
 **Style resolvers:**
@@ -297,7 +296,7 @@ too many.
   **The witness itself is unguarded, and has been stale.** `test-template_drift.R`
   compares against this committed copy rather than the templates, so when the copy
   freezes, the guard reports green for exactly the drift it exists to catch.
-  Measured 2026-08-30: it had missed rfp#216's `Floodplain` and `Restoration`
+  Measured 2026-08-30: it had missed rfp's newly added `Floodplain` and `Restoration`
   groups, and the suite was green throughout (gq#70). Two of the three
   rfp-vendored artifacts were stale that day — `themes.csv` too (gq#77) — and
   nothing reported either. Re-run the extractor before trusting a green drift
@@ -331,8 +330,8 @@ The registry maps **layer names** to styles, not data sources to styles. The con
 - **leaflet translator** — `gq_leaflet_style()` for interactive bookdown maps
 - **ggplot2 translator** — `gq_ggplot_style()` for statistical plots
 - **GitHub Action** — auto-rebuild `reg_main.json` on registry source changes (gq#11), potentially trigger QWC2 theme refresh
-- **QWC2 integration** — browser-based map viewer serving same `.qgs` projects via QGIS Server (rtj#61, sred#19). No style translation needed — QGIS Server renders natively. Complements Mergin Maps (field) and gq (reports).
-- **OGC API Styles** — serve styles via standard endpoint (rtj)
+- **QWC2 integration** — browser-based map viewer serving same `.qgs` projects via QGIS Server (sred#19). No style translation needed — QGIS Server renders natively. Complements Mergin Maps (field) and gq (reports).
+- **OGC API Styles** — serve styles via standard endpoint (infrastructure repo)
 
 ## Key Patterns
 
@@ -419,7 +418,7 @@ evidence produced *your* side's value. "Nobody ever checked" is not a position �
 change it. gq's Roads-before-Streams group order was unchecked drift, so the
 template's order was adopted; `Floodplain` above `Basemap` had a measurement
 behind it (46% of one land-cover change product is water-class, hidden by the
-waterbody fills), so it stood and rfp#216 was asked to follow.
+waterbody fills), so it stood and rfp was asked to follow.
 
 State positions with a **location**. "Add group X" without one reproduces the bug
 where someone inserts it wherever they happen to be standing — which is the end
