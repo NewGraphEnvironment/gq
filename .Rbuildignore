@@ -24,3 +24,4 @@
 ^\.vscode$
 ^\.idea$
 ^Thumbs\.db$
+^CITATION\.cff$
