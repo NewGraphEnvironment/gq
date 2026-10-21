@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/v0.16.1/inst/CITATION)
 
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
 Targets*. New Graph Environment Ltd. Version 0.16.1,
