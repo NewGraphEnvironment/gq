@@ -14,7 +14,7 @@ Source:
 [`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/main/inst/CITATION)
 
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
-Targets*. New Graph Environment Ltd. Version 0.16.0,
+Targets*. New Graph Environment Ltd. Version 0.16.1,
 <https://github.com/NewGraphEnvironment/gq>.
 
     @Manual{gq,
@@ -22,7 +22,7 @@ Targets*. New Graph Environment Ltd. Version 0.16.0,
       author = {Allan Irvine},
       organization = {New Graph Environment Ltd.},
       year = {2026},
-      version = {0.16.0},
-      note = {Version 0.16.0},
+      version = {0.16.1},
+      note = {Version 0.16.1},
       url = {https://github.com/NewGraphEnvironment/gq},
     }

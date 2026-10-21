@@ -1,5 +1,18 @@
 # Changelog
 
+## gq 0.16.1
+
+No change to the package’s functions. This release exists so the package
+has a citable, archived version.
+
+- **Citation.** The maintainer is the author, and New Graph Environment
+  Ltd. the copyright holder and funder (`cph`, `fnd` in `Authors@R`) and
+  the publisher in `CITATION.cff`. `citation("gq")` and
+  [`knitr::write_bib()`](https://rdrr.io/pkg/knitr/man/write_bib.html)
+  give the entry the stable key `gq`.
+- `CITATION.cff` is regenerated from DESCRIPTION by the
+  `update-citation-cff` workflow and is kept out of the build tarball.
+
 ## gq 0.16.0
 
 - **The QML corpus is re-vendored: rfp had repaired two styles and gq
