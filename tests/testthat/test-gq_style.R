@@ -205,9 +205,8 @@ test_that("labels index by class key the way values do (#55)", {
   # Positional labels beside named values: indexing both by key returned the
   # colours and NA, NA -- a legend built the obvious way labelled its rows "NA".
   cls <- gq_style(gq_reg_main(), "roads_dra")$classification
-  codes <- c("RRD", "RU")
+  # Out of registry order (RF comes first), so the read is by key, not position.
+  codes <- c("RH1", "RF")
   expect_identical(names(cls$labels), names(cls$values))
-  expect_false(anyNA(cls$labels[codes]))
-  expect_equal(unname(cls$labels[codes]),
-               unname(cls$labels[match(codes, names(cls$values))]))
+  expect_equal(unname(cls$labels[codes]), c("Highway", "Freeway"))
 })

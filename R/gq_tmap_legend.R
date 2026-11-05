@@ -165,14 +165,11 @@ legend_entries <- function(sty, cls, key, label, present) {
     unname(v[[j]])
   }
 
-  # Opacity follows the map's reading in tmap_alpha_args(): a class with none
-  # is opaque. Set only when the layer carries any, so a layer without opacity
-  # adds no column and collect_legend() supplies its default where rows mix.
-  alpha <- function(j) {
-    a <- pick(cls$opacities, j)
-    if (is.null(a)) return(NULL)
-    if (is.na(a)) 1 else a
-  }
+  # Opacity through class_opacity(), the map's own reading: a class with none
+  # is opaque. NULL when the layer carries none, so it adds no column and
+  # collect_legend() supplies its default where rows mix.
+  opacities <- class_opacity(cls$opacities)
+  alpha <- function(j) pick(opacities, j)
 
   lapply(which(keep), function(j) {
     row <- list(type = type, label = unname(labs[[j]]))

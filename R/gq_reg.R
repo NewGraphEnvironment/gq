@@ -179,6 +179,22 @@ gq_reg_custom <- function(path) {
     label <- csv_label(row1)
     if (length(label) > 0) entry$label <- label
 
+    # Reading an absent column as empty (#75) means a misspelled header --
+    # `stroke_colour` -- is also read as empty, and the layer comes out with no
+    # style, which tmap draws as its defaults with no message. Warn at that
+    # outcome rather than on every column the reader does not know: drift's
+    # registry CSVs carry a `notes` column, harmless and unread.
+    styled <- c("fill", "stroke", "mark", "classification", "label")
+    if (!any(styled %in% names(entry))) {
+      unknown <- setdiff(names(df), c(required, cols_reg_optional))
+      warning("Layer '", key, "' in ", basename(path), " has no style: no ",
+              "style column is filled for it",
+              if (length(unknown) > 0) {
+                paste0(". Columns not read: ", paste(unknown, collapse = ", "))
+              },
+              call. = FALSE)
+    }
+
     layers[[key]] <- entry
   }
 

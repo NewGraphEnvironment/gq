@@ -302,3 +302,17 @@ test_that("an unknown dash spelling errors, naming the layer and the value (#42)
     expect_error(gq_reg_custom(csv), paste0("trk.*'", bad, "'"), info = bad)
   }
 })
+
+test_that("a layer that reads as unstyled warns, naming the columns not read", {
+  # Since #75 an absent column is an empty one, so a misspelled header reads
+  # as empty too. It used to error; without this it would draw tmap defaults.
+  csv <- write_reg_csv(data.frame(layer_key = "trk", type = "line",
+                                  stroke_colour = "#ff0000", stroke_width = 1))
+  expect_warning(gq_reg_custom(csv), "trk.*no style.*stroke_colour")
+
+  # An unread column on a styled layer is not a warning: drift's registry CSVs
+  # carry `notes`.
+  ok <- write_reg_csv(data.frame(layer_key = "pond", type = "polygon",
+                                 fill_color = "#00ffff", notes = "x"))
+  expect_no_warning(gq_reg_custom(ok))
+})

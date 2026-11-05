@@ -160,6 +160,18 @@ class_ltys <- function(dashes) {
   vapply(dashes, function(d) dash_to_lty(d) %||% "solid", character(1))
 }
 
+#' Per-class opacity with a class that has none read as opaque
+#'
+#' The extractor records opacity only below 1, so `NA` here is a class drawn at
+#' full opacity, not an unknown. One function so the map and the legend cannot
+#' read it two ways (#71).
+#' @noRd
+class_opacity <- function(v) {
+  if (is.null(v)) return(NULL)
+  v[is.na(v)] <- 1
+  v
+}
+
 #' Per-class opacity as tmap arguments under the given aesthetic name
 #'
 #' Returns an empty list when no class carries an opacity, a scalar when every
@@ -168,9 +180,8 @@ class_ltys <- function(dashes) {
 #' `roads_dra` and `streams_all` carry it on some classes by design (#71).
 #' @noRd
 tmap_alpha_args <- function(cls, aes) {
-  op <- cls$opacities
+  op <- class_opacity(cls$opacities)
   if (is.null(op)) return(list())
-  op[is.na(op)] <- 1
   out <- if (length(unique(op)) == 1L) {
     list(unname(op[1]))
   } else {
