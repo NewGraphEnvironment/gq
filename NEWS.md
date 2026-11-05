@@ -1,3 +1,29 @@
+# gq 0.18.0
+
+- **Classified layers draw at the opacity the registry gives them (#71, #31).**
+  `gq_style()` returns a per-class `opacities` vector, and `gq_tmap_style()` maps it to
+  `fill_alpha` (polygons, points) or `col_alpha` (lines). A class the registry gives no
+  opacity is drawn opaque, because the extractor records opacity only below 1.
+  `gq_tmap_legend()` swatches use the same values. **Visible change:** `bec_zone` now
+  draws at 0.25 instead of opaque, and the translucent classes of `fire_severity`,
+  `roads_dra` and `streams_all` now draw translucent, as they do in QGIS.
+  `gq_tmap_classes()` returns `opacities`. mapgl does not read per-class opacity yet (#107).
+- **`labels` is named by class key**, as `values` already was, in `gq_style()` and
+  `gq_tmap_classes()`, so `cls$labels[codes]` returns labels rather than `NA` (#55).
+  A part-filled width or radius is drawn the same way on the map and in the legend.
+- **`gq_reg_custom()` reads the CSV it documents (#42, #75).** Only `layer_key` and
+  `type` are required, and an absent column reads as empty. A classified line takes
+  per-class `color`, `width`, `opacity` and `dash` from the stroke columns, so its width
+  and dash reach the translators. A new `dash` column takes the QGIS line-style names
+  (`dash`, `dot`, `dash dot`, …) or a dash pattern such as `"4;2"`, and any other value
+  is an error that names the layer. A header column the reader will not read gets a
+  warning that names it, so a misspelled `stroke_colour` no longer passes silently.
+- **New registry styles for floodplain and habitat maps (#98, #67):**
+  `habitat_rule_comparison` and `habitat_expected_use` (lines),
+  `floodplain_flood_factor`, `tree_cover_change`, and `landcover_change_from` /
+  `landcover_change_to` in drift's IO LULC palette. They are registry-only: no template
+  carries them, so they have no `groups.csv` row.
+
 # gq 0.17.0
 
 - **The vendored rosters are current against the template repo's v0.93.0, and a stale
