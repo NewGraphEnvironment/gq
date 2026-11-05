@@ -72,10 +72,10 @@ Decided by me (mechanism), recorded here:
 ## Validation
 
 - [x] Tests pass (`devtools::test()`, with the `RFP_*_DIR` variables pointing at the v0.93.0 worktree, so the live checks run and do not skip. Read the SKIP count as well as the FAIL count)
-- [ ] `devtools::test()` without the variables: the new currency checks skip (env-gated only, review #7); the older template-groups live check may still run against an installed rfp
-- [ ] `/code-check` clean (once over the branch with `/code-check branch`)
+- [x] `devtools::test()` without the variables: the new currency checks skip (env-gated only, review #7); the older template-groups live check may still run against an installed rfp
+- [x] `/code-check` clean (once over the branch with `/code-check branch`)
 - [x] `lintr` per-file diff against `origin/main`; `devtools::document()`; `pkgdown::check_pkgdown()` (no new exports expected)
-- [ ] PWF checkboxes match landed work
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 
 How each change is proved: each new guard is shown red by restoring the defect (the stale copy, a moved layer, a perturbed preset, an injected bad QML reference) before it is shown green. Each re-vendor is reproduced from the v0.93.0 tag. Refactoring the generators is proved by byte-identical output.

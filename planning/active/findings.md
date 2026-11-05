@@ -133,3 +133,15 @@ Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52
 |-------|------------|
 | A helper `g(){ … git grep … }` became a fork bomb (about 3,600 processes, `fork: Resource temporarily unavailable`) | `g` is aliased to `git` in this shell, so the definition created a recursive `git()` function. Killed with `pkill -STOP/-KILL -f '<unique command text>'` until zero remained; other sessions' shells survived. Never define a shell function in this harness; call `/usr/bin/git`, or use a script file |
 | A Python script named `enum.py` failed with a circular-import error | It shadowed the standard library's `enum`. Renamed it and ran with `python3 -I` |
+
+## Code-check round 3 (review-round3.md): mechanism and its reach
+
+Mechanism named: one fact held in two places with nothing linking them, agreeing by accident (collation deciding both the generator's and the test's row order; prose restating a fact in more than one sentence). The reviewer walked its reach: committed-file sorts (sound); bare `order()` calls in `R/` (no committed copy); the `write_json` writers (not regenerated and compared); other generated-vs-compared pairs (only the currency test and the QML byte check); the hard-coded `templates` vector (a divergence fails loudly); `group_keys` (same values); tree names vs `<layername>` (54/54 and 59/59, unguarded but true today); prose restating the rewritten facts (sound). One place not sound: **order between sibling subgroups** is derived by sorting names, and moving `stream_labels` into `Streams/Stream labels` put it beneath `Habitat models`, where both templates have it on top. No gq code draws from that order, the subgroup name is fixed by the template, and the fix is the shared order key already deferred, so it is recorded on gq#105 with no code change.
+
+Loop ended by that enumeration (round 2 had found defects inside fixes, so a quiet round alone would not have ended it).
+
+| Round | Findings | Fixed | Accepted | Inside previous fix? |
+|---|---|---|---|---|
+| 1 | 1 | 1 | 0 | — |
+| 2 | 2 | 2 | 0 | y (both) |
+| 3 | 1 | 0 (recorded on gq#105) | 1 | n |
