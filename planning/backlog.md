@@ -13,7 +13,7 @@ ticked and not **waiting**; `/planning-init <umbrella>` plans it, one phase per 
 | move | umbrella | batches | state |
 |---|---|---|---|
 | - [x] 1 | #100 | 1, 2: template agreement, vendored-artifact guards (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/106 |
-| - [ ] 2 | #101 | 3, 4, 5: translator opacity and labels, custom CSV reader, register styles (7 issues) | open |
+| - [x] 2 | #101 | 3, 4, 5: translator opacity and labels, custom CSV reader, register styles (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/108 |
 | - [ ] 3 | #102 | 6, 7, 8: check gate, README and vignette, registry build inputs (8 issues) | open |
 | - [ ] 4 | #103 | 9, 10: extractor fidelity, label translators (5 issues) | open |
 | - [ ] 5 | #104 | 11: registry schema decisions (4 issues) | open: last, after moves 2 and 4 |
@@ -94,7 +94,7 @@ whether the `bcfishobs_fiss_fish_observations` key is renamed, a coordinated cha
 
 ### 3. Translator opacity and labels
 
-- [ ] Carried by move 2, #101
+- [x] Carried by move 2, #101 (merged in https://github.com/NewGraphEnvironment/gq/pull/108)
 
 `gq_style()` returns a per-class opacity vector and `tmap_classified()` maps it to
 `fill_alpha` / `col_alpha`, keyed on `names(cls$values)` (#71). #31 is the same gap filed
@@ -108,7 +108,7 @@ Gate: #55 changes an exported function's documented return shape.
 
 ### 4. Custom CSV reader
 
-- [ ] Carried by move 2, #101
+- [x] Carried by move 2, #101 (merged in https://github.com/NewGraphEnvironment/gq/pull/108)
 
 `gq_reg_custom()`'s classified branch emits `width` and `dash` in place of `outline_width`, and
 an absent optional column reads as `NA` instead of raising (#42, #75). Touches `R/gq_reg.R`
@@ -118,7 +118,7 @@ Gate: a `dash` column in the CSV, and which spellings it accepts.
 
 ### 5. Register styles
 
-- [ ] Carried by move 2, #101
+- [x] Carried by move 2, #101 (merged in https://github.com/NewGraphEnvironment/gq/pull/108)
 
 Rows in `inst/registry/reg_custom.csv` and a rebuild of `reg_main.json`: rule comparison,
 expected use, flood factor, tree loss and gain, and a stream label entry (#98); the nine-class
