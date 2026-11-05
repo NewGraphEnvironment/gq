@@ -16,15 +16,15 @@ Source:
 Irvine A (2026). *gq: Cartographic Style Management Across Rendering
 Targets*. New Graph Environment Ltd.
 [doi:10.5281/zenodo.23524719](https://doi.org/10.5281/zenodo.23524719).
-Version 0.17.0, <https://github.com/NewGraphEnvironment/gq>.
+Version 0.18.0, <https://github.com/NewGraphEnvironment/gq>.
 
     @Manual{gq,
       title = {gq: Cartographic Style Management Across Rendering Targets},
       author = {Allan Irvine},
       organization = {New Graph Environment Ltd.},
       year = {2026},
-      version = {0.17.0},
-      note = {Version 0.17.0},
+      version = {0.18.0},
+      note = {Version 0.18.0},
       url = {https://github.com/NewGraphEnvironment/gq},
       doi = {10.5281/zenodo.23524719},
     }

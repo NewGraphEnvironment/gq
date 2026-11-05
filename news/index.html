@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.17.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.18.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,17 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.18.0" id="gq-0180">gq 0.18.0<a class="anchor" aria-label="anchor" href="#gq-0180"></a></h2>
+<ul><li>
+<strong>Classified layers draw at the opacity the registry gives them (<a href="https://github.com/NewGraphEnvironment/gq/issues/71" class="external-link">#71</a>, <a href="https://github.com/NewGraphEnvironment/gq/issues/31" class="external-link">#31</a>).</strong> <code><a href="../reference/gq_style.html">gq_style()</a></code> returns a per-class <code>opacities</code> vector, and <code><a href="../reference/gq_tmap_style.html">gq_tmap_style()</a></code> maps it to <code>fill_alpha</code> (polygons, points) or <code>col_alpha</code> (lines). A class the registry gives no opacity is drawn opaque, because the extractor records opacity only below 1. <code><a href="../reference/gq_tmap_legend.html">gq_tmap_legend()</a></code> swatches use the same values. <strong>Visible change:</strong> <code>bec_zone</code> now draws at 0.25 instead of opaque, and the translucent classes of <code>fire_severity</code>, <code>roads_dra</code> and <code>streams_all</code> now draw translucent, as they do in QGIS. <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code> returns <code>opacities</code>. mapgl does not read per-class opacity yet (<a href="https://github.com/NewGraphEnvironment/gq/issues/107" class="external-link">#107</a>).</li>
+<li>
+<strong><code>labels</code> is named by class key</strong>, as <code>values</code> already was, in <code><a href="../reference/gq_style.html">gq_style()</a></code> and <code><a href="../reference/gq_tmap_classes.html">gq_tmap_classes()</a></code>, so <code>cls$labels[codes]</code> returns labels rather than <code>NA</code> (<a href="https://github.com/NewGraphEnvironment/gq/issues/55" class="external-link">#55</a>). A part-filled width or radius is drawn the same way on the map and in the legend.</li>
+<li>
+<strong><code><a href="../reference/gq_reg_custom.html">gq_reg_custom()</a></code> reads the CSV it documents (<a href="https://github.com/NewGraphEnvironment/gq/issues/42" class="external-link">#42</a>, <a href="https://github.com/NewGraphEnvironment/gq/issues/75" class="external-link">#75</a>).</strong> Only <code>layer_key</code> and <code>type</code> are required, and an absent column reads as empty. A classified line takes per-class <code>color</code>, <code>width</code>, <code>opacity</code> and <code>dash</code> from the stroke columns, so its width and dash reach the translators. A new <code>dash</code> column takes the QGIS line-style names (<code>dash</code>, <code>dot</code>, <code>dash dot</code>, …) or a dash pattern such as <code>"4;2"</code>, and any other value is an error that names the layer. A header column the reader will not read gets a warning that names it, so a misspelled <code>stroke_colour</code> no longer passes silently.</li>
+<li>
+<strong>New registry styles for floodplain and habitat maps (<a href="https://github.com/NewGraphEnvironment/gq/issues/98" class="external-link">#98</a>, <a href="https://github.com/NewGraphEnvironment/gq/issues/67" class="external-link">#67</a>):</strong> <code>habitat_rule_comparison</code> and <code>habitat_expected_use</code> (lines), <code>floodplain_flood_factor</code>, <code>tree_cover_change</code>, and <code>landcover_change_from</code> / <code>landcover_change_to</code> in drift’s IO LULC palette. They are registry-only: no template carries them, so they have no <code>groups.csv</code> row.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.17.0" id="gq-0170">gq 0.17.0<a class="anchor" aria-label="anchor" href="#gq-0170"></a></h2>
 <ul><li>
