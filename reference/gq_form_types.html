@@ -66,8 +66,8 @@ templates: <code>rfp_qgs_form_add()</code> injects them per project, and a proje
 config selects which. So <code>groups.csv</code> carries the two forms the templates
 ship, and this carries every form a project could ask for.</p>
 <p>Folding the roster into <code>groups.csv</code> would make <code><a href="gq_template_layers.html">gq_template_layers()</a></code> report
-thirteen forms for a template that ships two — a project styled for layers it
-never downloaded, which is the defect the composition guards exist to catch.</p>
+every form in the catalogue for a template that ships two — a project styled
+for layers it never downloaded, which is the defect the composition guards exist to catch.</p>
 <p><code>symbol</code> and <code>color</code> are <code>NA</code> for a form rfp has registered but not styled.
 That is a statement about upstream, not a gap here: gq does not invent
 symbology for a form whose appearance nobody has decided.</p>
@@ -77,7 +77,7 @@ symbology for a form whose appearance nobody has decided.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">forms</span> <span class="op">&lt;-</span> <span class="fu">gq_form_types</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">forms</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 16</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the key is derived from rfp's layer name, not from its type — these differ</span></span></span>
 <span class="r-in"><span><span class="va">forms</span><span class="op">[</span><span class="va">forms</span><span class="op">$</span><span class="va">form_type</span> <span class="op">==</span> <span class="st">"monitoring_fish_passage"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"form_type"</span>, <span class="st">"layer_key"</span><span class="op">)</span><span class="op">]</span></span></span>
@@ -86,7 +86,7 @@ symbology for a form whose appearance nobody has decided.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># which forms rfp has styled, and which are still undecided</span></span></span>
 <span class="r-in"><span><span class="va">forms</span><span class="op">$</span><span class="va">layer_key</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">forms</span><span class="op">$</span><span class="va">color</span><span class="op">)</span><span class="op">]</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "form_edna"        "form_fhap"        "form_fish_sample" "form_monitoring" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "form_fhap"        "form_fish_sample" "form_monitoring" </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the subset the shipped templates actually carry</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">forms</span><span class="op">$</span><span class="va">layer_key</span>, <span class="fu"><a href="gq_group_layers.html">gq_group_layers</a></span><span class="op">(</span><span class="st">"Forms"</span><span class="op">)</span><span class="op">$</span><span class="va">layer_key</span><span class="op">)</span></span></span>

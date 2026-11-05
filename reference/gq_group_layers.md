@@ -32,56 +32,62 @@ found.
 
 ``` r
 gq_group_layers("Basemap")
-#>      group            subgroup                               layer_key order
-#> 1  Basemap                <NA>                watershed_group_boundary     1
-#> 2  Basemap                <NA>                          municipalities     2
-#> 3  Basemap                <NA>                         provincial_park     3
-#> 4  Basemap                <NA>                           national_park     4
-#> 5  Basemap                <NA>                             conservancy     5
-#> 6  Basemap                <NA>             old_growth_management_areas     6
-#> 7  Basemap                <NA>                    first_nation_reserve     7
-#> 8  Basemap                <NA>                            range_tenure     8
-#> 9  Basemap                <NA>                          land_ownership     9
-#> 10 Basemap                <NA>                    fire_historical_burn    10
-#> 11 Basemap                <NA>                           fire_severity    11
-#> 12 Basemap                <NA>                                glaciers    12
-#> 13 Basemap                <NA>                                    town    13
-#> 14 Basemap Terrestrial Ecology                        orthophoto_tiles     1
-#> 15 Basemap Terrestrial Ecology                                bec_zone     2
-#> 16 Basemap Terrestrial Ecology biogeoclimatic_ecosystem_classification     3
-#> 17 Basemap         Waterbodies                                    lake     1
-#> 18 Basemap         Waterbodies                                 wetland     2
-#> 19 Basemap         Waterbodies                             rivers_poly     3
-#> 20 Basemap         Waterbodies                     manmade_waterbodies     4
-#>    source_type
-#> 1       bcdata
-#> 2       bcdata
-#> 3       bcdata
-#> 4       bcdata
-#> 5       bcdata
-#> 6       bcdata
-#> 7       bcdata
-#> 8          aws
-#> 9          aws
-#> 10      bcdata
-#> 11      bcdata
-#> 12      bcdata
-#> 13      bcdata
-#> 14      bcdata
-#> 15      bcdata
-#> 16      bcdata
-#> 17      bcdata
-#> 18      bcdata
-#> 19      bcdata
-#> 20      bcdata
+#>      group            subgroup
+#> 1  Basemap                <NA>
+#> 2  Basemap                <NA>
+#> 3  Basemap                <NA>
+#> 4  Basemap                <NA>
+#> 5  Basemap                <NA>
+#> 6  Basemap                <NA>
+#> 7  Basemap                <NA>
+#> 8  Basemap                <NA>
+#> 9  Basemap                <NA>
+#> 10 Basemap                <NA>
+#> 11 Basemap                <NA>
+#> 12 Basemap                <NA>
+#> 13 Basemap                <NA>
+#> 14 Basemap Terrestrial Ecology
+#> 15 Basemap Terrestrial Ecology
+#> 16 Basemap Terrestrial Ecology
+#> 17 Basemap Terrestrial Ecology
+#> 18 Basemap Terrestrial Ecology
+#> 19 Basemap         Waterbodies
+#> 20 Basemap         Waterbodies
+#> 21 Basemap         Waterbodies
+#> 22 Basemap         Waterbodies
+#> 23 Basemap         Waterbodies
+#> 24 Basemap         Waterbodies
+#>                                                 layer_key order source_type
+#> 1                                watershed_group_boundary     1      bcdata
+#> 2                                          municipalities     2      bcdata
+#> 3                                         provincial_park     3      bcdata
+#> 4                                           national_park     4      bcdata
+#> 5                                             conservancy     5      bcdata
+#> 6                             old_growth_management_areas     6      bcdata
+#> 7                                            range_tenure     7         aws
+#> 8                          fisheries_sensitive_watersheds     8      bcdata
+#> 9                                          land_ownership     9         aws
+#> 10                                   fire_historical_burn    10      bcdata
+#> 11                                          fire_severity    11      bcdata
+#> 12                                               glaciers    12      bcdata
+#> 13                                                   town    13      bcdata
+#> 14                                       orthophoto_tiles     1      bcdata
+#> 15 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata
+#> 16                     terrain_mapping_project_boundaries     3      bcdata
+#> 17                                               bec_zone     4      bcdata
+#> 18                biogeoclimatic_ecosystem_classification     5      bcdata
+#> 19                                                   lake     1      bcdata
+#> 20                                                wetland     2      bcdata
+#> 21                                            streams_all     3         aws
+#> 22                                   first_nation_reserve     4      bcdata
+#> 23                                            rivers_poly     5      bcdata
+#> 24                                    manmade_waterbodies     6      bcdata
 gq_group_layers("Streams")
-#>     group       subgroup                      layer_key order source_type
-#> 1 Streams           <NA>                    streams_all     1         aws
-#> 2 Streams           <NA>                  stream_labels     2         fwa
-#> 3 Streams           <NA> fisheries_sensitive_watersheds     3      bcdata
-#> 4 Streams Habitat models                     streams_bt     1         aws
-#> 5 Streams Habitat models                 streams_salmon     2         aws
-#> 6 Streams Habitat models                     streams_st     3         aws
+#>     group       subgroup      layer_key order source_type
+#> 1 Streams Habitat models     streams_bt     1         aws
+#> 2 Streams Habitat models streams_salmon     2         aws
+#> 3 Streams Habitat models     streams_st     3         aws
+#> 4 Streams  Stream labels  stream_labels     1         fwa
 
 # With source_layer info
 reg <- gq_reg_main()
