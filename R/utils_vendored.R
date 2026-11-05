@@ -3,12 +3,18 @@
 # Each builder returns exactly the data.frame its data-raw/ generator writes,
 # and vendored_write() is the one writer. So the currency test
 # (tests/testthat/test-vendored_currency.R) can build from a live rfp source,
-# write to a tempfile, and compare BYTES with the committed file: one fact
-# derived once, compared at the file rather than through a reader (gq#78).
+# write to a tempfile, and compare it LINE BY LINE with the committed file: one
+# fact derived once, compared at the file rather than through a reader (gq#78).
+#
+# Every sort is method = "radix". order() otherwise collates by LC_COLLATE, so a
+# generator run under Rscript (en_US) and the test under testthat (C) could
+# order the same rows differently: "Low detail - roads" and "Low Detail -
+# Salmon Model" swap, as do `roads_dra` and `roads2`. The test would then fail
+# with nothing stale, and re-running the generator could not clear it.
 #
 # The QML corpus is not here. data-raw/styles_vendor.R copies files rather than
-# building a table, and test-gq_style_qml.R already compares bytes; rfp#188
-# moves that store into gq, at which point that comparison is dropped.
+# building a table, and test-gq_style_qml.R already compares bytes; rfp's
+# issue moving that store into gq drops that comparison once it lands.
 
 #' Group tree of each template, as template_groups.csv carries it
 #' @param tpl_dir Directory holding `<template>.qgs`.
@@ -22,7 +28,7 @@ template_groups_build <- function(tpl_dir, templates) {
     }
     cbind(template = template, tbl, stringsAsFactors = FALSE)
   }))
-  groups[order(groups$template, groups$group_path), ]
+  groups[order(groups$template, groups$group_path, method = "radix"), ]
 }
 
 
@@ -37,7 +43,8 @@ template_layers_build <- function(tpl_dir, templates) {
     }
     cbind(template = template, tbl, stringsAsFactors = FALSE)
   }))
-  layers <- layers[order(layers$template, layers$group_path, layers$order), ]
+  layers <- layers[order(layers$template, layers$group_path, layers$order,
+                       method = "radix"), ]
 
   # A key two layers share in one template would make the placement join
   # ambiguous: refuse rather than let one row stand for both.
@@ -82,7 +89,8 @@ themes_build <- function(tpl_dir, templates, group_keys) {
          call. = FALSE)
   }
 
-  themes <- themes[order(themes$template, themes$theme, themes$layer_key), ]
+  themes <- themes[order(themes$template, themes$theme, themes$layer_key,
+                       method = "radix"), ]
   themes$visible <- ifelse(themes$visible, "true", "false")
 
   offending <- unlist(lapply(themes, function(col) grep(",", col, value = TRUE)))
@@ -170,7 +178,7 @@ form_types_build <- function(path) {
     label_expression = spatial$label_expression,
     stringsAsFactors = FALSE
   )
-  forms[order(forms$layer_key), ]
+  forms[order(forms$layer_key, method = "radix"), ]
 }
 
 

@@ -19,7 +19,7 @@
 #   uppercase WHSE columns of an older source). The 4 dangling
 #   `fish_obsrvtn_pnt_distinct_id` tags #86 was filed for are in this class,
 #   so no rule over these tags can single them out. They are left to the store
-#   cleanup (rfp#188), not refused here.
+#   cleanup in rfp's issue moving the store into gq, not refused here.
 #
 # * An expression -- previewExpression, a label fieldName, a renderer attr --
 #   may name a real column the style configures no widget for. The roster is a

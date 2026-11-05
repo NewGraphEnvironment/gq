@@ -18,7 +18,7 @@
 # Run after the templates change:
 #   Rscript data-raw/reg_extract_themes.R
 #
-# Run for gq#88, against rfp 0.76.0, after rfp#185 re-saved the presets to
+# Run for gq#88, against rfp 0.76.0, after rfp re-saved the presets to
 # carry the other three xyz basemaps and `Trails` present-and-off: 268 rows over
 # 9 template-theme pairs. Last run for gq#100, against rfp 0.93.0: byte-identical
 # to that output.

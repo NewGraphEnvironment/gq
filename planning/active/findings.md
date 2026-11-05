@@ -60,7 +60,7 @@ Themes and groups are being reworked in the two repos that consume these rosters
 
 | # | finding | probe | disposition |
 |---|---|---|---|
-| 1 | tier-1 QML noise | Reproduced: 26 of the vector QMLs name fields in `editable`/`labelOnTop`/`reuseLastValue`/`column` that their `fieldConfiguration` lacks, 497 names in all (crossings_pscis_assessment 70, crossings_pscis_modelled_dams 69, …). Those tags are a stale snapshot of every column QGIS once saw. | Plan corrected (not a stored-data fork): tier-1 checks only the field-scoped tags that are clean corpus-wide (alias, default, constraint, constraintExpression, attributeEditorField). Expressions outside the roster go to an "undecidable" inventory. The snapshot-tag inventory goes to rfp#188 as evidence for the store cleanup. #86 acceptance 1 is amended in its body, so the 4 bcfishobs tags are not caught by tier-1 |
+| 1 | tier-1 QML noise | Reproduced: 26 of the vector QMLs name fields in `editable`/`labelOnTop`/`reuseLastValue`/`column` that their `fieldConfiguration` lacks, 497 names in all (crossings_pscis_assessment 70, crossings_pscis_modelled_dams 69, …). Those tags are a stale snapshot of every column QGIS once saw. | Plan corrected (not a stored-data fork): tier-1 checks only the field-scoped tags that are clean corpus-wide (alias, default, constraint, constraintExpression, attributeEditorField). Expressions outside the roster go to an "undecidable" inventory. The snapshot-tag inventory goes to rfp's issue moving the QML store into gq as evidence for the store cleanup. #86 acceptance 1 is amended in its body, so the 4 bcfishobs tags are not caught by tier-1 |
 | 2 | subgroup interleave cannot be expressed | Reproduced in `R/gq_groups.R` sort | Recorded on gq#105 as a limit that needs a schema change, with #104 |
 | 3 | within-group order unguarded | Same measurement as Phase 1 | Already filed as gq#105 |
 | 4 | one-way guard, unique keys | — | Comment added. The test now asserts per-template key uniqueness on the committed file |
@@ -81,7 +81,7 @@ Themes and groups are being reworked in the two repos that consume these rosters
 
 - Tier 1 as built (`test-qml_consistency.R`): `alias`, `default`, `constraint`, `constraintExpression` and `attributeEditorField` must name a roster field. All 60 files are clean today. Bare expression references outside the roster (6) are pinned as undecidable in both directions, `species_name` among them, as #86's negative control. The snapshot tags (`editable`, `labelOnTop`, `reuseLastValue`, attribute-table `column`) are excluded: 26 of the vector files, 497 names in all. The 4 bcfishobs tags are among them.
 - Proven: a planted bad alias in `railway.qml` fails the corpus sweep; the test also injects a bad alias and a bad preview into a copy of `conservancy.qml`.
-- Tier 2, against the newgraph DB (2026-11-05, tunnel on 63333). `bcfishobs.observations` has 34 columns (matching rfp#307): `linear_feature_id` and `species_name` resolve. `fid` is not a view column; it is the key OGR adds to the GeoPackage layer the style is applied to, so it is legitimate. `fish_obsrvtn_pnt_distinct_id` is absent, so the 4 tags are dead, as #86 said. #86's original "7 dead fields" is superseded: `fid` and `linear_feature_id` are both fine.
+- Tier 2, against the newgraph DB (2026-11-05, tunnel on 63333). `bcfishobs.observations` has 34 columns (matching rfp's bcfishobs field audit): `linear_feature_id` and `species_name` resolve. `fid` is not a view column; it is the key OGR adds to the GeoPackage layer the style is applied to, so it is legitimate. `fish_obsrvtn_pnt_distinct_id` is absent, so the 4 tags are dead, as #86 said. #86's original "7 dead fields" is superseded: `fid` and `linear_feature_id` are both fine.
 - Other undecidables: `national_park:english_name` resolves. `conservancy:protected_lands_name`, `first_nation_reserve:IR_NAME` and `roads_dra:structured_name_1_id` are not in the DB copies, but those copies are column subsets (7 to 16 columns) of the BC WFS layers rfp downloads through bcdata, so the result is inconclusive. `rmp_ogma_non_legal_current_svw` is not in the DB at all. All stay pinned.
 
 ## Phase 2: claims about rfp (#92)
@@ -96,11 +96,11 @@ Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52
 | rfp derives filenames with an independent `slugify()` | `styles_vendor.R:68` | true, but the source was unnamed. It is a test helper in rfp's `tests/testthat/test-rfp_qgs_style_store.R:30`, now cited. No rfp R file references `normalize_layer_name` |
 | `.rfp_form_layer_name()` is `paste0(" Form ", label)` | `reg_extract_form_types.R`, `CLAUDE.md` | true: `R/rfp_qgs_form_add.R:343` |
 | `rfp_project_create()` downloads `rfp_manifest_types()` minus `frozen`; `local`/`wms` dropped | `CLAUDE.md` (groups.csv) | true: `R/rfp_project_create.R:267`, `R/rfp_manifest_types.R:50` |
-| `osm.trail.qml` has no index row; rfp's guard walks index → file | `styles_vendor.R:53,110,122` | true: rfp#187 is open and says so; the file is present at v0.93.0 |
+| `osm.trail.qml` has no index row; rfp's guard walks index → file | `styles_vendor.R:53,110,122` | true: rfp's open osm.trail index issue says so; the file is present at v0.93.0 |
 | rfp records 3 template overrides by `scope` | `styles_vendor.R:96` | true: `vector/index.csv` carries `template,layer,slug,scope` |
 | the raster roster is in rfp's `data-raw`, which is `.Rbuildignore`'d | `styles_vendor.R:146` | true: `.Rbuildignore:4` |
 | raster styles carry `map-layer-style-manager` first because of the old `order =` override | `styles_vendor.R:188` | true: `R/rfp_qgs_style_set.R:521-523` (already cited, from #90) |
-| the source-tag boundary is pinned by a QGIS-container oracle (rfp#130) | `styles_vendor.R:1`, `CLAUDE.md` | true: `inst/testdata/nodes/` exists, and #130 is cited in `R/rfp_qgs_style_*.R` |
+| the source-tag boundary is pinned by a QGIS-container oracle (rfp's source-tag fix) | `styles_vendor.R:1`, `CLAUDE.md` | true: `inst/testdata/nodes/` exists, and that fix is cited in `R/rfp_qgs_style_*.R` |
 | the bcfishpass_30k.qlr label bug reaches gq through rfp's templates | `reg_build_main.R:22` | true: bcfishpass#13 is still open, and the block's own guard reads the label |
 | child tables are only `cabin_visit_pebble` | `reg_extract_form_types.R`, `CLAUDE.md` | **false** at 0.93.0 (`edna_sample`, `tree_visit`); fixed |
 | "the installed rfp is routinely behind" (5 sentences) | the extractors' env-var blocks | dated measurements of this machine, labelled with versions; local, not causal claims about rfp |
@@ -110,3 +110,9 @@ Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52
 
 - Suite with `RFP_TEMPLATE_DIR`, `RFP_LOOKUPS_DIR` and `RFP_STYLES_DIR` pointing at the v0.93.0 worktree: 1159 pass, 0 fail, 0 skip.
 - Lint compared per file against an `origin/main` worktree. `diff` is a shell function on this machine, so the first comparison printed nothing; `command diff` showed 5 new object-usage lints. 3 cleared on reinstall (names this branch added); the other 2 were `skip_if` calls inside a helper, now `testthat::`-qualified. Gitignored `tests/testthat/_problems/` files lint on the branch side only and are not tracked.
+
+## Code-check round 1 (review-round1.md)
+
+- Fragile: the four builders sorted with a bare `order()`, which collates by `LC_COLLATE`. Generators run in `en_US`, testthat in `C`. Reproduced: "Low detail - roads" vs "Low Detail - Salmon Model", and `roads_dra` vs `roads2`, swap between the two. Fixed with `method = "radix"`; the generators re-ran byte-identical.
+- Two comment inaccuracies fixed: the test compares lines, not bytes, and the QML is not "the fourth" artifact.
+- Separately, the private-refs scrub: soul's `private_refs.sh` counted 30 added `<private-repo>#N` lines (code comments, tests, planning). Replaced with words, only on lines this branch added; 151 standing references are untouched.

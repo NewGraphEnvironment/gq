@@ -303,7 +303,7 @@ too many.
   `test-vendored_currency.R` rebuilds the four vendored rosters from a live rfp
   source with the generator's own builder and writer (`R/utils_vendored.R`) and
   compares the files; the QML corpus keeps its own byte check in
-  `test-gq_style_qml.R` until rfp#188 moves the store into gq. It runs only when `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` point at an
+  `test-gq_style_qml.R` until rfp's open issue moves the store into gq. It runs only when `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` point at an
   rfp checkout, never against an installed rfp, which is routinely behind. CI has
   no rfp, so the check that runs on every change belongs in rfp's CI (gq#78).
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`

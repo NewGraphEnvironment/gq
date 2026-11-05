@@ -16,9 +16,10 @@
 #   RFP_TEMPLATE_DIR=<rfp>/inst/templates RFP_LOOKUPS_DIR=<rfp>/inst/lookups \
 #     Rscript -e 'devtools::test(filter = "vendored_currency")'
 #
-# The QML corpus is the fourth vendored artifact, and its byte comparison stays
-# in test-gq_style_qml.R: rfp#188 moves the store into gq and drops that
-# comparison, so moving it here first would be work done twice.
+# The QML corpus is vendored too, beside these four rosters, and its byte
+# comparison stays in test-gq_style_qml.R: rfp's open issue moving the store
+# into gq drops that comparison, so moving it here first would be work done
+# twice.
 
 templates <- c("bcfishpass_mobile", "bcrestoration_mobile")
 

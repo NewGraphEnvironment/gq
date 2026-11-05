@@ -35,7 +35,7 @@ tpl_declared_groups <- function(tbl, template) {
 #' Compare the two, returning every kind of divergence separately
 #'
 #' Order is compared on the INTERSECTION only. The two sets need not be equal --
-#' `Floodplain` sat in gq above `Basemap` before rfp#216 shipped it, and gq
+#' `Floodplain` sat in gq above `Basemap` before rfp shipped it, and gq
 #' skips groups it draws nothing in (`template_group_exempt`) -- so an assertion
 #' needing equal sets would be undefined the moment gq exercises the freedom it
 #' is supposed to have. Relative order of what both sides carry is well-defined
@@ -56,7 +56,7 @@ compare_groups <- function(gq_order, tpl_order) {
 # which point the guard cannot fail and reads as diligence anyway.
 group_exempt <- c(
   "Basemap/Terrestrial Ecology" = paste(
-    "bcrestoration only, by rfp's decision: rfp#216 declined to grow it in",
+    "bcrestoration only, by rfp's decision: rfp declined to grow it in",
     "bcfishpass, whose template carries none of its layers. groups.csv has no",
     "`template` column, so a subgroup declared once is declared for every",
     "template whose top-level group is declared, and gq cannot say",
@@ -170,7 +170,7 @@ test_that("each exemption is still needed", {
   # When the upstream change an entry waits on lands, this fails and tells you
   # to delete the entry -- rather than sitting here forever exempting a group
   # that stopped needing it. It fired for `Floodplain` and `Restoration` once
-  # the copy was re-vendored after rfp#216 (gq#70).
+  # the copy was re-vendored after rfp shipped both groups (gq#70).
   tbl <- read_template_groups_csv()
   needed <- unique(unlist(lapply(templates, declared_not_present, tbl = tbl)))
   expect_setequal(setdiff(names(group_exempt), needed), character(0))
