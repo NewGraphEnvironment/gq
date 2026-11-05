@@ -11,6 +11,7 @@ version record; each file carries its own provenance line under the H1.
 | file | covers |
 |---|---|
 | [`rfp_layer_sourcing.md`](rfp_layer_sourcing.md) | How rfp resolves and fetches a project's layers, and what gq's `source_type` / `source_layer` columns actually drive. Why an unknown `source_type` is dropped silently, why `source_layer` is a three-repo coupling, and how to probe the `newgraph` bucket without credentials |
+| [`vendored_artifacts.md`](vendored_artifacts.md) | What gq copies from rfp (four rosters and the QML corpus), who owns each, how `test-vendored_currency.R` catches a stale copy and why it sorts by radix, and what the QML corpus can and cannot be checked for without a database |
 
 ## Related work
 
