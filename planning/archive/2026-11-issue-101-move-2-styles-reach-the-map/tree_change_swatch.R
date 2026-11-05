@@ -2,9 +2,9 @@
 # topographic + shaded relief basemap the #98 palette was chosen on (the website's recipe,
 # newgraphenvironment.github.io scripts/figure_helpers.R basemap_of()), beside the oranges
 # and the pink-adjacent colours they must read apart from. Writes tree_change_swatch.png
-# beside this script. Run from the gq repo root:
+# beside this script (archived with #101; it was run from planning/active/). Run from the gq repo root:
 #
-#   Rscript planning/active/tree_change_swatch.R
+#   Rscript planning/archive/2026-11-issue-101-move-2-styles-reach-the-map/tree_change_swatch.R
 
 sf::sf_use_s2(FALSE)
 pkgload::load_all(quiet = TRUE)
@@ -43,6 +43,6 @@ m <- tm_shape(base, bbox = bb) + tm_rgb() +
                              fill.legend = tm_legend_hide()) +
   tm_shape(lab) + tm_text("name", size = 0.6, bgcol = "white", bgcol_alpha = 0.7) +
   tm_layout(frame = FALSE, inner.margins = 0, outer.margins = 0)
-out <- file.path("planning", "active", "tree_change_swatch.png")
+out <- file.path("planning", "archive", "2026-11-issue-101-move-2-styles-reach-the-map", "tree_change_swatch.png")
 tmap_save(m, out, width = 8, height = 5, dpi = 120)
 message("wrote ", out)
