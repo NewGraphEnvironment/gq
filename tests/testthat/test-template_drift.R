@@ -76,10 +76,11 @@ group_exempt <- c(
 template_group_exempt <- c(
   "Project Specific" = paste(
     "holds Tracking, parameters_habitat_method and",
-    "parameters_habitat_thresholds -- all three no-geometry tables in rfp's",
-    "roster (wkb_type NoGeometry), so there is nothing for a map to draw or",
-    "order -- plus the empty Field Data subgroup. gq cannot order a group it",
-    "draws nothing in, so the three stay unregistered by decision (gq#73)."
+    "parameters_habitat_thresholds -- the three tables rfp names as",
+    "'Non-spatial rfp-owned tables' (.rfp_audit_whitelist, rfp",
+    "R/rfp-constants.R) -- plus the empty Field Data subgroup. Nothing there",
+    "for a map to draw or order, so the three stay unregistered by decision",
+    "(gq#73)."
   ),
   "Base - lidar" = paste(
     "EMPTY in both shipped templates - a placeholder a project drops lidar",
@@ -351,16 +352,17 @@ layer_exempt <- stats::setNames(character(0), character(0))
 # someone has to make rather than one nobody notices.
 layer_unregistered_exempt <- c(
   tracking = paste(
-    "no-geometry table (rfp_tracking, wkb_type NoGeometry) carrying Mergin's",
-    "PositionTracking properties; nothing for a map to draw (gq#73)"
+    "rfp_tracking, the provenance table every source pass appends to; rfp",
+    "lists it as non-spatial in .rfp_audit_whitelist (R/rfp-constants.R).",
+    "Nothing for a map to draw (gq#73)"
   ),
   parameters_habitat_method = paste(
-    "no-geometry bcfishpass parameter table; nothing for a map to draw. Its",
-    "QML is vendored for QGIS, which edits it as a table (gq#73)"
+    "bcfishpass parameter table, non-spatial per rfp's .rfp_audit_whitelist.",
+    "Its QML is vendored for QGIS, which shows it as a table (gq#73)"
   ),
   parameters_habitat_thresholds = paste(
-    "no-geometry bcfishpass parameter table; nothing for a map to draw. Its",
-    "QML is vendored for QGIS, which edits it as a table (gq#73)"
+    "bcfishpass parameter table, non-spatial per rfp's .rfp_audit_whitelist.",
+    "Its QML is vendored for QGIS, which shows it as a table (gq#73)"
   )
 )
 
@@ -373,6 +375,10 @@ test_that("the vendored layer table joins to the registry", {
   expect_setequal(names(layers),
                   c("template", "group_path", "layer", "layer_key", "order"))
   expect_setequal(unique(layers$template), templates)
+  # The placement join needs one row per key per template; two would let one
+  # row's group stand for the other's. The extractor refuses this at write
+  # time, and this holds the committed file to it.
+  expect_false(anyDuplicated(layers[c("template", "layer_key")]) > 0)
   keys <- gq_groups()$layer_key
   for (tpl in templates) {
     shared <- intersect(layers$layer_key[layers$template == tpl], keys)
@@ -388,6 +394,9 @@ test_that("the vendored layer table joins to the registry", {
 
 
 test_that("every layer sits in the group the template puts it in", {
+  # One way only: a layer the template carries and groups.csv does not is the
+  # next test's business, and a groups.csv layer absent from a template (town,
+  # dam, the two Restoration layers...) has no placement to compare.
   layers <- read_template_layers_csv()
   for (tpl in templates) {
     d <- placement_drift(layers, tpl)

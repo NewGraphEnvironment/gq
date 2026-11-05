@@ -24,8 +24,8 @@ config selects which. So \code{groups.csv} carries the two forms the templates
 ship, and this carries every form a project could ask for.
 
 Folding the roster into \code{groups.csv} would make \code{\link[=gq_template_layers]{gq_template_layers()}} report
-thirteen forms for a template that ships two — a project styled for layers it
-never downloaded, which is the defect the composition guards exist to catch.
+every form in the catalogue for a template that ships two — a project styled
+for layers it never downloaded, which is the defect the composition guards exist to catch.
 
 \code{symbol} and \code{color} are \code{NA} for a form rfp has registered but not styled.
 That is a statement about upstream, not a gap here: gq does not invent

@@ -137,9 +137,10 @@ if (nrow(types) == 0L) {
   stop("rfp_form_types.csv is empty", call. = FALSE)
 }
 
-# Non-spatial rows are child tables, not layers. cabin_visit_pebble is the live
-# case: no geometry, parent = cabin_visit, written into the parent's GeoPackage
-# and joined parent_uuid -> uuid. A layer roster must not carry it.
+# Non-spatial rows are child tables, not layers. cabin_visit_pebble is the
+# first case (edna_sample and tree_visit followed): no geometry, parent =
+# cabin_visit, written into the parent's GeoPackage and joined parent_uuid ->
+# uuid. A layer roster must not carry it.
 #
 # Filtering on has_spatial rather than on an empty `geometry` because that is
 # the column rfp uses to mean it, and the two could diverge.
@@ -203,9 +204,10 @@ if (!any(layer_key != paste0("form_", spatial$type))) {
        "rfp relabelled its forms, or the derivation regressed.", call. = FALSE)
 }
 
-# `parent` is dropped rather than carried: it is populated only on
-# cabin_visit_pebble, which the spatial filter removes, so it would ship as a
-# column with no values in any row. A column that cannot vary says nothing and
+# `parent` is dropped rather than carried: it is populated only on the
+# non-spatial child tables (cabin_visit_pebble, edna_sample and tree_visit at
+# rfp 0.93.0), which the spatial filter removes, so it would ship as a column
+# with no values in any row. A column that cannot vary says nothing and
 # invites a reader to infer a relationship the table does not model.
 forms <- data.frame(
   layer_key = layer_key,

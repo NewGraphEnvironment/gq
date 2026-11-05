@@ -55,3 +55,18 @@ Themes and groups are being reworked in the two repos that consume these rosters
 - Guards proven: restoring `streams_all` to `Streams` fails the placement test once per template, and deleting the `wetland` row fails the registered-or-exempt test.
 - Placement moves inserted each layer after its previous sibling in the template, where gq holds that sibling. Order within a group still disagrees with the templates in 7 groups, identically in both templates. #68 covers group membership only, so this is filed as gq#105.
 - `reg_build_main.R` reads neither `groups.csv` nor the form roster, so `reg_main.json` needs no rebuild.
+
+## Plan review dispositions (review-100.md, delivered after the phase 1 commit)
+
+| # | finding | probe | disposition |
+|---|---|---|---|
+| 1 | tier-1 QML noise | Reproduced: 26 of the vector QMLs name fields in `editable`/`labelOnTop`/`reuseLastValue`/`column` that their `fieldConfiguration` lacks, 497 names in all (crossings_pscis_assessment 70, crossings_pscis_modelled_dams 69, …). Those tags are a stale snapshot of every column QGIS once saw. | Plan corrected (not a stored-data fork): tier-1 checks only the field-scoped tags that are clean corpus-wide (alias, default, constraint, constraintExpression, attributeEditorField). Expressions outside the roster go to an "undecidable" inventory. The snapshot-tag inventory goes to rfp#188 as evidence for the store cleanup. #86 acceptance 1 is amended in its body, so the 4 bcfishobs tags are not caught by tier-1 |
+| 2 | subgroup interleave cannot be expressed | Reproduced in `R/gq_groups.R` sort | Recorded on gq#105 as a limit that needs a schema change, with #104 |
+| 3 | within-group order unguarded | Same measurement as Phase 1 | Already filed as gq#105 |
+| 4 | one-way guard, unique keys | — | Comment added. The test now asserts per-template key uniqueness on the committed file |
+| 5 | NoGeometry is weak evidence | Reproduced: rfp's roster shows the same empty geometry for `clab_national_parks` | Reasons now cite rfp's `.rfp_audit_whitelist` ("Non-spatial rfp-owned tables", `R/rfp-constants.R`) |
+| 6 | forms loose ends | Reproduced | "thirteen" in `R/gq_forms.R` roxygen and the parent claim fixed; edna/tree child exclusions pinned. The `trail_feature` retirement goes in the PR body for NEWS. `test-gq_groups.R` was already fixed in phase 1 |
+| 7 | validation step 2 wrong | Correct: installed rfp 0.92.0 has byte-identical templates | The currency test is gated on the env vars only, with no installed-rfp fallback, so a stale install cannot fail it falsely. Validation step reworded |
+| 8 | `reg_qgis_restoration.json` is a fifth rfp-derived artifact | Reviewer measured 48/48 matching v0.93.0, apart from the corrected bcfishobs source_layer and float noise | Excluded: it is a lossy registry extract that feeds `reg_main.json`, not a vendored copy, and it belongs to batch 8 (registry build inputs, #102/#85). Noted on #102 |
+| 9 | #86 and #70 cannot close as written | — | PR: "Relates to #86". #70 closes with the gate decision cited (2 of 3 exemptions deleted, column deferred to #104) |
+| 10 | red proof | The suite was run after the re-vendor and before the exemption edits: `each exemption is still needed` and the forms pin failed (phase 1 findings) | No action |

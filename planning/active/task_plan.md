@@ -72,7 +72,7 @@ Decided by me (mechanism), recorded here:
 ## Validation
 
 - [ ] Tests pass (`devtools::test()`, with the `RFP_*_DIR` variables pointing at the v0.93.0 worktree, so the live checks run and do not skip. Read the SKIP count as well as the FAIL count)
-- [ ] `devtools::test()` without the variables: the live checks skip, everything else passes
+- [ ] `devtools::test()` without the variables: the new currency checks skip (env-gated only, review #7); the older template-groups live check may still run against an installed rfp
 - [ ] `/code-check` clean (once over the branch with `/code-check branch`)
 - [ ] `lintr` per-file diff against `origin/main`; `devtools::document()`; `pkgdown::check_pkgdown()` (no new exports expected)
 - [ ] PWF checkboxes match landed work
