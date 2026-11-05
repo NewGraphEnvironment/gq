@@ -24,8 +24,8 @@ templates <- c("bcfishpass_mobile", "bcrestoration_mobile")
 
 rfp_source <- function(var) {
   d <- Sys.getenv(var, "")
-  skip_if(!nzchar(d), paste0(var, " unset: no rfp source to compare against"))
-  skip_if_not(dir.exists(d), paste0(var, " does not exist: ", d))
+  testthat::skip_if(!nzchar(d), paste0(var, " unset: no rfp source to compare against"))
+  testthat::skip_if_not(dir.exists(d), paste0(var, " does not exist: ", d))
   d
 }
 

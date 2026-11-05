@@ -67,14 +67,14 @@ Decided by me (mechanism), recorded here:
 
 ## Owed at the end (reported, done after merge)
 
-- [ ] When rfp fixes the 4 tags, re-vendor the QML and delete the pin. The pin's "must still be needed" check fails at that point and says so.
+- [ ] When rfp#188 settles where the QML store lives and the snapshot tags (497 names in 26 files, the 4 bcfishobs tags among them) are cleaned there, re-vendor and decide whether `test-qml_consistency.R` can hold those tags to the roster too. Corrected from "delete the pin" after the plan review showed tier 1 cannot single out the 4 tags (review-100.md #1).
 
 ## Validation
 
-- [ ] Tests pass (`devtools::test()`, with the `RFP_*_DIR` variables pointing at the v0.93.0 worktree, so the live checks run and do not skip. Read the SKIP count as well as the FAIL count)
+- [x] Tests pass (`devtools::test()`, with the `RFP_*_DIR` variables pointing at the v0.93.0 worktree, so the live checks run and do not skip. Read the SKIP count as well as the FAIL count)
 - [ ] `devtools::test()` without the variables: the new currency checks skip (env-gated only, review #7); the older template-groups live check may still run against an installed rfp
 - [ ] `/code-check` clean (once over the branch with `/code-check branch`)
-- [ ] `lintr` per-file diff against `origin/main`; `devtools::document()`; `pkgdown::check_pkgdown()` (no new exports expected)
+- [x] `lintr` per-file diff against `origin/main`; `devtools::document()`; `pkgdown::check_pkgdown()` (no new exports expected)
 - [ ] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 

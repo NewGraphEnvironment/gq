@@ -105,3 +105,8 @@ Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52
 | child tables are only `cabin_visit_pebble` | `reg_extract_form_types.R`, `CLAUDE.md` | **false** at 0.93.0 (`edna_sample`, `tree_visit`); fixed |
 | "the installed rfp is routinely behind" (5 sentences) | the extractors' env-var blocks | dated measurements of this machine, labelled with versions; local, not causal claims about rfp |
 | the remaining 30-odd | — | local decisions or descriptions of gq's own scripts (DEV-ONLY dependency, provenance printed in the commit message, quoting rules) |
+
+## Validation notes
+
+- Suite with `RFP_TEMPLATE_DIR`, `RFP_LOOKUPS_DIR` and `RFP_STYLES_DIR` pointing at the v0.93.0 worktree: 1159 pass, 0 fail, 0 skip.
+- Lint compared per file against an `origin/main` worktree. `diff` is a shell function on this machine, so the first comparison printed nothing; `command diff` showed 5 new object-usage lints. 3 cleared on reinstall (names this branch added); the other 2 were `skip_if` calls inside a helper, now `testthat::`-qualified. Gitignored `tests/testthat/_problems/` files lint on the branch side only and are not tracked.
