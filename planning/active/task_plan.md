@@ -136,9 +136,9 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Validation
 
-- [ ] Tests pass (`devtools::test()`, failures and errors both counted)
-- [ ] `/code-check branch` clean
-- [ ] PWF checkboxes match landed work
+- [x] Tests pass (`devtools::test()`, failures and errors both counted)
+- [x] `/code-check branch` clean
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 
 Verification: each fix lands with a test that fails on `main` (shown by restoring the bug);

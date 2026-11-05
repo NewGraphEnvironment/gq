@@ -34,3 +34,19 @@
   labels, no warnings. Lint diff against an `origin/main` worktree: two new indentation
   lints, both fixed; the rest came from gitignored `tests/testthat/_problems/` files dated
   2026-09-07, which exist only in this checkout.
+- `/code-check branch`, four rounds (files `review-round1..4.md`):
+
+  | Round | Findings | Fixed | Accepted | Inside previous fix? |
+  |---|---|---|---|---|
+  | 1 | 2 | 2 | 0 | — |
+  | 2 | 2 | 2 | 0 | n |
+  | 3 | 1 (+2 notes folded in) | 1 | 0 | n |
+  | 4 | 1 | 1 | 0 | y (round 3's warning tested a proxy) |
+
+  Ended by enumeration: the 23 columns `gq_reg_custom()` and its `csv_*` helpers read
+  (scanned from the code) are all in `cols_reg_optional` plus the two required; `note` is
+  the one listed column never read, deliberately. Pinned as a test. Every real registry
+  CSV (gq's own, drift x2, wet x2, fish passage reporting x3) reads with 0 warnings.
+  Mechanism behind rounds 1-3 (round 3's naming): one fact derived in two places that agree
+  by coincidence. Round 4's was a proxy for the property.
+  Agent count for the task: 5 (plan review + 4 rounds), at the agent-operations bound.

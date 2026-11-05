@@ -70,3 +70,12 @@ Loss: `#e7298a` (23.0 from plum `#7b3f98`, 27.1 from Built Area `#c4281b`) over 
 
 The orange space between the three existing oranges tops out near 10-14 ΔE; nothing in it
 clears all three by a wide margin while staying visible on a light basemap.
+
+## Review measurements
+
+- A CSV-written classified line still needs a layer-level `stroke`: `gq_mapgl_style()`
+  draws a line from it (round 1).
+- drift's registry CSVs (`inst/cartography/drift_*.csv`) carry `notes`, not `note`, which
+  is why the unread-column warning names one exception (round 4).
+- tmap 4.4.1 matches named `labels` to levels by name (`labs[nms2] <- labels[nms2]`), so
+  #55's names are read, not ignored (round 1).
