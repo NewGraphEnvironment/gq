@@ -528,7 +528,7 @@ test_that("every bec_zone class draws at its registry opacity (#71)", {
   codes <- names(gq_tmap_classes(reg, "bec_zone")$values)
   for (code in codes[c(1, length(codes))]) {
     got <- drawn_gp(tm_shape_classified(reg, "bec_zone", code), "alpha",
-                    grob_class = "pathgrob")
+                    grob_class = "pathgrob", grob_name = "^polygons_")
     expect_equal(got[1], 0.25, info = code)
   }
 })
@@ -545,7 +545,7 @@ test_that("a classified polygon draws each class at its own opacity (#71)", {
 
   read <- function(code) {
     drawn_gp(tm_shape_classified(reg, "fire_severity", code), "alpha",
-             grob_class = "pathgrob")[1]
+             grob_class = "pathgrob", grob_name = "^polygons_")[1]
   }
   expect_equal(read(translucent), unname(op[[translucent]]))
   expect_equal(read(opaque), 1)
@@ -577,8 +577,8 @@ test_that("uniform class opacity is a scalar, varied opacity a scale (#71)", {
 test_that("map and legend agree on per-class opacity (#71)", {
   skip_if_not_installed("tmap")
   reg <- gq_reg_main()
-  cases <- list(c("fire_severity", "polygons", "fill_alpha", "pathgrob"),
-                c("roads_dra", "lines", "col_alpha", "polyline"))
+  cases <- list(c("fire_severity", "polygons", "fill_alpha", "pathgrob", "^polygons_"),
+                c("roads_dra", "lines", "col_alpha", "polyline", ""))
   for (cs in cases) {
     cls <- gq_tmap_classes(reg, cs[1])
     leg <- gq_tmap_legend(reg, cs[1])[[cs[2]]]
@@ -588,7 +588,7 @@ test_that("map and legend agree on per-class opacity (#71)", {
                                        which(!is.na(cls$opacities))[1])]) {
       j <- match(unname(cls$labels[[code]]), leg$labels)
       map_a <- drawn_gp(tm_shape_classified(reg, cs[1], code), "alpha",
-                        grob_class = cs[4])[1]
+                        grob_class = cs[4], grob_name = cs[5])[1]
       # Both sides NULL compares equal, which is what this test read before the
       # fix: no alpha on the grob and none in the legend.
       expect_false(is.null(map_a) || is.na(j), info = paste(cs[1], code))

@@ -34,9 +34,11 @@ Decided by me (conventional defaults, reject the plan to change):
   `floodplain_flood_factor`, `tree_cover_change` (field `tree_change`, classes
   `loss`/`gain`), `landcover_change_from` (field `from_class`), `landcover_change_to`
   (field `to_class`); land-cover class keys are drift's class names (`Water`,
-  `Flooded Vegetation`, `Snow/Ice` …), drift's `No Data` excluded. All typed `polygon`:
-  they are areal products, and line or raster consumers take values/labels/opacities from
-  `gq_tmap_classes()`, which is type-agnostic.
+  `Flooded Vegetation`, `Snow/Ice` …), drift's `No Data` excluded. `habitat_rule_comparison` and `habitat_expected_use`
+  are typed `line` (knowledge draws them with `tm_lines` on segments; corrected by the
+  plan review from a first draft of "all polygon"); the other four
+  `polygon`. Raster consumers take values/labels/opacities from `gq_tmap_classes()`,
+  which is type-agnostic. Land-cover classes carry no opacity: no source gives one.
 - `tree_cover_change` **is** #67's "Trees → *" third style; #67 and #98 both say so.
 - **#98's stream label is already shipped**: `stream_labels` in `reg_main.json` is italic
   `#1f78b4`, white halo 0.3, the same as `lake`. No row added; #98 closes saying so.
@@ -79,6 +81,9 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 2: Custom CSV reader (#42, #75)
 
+- [ ] Confirm `source("data-raw/reg_build_main.R")` on the branch tip runs and reproduces
+  `reg_main.json` byte for byte (moved here from Phase 3 by the plan review: this phase
+  rebuilds first)
 - [ ] Failing tests first: a CSV of only `layer_key, type, source_layer, class_field,
   class_value, fill_color` reads without error (#75); a classified line from CSV yields
   non-NULL `widths` and `dashes` from `gq_tmap_classes()`; key-set test comparing a
@@ -97,11 +102,9 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 3: Register styles (#98, #67)
 
-- [ ] Confirm `source("data-raw/reg_build_main.R")` on the branch tip reproduces
-  `reg_main.json` byte for byte before adding rows, so the rebuild diff is only the new layers
 - [ ] Pick tree loss (pink) and gain (orange): render candidates as swatches on the blended
-  basemap (`gq_basemap_tiles()` + `gq_basemap_blend()`) beside `#d95f02`, `#f2a93b` and the
-  other #98 classes; choose by CIEDE2000 distance from the existing oranges plus a look;
+  basemap (`gq_basemap_tiles()` + `gq_basemap_blend()`) beside `#d95f02` (also the website link
+  map's crossing orange), `#f2a93b`, drift's Crops `#e49635` and the other #98 classes; choose by CIEDE2000 distance from the existing oranges plus a look;
   script and PNG under `planning/active/` (archived with the PWF)
 - [ ] Rows in `reg_custom.csv`: `habitat_rule_comparison` (4), `habitat_expected_use` (5),
   `floodplain_flood_factor` (3), `tree_cover_change` (2), `landcover_change_from` (9),
@@ -110,8 +113,11 @@ Decided by me (conventional defaults, reject the plan to change):
 - [ ] Rebuild `reg_main.json`; data test asserts each new layer's classes, colours and
   per-class opacities, and that `landcover_change_*` colours equal drift's table as
   committed here (a copied value, so the test names the drift file and commit it came from)
-- [ ] Check the new rows against the composition tests (`test-composition_integrity.R`,
-  `test-reg_labels.R`); these layers are in no template, so they take no `groups.csv` row
+- [ ] These layers are in no template, so they take no `groups.csv` row: pin them as a
+  named registry-only set in `test-gq_groups.R` ("all registry keys appear in
+  groups.csv"), each with its reason, so an unplaced layer still fails (plan review
+  blocker); run `test-composition_integrity.R` and `test-reg_labels.R`
+- [ ] File a gq follow-up: `gq_mapgl_classes()` drops per-class opacity (plan review)
 - [ ] Edit #67's body (drift palette, `tree_cover_change` is its third style, QML upstream)
   and #98's (keys, tree hex, stream label already shipped); file the QML issue in the
   upstream style store
