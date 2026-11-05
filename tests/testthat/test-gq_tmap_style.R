@@ -584,8 +584,8 @@ test_that("map and legend agree on per-class opacity (#71)", {
     leg <- gq_tmap_legend(reg, cs[1])[[cs[2]]]
     # Without opacities the loop below runs zero times and passes for nothing.
     expect_true(anyNA(cls$opacities) && !all(is.na(cls$opacities)), info = cs[1])
-    for (code in names(cls$opacities)[c(which(is.na(cls$opacities))[1],
-                                       which(!is.na(cls$opacities))[1])]) {
+    pick <- c(which(is.na(cls$opacities))[1], which(!is.na(cls$opacities))[1])
+    for (code in names(cls$opacities)[pick]) {
       j <- match(unname(cls$labels[[code]]), leg$labels)
       map_a <- drawn_gp(tm_shape_classified(reg, cs[1], code), "alpha",
                         grob_class = cs[4], grob_name = cs[5])[1]

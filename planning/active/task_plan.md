@@ -125,9 +125,9 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 4: Docs and wrap
 
-- [ ] `CLAUDE.md` / README: drop the volatile layer count ("57 layers") rather than correct it;
+- [x] `CLAUDE.md` / README: drop the volatile layer count ("57 layers") rather than correct it;
   document per-class opacity and the CSV `dash` column where the translators are described
-- [ ] `lintr` per-file diff against an `origin/main` worktree; `pkgdown::check_pkgdown()`
+- [x] `lintr` per-file diff against an `origin/main` worktree; `pkgdown::check_pkgdown()`
 
 ## Owed at the end (reported, done after merge)
 

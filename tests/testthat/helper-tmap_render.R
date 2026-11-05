@@ -94,8 +94,8 @@ drawn_gp <- function(m, what, grob_class = "polyline", grob_name = NULL) {
 
   out <- NULL
   walk <- function(x) {
-    if (inherits(x, grob_class) && !is.null(x$gp[[what]]) &&
-        (is.null(grob_name) || grepl(grob_name, x$name %||% ""))) {
+    named <- is.null(grob_name) || grepl(grob_name, x$name %||% "")
+    if (inherits(x, grob_class) && !is.null(x$gp[[what]]) && named) {
       out <<- c(out, x$gp[[what]])
     }
     if (!is.null(x$children)) for (ch in x$children) walk(ch)

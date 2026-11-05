@@ -28,3 +28,9 @@
   Registry-only keys pinned in `test-gq_groups.R`; `farver` added to Suggests for the
   colour-distance test. Edited #67 and #98 bodies; filed #107 (mapgl opacity) and the
   QML issue in the upstream style store.
+- Phase 4: CLAUDE.md above the marker drops the layer count and documents keyed per-class
+  vectors, opacity-as-opaque, the CSV contract and registry-only keys. README needed no
+  change (it states no count and no CSV contract). Vignette legend path rendered with named
+  labels, no warnings. Lint diff against an `origin/main` worktree: two new indentation
+  lints, both fixed; the rest came from gitignored `tests/testthat/_problems/` files dated
+  2026-09-07, which exist only in this checkout.
