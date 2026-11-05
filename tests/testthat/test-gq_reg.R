@@ -245,19 +245,30 @@ test_that("CSV and extractor write a classified line in one vocabulary (#42)", {
   # The two writers disagreed on key names (outline_width vs width), and
   # nothing compared them, so the CSV route lost width and dash silently. Hold
   # the CSV's keys to what the extractor writes for line classes, taken from the
-  # shipped registry rather than listed here, so a rename on either side fails.
-  reg <- gq_reg_main()
+  # extractor's own output rather than listed here, so a rename on either side
+  # fails. Not from reg_main.json: that also holds lines this CSV route wrote,
+  # so it would partly compare the writer with itself.
+  reg <- gq_reg_read(system.file("registry", "reg_qgis_restoration.json",
+                                 package = "gq"))
   extracted <- unique(unlist(lapply(reg$layers, function(l) {
     if (identical(l$type, "line") && !is.null(l$classification)) {
       lapply(l$classification$classes, names)
     }
   })))
-  expect_true(all(c("color", "width", "dash") %in% extracted))  # premise
+  expect_true(all(c("color", "width", "dash", "opacity") %in% extracted))  # premise
 
   classes <- gq_reg_custom(classified_line_csv())$layers$track$classification$classes
   csv_keys <- unique(unlist(lapply(classes, names)))
   expect_setequal(setdiff(csv_keys, extracted), character(0))
-  expect_true(all(c("color", "width", "dash") %in% csv_keys))
+  expect_true(all(c("color", "width", "dash", "opacity") %in% csv_keys))
+})
+
+test_that("a classified line from CSV still gives mapgl its stroke width", {
+  # The per-class keys moved to the extractor's vocabulary, but the layer-level
+  # stroke stays: gq_mapgl_style() draws a line from it, and an earlier draft
+  # of #42 dropped it, so the width reached MapLibre as its 1 px default.
+  lyr <- gq_reg_custom(classified_line_csv())$layers$track
+  expect_equal(gq_mapgl_style(lyr)$paint[["line-width"]], 1.2)
 })
 
 test_that("a classified line falls back to fill_color for its colour (#42)", {

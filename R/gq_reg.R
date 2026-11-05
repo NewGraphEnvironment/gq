@@ -160,10 +160,11 @@ gq_reg_custom <- function(path) {
       }
       entry$classification <- list(field = row1$class_field, classes = classes)
 
-      # shared stroke for all classes (if present). Not for a line, whose
-      # stroke columns are its per-class style: copying row 1's here would give
-      # the layer a second colour that nothing reads.
-      if (!is_line && !is.na(row1$stroke_color)) {
+      # shared stroke for all classes (if present). Kept for a classified line
+      # too, although its stroke columns are now also its per-class style:
+      # gq_style() ignores it, but gq_mapgl_style() draws a line from it, and
+      # without it a CSV line's width reaches MapLibre as its 1 px default.
+      if (!is.na(row1$stroke_color)) {
         stroke <- list(color = row1$stroke_color)
         if (!is.na(row1$stroke_width)) stroke$width <- row1$stroke_width
         if (!is.na(row1$stroke_opacity)) stroke$opacity <- row1$stroke_opacity

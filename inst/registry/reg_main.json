@@ -1773,6 +1773,10 @@
             "label": "Floodplain outside the rule"
           }
         }
+      },
+      "stroke": {
+        "color": "#1b6ca8",
+        "opacity": 0.7
       }
     },
     "habitat_expected_use": {
@@ -1806,6 +1810,10 @@
             "label": "0.8 to 1"
           }
         }
+      },
+      "stroke": {
+        "color": "#f7fbff",
+        "opacity": 0.7
       }
     },
     "floodplain_flood_factor": {
