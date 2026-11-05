@@ -76,6 +76,6 @@ Decided by me (mechanism), recorded here:
 - [x] `/code-check` clean (once over the branch with `/code-check branch`)
 - [x] `lintr` per-file diff against `origin/main`; `devtools::document()`; `pkgdown::check_pkgdown()` (no new exports expected)
 - [x] PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `/planning-archive` on completion
 
 How each change is proved: each new guard is shown red by restoring the defect (the stale copy, a moved layer, a perturbed preset, an injected bad QML reference) before it is shown green. Each re-vendor is reproduced from the v0.93.0 tag. Refactoring the generators is proved by byte-identical output.
