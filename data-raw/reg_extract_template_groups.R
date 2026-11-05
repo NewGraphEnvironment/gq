@@ -48,41 +48,20 @@ if (nzchar(tpl_dir)) {
           ": ", tpl_dir)
 }
 
-groups <- do.call(rbind, lapply(templates, function(template) {
-  tbl <- qgs_group_table(file.path(tpl_dir, paste0(template, ".qgs")))
-  if (nrow(tbl) == 0L) {
-    stop("No groups in ", template, call. = FALSE)
-  }
-  cbind(template = template, tbl, stringsAsFactors = FALSE)
-}))
-
-groups <- groups[order(groups$template, groups$group_path), ]
+groups <- template_groups_build(tpl_dir, templates)
 
 # No sibling-order uniqueness check here: `order` is the sibling loop index, so
 # it is distinct within a parent by construction. Asserting it would be a guard
 # that cannot fail — which reads as diligence and is worse than nothing. The
-# assertion that CAN fail is the round-trip below.
-
+# assertion that CAN fail is the round-trip inside vendored_write().
 
 # QUOTED, unlike groups.csv and templates.csv were before gq#66. The correct
 # group name is "Roads,Railways,Pipelines" — a comma inside an unquoted field
 # would silently shift every later column — and
 # "Project Specific/Model Parameters - bcfishpass " ends in a space that only
-# quoting preserves through a round-trip.
-write.csv(groups, "inst/registry/template_groups.csv", row.names = FALSE,
-          quote = TRUE)
-
-# Prove the round-trip rather than trusting it. A name whose trailing space is
-# eaten still looks like a name, and the join it breaks reports nothing.
-back <- utils::read.csv("inst/registry/template_groups.csv",
-                        stringsAsFactors = FALSE)
-if (!identical(back$group_path, groups$group_path)) {
-  differing <- which(back$group_path != groups$group_path)
-  stop("group_path did not survive the CSV round-trip: ",
-       paste(sprintf("%s -> %s", groups$group_path[differing],
-                     back$group_path[differing]), collapse = "; "),
-       call. = FALSE)
-}
+# quoting preserves through a round-trip. The builder and the writer live in
+# R/utils_vendored.R so the currency test serializes exactly as this does.
+vendored_write(groups, "inst/registry/template_groups.csv", quote = TRUE)
 
 message(
   "template_groups.csv built: ", nrow(groups), " groups across ",
@@ -98,35 +77,10 @@ message(
 # Same walk, the layer rows. The witness for layer PLACEMENT, which the group
 # table cannot see: a layer filed under the wrong group changes what it draws
 # over, and test-template_drift.R compares each groups.csv row against this.
-layers <- do.call(rbind, lapply(templates, function(template) {
-  tbl <- qgs_layer_table(file.path(tpl_dir, paste0(template, ".qgs")))
-  if (nrow(tbl) == 0L) {
-    stop("No layers in ", template, call. = FALSE)
-  }
-  cbind(template = template, tbl, stringsAsFactors = FALSE)
-}))
-layers <- layers[order(layers$template, layers$group_path, layers$order), ]
-
-# A key two layers share in one template would make the placement join
-# ambiguous: refuse rather than let one row stand for both.
-dup <- layers[duplicated(layers[c("template", "layer_key")]), ]
-if (nrow(dup) > 0) {
-  stop("layer_key repeated within a template: ",
-       paste(sprintf("%s %s", dup$template, dup$layer_key), collapse = "; "),
-       call. = FALSE)
-}
+layers <- template_layers_build(tpl_dir, templates)
 
 # Quoted for the reasons above, and because display names carry leading spaces.
-write.csv(layers, "inst/registry/template_layers.csv", row.names = FALSE,
-          quote = TRUE)
-
-back <- utils::read.csv("inst/registry/template_layers.csv",
-                        stringsAsFactors = FALSE)
-for (col in c("group_path", "layer")) {
-  if (!identical(back[[col]], layers[[col]])) {
-    stop(col, " did not survive the CSV round-trip", call. = FALSE)
-  }
-}
+vendored_write(layers, "inst/registry/template_layers.csv", quote = TRUE)
 
 message(
   "template_layers.csv built: ", nrow(layers), " layers across ",

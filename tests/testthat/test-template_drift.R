@@ -11,10 +11,11 @@
 # A field user lost a floodplain that way, and a second lost a trails layer whose
 # labels drew but whose lines did not. See gq#66.
 #
-# The comparison is against inst/registry/template_groups.csv, vendored from the
-# templates by data-raw/reg_extract_template_groups.R. gq is public and rfp is
-# private, so CI can never read a .qgs -- the committed artifact is the shipped
-# source of truth, exactly as for the QML corpus and the theme roster.
+# The comparison is against inst/registry/template_groups.csv and
+# template_layers.csv, vendored from the templates by
+# data-raw/reg_extract_template_groups.R. gq is public and rfp is private, so CI
+# can never read a .qgs -- the committed artifact is the shipped source of
+# truth, and test-vendored_currency.R is what checks it is still current.
 
 
 # --- the comparison, as a function both the real test and the alarm can call --
@@ -452,33 +453,8 @@ test_that("a layer filed under the wrong group is reported", {
 
 
 # --- drift against the live templates -----------------------------------------
-
-test_that("the vendored table is identical to what the templates say now", {
-  # The drift guard proper, and the only test here that needs rfp. Skipped
-  # wherever rfp is absent -- which is every CI run, since gq is public and rfp
-  # is private -- hence the structural assertions above, which always run.
-  #
-  # RFP_TEMPLATE_DIR first, for the reason data-raw/reg_extract_themes.R takes
-  # it: system.file() resolves to the INSTALLED rfp, routinely behind the
-  # checkout the table was vendored from, so comparing against whatever happens
-  # to be installed pins an undeclared dependency and reports false drift.
-  dir <- Sys.getenv("RFP_TEMPLATE_DIR", "")
-  if (!nzchar(dir)) {
-    skip_if_not_installed("rfp")
-    dir <- system.file("templates", package = "rfp")
-  }
-  skip_if(dir == "" || !dir.exists(dir), "no rfp templates to compare against")
-
-  live <- do.call(rbind, lapply(templates, function(tpl) {
-    p <- file.path(dir, paste0(tpl, ".qgs"))
-    skip_if_not(file.exists(p), paste0("template absent: ", tpl))
-    cbind(template = tpl, qgs_group_table(p), stringsAsFactors = FALSE)
-  }))
-  live <- live[order(live$template, live$group_path), ]
-  row.names(live) <- NULL
-
-  vendored <- read_template_groups_csv()
-  row.names(vendored) <- NULL
-
-  expect_equal(vendored, live)
-})
+#
+# Moved to test-vendored_currency.R (gq#78), which rebuilds template_groups.csv
+# and template_layers.csv -- and the theme and form rosters -- from a live rfp
+# source and compares the files. Everything above reads the committed copies,
+# so it is only as current as the last re-vendor; that test is what says so.

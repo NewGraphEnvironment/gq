@@ -292,15 +292,20 @@ too many.
 - `template_groups.csv` — the group tree of each shipped `.qgs`, vendored by
   `data-raw/reg_extract_template_groups.R`. The witness `templates.csv` is
   checked against; gq is public and rfp is private, so CI can never read a `.qgs`.
+- `template_layers.csv` — which group each layer sits in, per template, from the
+  same walk (gq#68). `test-template_drift.R` holds every `groups.csv` layer to it,
+  one way: a template layer gq does not register must be named as exempt.
 
-  **The witness itself is unguarded, and has been stale.** `test-template_drift.R`
-  compares against this committed copy rather than the templates, so when the copy
-  freezes, the guard reports green for exactly the drift it exists to catch.
-  Measured 2026-08-30: it had missed rfp's newly added `Floodplain` and `Restoration`
-  groups, and the suite was green throughout (gq#70). Two of the three
-  rfp-vendored artifacts were stale that day — `themes.csv` too (gq#77) — and
-  nothing reported either. Re-run the extractor before trusting a green drift
-  test, and see gq#78 for the currency guard that would make that unnecessary.
+  **A committed witness is only as current as its last re-vendor.** The drift tests
+  read these copies, not the templates, so a frozen copy reports green for exactly
+  the drift it exists to catch: `template_groups.csv` sat two months behind rfp with
+  the suite green (gq#70), and `themes.csv` before it (gq#77).
+  `test-vendored_currency.R` rebuilds the four vendored rosters from a live rfp
+  source with the generator's own builder and writer (`R/utils_vendored.R`) and
+  compares the files; the QML corpus keeps its own byte check in
+  `test-gq_style_qml.R` until rfp#188 moves the store into gq. It runs only when `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` point at an
+  rfp checkout, never against an installed rfp, which is routinely behind. CI has
+  no rfp, so the check that runs on every change belongs in rfp's CI (gq#78).
 - `themes.csv` — per-layer visibility presets, keyed `template,theme,layer_key,visible`
   (268 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
 - `form_types.csv` — the Mergin form roster, vendored from rfp's

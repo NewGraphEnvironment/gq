@@ -70,3 +70,9 @@ Themes and groups are being reworked in the two repos that consume these rosters
 | 8 | `reg_qgis_restoration.json` is a fifth rfp-derived artifact | Reviewer measured 48/48 matching v0.93.0, apart from the corrected bcfishobs source_layer and float noise | Excluded: it is a lossy registry extract that feeds `reg_main.json`, not a vendored copy, and it belongs to batch 8 (registry build inputs, #102/#85). Noted on #102 |
 | 9 | #86 and #70 cannot close as written | — | PR: "Relates to #86". #70 closes with the gate decision cited (2 of 3 exemptions deleted, column deferred to #104) |
 | 10 | red proof | The suite was run after the re-vendor and before the exemption edits: `each exemption is still needed` and the forms pin failed (phase 1 findings) | No action |
+
+## Phase 2: currency guard (#78)
+
+- Builders (`template_groups_build`, `template_layers_build`, `themes_build`, `form_types_build`) and the one writer (`vendored_write`) live in `R/utils_vendored.R`, and the theme walker in `R/utils_qgs_themes.R`. All three generators re-ran against v0.93.0 with byte-identical output.
+- `test-vendored_currency.R` writes each live roster through `vendored_write()` to a tempfile and compares lines with the committed file. It is gated on `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` only (review #7). Without them its 4 live checks skip; with them, 12 pass.
+- Proven: with `origin/main`'s stale `template_groups.csv` and `form_types.csv` restored, and one `themes.csv` row flipped, the three matching live checks fail, then pass once the files are restored.
