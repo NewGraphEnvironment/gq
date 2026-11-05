@@ -180,6 +180,23 @@ tmap_alpha_args <- function(cls, aes) {
   out
 }
 
+#' One reading of a per-class numeric axis, for the map and the legend alike
+#'
+#' A width or radius the registry gives only some classes is drawn at one
+#' value for all of them, since a half-mapped axis would invent a size for the
+#' gaps. That value is the first class that has one: taking `v[1]` gave `NA`
+#' when the first class was the blank one, and tmap then drew every class at
+#' its default. Returned at full length, so the legend can index it by class
+#' and draw each key at the width the map drew, rather than at 0 for a blank.
+#' `NULL` when no class has a value.
+#' @noRd
+class_axis <- function(v) {
+  if (is.null(v) || all(is.na(v))) return(NULL)
+  if (!anyNA(v)) return(v)
+  v[] <- v[!is.na(v)][1]
+  v
+}
+
 #' @noRd
 tmap_classified <- function(sty) {
   cls <- sty$classification
@@ -204,8 +221,8 @@ tmap_classified <- function(sty) {
       args$lwd <- cls$field
       args$lwd.scale <- tmap_scale_axis(cls, cls$widths)
       args$lwd.legend <- tmap::tm_legend(show = FALSE)
-    } else if (!is.null(cls$widths)) {
-      args$lwd <- unname(cls$widths[1])
+    } else if (!is.null(class_axis(cls$widths))) {
+      args$lwd <- unname(class_axis(cls$widths)[1])
     }
     if (!is.null(cls$dashes)) {
       args$lty <- cls$field
@@ -221,8 +238,8 @@ tmap_classified <- function(sty) {
       args$size <- cls$field
       args$size.scale <- tmap_scale_axis(cls, gq_symbol_size(cls$radii, "tmap"))
       args$size.legend <- tmap::tm_legend(show = FALSE)
-    } else if (!is.null(cls$radii)) {
-      args$size <- gq_symbol_size(unname(cls$radii[1]), "tmap")
+    } else if (!is.null(class_axis(cls$radii))) {
+      args$size <- gq_symbol_size(unname(class_axis(cls$radii)[1]), "tmap")
     }
     args <- c(args, tmap_alpha_args(cls, "fill_alpha"))
   }

@@ -45,7 +45,13 @@ test_that("tree gain reads apart from the oranges it shares a page with", {
   s <- styles("tree_cover_change")
   expect_equal(s$key, c("loss", "gain"))
   gain <- s$color[s$key == "gain"]
-  others <- c("#d95f02", "#f2a93b", "#e49635")
+  # Read from the registry, not copied: a copy would keep this passing against
+  # colours the registry no longer draws.
+  pick <- function(key, cls) { x <- styles(key); x$color[x$key == cls] }
+  others <- c(pick("habitat_rule_comparison", "first"),
+              pick("floodplain_flood_factor", "ff06"),
+              pick("landcover_change_from", "Crops"))
+  expect_length(others, 3L)
   d <- farver::compare_colour(farver::decode_colour(gain),
                               farver::decode_colour(others),
                               from_space = "rgb", method = "cie2000")

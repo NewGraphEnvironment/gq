@@ -596,3 +596,26 @@ test_that("map and legend agree on per-class opacity (#71)", {
     }
   }
 })
+
+test_that("a part-filled width draws one value, and map and legend agree on it", {
+  # A CSV line can leave stroke_width blank on some classes. The map took the
+  # FIRST class's width as its scalar, NA when that class was the blank one,
+  # so tmap drew every class at its default; the legend read the blank as 0.
+  skip_if_not_installed("tmap")
+  for (w in list(c(NA, 2), c(1.2, NA))) {
+    reg <- list(layers = list(x = list(type = "line", classification = list(
+      field = "code", classes = list(
+        a = list(color = "#111111", width = w[1]),
+        b = list(color = "#222222", width = w[2])
+      )
+    ))))
+    want <- w[!is.na(w)][1]
+    info <- paste(w, collapse = ",")
+    expect_equal(gq_tmap_style(reg, "x")$lwd, want, info = info)
+    for (code in c("a", "b")) {
+      expect_equal(drawn_gp(tm_shape_classified(reg, "x", code), "lwd")[1], want,
+                   info = paste(info, code))
+    }
+    expect_equal(gq_tmap_legend(reg, "x")$lines$lwd, c(want, want), info = info)
+  }
+})

@@ -187,7 +187,9 @@ legend_entries <- function(sty, cls, key, label, present) {
       row$fill_alpha <- alpha(j)
     } else if (type == "lines") {
       row$col <- col
-      row$lwd <- pick(cls$widths, j)
+      # class_axis() is the map's own reading of a part-filled width, so a
+      # blank class's key is drawn at the width its line was, not at 0.
+      row$lwd <- pick(class_axis(cls$widths), j)
       row$lty <- dash_to_lty(pick(cls$dashes, j))
       row$col_alpha <- alpha(j)
     } else {
@@ -199,7 +201,7 @@ legend_entries <- function(sty, cls, key, label, present) {
       # only layer that has one, and it is the central point layer of every
       # fish passage map -- so reading it from the wrong object dropped size
       # from the legend that needs it most and tmap substituted a default.
-      radius <- pick(sty$classification$radii, j)
+      radius <- pick(class_axis(sty$classification$radii), j)
       if (!is.null(radius)) row$size <- gq_symbol_size(radius, "tmap")
     }
     row
