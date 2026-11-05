@@ -36,7 +36,7 @@ test_that("gq_style returns classified layer with field/values/labels", {
   expect_equal(sty$classification$field, "road_type")
   expect_length(sty$classification$values, 2)
   expect_equal(unname(sty$classification$values[["highway"]]), "#c0392b")
-  expect_equal(sty$classification$labels, c("Highway", "Arterial"))
+  expect_equal(sty$classification$labels, c(highway = "Highway", arterial = "Arterial"))
 })
 
 test_that("gq_style surfaces a per-class dashes vector (#32)", {
@@ -112,7 +112,7 @@ test_that("gq_style field override replaces classification field", {
   expect_equal(sty$classification$field, "my_road_col")
   # values and labels unchanged
   expect_length(sty$classification$values, 2)
-  expect_equal(sty$classification$labels, c("Highway", "Arterial"))
+  expect_equal(sty$classification$labels, c(highway = "Highway", arterial = "Arterial"))
 })
 
 test_that("gq_style field override ignored for simple layers", {
@@ -172,4 +172,42 @@ test_that("normalize_layer_name strips one boundary underscore, not both", {
 test_that("normalize_layer_name is idempotent on an already-clean key", {
   expect_equal(normalize_layer_name("habitat_lateral"), "habitat_lateral")
   expect_equal(normalize_layer_name("bec_zone"), "bec_zone")
+})
+
+# --- #71 / #31: per-class opacity; #55: labels keyed like values -------------
+
+test_that("gq_style surfaces per-class opacity, keyed on the class (#71)", {
+  entry <- list(type = "polygon", classification = list(field = "value", classes = list(
+    `1` = list(color = "#b2df8a", opacity = 0.4, label = "Floodplain"),
+    `2` = list(color = "#9f3cca", label = "Disconnected"),
+    `__empty__` = list(color = "#888888", opacity = 0.1)
+  )))
+  cls <- gq_style(entry)$classification
+  # NA, not 1: gq_style() reports what the registry holds. The translators read
+  # NA as opaque, because the extractor omits `opacity` when alpha is 1.
+  expect_equal(cls$opacities, c(`1` = 0.4, `2` = NA))
+})
+
+test_that("gq_style omits opacities when no class carries one (#71)", {
+  entry <- list(type = "line", classification = list(field = "x", classes = list(
+    a = list(color = "#000000"), b = list(color = "#111111")
+  )))
+  expect_null(gq_style(entry)$classification$opacities)
+})
+
+test_that("bec_zone carries its registry opacity through gq_style (#71)", {
+  cls <- gq_style(gq_reg_main(), "bec_zone")$classification
+  expect_length(cls$opacities, length(cls$values))
+  expect_true(all(cls$opacities == 0.25))
+})
+
+test_that("labels index by class key the way values do (#55)", {
+  # Positional labels beside named values: indexing both by key returned the
+  # colours and NA, NA -- a legend built the obvious way labelled its rows "NA".
+  cls <- gq_style(gq_reg_main(), "roads_dra")$classification
+  codes <- c("RRD", "RU")
+  expect_identical(names(cls$labels), names(cls$values))
+  expect_false(anyNA(cls$labels[codes]))
+  expect_equal(unname(cls$labels[codes]),
+               unname(cls$labels[match(codes, names(cls$values))]))
 })

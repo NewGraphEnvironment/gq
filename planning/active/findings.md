@@ -36,3 +36,12 @@ Batch 4: #42, #75 (custom CSV reader). Batch 5: #98, #67 (register styles).
 
 | Error | Resolution |
 |-------|------------|
+
+## Phase 1 measurements
+
+- Classified layers with per-class opacity in `reg_main.json`: `bec_zone` (0.25 on all 11),
+  `fire_severity` (0.4 on some), `roads_dra` (0.6 on some), `streams_all` (0.65 on some),
+  `habitat_lateral` (raster, 0.4). So #71 changes how `fire_severity`, `roads_dra` and
+  `streams_all` draw too, not only `bec_zone`.
+- tmap 4.4.1 draws per-class line alpha as `gp$alpha` on `polyline` grobs and polygon alpha
+  on `pathgrob`, so one `drawn_gp(m, "alpha", grob_class)` read covers both.

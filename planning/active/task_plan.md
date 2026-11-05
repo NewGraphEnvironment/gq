@@ -59,22 +59,22 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 1: Translator opacity and labels (#71, #31, #55)
 
-- [ ] Failing tests first: `gq_style()` returns `classification$opacities` named by class
+- [x] Failing tests first: `gq_style()` returns `classification$opacities` named by class
   key; `labels` named by class key; `gq_tmap_classes()` returns `opacities`; render test
   reads `gp$alpha` off the drawn `pathgrob` for `bec_zone` = 0.25 (helper-tmap_render.R
   `drawn_gp(m, "alpha", grob_class = "pathgrob")`, one feature at a time); a line layer
   with varied per-class opacity renders each class at its own `col_alpha`
-- [ ] `R/gq_style.R`: extract per-class `opacity`, drop `__empty__` like the others, name
+- [x] `R/gq_style.R`: extract per-class `opacity`, drop `__empty__` like the others, name
   `labels` (remove `unname()`), roxygen `@return` updated
-- [ ] `R/gq_tmap_style.R`: `gq_tmap_classes()` returns `opacities`; `tmap_classified()`
+- [x] `R/gq_tmap_style.R`: `gq_tmap_classes()` returns `opacities`; `tmap_classified()`
   maps polygon/point → `fill_alpha`, line → `col_alpha` via `tmap_scale_axis()` keyed on
   `names(cls$values)`, scalar when uniform, NA → 1; roxygen updated
-- [ ] `R/gq_tmap_legend.R`: classified rows carry `fill_alpha` / `col_alpha` per class so
+- [x] `R/gq_tmap_legend.R`: classified rows carry `fill_alpha` / `col_alpha` per class so
   the swatch matches the map (`legend_na_default` already has both)
-- [ ] Update the 4 assertions #55 names (`test-gq_style.R:39`, `:115`,
+- [x] Update the 4 assertions #55 names (`test-gq_style.R:39`, `:115`,
   `test-gq_tmap_style.R:105`, `:150`) to named vectors
-- [ ] Restore the bug (drop the opacity extraction) and watch the render test go red
-- [ ] `devtools::document()`; commit `Fixes #71`, `Fixes #31`, `Fixes #55`; edit #24's body
+- [x] Restore the bug (drop the opacity extraction) and watch the render test go red
+- [x] `devtools::document()`; commit `Fixes #71`, `Fixes #31`, `Fixes #55`; edit #24's body
   to carry the casing/outline surfacing half of #31
 
 ## Phase 2: Custom CSV reader (#42, #75)

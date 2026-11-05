@@ -18,9 +18,13 @@
 #' @return A named list with `type` and style properties. For simple layers:
 #'   `fill`, `stroke`, `mark` as applicable. For classified layers: adds
 #'   `classification` with `field`, `values` (named color vector), `labels`,
-#'   and per-class `widths`/`radii`/`dashes` when available. `dashes` holds the
-#'   raw QGIS dash value (named style like "dash dot", or custom pattern like
-#'   "0.66;2") for classes that are dashed.
+#'   and per-class `widths`/`radii`/`dashes`/`opacities` when available.
+#'   `labels` and every per-class vector are named by class key, as `values`
+#'   is, so `cls$labels[codes]` and `cls$values[codes]` index the same classes.
+#'   `dashes` holds the raw QGIS dash value (named style like "dash dot", or
+#'   custom pattern like "0.66;2") for classes that are dashed. `opacities` is
+#'   `NA` for a class the registry gives no opacity, which means opaque: the
+#'   extractor records opacity only when it is below 1.
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -62,6 +66,7 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     radii <- vapply(cls$classes, function(x) x$radius %||% NA_real_, numeric(1))
     shapes <- vapply(cls$classes, function(x) x$shape %||% NA_character_, character(1))
     dashes <- vapply(cls$classes, function(x) x$dash %||% NA_character_, character(1))
+    opacities <- vapply(cls$classes, function(x) x$opacity %||% NA_real_, numeric(1))
 
     # Remove __empty__ class
     keep <- keys != "__empty__"
@@ -71,18 +76,23 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     radii <- radii[keep]
     shapes <- shapes[keep]
     dashes <- dashes[keep]
+    opacities <- opacities[keep]
     keys <- keys[keep]
     names(values) <- keys
 
     result$classification <- list(
       field = field %||% cls$field,
       values = values,
-      labels = unname(labels)
+      # Named by class key, like `values` (#55). tmap reads labels by position,
+      # which tmap_scale_classified() handles by passing `levels`, so the names
+      # cost tmap nothing; unnamed, a caller indexing by key got NA.
+      labels = labels
     )
     if (!all(is.na(widths))) result$classification$widths <- widths
     if (!all(is.na(radii))) result$classification$radii <- radii
     if (!all(is.na(shapes))) result$classification$shapes <- shapes
     if (!all(is.na(dashes))) result$classification$dashes <- dashes
+    if (!all(is.na(opacities))) result$classification$opacities <- opacities
 
     return(result)
   }

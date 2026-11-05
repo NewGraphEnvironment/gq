@@ -22,10 +22,11 @@ column name (e.g., bcfishpass \code{barrier_status} vs WHSE
 alternatives.}
 }
 \value{
-A named list with \code{field}, \code{values} (named color vector), \code{labels},
-\code{widths} (named line-width vector for line layers; \code{NULL} otherwise), and
-\code{dashes} (named raw-QGIS-dash vector for classes that are dashed; \code{NULL}
-otherwise). The dash value is the raw QGIS encoding (named style like
+A named list with \code{field}, \code{values} (named color vector), \code{labels}
+(named by class key, like \code{values}), \code{widths} (named line-width vector for
+line layers; \code{NULL} otherwise), \code{dashes} (named raw-QGIS-dash vector for
+classes that are dashed; \code{NULL} otherwise), and \code{opacities} (named, \code{NA}
+meaning opaque; \code{NULL} when no class carries an opacity). The dash value is the raw QGIS encoding (named style like
 "dash dot", or custom pattern like "0.66;2") — consumers map it to their
 backend's line type (e.g. tmap \code{lty = "dashed"} for non-NA entries).
 }
@@ -44,6 +45,7 @@ cls$values
 cls$labels
 cls$widths
 cls$dashes
+cls$opacities
 
 # Object-based (backwards compatible)
 cls <- gq_tmap_classes(reg$layers$road)

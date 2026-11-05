@@ -165,6 +165,15 @@ legend_entries <- function(sty, cls, key, label, present) {
     unname(v[[j]])
   }
 
+  # Opacity follows the map's reading in tmap_alpha_args(): a class with none
+  # is opaque. Set only when the layer carries any, so a layer without opacity
+  # adds no column and collect_legend() supplies its default where rows mix.
+  alpha <- function(j) {
+    a <- pick(cls$opacities, j)
+    if (is.null(a)) return(NULL)
+    if (is.na(a)) 1 else a
+  }
+
   lapply(which(keep), function(j) {
     row <- list(type = type, label = unname(labs[[j]]))
     col <- unname(vals[[j]])
@@ -175,12 +184,15 @@ legend_entries <- function(sty, cls, key, label, present) {
     # outline colour -- the registry does not record one per class.
     if (type == "polygons") {
       row$fill <- col
+      row$fill_alpha <- alpha(j)
     } else if (type == "lines") {
       row$col <- col
       row$lwd <- pick(cls$widths, j)
       row$lty <- dash_to_lty(pick(cls$dashes, j))
+      row$col_alpha <- alpha(j)
     } else {
       row$fill <- col
+      row$fill_alpha <- alpha(j)
       # Per-class radius comes off gq_style()'s classification, which carries
       # `radii` (and `shapes`); gq_tmap_classes() returns only
       # field/values/labels/widths/dashes. crossings_pscis_assessment is the
@@ -237,11 +249,10 @@ legend_key <- function(r) {
 #'     (16 of 26 undashed) produced `c(NA, ..., "dashed")`.
 #'   * `col` / `lwd` -- `lake` has a stroke and `wetland` does not, so any legend
 #'     naming both produced `c("#1f78b4", NA)`.
-#'   * `fill_alpha` / `col_alpha` -- every CLASSIFIED polygon lacks them, because
-#'     `gq_style()` returns early and there is no `$fill` to read opacity from.
-#'     So any legend combining a classified polygon with an ordinary one -- most
-#'     real maps -- produced `c(0.7, NA)`. 26 of the 45 polygon rows in a
-#'     whole-registry legend.
+#'   * `fill_alpha` / `col_alpha` -- a classified layer whose classes carry no
+#'     opacity has none, so a legend combining it with a translucent layer
+#'     produced `c(0.7, NA)`. Before #71 that was every classified polygon,
+#'     since per-class opacity was not read at all.
 #'
 #' The defaults are the "draw nothing visible" value for each aesthetic, except
 #' the opacities, where absence means fully opaque rather than invisible.

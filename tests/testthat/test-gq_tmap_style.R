@@ -141,7 +141,7 @@ test_that("gq_tmap_classes returns classification info", {
   expect_equal(cls$field, "road_type")
   expect_length(cls$values, 2)
   expect_equal(unname(cls$values[["highway"]]), "#c0392b")
-  expect_equal(cls$labels, c("Highway", "Arterial"))
+  expect_equal(cls$labels, c(highway = "Highway", arterial = "Arterial"))
 })
 
 test_that("gq_tmap_classes returns a dashes vector for dashed classes (#32)", {
@@ -186,7 +186,7 @@ test_that("gq_tmap_classes converts fallback labels to title case", {
     )
   )
   cls <- gq_tmap_classes(layer)
-  expect_equal(cls$labels, c("Barrier", "Passable"))
+  expect_equal(cls$labels, c(BARRIER = "Barrier", PASSABLE = "Passable"))
 })
 
 test_that("gq_tmap_classes errors without classification", {
@@ -509,4 +509,90 @@ test_that("map and legend agree on per-class dash", {
     }
   }
   expect_gt(checked, 0)
+})
+
+# --- #71: per-class opacity reaches the drawn map ----------------------------
+
+test_that("gq_tmap_classes returns per-class opacities (#71)", {
+  cls <- gq_tmap_classes(gq_reg_main(), "roads_dra")
+  expect_identical(names(cls$opacities), names(cls$values))
+  expect_true(any(is.na(cls$opacities)) && any(!is.na(cls$opacities)))
+})
+
+test_that("every bec_zone class draws at its registry opacity (#71)", {
+  # Read off the rendered grob, not the args list: every BEC zone drew opaque
+  # for as long as the registry carried 0.25, and an args check would have
+  # passed against a translator that set fill_alpha somewhere tmap ignored.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  codes <- names(gq_tmap_classes(reg, "bec_zone")$values)
+  for (code in codes[c(1, length(codes))]) {
+    got <- drawn_gp(tm_shape_classified(reg, "bec_zone", code), "alpha",
+                    grob_class = "pathgrob")
+    expect_equal(got[1], 0.25, info = code)
+  }
+})
+
+test_that("a classified polygon draws each class at its own opacity (#71)", {
+  # fire_severity carries 0.4 on some classes and nothing (opaque) on others, so
+  # it spans the axis: a scalar collapse cannot pass both reads.
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  op <- gq_tmap_classes(reg, "fire_severity")$opacities
+  translucent <- names(op)[which(!is.na(op))[1]]
+  opaque <- names(op)[which(is.na(op))[1]]
+  expect_false(is.na(translucent) || is.na(opaque))
+
+  read <- function(code) {
+    drawn_gp(tm_shape_classified(reg, "fire_severity", code), "alpha",
+             grob_class = "pathgrob")[1]
+  }
+  expect_equal(read(translucent), unname(op[[translucent]]))
+  expect_equal(read(opaque), 1)
+})
+
+test_that("a classified line draws each class at its own opacity (#71)", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  op <- gq_tmap_classes(reg, "roads_dra")$opacities
+  translucent <- names(op)[which(!is.na(op))[1]]
+  opaque <- names(op)[which(is.na(op))[1]]
+
+  read <- function(code) {
+    drawn_gp(tm_shape_classified(reg, "roads_dra", code), "alpha")[1]
+  }
+  expect_equal(read(translucent), unname(op[[translucent]]))
+  expect_equal(read(opaque), 1)
+})
+
+test_that("uniform class opacity is a scalar, varied opacity a scale (#71)", {
+  reg <- gq_reg_main()
+  expect_equal(gq_tmap_style(reg, "bec_zone")$fill_alpha, 0.25)
+  args <- gq_tmap_style(reg, "roads_dra")
+  expect_equal(args$col_alpha, args$col)
+  expect_s3_class(args$col_alpha.scale, "tm_scale_categorical")
+  expect_null(gq_tmap_style(reg, "streams_bt")$col_alpha)  # no class carries one
+})
+
+test_that("map and legend agree on per-class opacity (#71)", {
+  skip_if_not_installed("tmap")
+  reg <- gq_reg_main()
+  cases <- list(c("fire_severity", "polygons", "fill_alpha", "pathgrob"),
+                c("roads_dra", "lines", "col_alpha", "polyline"))
+  for (cs in cases) {
+    cls <- gq_tmap_classes(reg, cs[1])
+    leg <- gq_tmap_legend(reg, cs[1])[[cs[2]]]
+    # Without opacities the loop below runs zero times and passes for nothing.
+    expect_true(anyNA(cls$opacities) && !all(is.na(cls$opacities)), info = cs[1])
+    for (code in names(cls$opacities)[c(which(is.na(cls$opacities))[1],
+                                       which(!is.na(cls$opacities))[1])]) {
+      j <- match(unname(cls$labels[[code]]), leg$labels)
+      map_a <- drawn_gp(tm_shape_classified(reg, cs[1], code), "alpha",
+                        grob_class = cs[4])[1]
+      # Both sides NULL compares equal, which is what this test read before the
+      # fix: no alpha on the grob and none in the legend.
+      expect_false(is.null(map_a) || is.na(j), info = paste(cs[1], code))
+      expect_equal(leg[[cs[3]]][[j]], map_a, info = paste(cs[1], code))
+    }
+  }
 })
