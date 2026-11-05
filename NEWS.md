@@ -1,3 +1,29 @@
+# gq 0.17.0
+
+- **The vendored rosters are current against the template repo's v0.93.0, and a stale
+  copy now fails a test (#100).** `template_groups.csv` had been two months behind: it
+  gains `Floodplain` and `Restoration` in bcrestoration, and the two drift exemptions
+  they needed are gone (#70). `form_types.csv` gains four forms (`form_general_monitoring`,
+  `form_observation`, `form_scan`, `form_tree`), styles eDNA (#94), and **drops
+  `form_trail_feature`**, which the template repo retired: `gq_form_types()` returns 16
+  spatial forms, up from 13.
+- **Six layers move to the group the templates put them in (#68):** `streams_all` and
+  `first_nation_reserve` to `Basemap/Waterbodies`, `fisheries_sensitive_watersheds` to
+  `Basemap`, `stream_labels` to `Streams/Stream labels`, and the two terrain layers to
+  `Basemap/Terrestrial Ecology`. `gq_group_layers()` and `gq_template_layers()` report
+  the new placement. A new `inst/registry/template_layers.csv` records where each layer
+  sits in each template, and the suite holds every `groups.csv` layer to it. The three
+  non-spatial template tables stay unregistered by decision (#73).
+- **Guards for the copies themselves.** `tests/testthat/test-vendored_currency.R`
+  rebuilds the four rosters from a template-repo checkout and compares them line for
+  line; it runs when `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` are set and skips
+  otherwise (#78). `tests/testthat/test-qml_consistency.R` checks, over the whole QML
+  corpus, that every field-scoped tag names a field the same file configures (#86, which
+  stays open: its four dangling tags sit in a tag class 26 files share). Rosters now sort
+  by radix, so a build is the same under every locale.
+- `DESCRIPTION` carries the package's Zenodo concept DOI in `Config/DOI`, which
+  `citation("gq")` and `CITATION.cff` read.
+
 # gq 0.16.1
 
 No change to the package's functions. This release exists so the package has a citable, archived version.
