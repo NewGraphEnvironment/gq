@@ -41,6 +41,65 @@
 #'   if the project root has no groups.
 #' @noRd
 qgs_group_table <- function(path) {
+  nodes <- qgs_tree_nodes(path)
+  out <- nodes[nodes$kind == "group", c("group_path", "depth", "order"),
+               drop = FALSE]
+  row.names(out) <- NULL
+
+  # Paths are the join key, so they have to be unique. Two same-named siblings
+  # would silently collapse to one row and take a real group's placement with
+  # them.
+  dupes <- out$group_path[duplicated(out$group_path)]
+  if (length(dupes) > 0) {
+    stop("Duplicate group path(s) in ", path, ": ",
+         paste(unique(dupes), collapse = ", "), call. = FALSE)
+  }
+
+  out
+}
+
+
+#' Tabulate the layers in a QGIS project's layer tree
+#'
+#' The layer-level companion to `qgs_group_table()`, from the same walk: one
+#' row per `<layer-tree-layer>`, with the path of the group it sits in. gq#68
+#' needs it because the group-level guard cannot see a layer filed under the
+#' wrong group -- each such placement is a draw-order claim.
+#'
+#' `layer` is the tree node's display name, byte-exact (several carry a
+#' leading space). `layer_key` is `normalize_layer_name()` of it, the rule
+#' `gq_qgs_extract()` keys the registry with, so it joins to `groups.csv`.
+#' `group_path` is `""` for a layer sitting directly under the project root.
+#' `order` is the same sibling index `qgs_group_table()` uses.
+#'
+#' @param path Character. Path to a `.qgs` file.
+#' @return A data.frame with columns `group_path`, `layer`, `layer_key`,
+#'   `order`. Zero rows if the tree holds no layers.
+#' @noRd
+qgs_layer_table <- function(path) {
+  nodes <- qgs_tree_nodes(path)
+  out <- nodes[nodes$kind == "layer", c("group_path", "name", "order"),
+               drop = FALSE]
+  names(out)[names(out) == "name"] <- "layer"
+  out$layer_key <- vapply(out$layer, normalize_layer_name, character(1),
+                          USE.NAMES = FALSE)
+  out <- out[c("group_path", "layer", "layer_key", "order")]
+  row.names(out) <- NULL
+  out
+}
+
+
+#' Walk a QGIS project's layer tree once, returning every group and layer
+#'
+#' The one walk both tables read, so they cannot disagree about where a node
+#' sits. A group row's `group_path` is its own path; a layer row's is the path
+#' of the group holding it.
+#'
+#' @param path Character. Path to a `.qgs` file.
+#' @return A data.frame with columns `kind` (`"group"` or `"layer"`),
+#'   `group_path`, `name`, `depth`, `order`, in document order.
+#' @noRd
+qgs_tree_nodes <- function(path) {
   if (!is.character(path) || length(path) != 1L || is.na(path)) {
     stop("`path` must be a single non-NA string", call. = FALSE)
   }
@@ -81,7 +140,21 @@ qgs_group_table <- function(path) {
                    c("layer-tree-group", "layer-tree-layer")]
     for (i in seq_along(kids)) {
       k <- kids[[i]]
-      if (xml2::xml_name(k) != "layer-tree-group") next
+      if (xml2::xml_name(k) == "layer-tree-layer") {
+        lnm <- xml2::xml_attr(k, "name")
+        if (is.na(lnm)) {
+          stop("Unnamed layer below the project root in ", path, call. = FALSE)
+        }
+        rows[[length(rows) + 1L]] <<- data.frame(
+          kind = "layer",
+          group_path = paste(ancestors, collapse = "/"),
+          name = lnm,
+          depth = length(ancestors) + 1L,
+          order = i,
+          stringsAsFactors = FALSE
+        )
+        next
+      }
       nm <- xml2::xml_attr(k, "name")
       if (is.na(nm)) {
         stop("Unnamed group below the project root in ", path, call. = FALSE)
@@ -94,7 +167,9 @@ qgs_group_table <- function(path) {
              call. = FALSE)
       }
       rows[[length(rows) + 1L]] <<- data.frame(
+        kind = "group",
         group_path = paste(c(ancestors, nm), collapse = "/"),
+        name = nm,
         depth = length(ancestors) + 1L,
         order = i,
         stringsAsFactors = FALSE
@@ -105,21 +180,11 @@ qgs_group_table <- function(path) {
   walk(named[[1]], character(0))
 
   if (length(rows) == 0L) {
-    return(data.frame(group_path = character(0), depth = integer(0),
+    return(data.frame(kind = character(0), group_path = character(0),
+                      name = character(0), depth = integer(0),
                       order = integer(0), stringsAsFactors = FALSE))
   }
-  out <- do.call(rbind, rows)
-
-  # Paths are the join key, so they have to be unique. Two same-named siblings
-  # would silently collapse to one row and take a real group's placement with
-  # them.
-  dupes <- out$group_path[duplicated(out$group_path)]
-  if (length(dupes) > 0) {
-    stop("Duplicate group path(s) in ", path, ": ",
-         paste(unique(dupes), collapse = ", "), call. = FALSE)
-  }
-
-  out
+  do.call(rbind, rows)
 }
 
 
@@ -133,5 +198,18 @@ qgs_group_table <- function(path) {
 read_template_groups_csv <- function() {
   path <- system.file("registry", "template_groups.csv", package = "gq")
   if (path == "") stop("template_groups.csv not found - reinstall gq")
+  utils::read.csv(path, stringsAsFactors = FALSE)
+}
+
+
+#' Read the vendored template layer table
+#'
+#' `utils::read.csv()` for the same reason as `read_template_groups_csv()`:
+#' layer display names and one group path carry leading or trailing spaces.
+#'
+#' @noRd
+read_template_layers_csv <- function() {
+  path <- system.file("registry", "template_layers.csv", package = "gq")
+  if (path == "") stop("template_layers.csv not found - reinstall gq")
   utils::read.csv(path, stringsAsFactors = FALSE)
 }

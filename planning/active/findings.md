@@ -45,3 +45,13 @@ Themes and groups are being reworked in the two repos that consume these rosters
 
 | Error | Resolution |
 |-------|------------|
+
+## Phase 1 measurements (2026-11-05, rfp v0.93.0 `80bff2c4`, detached worktree)
+
+- Re-vendor changed two files only: `template_groups.csv` (+`Floodplain` 7, `Restoration` 8 in bcrestoration, four orders shifted) and `form_types.csv` (eDNA styled; `general_monitoring`, `observation`, `scan`, `tree` new; `trail_feature` retired upstream in rfp `3a83239d`). `themes.csv` and the QML corpus re-ran byte-identical.
+- The drift guard went red on the fresh copy exactly where expected: `each exemption is still needed` (Floodplain, Restoration), and the forms pin (eDNA).
+- The refactored walker (`qgs_tree_nodes()`) reproduces `template_groups.csv` byte for byte.
+- `template_layers.csv`: 113 layers (bcfishpass 54, bcrestoration 59). Every key joins to `groups.csv` except `tracking` and the two `parameters_habitat_*` tables, all `NoGeometry` in rfp's roster.
+- Guards proven: restoring `streams_all` to `Streams` fails the placement test once per template, and deleting the `wetland` row fails the registered-or-exempt test.
+- Placement moves inserted each layer after its previous sibling in the template, where gq holds that sibling. Order within a group still disagrees with the templates in 7 groups, identically in both templates. #68 covers group membership only, so this is filed as gq#105.
+- `reg_build_main.R` reads neither `groups.csv` nor the form roster, so `reg_main.json` needs no rebuild.

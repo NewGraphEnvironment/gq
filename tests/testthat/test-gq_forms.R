@@ -98,12 +98,13 @@ test_that("an unstyled form reads as NA, and some forms are styled", {
   expect_true(any(!is.na(f$color)))
   expect_true(all(is.na(f$color) == is.na(f$symbol)))
 
-  # The four rfp has registered without deciding an appearance. Named, because
-  # this is the list the rfp issue asks to shrink -- when it does, this fails
-  # and says so rather than silently tracking whatever is currently unstyled.
+  # The forms rfp has registered without deciding an appearance. Named, because
+  # this is the list rfp#229 asks to shrink -- when it does, this fails and
+  # says so rather than silently tracking whatever is currently unstyled. It
+  # shrank once already: rfp#361 styled eDNA (gq#94).
   expect_setequal(
     f$layer_key[is.na(f$color)],
-    c("form_edna", "form_fhap", "form_fish_sample", "form_monitoring")
+    c("form_fhap", "form_fish_sample", "form_monitoring")
   )
 })
 

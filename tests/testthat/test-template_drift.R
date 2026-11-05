@@ -33,11 +33,12 @@ tpl_declared_groups <- function(tbl, template) {
 
 #' Compare the two, returning every kind of divergence separately
 #'
-#' Order is compared on the INTERSECTION only. The two sets are deliberately
-#' not equal -- gq declares `Floodplain` above `Basemap` and no template has
-#' that group yet -- so an assertion needing equal sets would be undefined the
-#' moment gq exercises the freedom it is supposed to have. Relative order of
-#' what both sides carry is well-defined under any set difference.
+#' Order is compared on the INTERSECTION only. The two sets need not be equal --
+#' `Floodplain` sat in gq above `Basemap` before rfp#216 shipped it, and gq
+#' skips groups it draws nothing in (`template_group_exempt`) -- so an assertion
+#' needing equal sets would be undefined the moment gq exercises the freedom it
+#' is supposed to have. Relative order of what both sides carry is well-defined
+#' under any set difference.
 compare_groups <- function(gq_order, tpl_order) {
   common <- intersect(gq_order, tpl_order)
   list(
@@ -53,22 +54,13 @@ compare_groups <- function(gq_order, tpl_order) {
 # is still NEEDED is what stops this list quietly becoming the whole input, at
 # which point the guard cannot fail and reads as diligence anyway.
 group_exempt <- c(
-  Floodplain = paste(
-    "bcrestoration only. gq declares it above Basemap deliberately -- 46% of",
-    "one project's change area is water-class and Basemap's waterbody fills",
-    "draw over it. No template has the group yet; rfp#216 adds it."
-  ),
-  Restoration = paste(
-    "bcrestoration only. harvest_area and planting_site are `local` layers",
-    "with no template equivalent. rfp#216 adds the group."
-  ),
   "Basemap/Terrestrial Ecology" = paste(
-    "Present in bcrestoration, absent from bcfishpass -- and groups.csv has no",
+    "bcrestoration only, by rfp's decision: rfp#216 declined to grow it in",
+    "bcfishpass, whose template carries none of its layers. groups.csv has no",
     "`template` column, so a subgroup declared once is declared for every",
-    "template whose top-level group is declared. gq cannot express",
-    "per-template subgroup membership. Pre-dates this issue as `Basemap/BEC`,",
-    "which existed in NEITHER template; the rename made it correct for one.",
-    "rfp#216 asks whether bcfishpass should carry it."
+    "template whose top-level group is declared, and gq cannot say",
+    "'bcrestoration only'. Whether to add that column is a registry schema",
+    "decision, deferred to gq#104 (gq#70, gq#100)."
   )
 )
 
@@ -83,11 +75,11 @@ group_exempt <- c(
 # about, pointed the other way.
 template_group_exempt <- c(
   "Project Specific" = paste(
-    "holds Tracking, Field Data and Model Parameters - none of which has a",
-    "registry entry (gq#73). gq cannot order a group it styles nothing in.",
-    "Cited gq#64 until that closed; #64 was about form_edna, form_monitoring",
-    "and habitat_lateral, and closing it left this reason true and its",
-    "reference dangling."
+    "holds Tracking, parameters_habitat_method and",
+    "parameters_habitat_thresholds -- all three no-geometry tables in rfp's",
+    "roster (wkb_type NoGeometry), so there is nothing for a map to draw or",
+    "order -- plus the empty Field Data subgroup. gq cannot order a group it",
+    "draws nothing in, so the three stay unregistered by decision (gq#73)."
   ),
   "Base - lidar" = paste(
     "EMPTY in both shipped templates - a placeholder a project drops lidar",
@@ -173,8 +165,10 @@ declared_not_present <- function(tbl, template) {
 
 
 test_that("each exemption is still needed", {
-  # When rfp#216 lands, this fails and tells you to delete the entry -- rather
-  # than sitting here forever exempting a group that stopped needing it.
+  # When the upstream change an entry waits on lands, this fails and tells you
+  # to delete the entry -- rather than sitting here forever exempting a group
+  # that stopped needing it. It fired for `Floodplain` and `Restoration` once
+  # the copy was re-vendored after rfp#216 (gq#70).
   tbl <- read_template_groups_csv()
   needed <- unique(unlist(lapply(templates, declared_not_present, tbl = tbl)))
   expect_setequal(setdiff(names(group_exempt), needed), character(0))
@@ -203,7 +197,8 @@ test_that("every group path gq declares exists in that template", {
   # "Streams/Habitat Models", and nothing looked.
   #
   # One direction only. A template group holding no gq layers -- `Field Data`,
-  # `Model Parameters - bcfishpass ` -- is not drift, it is gq#64.
+  # `Model Parameters - bcfishpass ` -- is not drift: its contents are
+  # no-geometry tables gq does not register (gq#73).
   tbl <- read_template_groups_csv()
   for (tpl in templates) {
     offenders <- declared_not_present(tbl, tpl)
@@ -318,6 +313,132 @@ test_that("qgs_group_table refuses what it cannot represent", {
     "</qgis>"
   ), slashed)
   expect_error(qgs_group_table(slashed), "path separator")
+})
+
+
+# --- layer placement (gq#68) --------------------------------------------------
+#
+# The group-level checks above cannot see a layer filed under the wrong group,
+# and each such filing is a draw-order claim: `streams_all` under `Streams`
+# draws over different things than `streams_all` under `Basemap/Waterbodies`.
+# Six layers disagreed until gq#68; every one of gq's six rows dated from the
+# registry's first commit with no measurement behind it, so the templates'
+# placement was adopted rather than defended.
+
+#' Each layer gq and the template both carry, where gq's group path differs
+placement_drift <- function(layers, template) {
+  g <- gq_groups()
+  gq_path <- ifelse(is.na(g$subgroup) | !nzchar(g$subgroup), g$group,
+                    paste(g$group, g$subgroup, sep = "/"))
+  names(gq_path) <- g$layer_key
+  t <- layers[layers$template == template, , drop = FALSE]
+  t <- t[t$layer_key %in% names(gq_path), , drop = FALSE]
+  bad <- t$group_path != gq_path[t$layer_key]
+  data.frame(layer_key = t$layer_key[bad],
+             template_path = t$group_path[bad],
+             gq_path = unname(gq_path[t$layer_key[bad]]),
+             stringsAsFactors = FALSE)
+}
+
+# EMPTY IS A VALID STATE, and the state gq#68 left it in. Same rules as
+# group_exempt: a reason each, asserted still needed.
+# Named-empty, not character(0): names(character(0)) is NULL, which the
+# setdiff() checks below would read as "no names to check" only by accident.
+layer_exempt <- stats::setNames(character(0), character(0))
+
+# Template layers gq deliberately does not register. A layer that is neither
+# here nor in groups.csv fails below, so a layer added upstream is a decision
+# someone has to make rather than one nobody notices.
+layer_unregistered_exempt <- c(
+  tracking = paste(
+    "no-geometry table (rfp_tracking, wkb_type NoGeometry) carrying Mergin's",
+    "PositionTracking properties; nothing for a map to draw (gq#73)"
+  ),
+  parameters_habitat_method = paste(
+    "no-geometry bcfishpass parameter table; nothing for a map to draw. Its",
+    "QML is vendored for QGIS, which edits it as a table (gq#73)"
+  ),
+  parameters_habitat_thresholds = paste(
+    "no-geometry bcfishpass parameter table; nothing for a map to draw. Its",
+    "QML is vendored for QGIS, which edits it as a table (gq#73)"
+  )
+)
+
+
+test_that("the vendored layer table joins to the registry", {
+  # Premise for the placement check: a join over nothing passes for nothing.
+  # The six gq#68 moved must all be in the overlap, in both templates where
+  # the template carries them.
+  layers <- read_template_layers_csv()
+  expect_setequal(names(layers),
+                  c("template", "group_path", "layer", "layer_key", "order"))
+  expect_setequal(unique(layers$template), templates)
+  keys <- gq_groups()$layer_key
+  for (tpl in templates) {
+    shared <- intersect(layers$layer_key[layers$template == tpl], keys)
+    expect_gt(length(shared), 30)
+    expect_true(all(c("streams_all", "stream_labels", "first_nation_reserve",
+                      "fisheries_sensitive_watersheds") %in% shared),
+                info = tpl)
+  }
+  expect_true(all(c("terrain_mapping_project_boundaries",
+                    "terrestrial_ecosystem_information_scanned_map_boundary") %in%
+                    layers$layer_key[layers$template == "bcrestoration_mobile"]))
+})
+
+
+test_that("every layer sits in the group the template puts it in", {
+  layers <- read_template_layers_csv()
+  for (tpl in templates) {
+    d <- placement_drift(layers, tpl)
+    expect_equal(d[!d$layer_key %in% names(layer_exempt), , drop = FALSE],
+                 d[0, , drop = FALSE], info = tpl)
+  }
+})
+
+
+test_that("every template layer is registered or exempt", {
+  layers <- read_template_layers_csv()
+  unregistered <- setdiff(layers$layer_key, gq_groups()$layer_key)
+  expect_setequal(setdiff(unregistered, names(layer_unregistered_exempt)),
+                  character(0))
+})
+
+
+test_that("each layer exemption is still needed", {
+  layers <- read_template_layers_csv()
+  drifted <- unique(unlist(lapply(templates, function(tpl) {
+    placement_drift(layers, tpl)$layer_key
+  })))
+  expect_setequal(setdiff(names(layer_exempt), drifted), character(0))
+
+  unregistered <- setdiff(layers$layer_key, gq_groups()$layer_key)
+  expect_setequal(setdiff(names(layer_unregistered_exempt), unregistered),
+                  character(0))
+})
+
+
+test_that("a layer filed under the wrong group is reported", {
+  # The fixture files `Lake` under `Streams`; groups.csv has it in
+  # `Basemap/Waterbodies`.
+  path <- test_path("fixtures", "template_layers_fixture.qgs")
+  skip_if_not(file.exists(path), "fixture missing")
+
+  tbl <- qgs_layer_table(path)
+  # The leading space survives the walk, and the key sees past it.
+  expect_true(" Biogeoclimatic Ecosystem Classification" %in% tbl$layer)
+  expect_true("biogeoclimatic_ecosystem_classification" %in% tbl$layer_key)
+
+  tbl$template <- "bcrestoration_mobile"
+  d <- placement_drift(tbl, "bcrestoration_mobile")
+  expect_equal(d$layer_key, "lake")
+  expect_equal(d$template_path, "Streams")
+  expect_equal(d$gq_path, "Basemap/Waterbodies")
+
+  # Against the real table the same call reports nothing for `lake`, so the
+  # assertion above is discriminating rather than always-true.
+  clean <- placement_drift(read_template_layers_csv(), "bcrestoration_mobile")
+  expect_false("lake" %in% clean$layer_key)
 })
 
 

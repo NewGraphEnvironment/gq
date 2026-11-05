@@ -26,12 +26,14 @@ test_that("gq_group_layers returns correct group", {
 })
 
 test_that("gq_group_layers includes subgroups", {
-  df <- gq_group_layers("Streams")
+  # Basemap, because it holds both kinds. Streams did until gq#68 moved its
+  # three direct children to where the templates put them.
+  df <- gq_group_layers("Basemap")
   # direct children
-  expect_true("streams_all" %in% df$layer_key)
+  expect_true("watershed_group_boundary" %in% df$layer_key)
   # subgroup children
-  expect_true("streams_bt" %in% df$layer_key)
-  expect_true(any(df$subgroup == "Habitat models", na.rm = TRUE))
+  expect_true("lake" %in% df$layer_key)
+  expect_true(any(df$subgroup == "Waterbodies", na.rm = TRUE))
 })
 
 test_that("gq_group_layers returns empty for unknown group", {

@@ -1,0 +1,114 @@
+"template","group_path","layer","layer_key","order"
+"bcfishpass_mobile","Base - misc","habitat_lateral","habitat_lateral",1
+"bcfishpass_mobile","Base - misc","UTM Zones","utm_zones",2
+"bcfishpass_mobile","Base - misc","Esri Satellite","esri_satellite",3
+"bcfishpass_mobile","Base - misc","Bing Aerial","bing_aerial",4
+"bcfishpass_mobile","Base - misc","Google Satellite","google_satellite",5
+"bcfishpass_mobile","Base - misc","ESRI World Topo","esri_world_topo",6
+"bcfishpass_mobile","Basemap","Watershed group boundary","watershed_group_boundary",1
+"bcfishpass_mobile","Basemap","Municipalities","municipalities",2
+"bcfishpass_mobile","Basemap","Glaciers","glaciers",3
+"bcfishpass_mobile","Basemap","Fire Historical Burn","fire_historical_burn",5
+"bcfishpass_mobile","Basemap","Fire Severity","fire_severity",6
+"bcfishpass_mobile","Basemap","Old Growth Management Areas","old_growth_management_areas",7
+"bcfishpass_mobile","Basemap","National park","national_park",8
+"bcfishpass_mobile","Basemap","Land Ownership","land_ownership",9
+"bcfishpass_mobile","Basemap","Range Tenure","range_tenure",10
+"bcfishpass_mobile","Basemap","Fisheries Sensitive Watersheds","fisheries_sensitive_watersheds",11
+"bcfishpass_mobile","Basemap","Provincial park","provincial_park",12
+"bcfishpass_mobile","Basemap","Conservancy","conservancy",13
+"bcfishpass_mobile","Basemap/Waterbodies","Manmade Waterbodies","manmade_waterbodies",1
+"bcfishpass_mobile","Basemap/Waterbodies","Lake","lake",2
+"bcfishpass_mobile","Basemap/Waterbodies","Wetland","wetland",3
+"bcfishpass_mobile","Basemap/Waterbodies","Streams - all","streams_all",4
+"bcfishpass_mobile","Basemap/Waterbodies","First Nation Reserve","first_nation_reserve",5
+"bcfishpass_mobile","Crossings","MoTi Culverts","moti_culverts",1
+"bcfishpass_mobile","Crossings","Crossings - modelled","crossings_modelled",2
+"bcfishpass_mobile","Crossings","Crossings - PSCIS assessment","crossings_pscis_assessment",3
+"bcfishpass_mobile","Crossings","Crossings - PSCIS confirmation","crossings_pscis_confirmation",4
+"bcfishpass_mobile","Crossings","Crossings - PSCIS Design","crossings_pscis_design",5
+"bcfishpass_mobile","Crossings","Crossings - PSCIS Remedation","crossings_pscis_remedation",6
+"bcfishpass_mobile","Crossings","Crossings - PSCIS,  modelled, dams","crossings_pscis_modelled_dams",7
+"bcfishpass_mobile","Crossings","MoTi major structures","moti_major_structures",8
+"bcfishpass_mobile","Forms"," Form PSCIS","form_pscis",1
+"bcfishpass_mobile","Forms"," Form FISS Site","form_fiss_site",2
+"bcfishpass_mobile","Other point features","FISS stream sample sites","fiss_stream_sample_sites",1
+"bcfishpass_mobile","Other point features","bcfishobs FISS fish observations","bcfishobs_fiss_fish_observations",2
+"bcfishpass_mobile","Other point features","FISS obstacles","fiss_obstacles",3
+"bcfishpass_mobile","Other point features","Hydrometric Stations Environment Canada","hydrometric_stations_environment_canada",4
+"bcfishpass_mobile","Project Specific","Tracking","tracking",1
+"bcfishpass_mobile","Project Specific/Model Parameters - bcfishpass ","parameters_habitat_method","parameters_habitat_method",1
+"bcfishpass_mobile","Project Specific/Model Parameters - bcfishpass ","parameters_habitat_thresholds","parameters_habitat_thresholds",2
+"bcfishpass_mobile","Roads,Railways,Pipelines","Pipeline permit","pipeline_permit",1
+"bcfishpass_mobile","Roads,Railways,Pipelines","Pipeline installed","pipeline_installed",2
+"bcfishpass_mobile","Roads,Railways,Pipelines","Pipeline application","pipeline_application",3
+"bcfishpass_mobile","Roads,Railways,Pipelines","Transmission line","transmission_line",4
+"bcfishpass_mobile","Roads,Railways,Pipelines","Railway","railway",5
+"bcfishpass_mobile","Roads,Railways,Pipelines","Roads - FTEN","roads_ften",6
+"bcfishpass_mobile","Roads,Railways,Pipelines","Roads - DRA","roads_dra",7
+"bcfishpass_mobile","Roads,Railways,Pipelines","Trails","trails",8
+"bcfishpass_mobile","Streams/Habitat models","streams_salmon","streams_salmon",1
+"bcfishpass_mobile","Streams/Habitat models","streams_st","streams_st",2
+"bcfishpass_mobile","Streams/Habitat models","streams_bt","streams_bt",3
+"bcfishpass_mobile","Streams/Stream labels","Stream labels","stream_labels",1
+"bcfishpass_mobile","Web Mapping Services","FREP_RIP2021_MAR2022","frep_rip2021_mar2022",1
+"bcfishpass_mobile","Web Mapping Services","Fire Perimeters - Current","fire_perimeters_current",2
+"bcrestoration_mobile","Base - misc","habitat_lateral","habitat_lateral",1
+"bcrestoration_mobile","Base - misc","UTM Zones","utm_zones",2
+"bcrestoration_mobile","Base - misc","Esri Satellite","esri_satellite",3
+"bcrestoration_mobile","Base - misc","Bing Aerial","bing_aerial",4
+"bcrestoration_mobile","Base - misc","Google Satellite","google_satellite",5
+"bcrestoration_mobile","Base - misc","ESRI World Topo","esri_world_topo",6
+"bcrestoration_mobile","Basemap","Watershed group boundary","watershed_group_boundary",1
+"bcrestoration_mobile","Basemap","Municipalities","municipalities",2
+"bcrestoration_mobile","Basemap","Glaciers","glaciers",3
+"bcrestoration_mobile","Basemap","Fire Historical Burn","fire_historical_burn",5
+"bcrestoration_mobile","Basemap","Fire Severity","fire_severity",6
+"bcrestoration_mobile","Basemap","Old Growth Management Areas","old_growth_management_areas",7
+"bcrestoration_mobile","Basemap","National park","national_park",8
+"bcrestoration_mobile","Basemap","Land Ownership","land_ownership",9
+"bcrestoration_mobile","Basemap","Range Tenure","range_tenure",10
+"bcrestoration_mobile","Basemap","Fisheries Sensitive Watersheds","fisheries_sensitive_watersheds",11
+"bcrestoration_mobile","Basemap","Provincial park","provincial_park",12
+"bcrestoration_mobile","Basemap","Conservancy","conservancy",13
+"bcrestoration_mobile","Basemap/Terrestrial Ecology","Orthophoto Tiles","orthophoto_tiles",1
+"bcrestoration_mobile","Basemap/Terrestrial Ecology","Terrestrial Ecosystem Information Scanned Map Boundary","terrestrial_ecosystem_information_scanned_map_boundary",2
+"bcrestoration_mobile","Basemap/Terrestrial Ecology","Terrain Mapping Project Boundaries","terrain_mapping_project_boundaries",3
+"bcrestoration_mobile","Basemap/Terrestrial Ecology"," Biogeoclimatic Ecosystem Classification","biogeoclimatic_ecosystem_classification",4
+"bcrestoration_mobile","Basemap/Waterbodies","Manmade Waterbodies","manmade_waterbodies",1
+"bcrestoration_mobile","Basemap/Waterbodies","Lake","lake",2
+"bcrestoration_mobile","Basemap/Waterbodies","Wetland","wetland",3
+"bcrestoration_mobile","Basemap/Waterbodies","Streams - all","streams_all",4
+"bcrestoration_mobile","Basemap/Waterbodies","First Nation Reserve","first_nation_reserve",5
+"bcrestoration_mobile","Crossings","MoTi Culverts","moti_culverts",1
+"bcrestoration_mobile","Crossings","Crossings - modelled","crossings_modelled",2
+"bcrestoration_mobile","Crossings","Crossings - PSCIS assessment","crossings_pscis_assessment",3
+"bcrestoration_mobile","Crossings","Crossings - PSCIS confirmation","crossings_pscis_confirmation",4
+"bcrestoration_mobile","Crossings","Crossings - PSCIS Design","crossings_pscis_design",5
+"bcrestoration_mobile","Crossings","Crossings - PSCIS Remedation","crossings_pscis_remedation",6
+"bcrestoration_mobile","Crossings","Crossings - PSCIS,  modelled, dams","crossings_pscis_modelled_dams",7
+"bcrestoration_mobile","Crossings","MoTi major structures","moti_major_structures",8
+"bcrestoration_mobile","Floodplain","Floodplains","floodplains",1
+"bcrestoration_mobile","Forms"," Form PSCIS","form_pscis",1
+"bcrestoration_mobile","Forms"," Form FISS Site","form_fiss_site",2
+"bcrestoration_mobile","Other point features","FISS stream sample sites","fiss_stream_sample_sites",1
+"bcrestoration_mobile","Other point features","bcfishobs FISS fish observations","bcfishobs_fiss_fish_observations",2
+"bcrestoration_mobile","Other point features","FISS obstacles","fiss_obstacles",3
+"bcrestoration_mobile","Other point features","Hydrometric Stations Environment Canada","hydrometric_stations_environment_canada",4
+"bcrestoration_mobile","Project Specific","Tracking","tracking",1
+"bcrestoration_mobile","Project Specific/Model Parameters - bcfishpass ","parameters_habitat_method","parameters_habitat_method",1
+"bcrestoration_mobile","Project Specific/Model Parameters - bcfishpass ","parameters_habitat_thresholds","parameters_habitat_thresholds",2
+"bcrestoration_mobile","Roads,Railways,Pipelines","Pipeline permit","pipeline_permit",1
+"bcrestoration_mobile","Roads,Railways,Pipelines","Pipeline installed","pipeline_installed",2
+"bcrestoration_mobile","Roads,Railways,Pipelines","Pipeline application","pipeline_application",3
+"bcrestoration_mobile","Roads,Railways,Pipelines","Transmission line","transmission_line",4
+"bcrestoration_mobile","Roads,Railways,Pipelines","Railway","railway",5
+"bcrestoration_mobile","Roads,Railways,Pipelines","Roads - FTEN","roads_ften",6
+"bcrestoration_mobile","Roads,Railways,Pipelines","Roads - DRA","roads_dra",7
+"bcrestoration_mobile","Roads,Railways,Pipelines","Trails","trails",8
+"bcrestoration_mobile","Streams/Habitat models","streams_salmon","streams_salmon",1
+"bcrestoration_mobile","Streams/Habitat models","streams_st","streams_st",2
+"bcrestoration_mobile","Streams/Habitat models","streams_bt","streams_bt",3
+"bcrestoration_mobile","Streams/Stream labels","Stream labels","stream_labels",1
+"bcrestoration_mobile","Web Mapping Services","FREP_RIP2021_MAR2022","frep_rip2021_mar2022",1
+"bcrestoration_mobile","Web Mapping Services","Fire Perimeters - Current","fire_perimeters_current",2

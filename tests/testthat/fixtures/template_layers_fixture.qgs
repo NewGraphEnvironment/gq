@@ -1,0 +1,45 @@
+<qgis version="4.2.1-fixture">
+  <!--
+    A cut of the bcrestoration_mobile layer tree with one deliberate defect, so
+    the layer-placement guard (gq#68) can be seen to fire: `Lake` is filed
+    under `Streams` instead of `Basemap/Waterbodies`. `Wetland` stays where the
+    template puts it, so the guard has a correctly placed layer to leave alone,
+    and ` Biogeoclimatic Ecosystem Classification` keeps its leading space,
+    which normalize_layer_name() must see past for the join to hold.
+
+    No DOCTYPE, for the reason template_drift_fixture.qgs gives.
+  -->
+  <layer-tree-group>
+    <customproperties>
+      <Option/>
+    </customproperties>
+    <layer-tree-group checked="Qt::Checked" expanded="1" name="bcrestoration Mobile ">
+      <customproperties>
+        <Option/>
+      </customproperties>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Streams">
+        <customproperties>
+          <Option/>
+        </customproperties>
+        <layer-tree-layer checked="Qt::Checked" expanded="1" id="lake_fixture" name="Lake"/>
+      </layer-tree-group>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Basemap">
+        <customproperties>
+          <Option/>
+        </customproperties>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Waterbodies">
+          <customproperties>
+            <Option/>
+          </customproperties>
+          <layer-tree-layer checked="Qt::Checked" expanded="1" id="wetland_fixture" name="Wetland"/>
+        </layer-tree-group>
+        <layer-tree-group checked="Qt::Checked" expanded="1" name="Terrestrial Ecology">
+          <customproperties>
+            <Option/>
+          </customproperties>
+          <layer-tree-layer checked="Qt::Checked" expanded="1" id="bec_fixture" name=" Biogeoclimatic Ecosystem Classification"/>
+        </layer-tree-group>
+      </layer-tree-group>
+    </layer-tree-group>
+  </layer-tree-group>
+</qgis>

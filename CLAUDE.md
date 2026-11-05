@@ -166,14 +166,14 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
 - `gq_reg_merge(..., csv, priority)` — merge multiple registries
-- `gq_form_types()` — the roster of Mergin survey forms (13 spatial forms)
+- `gq_form_types()` — the roster of spatial Mergin survey forms
 
 Forms get their own table rather than a place in `groups.csv`, and the reason is
-structural. `rfp_qgs_form_add()` injects forms **per project** — one project's config
-carries `forms: [trail_feature, viewscape, cabin_visit]` —
+structural. `rfp_qgs_form_add()` injects forms **per project** — each project's config
+lists the forms it carries —
 while `groups.csv` models **per-template** contents. The shipped templates carry
 only `form_pscis` and `form_fiss_site`, so folding the roster in would make
-`gq_template_layers()` report 13 forms for a template shipping 2: cartography for
+`gq_template_layers()` report the whole catalogue for a template shipping 2: cartography for
 layers nobody downloaded, which is the defect the composition guards exist to
 catch (gq#40, gq#64).
 

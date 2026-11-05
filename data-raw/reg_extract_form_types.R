@@ -5,15 +5,16 @@
 # tidiness.
 #
 # Forms are not baked into the templates. `rfp_qgs_form_add()` injects them per
-# project, and rtj's scripts/gis/projects/<name>/project.yml selects which --
-# nelson carries `forms: [trail_feature, viewscape, cabin_visit]`. So form
-# membership is per-PROJECT, while groups.csv models per-TEMPLATE contents.
+# project, and rtj's scripts/gis/projects/<name>/project.yml selects which, in
+# a `forms:` list. So form membership is per-PROJECT, while groups.csv models
+# per-TEMPLATE contents.
 #
 # Putting the whole roster into groups.csv would therefore make
-# gq_template_layers() report 13 forms for a template that ships 2, which is
-# exactly the gq#40 defect -- a project styled for layers it never downloaded --
-# at six times the scale. groups.csv keeps the two the templates ship; this
-# table is the catalogue they are drawn from. (gq#64)
+# gq_template_layers() report every form in the catalogue (16 at rfp 0.93.0)
+# for a template that ships 2, which is exactly the gq#40 defect -- a project
+# styled for layers it never downloaded -- several times over. groups.csv keeps
+# the two the templates ship; this table is the catalogue they are drawn from.
+# (gq#64)
 #
 # Like reg_extract_themes.R, reg_extract_template_groups.R and styles_vendor.R,
 # this is a DEV-ONLY / build-time dependency on rfp. The committed CSV is the

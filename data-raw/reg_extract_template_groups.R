@@ -91,3 +91,47 @@ message(
                 vapply(templates, function(t) sum(groups$template == t),
                        integer(1))), collapse = ", "), ")"
 )
+
+
+# --- template_layers.csv: where each layer sits (gq#68) ------------------------
+#
+# Same walk, the layer rows. The witness for layer PLACEMENT, which the group
+# table cannot see: a layer filed under the wrong group changes what it draws
+# over, and test-template_drift.R compares each groups.csv row against this.
+layers <- do.call(rbind, lapply(templates, function(template) {
+  tbl <- qgs_layer_table(file.path(tpl_dir, paste0(template, ".qgs")))
+  if (nrow(tbl) == 0L) {
+    stop("No layers in ", template, call. = FALSE)
+  }
+  cbind(template = template, tbl, stringsAsFactors = FALSE)
+}))
+layers <- layers[order(layers$template, layers$group_path, layers$order), ]
+
+# A key two layers share in one template would make the placement join
+# ambiguous: refuse rather than let one row stand for both.
+dup <- layers[duplicated(layers[c("template", "layer_key")]), ]
+if (nrow(dup) > 0) {
+  stop("layer_key repeated within a template: ",
+       paste(sprintf("%s %s", dup$template, dup$layer_key), collapse = "; "),
+       call. = FALSE)
+}
+
+# Quoted for the reasons above, and because display names carry leading spaces.
+write.csv(layers, "inst/registry/template_layers.csv", row.names = FALSE,
+          quote = TRUE)
+
+back <- utils::read.csv("inst/registry/template_layers.csv",
+                        stringsAsFactors = FALSE)
+for (col in c("group_path", "layer")) {
+  if (!identical(back[[col]], layers[[col]])) {
+    stop(col, " did not survive the CSV round-trip", call. = FALSE)
+  }
+}
+
+message(
+  "template_layers.csv built: ", nrow(layers), " layers across ",
+  length(templates), " templates (",
+  paste(sprintf("%s %d", templates,
+                vapply(templates, function(t) sum(layers$template == t),
+                       integer(1))), collapse = ", "), ")"
+)
