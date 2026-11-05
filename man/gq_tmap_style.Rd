@@ -31,6 +31,11 @@ same shape \code{fill}/\code{col} already used, so \code{do.call()} callers need
 change. Numeric axes (\code{lwd}, \code{size}) fall back to a scalar when the
 registry defines the value for only some classes, since a half-mapped
 axis would invent a size for the gaps.
+
+Per-class opacity is the exception to that rule. A class with no opacity
+is opaque, not unknown, so it is mapped as 1: polygon and point classes
+through \code{fill_alpha}, line classes through \code{col_alpha}. Opacity shared by
+every class is returned as a plain number.
 }
 \description{
 Wraps \code{\link[=gq_style]{gq_style()}} and returns a named list of arguments suitable for

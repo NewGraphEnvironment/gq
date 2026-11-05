@@ -161,7 +161,7 @@ Each layer style in the registry maps a **layer name** to rendering properties:
 #### R Package (the package root IS the R package)
 
 **Registry functions:**
-- `gq_reg_main()` — load the master registry (57 layers, no arguments needed)
+- `gq_reg_main()` — load the master registry (no arguments needed)
 - `gq_registry_read(path)` — read any registry JSON file
 - `gq_reg_read(path)` — alias for `gq_registry_read()`
 - `gq_reg_custom(path)` — read a hand-curated CSV registry
@@ -213,6 +213,13 @@ is the *evidence* for a schema decision, check it is a decision.
 The `field` parameter overrides the classification field name when data comes
 from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
 `barrier_result_code`). See `inst/registry/xref_layers.csv`.
+
+Every per-class vector a classified style returns — `labels`, `widths`, `dashes`,
+`opacities` — is named by class key, as `values` is (gq#55). A class with no
+`opacity` is opaque, not unknown: the extractor records opacity only below 1, so
+`tmap_classified()` reads `NA` as 1 and maps polygon opacity to `fill_alpha` and
+line opacity to `col_alpha` (gq#71). mapgl does not read per-class opacity yet
+(gq#107).
 
 **Composition (tmap):**
 - `gq_bbox_aspect(x, asp)` — pad a bbox to a canvas aspect ratio
@@ -269,7 +276,13 @@ too many.
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers)
 - `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source.
-  Also carries the one `type = "raster"` entry (`habitat_lateral`): a QGIS
+  Only `layer_key` and `type` are required; an absent column reads as empty. A
+  classified line takes its per-class style from the stroke columns and a `dash`
+  column, in the extractor's key names, so both routes write one vocabulary
+  (gq#42). Styles for products a script derives (habitat rule comparison,
+  expected use, flood factor, land-cover and tree change) live here with no
+  `source_layer` and no `groups.csv` row, and `test-gq_groups.R` names them as
+  registry-only. Also carries the one `type = "raster"` entry (`habitat_lateral`): a QGIS
   paletted renderer, one row per palette entry, `class_field` the sentinel
   `"value"` meaning band 1. The QML remains the lossless copy — the schema
   cannot express per-value transparency or a multi-band renderer. Its

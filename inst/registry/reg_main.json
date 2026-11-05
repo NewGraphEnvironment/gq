@@ -1746,6 +1746,204 @@
           }
         }
       }
+    },
+    "habitat_rule_comparison": {
+      "type": "line",
+      "classification": {
+        "field": "rule_class",
+        "classes": {
+          "both": {
+            "color": "#1b6ca8",
+            "opacity": 0.7,
+            "label": "Both rules"
+          },
+          "first": {
+            "color": "#d95f02",
+            "opacity": 0.7,
+            "label": "First rule only"
+          },
+          "second": {
+            "color": "#1b9e77",
+            "opacity": 0.7,
+            "label": "Second rule only"
+          },
+          "outside": {
+            "color": "#7b3f98",
+            "opacity": 0.45,
+            "label": "Floodplain outside the rule"
+          }
+        }
+      },
+      "stroke": {
+        "color": "#1b6ca8",
+        "opacity": 0.7
+      }
+    },
+    "habitat_expected_use": {
+      "type": "line",
+      "classification": {
+        "field": "grade_class",
+        "classes": {
+          "0-0.2": {
+            "color": "#f7fbff",
+            "opacity": 0.7,
+            "label": "0 to 0.2"
+          },
+          "0.2-0.4": {
+            "color": "#c6dbef",
+            "opacity": 0.7,
+            "label": "0.2 to 0.4"
+          },
+          "0.4-0.6": {
+            "color": "#6baed6",
+            "opacity": 0.7,
+            "label": "0.4 to 0.6"
+          },
+          "0.6-0.8": {
+            "color": "#2171b5",
+            "opacity": 0.7,
+            "label": "0.6 to 0.8"
+          },
+          "0.8-1": {
+            "color": "#08306b",
+            "opacity": 0.7,
+            "label": "0.8 to 1"
+          }
+        }
+      },
+      "stroke": {
+        "color": "#f7fbff",
+        "opacity": 0.7
+      }
+    },
+    "floodplain_flood_factor": {
+      "type": "polygon",
+      "classification": {
+        "field": "scenario_id",
+        "classes": {
+          "ff02": {
+            "color": "#0b3c6f",
+            "opacity": 0.7,
+            "label": "Active channel margin"
+          },
+          "ff04": {
+            "color": "#1aa6a6",
+            "opacity": 0.7,
+            "label": "Functional floodplain"
+          },
+          "ff06": {
+            "color": "#f2a93b",
+            "opacity": 0.7,
+            "label": "Valley bottom"
+          }
+        }
+      }
+    },
+    "tree_cover_change": {
+      "type": "polygon",
+      "classification": {
+        "field": "tree_change",
+        "classes": {
+          "loss": {
+            "color": "#e7298a",
+            "opacity": 0.7,
+            "label": "Tree loss"
+          },
+          "gain": {
+            "color": "#ff8c42",
+            "opacity": 0.7,
+            "label": "Tree gain"
+          }
+        }
+      }
+    },
+    "landcover_change_from": {
+      "type": "polygon",
+      "classification": {
+        "field": "from_class",
+        "classes": {
+          "Water": {
+            "color": "#419bdf",
+            "label": "Water"
+          },
+          "Trees": {
+            "color": "#397d49",
+            "label": "Trees"
+          },
+          "Flooded Vegetation": {
+            "color": "#7a87c6",
+            "label": "Flooded Vegetation"
+          },
+          "Crops": {
+            "color": "#e49635",
+            "label": "Crops"
+          },
+          "Built Area": {
+            "color": "#c4281b",
+            "label": "Built Area"
+          },
+          "Bare Ground": {
+            "color": "#a59b8f",
+            "label": "Bare Ground"
+          },
+          "Snow/Ice": {
+            "color": "#a8ebff",
+            "label": "Snow/Ice"
+          },
+          "Clouds": {
+            "color": "#616161",
+            "label": "Clouds"
+          },
+          "Rangeland": {
+            "color": "#e3e2c3",
+            "label": "Rangeland"
+          }
+        }
+      }
+    },
+    "landcover_change_to": {
+      "type": "polygon",
+      "classification": {
+        "field": "to_class",
+        "classes": {
+          "Water": {
+            "color": "#419bdf",
+            "label": "Water"
+          },
+          "Trees": {
+            "color": "#397d49",
+            "label": "Trees"
+          },
+          "Flooded Vegetation": {
+            "color": "#7a87c6",
+            "label": "Flooded Vegetation"
+          },
+          "Crops": {
+            "color": "#e49635",
+            "label": "Crops"
+          },
+          "Built Area": {
+            "color": "#c4281b",
+            "label": "Built Area"
+          },
+          "Bare Ground": {
+            "color": "#a59b8f",
+            "label": "Bare Ground"
+          },
+          "Snow/Ice": {
+            "color": "#a8ebff",
+            "label": "Snow/Ice"
+          },
+          "Clouds": {
+            "color": "#616161",
+            "label": "Clouds"
+          },
+          "Rangeland": {
+            "color": "#e3e2c3",
+            "label": "Rangeland"
+          }
+        }
+      }
     }
   }
 }

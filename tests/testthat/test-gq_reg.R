@@ -143,12 +143,9 @@ test_that("a numeric class_value keys the class list by name, not position", {
   # column character. A caller's own CSV has no such accident.
   csv <- tempfile(fileext = ".csv")
   on.exit(unlink(csv), add = TRUE)
-  # Built from the shipped file's own header rather than from a hand-listed set
-  # of columns. gq_reg_custom() validates only layer_key and type as required,
-  # then indexes the rest unguarded -- `is.na(NULL)` is logical(0), and `if` on
-  # that errors -- so a fixture missing any optional column fails for a reason
-  # that has nothing to do with what is under test. Deriving the header means
-  # this cannot rot when a column is added.
+  # Built from the shipped file's own header. Written when gq_reg_custom()
+  # errored on any absent optional column; since #75 a minimal header would do,
+  # but the full one still exercises every column at once.
   hdr <- names(utils::read.csv(
     system.file("registry", "reg_custom.csv", package = "gq"),
     stringsAsFactors = FALSE
@@ -192,4 +189,160 @@ test_that("habitat_lateral carries its palette in the master registry", {
   # this legend reads "1" and "2".
   expect_equal(unname(cls$labels),
                c("Floodplain", "Floodplain Disconnected by Railway"))
+})
+
+
+# --- #75: optional columns are optional; #42: classified lines from CSV -------
+
+write_reg_csv <- function(df, envir = parent.frame()) {
+  csv <- tempfile(fileext = ".csv")
+  withr::defer(unlink(csv), envir = envir)
+  utils::write.csv(df, csv, row.names = FALSE, quote = TRUE, na = "")
+  csv
+}
+
+test_that("a CSV carrying only the columns it needs reads (#75)", {
+  # The acceptance set from #75. Every other column used to be indexed
+  # unguarded, so the first absent one raised `argument is of length zero`,
+  # naming neither the column nor the file.
+  csv <- write_reg_csv(data.frame(
+    layer_key = "zone", type = "polygon", source_layer = "a.zone",
+    class_field = "ZONE", class_value = c("A", "B"),
+    fill_color = c("#111111", "#222222")
+  ))
+  reg <- gq_reg_custom(csv)
+  expect_equal(reg$layers$zone$classification$classes$B$color, "#222222")
+  expect_equal(unname(gq_tmap_classes(reg$layers$zone)$values),
+               c("#111111", "#222222"))
+})
+
+test_that("a simple layer reads from layer_key, type and one style column (#75)", {
+  csv <- write_reg_csv(data.frame(layer_key = "pond", type = "polygon",
+                                  fill_color = "#00ffff"))
+  expect_equal(gq_reg_custom(csv)$layers$pond$fill, list(color = "#00ffff"))
+})
+
+classified_line_csv <- function(dash = c(NA, "dash"), envir = parent.frame()) {
+  # The file must outlive this helper, so its cleanup belongs to the caller.
+  write_reg_csv(envir = envir, data.frame(
+    layer_key = "track", type = "line", source_layer = "osm.track",
+    class_field = "highway", class_value = c("road", "track"),
+    class_label = c("Road", "Track"),
+    stroke_color = c("#444444", "#8b5a2b"), stroke_width = c(1.2, 0.6),
+    stroke_opacity = c(NA, 0.8), dash = dash
+  ))
+}
+
+test_that("a classified line from CSV keeps per-class width and dash (#42)", {
+  cls <- gq_tmap_classes(gq_reg_custom(classified_line_csv())$layers$track)
+  expect_equal(cls$values, c(road = "#444444", track = "#8b5a2b"))
+  expect_equal(cls$widths, c(road = 1.2, track = 0.6))
+  expect_equal(cls$dashes, c(road = NA, track = "dash"))
+  expect_equal(cls$opacities, c(road = NA, track = 0.8))
+})
+
+test_that("CSV and extractor write a classified line in one vocabulary (#42)", {
+  # The two writers disagreed on key names (outline_width vs width), and
+  # nothing compared them, so the CSV route lost width and dash silently. Hold
+  # the CSV's keys to what the extractor writes for line classes, taken from the
+  # extractor's own output rather than listed here, so a rename on either side
+  # fails. Not from reg_main.json: that also holds lines this CSV route wrote,
+  # so it would partly compare the writer with itself.
+  reg <- gq_reg_read(system.file("registry", "reg_qgis_restoration.json",
+                                 package = "gq"))
+  extracted <- unique(unlist(lapply(reg$layers, function(l) {
+    if (identical(l$type, "line") && !is.null(l$classification)) {
+      lapply(l$classification$classes, names)
+    }
+  })))
+  expect_true(all(c("color", "width", "dash", "opacity") %in% extracted))  # premise
+
+  classes <- gq_reg_custom(classified_line_csv())$layers$track$classification$classes
+  csv_keys <- unique(unlist(lapply(classes, names)))
+  expect_setequal(setdiff(csv_keys, extracted), character(0))
+  expect_true(all(c("color", "width", "dash", "opacity") %in% csv_keys))
+})
+
+test_that("a classified line from CSV still gives mapgl its stroke width", {
+  # The per-class keys moved to the extractor's vocabulary, but the layer-level
+  # stroke stays: gq_mapgl_style() draws a line from it, and an earlier draft
+  # of #42 dropped it, so the width reached MapLibre as its 1 px default.
+  lyr <- gq_reg_custom(classified_line_csv())$layers$track
+  expect_equal(gq_mapgl_style(lyr)$paint[["line-width"]], 1.2)
+})
+
+test_that("a classified line falls back to fill_color for its colour (#42)", {
+  csv <- write_reg_csv(data.frame(
+    layer_key = "trail", type = "line", class_field = "highway",
+    class_value = c("path", "footway"), fill_color = c("#aa0000", "#00aa00"),
+    stroke_width = c(0.5, 0.4)
+  ))
+  cls <- gq_reg_custom(csv)$layers$trail$classification$classes
+  expect_equal(cls$path$color, "#aa0000")
+  expect_null(cls$path$outline_width)
+  expect_equal(cls$path$width, 0.5)
+})
+
+test_that("the dash column accepts QGIS style names and dash patterns (#42)", {
+  ok <- c("solid", "no", "dash", "dot", "dash dot", "dash dot dot", "4;2",
+          "0.66;2", "4 2", "1.5;0.5;3;0.5")
+  csv <- write_reg_csv(data.frame(
+    layer_key = paste0("l", seq_along(ok)), type = "line",
+    stroke_color = "#000000", dash = ok
+  ))
+  reg <- gq_reg_custom(csv)
+  got <- vapply(reg$layers, function(l) l$stroke$dash, character(1))
+  expect_equal(unname(got), ok)
+})
+
+test_that("an unknown dash spelling errors, naming the layer and the value (#42)", {
+  for (bad in c("dashed", "4", "4;", "dash-dot")) {
+    csv <- write_reg_csv(data.frame(layer_key = "trk", type = "line",
+                                    stroke_color = "#000000", dash = bad))
+    expect_error(gq_reg_custom(csv), paste0("trk.*'", bad, "'"), info = bad)
+  }
+})
+
+test_that("a column the reader does not know is named in a warning", {
+  # Since #75 an absent column is an empty one, so a misspelled header reads
+  # as empty too, where it used to error. The cases review found, each of
+  # which loses style while something else on the layer is still filled:
+  cases <- list(
+    class_feild = data.frame(layer_key = "z", type = "polygon",
+                             class_feild = "ZONE", class_value = c("A", "B"),
+                             fill_color = c("#111111", "#222222")),
+    fill_colour = data.frame(layer_key = "z", type = "polygon",
+                             class_field = "ZONE", class_value = c("A", "B"),
+                             fill_colour = c("#111111", "#222222")),
+    stroke_colour = data.frame(layer_key = "t", type = "line",
+                               class_field = "hw", class_value = c("a", "b"),
+                               stroke_colour = "#ff0000", stroke_width = 1),
+    label_colour = data.frame(layer_key = "l", type = "line",
+                              stroke_color = "#000000", label_colour = "#111111",
+                              label_size = 8)
+  )
+  for (bad in names(cases)) {
+    csv <- write_reg_csv(cases[[bad]])
+    expect_warning(gq_reg_custom(csv), paste0("not read.*", bad), info = bad)
+  }
+
+  # drift's registry CSVs carry `notes`, which is deliberately not read.
+  ok <- write_reg_csv(data.frame(layer_key = "pond", type = "polygon",
+                                 fill_color = "#00ffff", notes = "x"))
+  expect_no_warning(gq_reg_custom(ok))
+})
+
+test_that("every column the reader reads is in its known set", {
+  # The unread-column warning and the absent-column fill both rest on
+  # cols_reg_optional naming every column gq_reg_custom() reads. A column read
+  # without being listed would be absent-filled never and warned about always.
+  # So enumerate the reads from the code rather than trusting the list.
+  ns <- asNamespace("gq")
+  fns <- c("gq_reg_custom", grep("^csv_", ls(ns, all.names = TRUE), value = TRUE))
+  read <- unique(unlist(lapply(fns, function(f) {
+    txt <- deparse(get(f, ns))
+    sub(".*\\$", "", unlist(regmatches(txt, gregexpr("\\b(r|row|row1)\\$[A-Za-z_]+", txt))))
+  })))
+  expect_gt(length(read), 20)   # premise: the scan found the reads
+  expect_setequal(setdiff(read, c("layer_key", "type", cols_reg_optional)), character(0))
 })

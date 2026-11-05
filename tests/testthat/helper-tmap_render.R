@@ -81,7 +81,11 @@ drawn_labels <- function(m) drawn_parts(m)$labels
 # render returns values in draw order, which is level order rather than feature
 # order -- so comparing the returned vector against the input order passes on a
 # coincidence and fails to notice a mapping that is right only as a set.
-drawn_gp <- function(m, what, grob_class = "polyline") {
+#
+# `grob_name` narrows further by grob name (a regex). tmap 4.4 draws a polygon
+# as two grobs when fill and border alpha differ -- `polygons_*` (fill) then
+# `polygon_borders_*` -- so a fill read selects by name rather than by order.
+drawn_gp <- function(m, what, grob_class = "polyline", grob_name = NULL) {
   f <- tempfile(fileext = ".png")
   grDevices::png(f)
   g <- suppressMessages(tmap::tmap_grob(m))
@@ -90,7 +94,8 @@ drawn_gp <- function(m, what, grob_class = "polyline") {
 
   out <- NULL
   walk <- function(x) {
-    if (inherits(x, grob_class) && !is.null(x$gp[[what]])) {
+    named <- is.null(grob_name) || grepl(grob_name, x$name %||% "")
+    if (inherits(x, grob_class) && !is.null(x$gp[[what]]) && named) {
       out <<- c(out, x$gp[[what]])
     }
     if (!is.null(x$children)) for (ch in x$children) walk(ch)

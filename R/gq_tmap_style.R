@@ -15,6 +15,11 @@
 #'   registry defines the value for only some classes, since a half-mapped
 #'   axis would invent a size for the gaps.
 #'
+#'   Per-class opacity is the exception to that rule. A class with no opacity
+#'   is opaque, not unknown, so it is mapped as 1: polygon and point classes
+#'   through `fill_alpha`, line classes through `col_alpha`. Opacity shared by
+#'   every class is returned as a plain number.
+#'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
 #' reg <- gq_registry_read(path)
@@ -69,10 +74,11 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #' labels suitable for tmap's `tm_scale_categorical()`.
 #'
 #' @inheritParams gq_style
-#' @return A named list with `field`, `values` (named color vector), `labels`,
-#'   `widths` (named line-width vector for line layers; `NULL` otherwise), and
-#'   `dashes` (named raw-QGIS-dash vector for classes that are dashed; `NULL`
-#'   otherwise). The dash value is the raw QGIS encoding (named style like
+#' @return A named list with `field`, `values` (named color vector), `labels`
+#'   (named by class key, like `values`), `widths` (named line-width vector for
+#'   line layers; `NULL` otherwise), `dashes` (named raw-QGIS-dash vector for
+#'   classes that are dashed; `NULL` otherwise), and `opacities` (named, `NA`
+#'   meaning opaque; `NULL` when no class carries an opacity). The dash value is the raw QGIS encoding (named style like
 #'   "dash dot", or custom pattern like "0.66;2") — consumers map it to their
 #'   backend's line type (e.g. tmap `lty = "dashed"` for non-NA entries).
 #'
@@ -87,6 +93,7 @@ gq_tmap_style <- function(layer_or_reg, name = NULL, field = NULL) {
 #' cls$labels
 #' cls$widths
 #' cls$dashes
+#' cls$opacities
 #'
 #' # Object-based (backwards compatible)
 #' cls <- gq_tmap_classes(reg$layers$road)
@@ -97,7 +104,7 @@ gq_tmap_classes <- function(layer_or_reg, name = NULL, field = NULL) {
   cls <- sty$classification
   if (is.null(cls)) stop("Layer does not have classification")
   list(field = cls$field, values = cls$values, labels = cls$labels,
-       widths = cls$widths, dashes = cls$dashes)
+       widths = cls$widths, dashes = cls$dashes, opacities = cls$opacities)
 }
 
 
@@ -153,6 +160,54 @@ class_ltys <- function(dashes) {
   vapply(dashes, function(d) dash_to_lty(d) %||% "solid", character(1))
 }
 
+#' Per-class opacity with a class that has none read as opaque
+#'
+#' The extractor records opacity only below 1, so `NA` here is a class drawn at
+#' full opacity, not an unknown. One function so the map and the legend cannot
+#' read it two ways (#71).
+#' @noRd
+class_opacity <- function(v) {
+  if (is.null(v)) return(NULL)
+  v[is.na(v)] <- 1
+  v
+}
+
+#' Per-class opacity as tmap arguments under the given aesthetic name
+#'
+#' Returns an empty list when no class carries an opacity, a scalar when every
+#' class shares one, and the field plus a categorical scale otherwise. `NA` is
+#' read as 1, not as a gap: the extractor records opacity only below 1, so
+#' `roads_dra` and `streams_all` carry it on some classes by design (#71).
+#' @noRd
+tmap_alpha_args <- function(cls, aes) {
+  op <- class_opacity(cls$opacities)
+  if (is.null(op)) return(list())
+  out <- if (length(unique(op)) == 1L) {
+    list(unname(op[1]))
+  } else {
+    list(cls$field, tmap_scale_axis(cls, op), tmap::tm_legend(show = FALSE))
+  }
+  names(out) <- paste0(aes, c("", ".scale", ".legend"))[seq_along(out)]
+  out
+}
+
+#' One reading of a per-class numeric axis, for the map and the legend alike
+#'
+#' A width or radius the registry gives only some classes is drawn at one
+#' value for all of them, since a half-mapped axis would invent a size for the
+#' gaps. That value is the first class that has one: taking `v[1]` gave `NA`
+#' when the first class was the blank one, and tmap then drew every class at
+#' its default. Returned at full length, so the legend can index it by class
+#' and draw each key at the width the map drew, rather than at 0 for a blank.
+#' `NULL` when no class has a value.
+#' @noRd
+class_axis <- function(v) {
+  if (is.null(v) || all(is.na(v))) return(NULL)
+  if (!anyNA(v)) return(v)
+  v[] <- v[!is.na(v)][1]
+  v
+}
+
 #' @noRd
 tmap_classified <- function(sty) {
   cls <- sty$classification
@@ -160,13 +215,15 @@ tmap_classified <- function(sty) {
 
   # A numeric axis is only mapped when every class has a value. A half-mapped
   # width silently invents a size for the gaps; a documented scalar does not.
-  # gq_reg_custom() can produce a partial vector (#42), so this is reachable.
+  # A CSV-authored line leaving stroke_width blank on some rows produces a
+  # partial vector, so this is reachable.
   complete <- function(v) !is.null(v) && !anyNA(v)
 
   if (sty$type == "polygon") {
     args$fill <- cls$field
     args$fill.scale <- tmap_scale_classified(cls)
     args$fill.legend <- tmap::tm_legend(show = FALSE)
+    args <- c(args, tmap_alpha_args(cls, "fill_alpha"))
   } else if (sty$type == "line") {
     args$col <- cls$field
     args$col.scale <- tmap_scale_classified(cls)
@@ -175,14 +232,15 @@ tmap_classified <- function(sty) {
       args$lwd <- cls$field
       args$lwd.scale <- tmap_scale_axis(cls, cls$widths)
       args$lwd.legend <- tmap::tm_legend(show = FALSE)
-    } else if (!is.null(cls$widths)) {
-      args$lwd <- unname(cls$widths[1])
+    } else if (!is.null(class_axis(cls$widths))) {
+      args$lwd <- unname(class_axis(cls$widths)[1])
     }
     if (!is.null(cls$dashes)) {
       args$lty <- cls$field
       args$lty.scale <- tmap_scale_axis(cls, class_ltys(cls$dashes))
       args$lty.legend <- tmap::tm_legend(show = FALSE)
     }
+    args <- c(args, tmap_alpha_args(cls, "col_alpha"))
   } else if (sty$type == "point") {
     args$fill <- cls$field
     args$fill.scale <- tmap_scale_classified(cls)
@@ -191,9 +249,10 @@ tmap_classified <- function(sty) {
       args$size <- cls$field
       args$size.scale <- tmap_scale_axis(cls, gq_symbol_size(cls$radii, "tmap"))
       args$size.legend <- tmap::tm_legend(show = FALSE)
-    } else if (!is.null(cls$radii)) {
-      args$size <- gq_symbol_size(unname(cls$radii[1]), "tmap")
+    } else if (!is.null(class_axis(cls$radii))) {
+      args$size <- gq_symbol_size(unname(class_axis(cls$radii)[1]), "tmap")
     }
+    args <- c(args, tmap_alpha_args(cls, "fill_alpha"))
   }
 
   args

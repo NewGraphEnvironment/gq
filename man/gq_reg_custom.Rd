@@ -7,11 +7,18 @@
 gq_reg_custom(path)
 }
 \arguments{
-\item{path}{Path to a CSV file with columns: layer_key, type, source_layer,
-class_field, class_value, fill_color, fill_opacity, stroke_color,
-stroke_width, stroke_opacity, mark_color, mark_shape, mark_radius,
-mark_stroke_color, mark_stroke_width, label_color, label_size, label_font,
-label_halo_color, label_halo_width, label_offset_x, label_offset_y, note.}
+\item{path}{Path to a CSV file. Only \code{layer_key} and \code{type} are required.
+Every other column is optional, and one that is absent is read as empty
+for every row: \code{source_layer}, \code{class_field}, \code{class_value},
+\code{class_label}, \code{fill_color}, \code{fill_opacity}, \code{stroke_color},
+\code{stroke_width}, \code{stroke_opacity}, \code{dash}, \code{mark_color}, \code{mark_shape},
+\code{mark_radius}, \code{mark_stroke_color}, \code{mark_stroke_width}, \code{label_color},
+\code{label_size}, \code{label_font}, \code{label_halo_color}, \code{label_halo_width},
+\code{label_offset_x}, \code{label_offset_y}, \code{note}. \code{dash} takes a QGIS line style
+name as the extractor writes it (\code{solid}, \code{no}, \code{dash}, \code{dot},
+\verb{dash dot}, \verb{dash dot dot}) or a dash pattern of two or more lengths
+separated by \verb{;} or a space (\code{"4;2"}, \code{"0.66;2"}); anything else is an
+error.}
 }
 \value{
 A list with \code{name}, \code{version}, \code{source}, and \code{layers} elements,
@@ -48,6 +55,16 @@ The tmap and mapgl translators do not render rasters. \code{\link[=gq_tmap_style
 \code{\link[=gq_mapgl_style]{gq_mapgl_style()}} and \code{\link[=gq_mapgl_classes]{gq_mapgl_classes()}} all refuse a raster rather than
 returning something plausible; \code{\link[=gq_tmap_classes]{gq_tmap_classes()}} works, since a palette is
 a classification like any other.
+}
+
+\section{Classified lines}{
+
+A classified \code{line} reads its per-class style from the stroke columns, as an
+extracted one does: \code{color} from \code{stroke_color} (or \code{fill_color} when that is
+empty), \code{width} from \code{stroke_width}, \code{opacity} from \code{stroke_opacity} (or
+\code{fill_opacity}), and \code{dash} from \code{dash}. Polygon and raster classes read
+\code{fill_color} and \code{fill_opacity}, with the stroke columns as a per-class
+outline.
 }
 
 \examples{

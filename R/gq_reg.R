@@ -71,11 +71,26 @@ gq_reg_read <- function(path) {
 #' returning something plausible; [gq_tmap_classes()] works, since a palette is
 #' a classification like any other.
 #'
-#' @param path Path to a CSV file with columns: layer_key, type, source_layer,
-#'   class_field, class_value, fill_color, fill_opacity, stroke_color,
-#'   stroke_width, stroke_opacity, mark_color, mark_shape, mark_radius,
-#'   mark_stroke_color, mark_stroke_width, label_color, label_size, label_font,
-#'   label_halo_color, label_halo_width, label_offset_x, label_offset_y, note.
+#' @section Classified lines:
+#' A classified `line` reads its per-class style from the stroke columns, as an
+#' extracted one does: `color` from `stroke_color` (or `fill_color` when that is
+#' empty), `width` from `stroke_width`, `opacity` from `stroke_opacity` (or
+#' `fill_opacity`), and `dash` from `dash`. Polygon and raster classes read
+#' `fill_color` and `fill_opacity`, with the stroke columns as a per-class
+#' outline.
+#'
+#' @param path Path to a CSV file. Only `layer_key` and `type` are required.
+#'   Every other column is optional, and one that is absent is read as empty
+#'   for every row: `source_layer`, `class_field`, `class_value`,
+#'   `class_label`, `fill_color`, `fill_opacity`, `stroke_color`,
+#'   `stroke_width`, `stroke_opacity`, `dash`, `mark_color`, `mark_shape`,
+#'   `mark_radius`, `mark_stroke_color`, `mark_stroke_width`, `label_color`,
+#'   `label_size`, `label_font`, `label_halo_color`, `label_halo_width`,
+#'   `label_offset_x`, `label_offset_y`, `note`. `dash` takes a QGIS line style
+#'   name as the extractor writes it (`solid`, `no`, `dash`, `dot`,
+#'   `dash dot`, `dash dot dot`) or a dash pattern of two or more lengths
+#'   separated by `;` or a space (`"4;2"`, `"0.66;2"`); anything else is an
+#'   error.
 #' @return A list with `name`, `version`, `source`, and `layers` elements,
 #'   compatible with [gq_tmap_style()], [gq_mapgl_style()], etc.
 #'
@@ -95,19 +110,35 @@ gq_reg_read <- function(path) {
 gq_reg_custom <- function(path) {
   df <- utils::read.csv(path, stringsAsFactors = FALSE, na.strings = c("", "NA"))
 
-  # Coerce numeric columns — read.csv reads mixed columns as character
-  num_cols <- c("fill_opacity", "stroke_width", "stroke_opacity",
-                "mark_radius", "mark_stroke_width",
-                "label_size", "label_halo_width",
-                "label_offset_x", "label_offset_y")
-  for (col in intersect(num_cols, names(df))) {
-    df[[col]] <- suppressWarnings(as.numeric(df[[col]]))
-  }
-
   required <- c("layer_key", "type")
   missing <- setdiff(required, names(df))
   if (length(missing) > 0) {
     stop("CSV missing required columns: ", paste(missing, collapse = ", "))
+  }
+
+  # Reading an absent column as empty (#75) also reads a misspelled one as
+  # empty: `stroke_colour`, `fill_colour` or `class_feild` silently lose a
+  # style, a whole classification or every class colour, where they used to
+  # error. So name every column this reader will not read. Checked on the
+  # header, not on the layer that results: a check on the result ("no style
+  # at all") missed every case where something else was still filled.
+  unread <- setdiff(names(df), c(required, cols_reg_optional, cols_reg_ignored))
+  if (length(unread) > 0) {
+    warning(basename(path), ": column(s) not read by gq_reg_custom(): ",
+            paste(unread, collapse = ", "), call. = FALSE)
+  }
+
+  # An absent optional column is an empty one (#75). Every branch below reads
+  # columns as `r$x`, which is NULL when the column is missing, and `if` on
+  # is.na(NULL) -- logical(0) -- raised an error naming neither the column nor
+  # the file, so a caller's three-column CSV failed on its header.
+  for (col in setdiff(cols_reg_optional, names(df))) {
+    df[[col]] <- rep(NA, nrow(df))
+  }
+
+  # Coerce numeric columns — read.csv reads mixed columns as character
+  for (col in cols_reg_numeric) {
+    df[[col]] <- suppressWarnings(as.numeric(df[[col]]))
   }
 
   layers <- list()
@@ -125,17 +156,11 @@ gq_reg_custom <- function(path) {
     if (has_class && nrow(rows) > 0) {
       # classification layer
       classes <- list()
+      is_line <- identical(row1$type, "line")
       for (i in seq_len(nrow(rows))) {
         r <- rows[i, ]
-        cls <- list()
-        if (!is.na(r$fill_color)) cls$color <- r$fill_color
-        if (!is.na(r$fill_opacity)) cls$opacity <- r$fill_opacity
-        if (!is.na(r$stroke_color)) cls$outline_color <- r$stroke_color
-        if (!is.na(r$stroke_width)) cls$outline_width <- r$stroke_width
-        if (!is.na(r$stroke_opacity)) cls$outline_opacity <- r$stroke_opacity
-        if ("class_label" %in% names(r) && !is.na(r$class_label)) {
-          cls$label <- r$class_label
-        }
+        cls <- if (is_line) csv_line_class(r, key) else csv_area_class(r)
+        if (!is.na(r$class_label)) cls$label <- r$class_label
         # as.character() is load-bearing, not defensive. read.csv() types a
         # class_value column by content, so a CSV whose values are all numeric
         # yields an integer -- and `classes[[1L]] <- x` is POSITIONAL
@@ -147,7 +172,10 @@ gq_reg_custom <- function(path) {
       }
       entry$classification <- list(field = row1$class_field, classes = classes)
 
-      # shared stroke for all classes (if present)
+      # shared stroke for all classes (if present). Kept for a classified line
+      # too, although its stroke columns are now also its per-class style:
+      # gq_style() ignores it, but gq_mapgl_style() draws a line from it, and
+      # without it a CSV line's width reaches MapLibre as its 1 px default.
       if (!is.na(row1$stroke_color)) {
         stroke <- list(color = row1$stroke_color)
         if (!is.na(row1$stroke_width)) stroke$width <- row1$stroke_width
@@ -156,12 +184,13 @@ gq_reg_custom <- function(path) {
       }
     } else {
       # simple layer
-      entry <- c(entry, csv_fill(row1), csv_stroke(row1), csv_mark(row1))
+      entry <- c(entry, csv_fill(row1), csv_stroke(row1, key), csv_mark(row1))
     }
 
     # label (applies to both classified and simple)
     label <- csv_label(row1)
     if (length(label) > 0) entry$label <- label
+
 
     layers[[key]] <- entry
   }
@@ -253,6 +282,80 @@ gq_reg_merge <- function(..., csv = NULL, priority = c("last", "first")) {
 
 # --- CSV field helpers (internal) -------------------------------------------
 
+#' Every column gq_reg_custom() reads besides the two it requires
+#' @noRd
+cols_reg_optional <- c(
+  "source_layer", "class_field", "class_value", "class_label",
+  "fill_color", "fill_opacity", "stroke_color", "stroke_width",
+  "stroke_opacity", "dash", "mark_color", "mark_shape", "mark_radius",
+  "mark_stroke_color", "mark_stroke_width", "label_color", "label_size",
+  "label_font", "label_halo_color", "label_halo_width", "label_offset_x",
+  "label_offset_y", "note"
+)
+
+#' Columns a registry CSV may carry that gq_reg_custom() knowingly ignores
+#'
+#' `notes`, which drift's registry CSVs use for what `note` holds here.
+#' @noRd
+cols_reg_ignored <- c("notes")
+
+#' The optional columns read as numbers
+#' @noRd
+cols_reg_numeric <- c(
+  "fill_opacity", "stroke_width", "stroke_opacity", "mark_radius",
+  "mark_stroke_width", "label_size", "label_halo_width", "label_offset_x",
+  "label_offset_y"
+)
+
+#' Validate a CSV dash value: a QGIS line style name or a dash pattern
+#'
+#' The names are the `line_style` values the extractor writes (`parse_dash()`
+#' in gq_qgs_extract.R), and the pattern is QGIS's customdash: two or more
+#' lengths separated by `;` or a space. A misspelling such as "dashed" would
+#' otherwise reach tmap as a dash and mapgl as a dasharray of NA, so it stops
+#' here, naming the layer.
+#' @noRd
+csv_dash <- function(x, key) {
+  if (is.na(x)) return(NA_character_)
+  styles <- c("solid", "no", "dash", "dot", "dash dot", "dash dot dot")
+  pattern <- "^[0-9]*\\.?[0-9]+([; ][0-9]*\\.?[0-9]+)+$"
+  if (x %in% styles || grepl(pattern, x)) return(x)
+  stop("Layer '", key, "': dash '", x, "' is neither a QGIS line style (",
+       paste(styles, collapse = ", "), ") nor a dash pattern such as '4;2'",
+       call. = FALSE)
+}
+
+#' One class of a classified line, in the extractor's key names
+#'
+#' `color`/`width`/`dash`/`opacity`, which is what `parse_categorized()` writes
+#' for a SimpleLine class and what `gq_style()` reads. This branch used to
+#' write `outline_width` for every geometry, so a classified line authored here
+#' reached the translators with no width and no dash (#42).
+#' @noRd
+csv_line_class <- function(r, key) {
+  cls <- list()
+  color <- if (!is.na(r$stroke_color)) r$stroke_color else r$fill_color
+  if (!is.na(color)) cls$color <- color
+  if (!is.na(r$stroke_width)) cls$width <- r$stroke_width
+  dash <- csv_dash(r$dash, key)
+  if (!is.na(dash)) cls$dash <- dash
+  opacity <- if (!is.na(r$stroke_opacity)) r$stroke_opacity else r$fill_opacity
+  if (!is.na(opacity)) cls$opacity <- opacity
+  cls
+}
+
+#' One class of a classified polygon or raster: fill, plus a per-class outline
+#' @noRd
+csv_area_class <- function(r) {
+  cls <- list()
+  if (!is.na(r$fill_color)) cls$color <- r$fill_color
+  if (!is.na(r$fill_opacity)) cls$opacity <- r$fill_opacity
+  if (!is.na(r$stroke_color)) cls$outline_color <- r$stroke_color
+  if (!is.na(r$stroke_width)) cls$outline_width <- r$stroke_width
+  if (!is.na(r$stroke_opacity)) cls$outline_opacity <- r$stroke_opacity
+  cls
+}
+
 #' @noRd
 csv_fill <- function(row) {
   if (is.na(row$fill_color)) return(list())
@@ -262,11 +365,13 @@ csv_fill <- function(row) {
 }
 
 #' @noRd
-csv_stroke <- function(row) {
+csv_stroke <- function(row, key) {
   if (is.na(row$stroke_color)) return(list())
   stroke <- list(color = row$stroke_color)
   if (!is.na(row$stroke_width)) stroke$width <- row$stroke_width
   if (!is.na(row$stroke_opacity)) stroke$opacity <- row$stroke_opacity
+  dash <- csv_dash(row$dash, key)
+  if (!is.na(dash)) stroke$dash <- dash
   list(stroke = stroke)
 }
 
