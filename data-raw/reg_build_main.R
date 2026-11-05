@@ -92,10 +92,13 @@ message("ACCESS labels corrected (bcfishpass#13): ", n_corrected)
 #
 # db_newgraph renamed the staged object. `jobs/dump_weekly` now writes
 # `bcfishobs.observations.fgb.zip` from `select * from bcfishobs.observations`;
-# the old name 404s in the bucket. rfp's .qgs templates still carry the old
-# name in their maplayer datasource, so `gq_qgs_extract()` faithfully copies it
-# into reg_qgis_restoration.json -- which is the right behaviour for a
-# transcript of a template.
+# the old name 404s in the bucket. rfp's templates carried the old name in
+# their maplayer datasource until rfp v0.68.0 (18e0004d, "Repoint the
+# fish-observations layer"); they now say `layername=bcfishobs.observations`
+# (checked against v0.93.0's bcrestoration_mobile.qgs, gq#100). What still
+# carries the old name is reg_qgis_restoration.json, extracted before that and
+# not re-extracted since -- `gq_qgs_extract()` copied it faithfully, which is
+# the right behaviour for a transcript of a template.
 #
 # Corrected here rather than in the extracted JSON for the same reason as the
 # ACCESS block above: the JSON is a record of what the template says, and
@@ -106,12 +109,14 @@ message("ACCESS labels corrected (bcfishpass#13): ", n_corrected)
 # nothing.
 #
 # source_layer is three things at once: the S3 object stem, the GeoPackage
-# table name, and the .qgs `layername=`. So this correction fixes the DOWNLOAD
-# and the layer stays absent from the map until rfp updates its templates --
-# tracked in the rfp issue named from gq#82.
+# table name, and the .qgs `layername=`. So this correction fixes the DOWNLOAD;
+# the map side needed rfp's templates to change too, which they did in v0.68.0
+# (above). A project built from an older template still names the old table.
 #
-# DELETE THIS BLOCK once rfp's templates are regenerated with the new name. The
-# guard below tells you when that has happened.
+# DELETE THIS BLOCK once reg_qgis_restoration.json is re-extracted from a
+# template carrying the new name (any rfp >= 0.68.0); whether and how that
+# registry is regenerated is batch 8, gq#102. The guard below tells you when
+# that has happened.
 
 obs_key <- "bcfishobs_fiss_fish_observations"
 obs_old <- "bcfishobs.fiss_fish_obsrvtn_events_vw"
@@ -127,7 +132,7 @@ if (identical(obs_have, obs_old)) {
   message("bcfishobs source_layer corrected (gq#82): ", obs_old, " -> ", obs_new)
 } else if (identical(obs_have, obs_new)) {
   stop("bcfishobs already reads '", obs_new, "' in the extracted registry.\n",
-       "  rfp's templates have been regenerated -- delete this block.",
+       "  reg_qgis_restoration.json has been re-extracted -- delete this block.",
        call. = FALSE)
 } else {
   stop("bcfishobs source_layer is neither the old nor the new name: ",

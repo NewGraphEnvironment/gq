@@ -1,0 +1,30 @@
+<qgis version="4.2.1-fixture">
+  <!--
+    A cut of bcrestoration_mobile's `Land Tenure` map theme with one deliberate
+    defect, so the themes currency check can be seen to fire (gq#78): `Lake`
+    is switched OFF here, where the shipped preset has it on. `Wetland` keeps
+    its shipped state, so the check has a row it must leave alone.
+
+    Layer ids are deliberately NOT derived from the names: themes resolve
+    id -> <maplayer><layername>, and a walker keying on the id stem would pass
+    a fixture whose ids happened to spell the names.
+
+    No DOCTYPE, for the reason template_drift_fixture.qgs gives.
+  -->
+  <projectlayers>
+    <maplayer>
+      <id>a1_00000000_0000_0000_0000_000000000001</id>
+      <layername>Lake</layername>
+    </maplayer>
+    <maplayer>
+      <id>a2_00000000_0000_0000_0000_000000000002</id>
+      <layername>Wetland</layername>
+    </maplayer>
+  </projectlayers>
+  <visibility-presets>
+    <visibility-preset name="Land Tenure" has-expanded-info="1" has-checked-group-info="1">
+      <layer id="a1_00000000_0000_0000_0000_000000000001" visible="0" style="default"/>
+      <layer id="a2_00000000_0000_0000_0000_000000000002" visible="1" style="default"/>
+    </visibility-preset>
+  </visibility-presets>
+</qgis>

@@ -20,8 +20,8 @@ read_form_types_csv <- function() {
 #' ship, and this carries every form a project could ask for.
 #'
 #' Folding the roster into `groups.csv` would make [gq_template_layers()] report
-#' thirteen forms for a template that ships two — a project styled for layers it
-#' never downloaded, which is the defect the composition guards exist to catch.
+#' every form in the catalogue for a template that ships two — a project styled
+#' for layers it never downloaded, which is the defect the composition guards exist to catch.
 #'
 #' `symbol` and `color` are `NA` for a form rfp has registered but not styled.
 #' That is a statement about upstream, not a gap here: gq does not invent

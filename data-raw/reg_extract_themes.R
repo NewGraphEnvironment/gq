@@ -18,10 +18,10 @@
 # Run after the templates change:
 #   Rscript data-raw/reg_extract_themes.R
 #
-# Last run for gq#88, against rfp 0.76.0, after rfp#185 re-saved the presets to
+# Run for gq#88, against rfp 0.76.0, after rfp re-saved the presets to
 # carry the other three xyz basemaps and `Trails` present-and-off: 268 rows over
-# 9 template-theme pairs. That is the example this header used to anticipate;
-# it has happened, so do not read it as still pending.
+# 9 template-theme pairs. Last run for gq#100, against rfp 0.93.0: byte-identical
+# to that output.
 #
 # Provenance note: the rfp version used is printed on each run and recorded in
 # the commit message rather than in the CSV. read.csv() sets comment.char = "",
@@ -58,97 +58,15 @@ if (nzchar(tpl_dir)) {
           ": ", tpl_dir)
 }
 
-#' Pull one template's themes into a long data.frame
-extract_themes <- function(template, dir) {
-  path <- file.path(dir, paste0(template, ".qgs"))
-  if (!file.exists(path)) stop("Template not found: ", path, call. = FALSE)
-
-  doc <- xml2::read_xml(path)
-
-  # id -> display name, from the project's layer definitions
-  maplayers <- xml2::xml_find_all(doc, "//projectlayers/maplayer")
-  ids <- xml2::xml_text(xml2::xml_find_first(maplayers, "./id"))
-  names_display <- xml2::xml_text(xml2::xml_find_first(maplayers, "./layername"))
-  id_to_name <- stats::setNames(names_display, ids)
-
-  presets <- xml2::xml_find_all(doc, "//visibility-presets/visibility-preset")
-  if (length(presets) == 0) {
-    stop("No visibility presets in ", template, call. = FALSE)
-  }
-
-  out <- lapply(presets, function(preset) {
-    theme <- xml2::xml_attr(preset, "name")
-    layers <- xml2::xml_find_all(preset, "./layer")
-    if (length(layers) == 0) {
-      return(NULL)
-    }
-
-    layer_ids <- xml2::xml_attr(layers, "id")
-    display <- unname(id_to_name[layer_ids])
-
-    unresolved <- layer_ids[is.na(display)]
-    if (length(unresolved) > 0) {
-      stop(
-        template, " / ", theme, ": ", length(unresolved),
-        " preset layer id(s) have no <maplayer>: ",
-        paste(utils::head(unresolved, 3), collapse = ", "),
-        call. = FALSE
-      )
-    }
-
-    data.frame(
-      template  = template,
-      theme     = theme,
-      layer_key = normalize_layer_name(display),
-      visible   = xml2::xml_attr(layers, "visible") == "1",
-      stringsAsFactors = FALSE
-    )
-  })
-
-  do.call(rbind, out)
-}
-
-themes <- do.call(rbind, lapply(templates, extract_themes, dir = tpl_dir))
-
-# A layer_key the roster names but groups.csv does not carry is a dangling
-# reference. Abort rather than dropping it — a silent drop is how the roster
-# became fiction in the first place.
+# The walker (qgs_theme_table()) and the builder (themes_build()) live in R/
+# so the currency test can run them on the live templates and on a perturbed
+# fixture (gq#78). themes_build() refuses a theme layer groups.csv lacks, a
+# duplicate row, and a comma in any field; the CSV is written unquoted,
+# matching groups.csv and templates.csv.
 group_keys <- unique(read.csv("inst/registry/groups.csv",
                               stringsAsFactors = FALSE)$layer_key)
-dangling <- setdiff(unique(themes$layer_key), group_keys)
-if (length(dangling) > 0) {
-  stop(
-    "themes reference ", length(dangling),
-    " layer_key(s) absent from groups.csv: ",
-    paste(dangling, collapse = ", "),
-    "\nAdd them to groups.csv, or correct the template.",
-    call. = FALSE
-  )
-}
-
-dupes <- themes[duplicated(themes[c("template", "theme", "layer_key")]), ]
-if (nrow(dupes) > 0) {
-  stop("Duplicate template/theme/layer_key rows: ", nrow(dupes), call. = FALSE)
-}
-
-themes <- themes[order(themes$template, themes$theme, themes$layer_key), ]
-themes$visible <- ifelse(themes$visible, "true", "false")
-
-# The registry CSVs are written unquoted, matching groups.csv/templates.csv. A
-# comma inside a theme name would then silently shift every later column, so
-# refuse rather than emit a corrupt file. (Group names already contain commas —
-# "Roads,Railways,Pipelines" — so this is not hypothetical for the family.)
-offending <- unlist(lapply(themes, function(col) grep(",", col, value = TRUE)))
-if (length(offending) > 0) {
-  stop(
-    "Comma in an unquoted field: ", paste(unique(offending), collapse = "; "),
-    "\nQuote the output or rename upstream.",
-    call. = FALSE
-  )
-}
-
-write.csv(themes, "inst/registry/themes.csv", row.names = FALSE,
-          quote = FALSE)
+themes <- themes_build(tpl_dir, templates, group_keys)
+vendored_write(themes, "inst/registry/themes.csv", quote = FALSE)
 
 message(
   "themes.csv built: ", nrow(themes), " rows, ",

@@ -5,15 +5,16 @@
 # tidiness.
 #
 # Forms are not baked into the templates. `rfp_qgs_form_add()` injects them per
-# project, and rtj's scripts/gis/projects/<name>/project.yml selects which --
-# nelson carries `forms: [trail_feature, viewscape, cabin_visit]`. So form
-# membership is per-PROJECT, while groups.csv models per-TEMPLATE contents.
+# project, and rtj's scripts/gis/projects/<name>/project.yml selects which, in
+# a `forms:` list. So form membership is per-PROJECT, while groups.csv models
+# per-TEMPLATE contents.
 #
 # Putting the whole roster into groups.csv would therefore make
-# gq_template_layers() report 13 forms for a template that ships 2, which is
-# exactly the gq#40 defect -- a project styled for layers it never downloaded --
-# at six times the scale. groups.csv keeps the two the templates ship; this
-# table is the catalogue they are drawn from. (gq#64)
+# gq_template_layers() report every form in the catalogue (16 at rfp 0.93.0)
+# for a template that ships 2, which is exactly the gq#40 defect -- a project
+# styled for layers it never downloaded -- several times over. groups.csv keeps
+# the two the templates ship; this table is the catalogue they are drawn from.
+# (gq#64)
 #
 # Like reg_extract_themes.R, reg_extract_template_groups.R and styles_vendor.R,
 # this is a DEV-ONLY / build-time dependency on rfp. The committed CSV is the
@@ -121,55 +122,26 @@ git_provenance <- function(dir, file) {
 }
 git_provenance(src, path)
 
-# trim_ws is readr's default and it is wrong here: `label` feeds a layer name
-# whose leading space is deliberate. read.csv() does not trim quoted fields.
-types <- utils::read.csv(path, stringsAsFactors = FALSE)
-
-required <- c("type", "description", "label", "geometry", "symbol", "color",
-              "label_expression", "has_spatial", "parent")
-missing <- setdiff(required, names(types))
-if (length(missing) > 0) {
-  stop("rfp_form_types.csv missing expected columns: ",
-       paste(missing, collapse = ", "), call. = FALSE)
-}
-if (nrow(types) == 0L) {
-  stop("rfp_form_types.csv is empty", call. = FALSE)
-}
-
-# Non-spatial rows are child tables, not layers. cabin_visit_pebble is the live
-# case: no geometry, parent = cabin_visit, written into the parent's GeoPackage
-# and joined parent_uuid -> uuid. A layer roster must not carry it.
+# The builder lives in R/utils_vendored.R (gq#78) so the currency test derives
+# the roster exactly as this does. It refuses a missing column, an empty file,
+# a has_spatial filter that matches every row, two labels sharing a key, and a
+# roster where the label rule and the type rule no longer disagree anywhere.
 #
-# Filtering on has_spatial rather than on an empty `geometry` because that is
-# the column rfp uses to mean it, and the two could diverge.
-n_all <- nrow(types)
-spatial <- types[types$has_spatial == "true", , drop = FALSE]
-if (nrow(spatial) == n_all) {
-  stop("the has_spatial filter matched every row. Either rfp changed the ",
-       "column's vocabulary (it is the literal string \"true\", not a logical), ",
-       "or every non-spatial form has legitimately been removed upstream — in ",
-       "which case delete this check rather than working around it.",
-       call. = FALSE)
-}
-
-# The layer key is derived from rfp's OWN rule, not from the `type` column.
+# Non-spatial rows are child tables, not layers. cabin_visit_pebble is the
+# first case (edna_sample and tree_visit followed): no geometry, parent =
+# cabin_visit, written into the parent's GeoPackage and joined parent_uuid ->
+# uuid. A layer roster must not carry it.
+#
+# The layer key derives from rfp's OWN rule, not from the `type` column.
 # `.rfp_form_layer_name()` (rfp/R/rfp_qgs_form_add.R) is paste0(" Form ",
 # label), and gq keys a registry on normalize_layer_name() of the layer name.
-#
 # Type and label disagree, and not rarely: `monitoring_fish_passage` is
 # labelled "Fish Passage Monitoring", so its key is
 # form_fish_passage_monitoring -- the reverse word order. A key built from the
 # type column is wrong there and NOTHING downstream would report it, because
 # every lookup goes through the key on both sides. Hence the oracle below.
-layer_name <- paste0(" Form ", spatial$label)
-layer_key <- vapply(layer_name, normalize_layer_name, character(1),
-                    USE.NAMES = FALSE)
-
-if (anyDuplicated(layer_key) != 0L) {
-  dup <- unique(layer_key[duplicated(layer_key)])
-  stop("two form labels normalize to the same layer_key: ",
-       paste(dup, collapse = ", "), call. = FALSE)
-}
+n_all <- nrow(utils::read.csv(path, stringsAsFactors = FALSE))
+forms <- form_types_build(path)
 
 # The oracle. form_pscis and form_fiss_site reached reg_main.json through
 # gq_qgs_extract() reading a .qgs that QGIS itself wrote, so those two keys are
@@ -182,75 +154,23 @@ if (length(known) != 2L) {
        "derivation oracle; found: ", paste(known, collapse = ", "),
        call. = FALSE)
 }
-if (!all(known %in% layer_key)) {
+if (!all(known %in% forms$layer_key)) {
   stop("derived keys do not reproduce the keys QGIS produced: missing ",
-       paste(setdiff(known, layer_key), collapse = ", "),
-       ". Derived: ", paste(layer_key, collapse = ", "), call. = FALSE)
+       paste(setdiff(known, forms$layer_key), collapse = ", "),
+       ". Derived: ", paste(forms$layer_key, collapse = ", "), call. = FALSE)
 }
 
-# The oracle above is necessary and NOT sufficient, which is worth being explicit
-# about: paste0("form_", type) produces form_pscis and form_fiss_site identically,
-# so those two rows cannot separate the correct rule from the wrong one. The
-# check that can is that label and type genuinely disagree somewhere --
-# monitoring_fish_passage is labelled "Fish Passage Monitoring", reversing the
-# word order. If that stops being true, this script's whole reason for deriving
-# from the label has gone with it, and it should be reconsidered rather than
-# silently kept.
-if (!any(layer_key != paste0("form_", spatial$type))) {
-  stop("every derived key now equals paste0(\"form_\", type), so nothing in ",
-       "this roster distinguishes the label rule from the type rule. Either ",
-       "rfp relabelled its forms, or the derivation regressed.", call. = FALSE)
-}
-
-# `parent` is dropped rather than carried: it is populated only on
-# cabin_visit_pebble, which the spatial filter removes, so it would ship as a
-# column with no values in any row. A column that cannot vary says nothing and
-# invites a reader to infer a relationship the table does not model.
-forms <- data.frame(
-  layer_key = layer_key,
-  form_type = spatial$type,
-  label = spatial$label,
-  description = spatial$description,
-  layer_name = layer_name,
-  geometry = spatial$geometry,
-  symbol = spatial$symbol,
-  color = spatial$color,
-  label_expression = spatial$label_expression,
-  stringsAsFactors = FALSE
-)
-forms <- forms[order(forms$layer_key), ]
+# The oracle above is necessary and NOT sufficient: paste0("form_", type)
+# produces form_pscis and form_fiss_site identically, so those two rows cannot
+# separate the correct rule from the wrong one. The builder's last check is the
+# one that can -- it refuses once label and type stop disagreeing anywhere.
 
 # QUOTED, for three separate reasons, any one of which is sufficient:
 # label_expression contains commas AND embedded double quotes; layer_name
 # begins with a deliberate space; description contains commas.
-utils::write.csv(forms, "inst/registry/form_types.csv", row.names = FALSE,
-                 quote = TRUE)
-
-# Prove the round-trip rather than trusting it.
-#
-# What this actually guards is QUOTING, not whitespace. read.csv() does not trim
-# a quoted field, so the leading space on layer_name survives regardless -- and
-# normalize_layer_name() trims anyway, so a lost space could not change a key.
-# Claiming otherwise would be a comment describing a failure this cannot see.
-#
-# The failure it CAN see is a comma or an embedded double quote breaking the row
-# apart: label_expression carries both, and description carries commas. Compare
-# every column rather than two, since a shifted row corrupts whichever column
-# happens to sit at the break.
-back <- utils::read.csv("inst/registry/form_types.csv", stringsAsFactors = FALSE)
-if (!identical(dim(back), dim(forms))) {
-  stop("form_types.csv changed shape on round-trip: wrote ",
-       paste(dim(forms), collapse = "x"), ", read ",
-       paste(dim(back), collapse = "x"), call. = FALSE)
-}
-for (col in names(forms)) {
-  if (!identical(back[[col]], forms[[col]])) {
-    bad <- which(back[[col]] != forms[[col]])
-    stop("column '", col, "' did not survive the CSV round-trip: ",
-         paste(sprintf("%s -> %s", forms[[col]][bad], back[[col]][bad]),
-               collapse = "; "), call. = FALSE)
-  }
-}
+# vendored_write() reads the file back and compares every column, which is
+# what catches a comma or an embedded quote breaking a row apart.
+vendored_write(forms, "inst/registry/form_types.csv", quote = TRUE)
 
 styled <- sum(nzchar(forms$color))
 message(

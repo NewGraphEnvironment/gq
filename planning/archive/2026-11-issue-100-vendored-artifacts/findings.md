@@ -1,0 +1,147 @@
+# Findings — Move 1: vendored artifacts current and guarded (batches 1, 2) (#100)
+
+## Issue context
+
+**If we do it:** the rosters and styles gq copies from the template repo are current, the registry and the templates agree on where each layer sits, and a copy going stale fails a test. **If we never do:** the drift test keeps passing against a copy vendored months ago, and every consumer of gq's groups and themes reads a roster the templates have moved past.
+
+Move 1 of `planning/backlog.md`, which holds the order, the measurements and each batch's section. Run `/planning-init` on this issue: one plan, one phase per batch, one PR. `/gh-pr-merge` ticks the move when it merges.
+
+## First, a read of the peer repos
+
+Themes and groups are being reworked in the two repos that consume these rosters: the template repo, and the repo that holds each field project's config (owner, 2026-11-04). Open there on 2026-11-04: themes composed in project config as a base plus additions and removals, a reconciler for layer group placement after a project is created, floodplain theme names being retired and merged, a Terrain group and theme for the templates, and a test fixture failing against the current registries. Before the plan gate, search both repos' open issues and pull requests for `themes` and `groups`, read each adjacent body, and settle with them which side owns each roster. Nothing in the two batches below is decided until that read is done.
+
+## Batch 1: Template agreement
+
+**Why here:** one checkout of the template repo at one version and one run of the extractors pays for all four.
+
+**Touches:** `inst/registry/template_groups.csv`, `form_types.csv`, `groups.csv`; `tests/testthat/test-template_drift.R`, `test-gq_forms.R`; `data-raw/reg_extract_template_groups.R`.
+
+**Decided at the gate:** whether `groups.csv` gains a `template` column; for each of the six layer placements in #68, whether gq's side was a decision or unchecked drift; register or exempt the three layers in #73.
+
+| issue | title |
+|---|---|
+| #70 | Delete the three template-drift exemptions |
+| #94 | Re-vendor form roster: eDNA is now styled |
+| #68 | Registry and templates disagree on the group six layers belong to |
+| #73 | Tracking and the two habitat-parameter layers ship in the templates with no groups.csv row |
+
+## Batch 2: Vendored-artifact guards
+
+**Why here:** the same extractor scripts, run after batch 1 has made the copies current, against the roster shape the peer repos are moving to.
+
+**Touches:** `R/utils_qgs_groups.R` and a sibling for themes; `data-raw/reg_extract_*.R`, `data-raw/styles_vendor.R`; a corpus-wide QML test.
+
+**Decided at the gate:** where the guard runs now the templates are build output; whether gq becomes the single QML store, which flips where the fix for #86 lands; the `bcfishobs_fiss_fish_observations` key rename.
+
+| issue | title |
+|---|---|
+| #78 | gq's vendored artifacts have no currency guard: 2 of 3 were silently stale |
+| #86 | bcfishobs QML: 4 dangling tags remain |
+| #92 | A causal claim about the template repo is settled by reading it, not by re-measuring its output |
+
+
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
+
+## Phase 1 measurements (2026-11-05, rfp v0.93.0 `80bff2c4`, detached worktree)
+
+- Re-vendor changed two files only: `template_groups.csv` (+`Floodplain` 7, `Restoration` 8 in bcrestoration, four orders shifted) and `form_types.csv` (eDNA styled; `general_monitoring`, `observation`, `scan`, `tree` new; `trail_feature` retired upstream in rfp `3a83239d`). `themes.csv` and the QML corpus re-ran byte-identical.
+- The drift guard went red on the fresh copy exactly where expected: `each exemption is still needed` (Floodplain, Restoration), and the forms pin (eDNA).
+- The refactored walker (`qgs_tree_nodes()`) reproduces `template_groups.csv` byte for byte.
+- `template_layers.csv`: 113 layers (bcfishpass 54, bcrestoration 59). Every key joins to `groups.csv` except `tracking` and the two `parameters_habitat_*` tables, all `NoGeometry` in rfp's roster.
+- Guards proven: restoring `streams_all` to `Streams` fails the placement test once per template, and deleting the `wetland` row fails the registered-or-exempt test.
+- Placement moves inserted each layer after its previous sibling in the template, where gq holds that sibling. Order within a group still disagrees with the templates in 7 groups, identically in both templates. #68 covers group membership only, so this is filed as gq#105.
+- `reg_build_main.R` reads neither `groups.csv` nor the form roster, so `reg_main.json` needs no rebuild.
+
+## Plan review dispositions (review-100.md, delivered after the phase 1 commit)
+
+| # | finding | probe | disposition |
+|---|---|---|---|
+| 1 | tier-1 QML noise | Reproduced: 26 of the vector QMLs name fields in `editable`/`labelOnTop`/`reuseLastValue`/`column` that their `fieldConfiguration` lacks, 497 names in all (crossings_pscis_assessment 70, crossings_pscis_modelled_dams 69, …). Those tags are a stale snapshot of every column QGIS once saw. | Plan corrected (not a stored-data fork): tier-1 checks only the field-scoped tags that are clean corpus-wide (alias, default, constraint, constraintExpression, attributeEditorField). Expressions outside the roster go to an "undecidable" inventory. The snapshot-tag inventory goes to rfp's issue moving the QML store into gq as evidence for the store cleanup. #86 acceptance 1 is amended in its body, so the 4 bcfishobs tags are not caught by tier-1 |
+| 2 | subgroup interleave cannot be expressed | Reproduced in `R/gq_groups.R` sort | Recorded on gq#105 as a limit that needs a schema change, with #104 |
+| 3 | within-group order unguarded | Same measurement as Phase 1 | Already filed as gq#105 |
+| 4 | one-way guard, unique keys | — | Comment added. The test now asserts per-template key uniqueness on the committed file |
+| 5 | NoGeometry is weak evidence | Reproduced: rfp's roster shows the same empty geometry for `clab_national_parks` | Reasons now cite rfp's `.rfp_audit_whitelist` ("Non-spatial rfp-owned tables", `R/rfp-constants.R`) |
+| 6 | forms loose ends | Reproduced | "thirteen" in `R/gq_forms.R` roxygen and the parent claim fixed; edna/tree child exclusions pinned. The `trail_feature` retirement goes in the PR body for NEWS. `test-gq_groups.R` was already fixed in phase 1 |
+| 7 | validation step 2 wrong | Correct: installed rfp 0.92.0 has byte-identical templates | The currency test is gated on the env vars only, with no installed-rfp fallback, so a stale install cannot fail it falsely. Validation step reworded |
+| 8 | `reg_qgis_restoration.json` is a fifth rfp-derived artifact | Reviewer measured 48/48 matching v0.93.0, apart from the corrected bcfishobs source_layer and float noise | Excluded: it is a lossy registry extract that feeds `reg_main.json`, not a vendored copy, and it belongs to batch 8 (registry build inputs, #102/#85). Noted on #102 |
+| 9 | #86 and #70 cannot close as written | — | PR: "Relates to #86". #70 closes with the gate decision cited (2 of 3 exemptions deleted, column deferred to #104) |
+| 10 | red proof | The suite was run after the re-vendor and before the exemption edits: `each exemption is still needed` and the forms pin failed (phase 1 findings) | No action |
+
+## Phase 2: currency guard (#78)
+
+- Builders (`template_groups_build`, `template_layers_build`, `themes_build`, `form_types_build`) and the one writer (`vendored_write`) live in `R/utils_vendored.R`, and the theme walker in `R/utils_qgs_themes.R`. All three generators re-ran against v0.93.0 with byte-identical output.
+- `test-vendored_currency.R` writes each live roster through `vendored_write()` to a tempfile and compares lines with the committed file. It is gated on `RFP_TEMPLATE_DIR` and `RFP_LOOKUPS_DIR` only (review #7). Without them its 4 live checks skip; with them, 12 pass.
+- Proven: with `origin/main`'s stale `template_groups.csv` and `form_types.csv` restored, and one `themes.csv` row flipped, the three matching live checks fail, then pass once the files are restored.
+
+## Phase 2: QML consistency (#86)
+
+- Tier 1 as built (`test-qml_consistency.R`): `alias`, `default`, `constraint`, `constraintExpression` and `attributeEditorField` must name a roster field. All 60 files are clean today. Bare expression references outside the roster (6) are pinned as undecidable in both directions, `species_name` among them, as #86's negative control. The snapshot tags (`editable`, `labelOnTop`, `reuseLastValue`, attribute-table `column`) are excluded: 26 of the vector files, 497 names in all. The 4 bcfishobs tags are among them.
+- Proven: a planted bad alias in `railway.qml` fails the corpus sweep; the test also injects a bad alias and a bad preview into a copy of `conservancy.qml`.
+- Tier 2, against the newgraph DB (2026-11-05, tunnel on 63333). `bcfishobs.observations` has 34 columns (matching rfp's bcfishobs field audit): `linear_feature_id` and `species_name` resolve. `fid` is not a view column; it is the key OGR adds to the GeoPackage layer the style is applied to, so it is legitimate. `fish_obsrvtn_pnt_distinct_id` is absent, so the 4 tags are dead, as #86 said. #86's original "7 dead fields" is superseded: `fid` and `linear_feature_id` are both fine.
+- Other undecidables: `national_park:english_name` resolves. `conservancy:protected_lands_name`, `first_nation_reserve:IR_NAME` and `roads_dra:structured_name_1_id` are not in the DB copies, but those copies are column subsets (7 to 16 columns) of the BC WFS layers rfp downloads through bcdata, so the result is inconclusive. `rmp_ogma_non_legal_current_svw` is not in the DB at all. All stay pinned.
+
+## Phase 2: claims about rfp (#92)
+
+Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52, split by a script over the comment blocks), and every sentence naming rfp in `CLAUDE.md` above the conventions marker (14). Each was checked against rfp's own source at v0.93.0, in a detached worktree.
+
+| claim | where | verdict, with rfp's own source |
+|---|---|---|
+| rfp's templates still carry the old bcfishobs name | `reg_build_main.R:91` | **false**: `18e0004d` (v0.68.0) repointed them, and v0.93.0's `.qgs` says `layername=bcfishobs.observations`. Rewritten: the stale holder is `reg_qgis_restoration.json`, and the delete condition now points at its re-extract (#102) |
+| the live comparison is in `test-template_drift.R` | `reg_extract_template_groups.R:1` | **false** after #78. Rewritten |
+| last run against rfp 0.76.0 | `reg_extract_themes.R:1` | stale. Rewritten: re-run against 0.93.0, byte-identical |
+| rfp derives filenames with an independent `slugify()` | `styles_vendor.R:68` | true, but the source was unnamed. It is a test helper in rfp's `tests/testthat/test-rfp_qgs_style_store.R:30`, now cited. No rfp R file references `normalize_layer_name` |
+| `.rfp_form_layer_name()` is `paste0(" Form ", label)` | `reg_extract_form_types.R`, `CLAUDE.md` | true: `R/rfp_qgs_form_add.R:343` |
+| `rfp_project_create()` downloads `rfp_manifest_types()` minus `frozen`; `local`/`wms` dropped | `CLAUDE.md` (groups.csv) | true: `R/rfp_project_create.R:267`, `R/rfp_manifest_types.R:50` |
+| `osm.trail.qml` has no index row; rfp's guard walks index → file | `styles_vendor.R:53,110,122` | true: rfp's open osm.trail index issue says so; the file is present at v0.93.0 |
+| rfp records 3 template overrides by `scope` | `styles_vendor.R:96` | true: `vector/index.csv` carries `template,layer,slug,scope` |
+| the raster roster is in rfp's `data-raw`, which is `.Rbuildignore`'d | `styles_vendor.R:146` | true: `.Rbuildignore:4` |
+| raster styles carry `map-layer-style-manager` first because of the old `order =` override | `styles_vendor.R:188` | true: `R/rfp_qgs_style_set.R:521-523` (already cited, from #90) |
+| the source-tag boundary is pinned by a QGIS-container oracle (rfp's source-tag fix) | `styles_vendor.R:1`, `CLAUDE.md` | true: `inst/testdata/nodes/` exists, and that fix is cited in `R/rfp_qgs_style_*.R` |
+| the bcfishpass_30k.qlr label bug reaches gq through rfp's templates | `reg_build_main.R:22` | true: bcfishpass#13 is still open, and the block's own guard reads the label |
+| child tables are only `cabin_visit_pebble` | `reg_extract_form_types.R`, `CLAUDE.md` | **false** at 0.93.0 (`edna_sample`, `tree_visit`); fixed |
+| "the installed rfp is routinely behind" (5 sentences) | the extractors' env-var blocks | dated measurements of this machine, labelled with versions; local, not causal claims about rfp |
+| the remaining 30-odd | — | local decisions or descriptions of gq's own scripts (DEV-ONLY dependency, provenance printed in the commit message, quoting rules) |
+
+## Validation notes
+
+- Suite with `RFP_TEMPLATE_DIR`, `RFP_LOOKUPS_DIR` and `RFP_STYLES_DIR` pointing at the v0.93.0 worktree: 1159 pass, 0 fail, 0 skip.
+- Lint compared per file against an `origin/main` worktree. `diff` is a shell function on this machine, so the first comparison printed nothing; `command diff` showed 5 new object-usage lints. 3 cleared on reinstall (names this branch added); the other 2 were `skip_if` calls inside a helper, now `testthat::`-qualified. Gitignored `tests/testthat/_problems/` files lint on the branch side only and are not tracked.
+
+## Code-check round 1 (review-round1.md)
+
+- Fragile: the four builders sorted with a bare `order()`, which collates by `LC_COLLATE`. Generators run in `en_US`, testthat in `C`. Reproduced: "Low detail - roads" vs "Low Detail - Salmon Model", and `roads_dra` vs `roads2`, swap between the two. Fixed with `method = "radix"`; the generators re-ran byte-identical.
+- Two comment inaccuracies fixed: the test compares lines, not bytes, and the QML is not "the fourth" artifact.
+- Separately, the private-refs scrub: soul's `private_refs.sh` counted 30 added `<private-repo>#N` lines (code comments, tests, planning). Replaced with words, only on lines this branch added; 151 standing references are untouched.
+
+## Code-check round 2 (review-round2.md): both findings were inside round 1's work
+
+- `data-raw/styles_vendor.R`: the `index.csv` sort was a bare `order()`, the one sort reaching a committed file that the radix fix missed. Fixed; the style vendoring re-ran with `index.csv` byte-identical.
+- `data-raw/reg_build_main.R`: two lines in the bcfishobs block still stated the old fact my #92 rewrite had corrected ("absent until rfp updates its templates", and the `stop()` reason). Fixed; the rebuild leaves `reg_main.json` unchanged.
+
+**Enumeration that ends the loop** (round 2 found defects inside a fix, so a quiet round 3 is not enough on its own):
+
+- *(A) every sort whose output decides a committed file's row order*: from a grep of every `order(`/`sort(`/`rev(`/`unique(` in `R/` and `data-raw/`. Five decide one: the four builders in `R/utils_vendored.R` and `styles_vendor.R`'s `index.csv`, and all five are radix now. The rest are `unique()` (first-seen order), integer or numeric keys (`gq_groups.R:174`, `gq_style_qml.R:123`), or runtime output never stored (`gq_groups.R:111,230`, `gq_tmap_legend.R:212`).
+- *(B) every remaining statement of each fact this branch rewrote*: 9 facts, grepped over the tree outside `planning/`, `inst/styles` and `NEWS.md` (`fact_restatements.py` in the scratchpad). One contradiction found, `test-composition_integrity.R:227` quoting the old `stop()` text, and fixed. The other hits agree with the rewrites, or are dated measurements labelled with their versions.
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
+| A helper `g(){ … git grep … }` became a fork bomb (about 3,600 processes, `fork: Resource temporarily unavailable`) | `g` is aliased to `git` in this shell, so the definition created a recursive `git()` function. Killed with `pkill -STOP/-KILL -f '<unique command text>'` until zero remained; other sessions' shells survived. Never define a shell function in this harness; call `/usr/bin/git`, or use a script file |
+| A Python script named `enum.py` failed with a circular-import error | It shadowed the standard library's `enum`. Renamed it and ran with `python3 -I` |
+
+## Code-check round 3 (review-round3.md): mechanism and its reach
+
+Mechanism named: one fact held in two places with nothing linking them, agreeing by accident (collation deciding both the generator's and the test's row order; prose restating a fact in more than one sentence). The reviewer walked its reach: committed-file sorts (sound); bare `order()` calls in `R/` (no committed copy); the `write_json` writers (not regenerated and compared); other generated-vs-compared pairs (only the currency test and the QML byte check); the hard-coded `templates` vector (a divergence fails loudly); `group_keys` (same values); tree names vs `<layername>` (54/54 and 59/59, unguarded but true today); prose restating the rewritten facts (sound). One place not sound: **order between sibling subgroups** is derived by sorting names, and moving `stream_labels` into `Streams/Stream labels` put it beneath `Habitat models`, where both templates have it on top. No gq code draws from that order, the subgroup name is fixed by the template, and the fix is the shared order key already deferred, so it is recorded on gq#105 with no code change.
+
+Loop ended by that enumeration (round 2 had found defects inside fixes, so a quiet round alone would not have ended it).
+
+| Round | Findings | Fixed | Accepted | Inside previous fix? |
+|---|---|---|---|---|
+| 1 | 1 | 1 | 0 | — |
+| 2 | 2 | 2 | 0 | y (both) |
+| 3 | 1 | 0 (recorded on gq#105) | 1 | n |

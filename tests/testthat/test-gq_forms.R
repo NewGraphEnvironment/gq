@@ -81,11 +81,14 @@ test_that("the roster carries only spatial forms", {
   expect_false(anyNA(f$geometry))
   expect_true(all(!is.na(f$geometry) & nzchar(f$geometry)))
   expect_false("form_cabin_pebbles" %in% f$layer_key)
+  # The two children added since (rfp 0.93.0), keyed by their labels.
+  expect_false(any(c("form_edna_samples", "form_tree_visits") %in% f$layer_key))
 
   # Premise: the parent IS present, so the exclusion is of the child
   # specifically rather than of the whole cabin family -- which is what a
   # too-broad filter would look like from here.
   expect_true("form_cabin_visit" %in% f$layer_key)
+  expect_true(all(c("form_edna", "form_tree") %in% f$layer_key))
 })
 
 test_that("an unstyled form reads as NA, and some forms are styled", {
@@ -98,12 +101,13 @@ test_that("an unstyled form reads as NA, and some forms are styled", {
   expect_true(any(!is.na(f$color)))
   expect_true(all(is.na(f$color) == is.na(f$symbol)))
 
-  # The four rfp has registered without deciding an appearance. Named, because
-  # this is the list the rfp issue asks to shrink -- when it does, this fails
-  # and says so rather than silently tracking whatever is currently unstyled.
+  # The forms rfp has registered without deciding an appearance. Named, because
+  # this is the list rfp's form-styling issue asks to shrink -- when it does,
+  # this fails and says so rather than silently tracking whatever is currently
+  # unstyled. It shrank once already when rfp styled eDNA (gq#94).
   expect_setequal(
     f$layer_key[is.na(f$color)],
-    c("form_edna", "form_fhap", "form_fish_sample", "form_monitoring")
+    c("form_fhap", "form_fish_sample", "form_monitoring")
   )
 })
 

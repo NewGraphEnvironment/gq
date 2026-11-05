@@ -10,7 +10,11 @@
 # CI can never read one. Same answer as the QML corpus and the theme roster: a
 # DEV-ONLY / build-time dependency on rfp, with the committed CSV as the shipped
 # source of truth. Structural guards run against the committed file everywhere;
-# the live comparison in test-template_drift.R skips when rfp is absent.
+# the live comparison, test-vendored_currency.R, runs only when RFP_TEMPLATE_DIR
+# points at an rfp checkout (gq#78).
+#
+# This script also writes template_layers.csv, the same walk's layer rows
+# (gq#68).
 #
 # Run after the templates change:
 #   Rscript data-raw/reg_extract_template_groups.R
@@ -48,46 +52,44 @@ if (nzchar(tpl_dir)) {
           ": ", tpl_dir)
 }
 
-groups <- do.call(rbind, lapply(templates, function(template) {
-  tbl <- qgs_group_table(file.path(tpl_dir, paste0(template, ".qgs")))
-  if (nrow(tbl) == 0L) {
-    stop("No groups in ", template, call. = FALSE)
-  }
-  cbind(template = template, tbl, stringsAsFactors = FALSE)
-}))
-
-groups <- groups[order(groups$template, groups$group_path), ]
+groups <- template_groups_build(tpl_dir, templates)
 
 # No sibling-order uniqueness check here: `order` is the sibling loop index, so
 # it is distinct within a parent by construction. Asserting it would be a guard
 # that cannot fail — which reads as diligence and is worse than nothing. The
-# assertion that CAN fail is the round-trip below.
-
+# assertion that CAN fail is the round-trip inside vendored_write().
 
 # QUOTED, unlike groups.csv and templates.csv were before gq#66. The correct
 # group name is "Roads,Railways,Pipelines" — a comma inside an unquoted field
 # would silently shift every later column — and
 # "Project Specific/Model Parameters - bcfishpass " ends in a space that only
-# quoting preserves through a round-trip.
-write.csv(groups, "inst/registry/template_groups.csv", row.names = FALSE,
-          quote = TRUE)
-
-# Prove the round-trip rather than trusting it. A name whose trailing space is
-# eaten still looks like a name, and the join it breaks reports nothing.
-back <- utils::read.csv("inst/registry/template_groups.csv",
-                        stringsAsFactors = FALSE)
-if (!identical(back$group_path, groups$group_path)) {
-  differing <- which(back$group_path != groups$group_path)
-  stop("group_path did not survive the CSV round-trip: ",
-       paste(sprintf("%s -> %s", groups$group_path[differing],
-                     back$group_path[differing]), collapse = "; "),
-       call. = FALSE)
-}
+# quoting preserves through a round-trip. The builder and the writer live in
+# R/utils_vendored.R so the currency test serializes exactly as this does.
+vendored_write(groups, "inst/registry/template_groups.csv", quote = TRUE)
 
 message(
   "template_groups.csv built: ", nrow(groups), " groups across ",
   length(templates), " templates (",
   paste(sprintf("%s %d", templates,
                 vapply(templates, function(t) sum(groups$template == t),
+                       integer(1))), collapse = ", "), ")"
+)
+
+
+# --- template_layers.csv: where each layer sits (gq#68) ------------------------
+#
+# Same walk, the layer rows. The witness for layer PLACEMENT, which the group
+# table cannot see: a layer filed under the wrong group changes what it draws
+# over, and test-template_drift.R compares each groups.csv row against this.
+layers <- template_layers_build(tpl_dir, templates)
+
+# Quoted for the reasons above, and because display names carry leading spaces.
+vendored_write(layers, "inst/registry/template_layers.csv", quote = TRUE)
+
+message(
+  "template_layers.csv built: ", nrow(layers), " layers across ",
+  length(templates), " templates (",
+  paste(sprintf("%s %d", templates,
+                vapply(templates, function(t) sum(layers$template == t),
                        integer(1))), collapse = ", "), ")"
 )
