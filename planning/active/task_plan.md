@@ -102,26 +102,26 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 3: Register styles (#98, #67)
 
-- [ ] Pick tree loss (pink) and gain (orange): render candidates as swatches on the blended
+- [x] Pick tree loss (pink) and gain (orange): render candidates as swatches on the blended
   basemap (`gq_basemap_tiles()` + `gq_basemap_blend()`) beside `#d95f02` (also the website link
   map's crossing orange), `#f2a93b`, drift's Crops `#e49635` and the other #98 classes; choose by CIEDE2000 distance from the existing oranges plus a look;
   script and PNG under `planning/active/` (archived with the PWF)
-- [ ] Rows in `reg_custom.csv`: `habitat_rule_comparison` (4), `habitat_expected_use` (5),
+- [x] Rows in `reg_custom.csv`: `habitat_rule_comparison` (4), `habitat_expected_use` (5),
   `floodplain_flood_factor` (3), `tree_cover_change` (2), `landcover_change_from` (9),
   `landcover_change_to` (9), colours and opacities from #98's table and drift's palette,
   `note` naming each source
-- [ ] Rebuild `reg_main.json`; data test asserts each new layer's classes, colours and
+- [x] Rebuild `reg_main.json`; data test asserts each new layer's classes, colours and
   per-class opacities, and that `landcover_change_*` colours equal drift's table as
   committed here (a copied value, so the test names the drift file and commit it came from)
-- [ ] These layers are in no template, so they take no `groups.csv` row: pin them as a
+- [x] These layers are in no template, so they take no `groups.csv` row: pin them as a
   named registry-only set in `test-gq_groups.R` ("all registry keys appear in
   groups.csv"), each with its reason, so an unplaced layer still fails (plan review
   blocker); run `test-composition_integrity.R` and `test-reg_labels.R`
-- [ ] File a gq follow-up: `gq_mapgl_classes()` drops per-class opacity (plan review)
-- [ ] Edit #67's body (drift palette, `tree_cover_change` is its third style, QML upstream)
+- [x] File a gq follow-up: `gq_mapgl_classes()` drops per-class opacity (plan review)
+- [x] Edit #67's body (drift palette, `tree_cover_change` is its third style, QML upstream)
   and #98's (keys, tree hex, stream label already shipped); file the QML issue in the
   upstream style store
-- [ ] Commit `Fixes #98`, `Fixes #67`
+- [x] Commit `Fixes #98`, `Fixes #67`
 
 ## Phase 4: Docs and wrap
 
@@ -132,7 +132,7 @@ Decided by me (conventional defaults, reject the plan to change):
 ## Owed at the end (reported, done after merge)
 
 - [ ] `/gh-pr-merge` ticks move 2 and batches 3–5 in `planning/backlog.md`
-- [ ] The QML for #67's three styles lands upstream and is vendored by `data-raw/styles_vendor.R` (separate issue)
+- [ ] The QML for #67's three styles lands in the upstream style store (issue filed there 2026-11-05) and is vendored by `data-raw/styles_vendor.R`
 
 ## Validation
 

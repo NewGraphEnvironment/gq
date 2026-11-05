@@ -52,3 +52,21 @@ Batch 4: #42, #75 (custom CSV reader). Batch 5: #98, #67 (register styles).
 
 - `data-raw/reg_build_main.R` on unchanged sources reproduces `reg_main.json` byte for byte
   (57 layers), before and after the reader change and the new `dash` column.
+
+## Phase 3 measurements
+
+CIEDE2000 from the oranges a tree-gain swatch shares a page with (`#d95f02` first rule
+only / the website link map's crossing, `#f2a93b` valley bottom, `#e49635` drift Crops):
+
+| candidate | d95f02 | f2a93b | e49635 | on the basemap |
+|---|---:|---:|---:|---|
+| `#ff8c42` (chosen) | 12.7 | 14.1 | 10.3 | lighter salmon-orange, reads on its own |
+| `#ff7f00` | 11.0 | 13.9 | 9.7 | reads as a blend of the existing oranges |
+| `#ffab73` | 19.6 | 11.8 | 10.9 | peach, weak at 0.7 opacity |
+| `#fdd49e` | 30.7 | 13.6 | 17.0 | scores best, washes into the topo basemap |
+
+Loss: `#e7298a` (23.0 from plum `#7b3f98`, 27.1 from Built Area `#c4281b`) over the lighter
+`#f781bf`, so the restoration signal is the stronger of the pair.
+
+The orange space between the three existing oranges tops out near 10-14 ΔE; nothing in it
+clears all three by a wide margin while staying visible on a light basemap.

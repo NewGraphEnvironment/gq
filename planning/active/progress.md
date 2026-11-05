@@ -22,3 +22,9 @@
   the 3 line tests red with only the line branch reverted. An in-memory swap probe was
   wrong (tests resolve the attached export, not the namespace binding) and was redone in
   a worktree.
+- Phase 3 (batch 5): 32 rows in `reg_custom.csv` (6 layers); rebuilt `reg_main.json` is
+  190 lines added, none removed. Tree loss `#e7298a`, gain `#ff8c42`, chosen from
+  `tree_change_swatch.png` (rendered by `tree_change_swatch.R`) and CIEDE2000 scores.
+  Registry-only keys pinned in `test-gq_groups.R`; `farver` added to Suggests for the
+  colour-distance test. Edited #67 and #98 bodies; filed #107 (mapgl opacity) and the
+  QML issue in the upstream style store.

@@ -56,11 +56,25 @@ test_that("all registry keys appear in groups.csv", {
   groups_df <- gq_groups()
   reg_keys <- names(reg$layers)
   groups_keys <- unique(groups_df$layer_key)
-  missing <- setdiff(reg_keys, groups_keys)
+
+  # Styles for products a script derives -- habitat comparisons, flood
+  # scenarios, land-cover change -- are registry-only: no template carries
+  # them, and a groups.csv row would give them a source_type, which is what
+  # makes rfp try to download a layer (#98, #67). Named one by one so a layer
+  # that merely forgot its row still fails.
+  registry_only <- c(
+    "habitat_rule_comparison", "habitat_expected_use",
+    "floodplain_flood_factor", "tree_cover_change",
+    "landcover_change_from", "landcover_change_to"
+  )
+  missing <- setdiff(reg_keys, c(groups_keys, registry_only))
   expect_equal(
     length(missing), 0,
     info = paste("Missing:", paste(missing, collapse = ", "))
   )
+  # And the exemption cannot outlive its layer, or name one that has a row.
+  expect_setequal(setdiff(registry_only, reg_keys), character(0))
+  expect_setequal(intersect(registry_only, groups_keys), character(0))
 })
 
 
