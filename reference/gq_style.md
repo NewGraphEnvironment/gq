@@ -36,9 +36,13 @@ gq_style(layer_or_reg, name = NULL, field = NULL)
 A named list with `type` and style properties. For simple layers:
 `fill`, `stroke`, `mark` as applicable. For classified layers: adds
 `classification` with `field`, `values` (named color vector), `labels`,
-and per-class `widths`/`radii`/`dashes` when available. `dashes` holds
-the raw QGIS dash value (named style like "dash dot", or custom pattern
-like "0.66;2") for classes that are dashed.
+and per-class `widths`/`radii`/`dashes`/`opacities` when available.
+`labels` and every per-class vector are named by class key, as `values`
+is, so `cls$labels[codes]` and `cls$values[codes]` index the same
+classes. `dashes` holds the raw QGIS dash value (named style like "dash
+dot", or custom pattern like "0.66;2") for classes that are dashed.
+`opacities` is `NA` for a class the registry gives no opacity, which
+means opaque: the extractor records opacity only when it is below 1.
 
 ## Examples
 
@@ -99,7 +103,8 @@ gq_style(reg, "road")
 #> "#c0392b" "#e67e22" 
 #> 
 #> $classification$labels
-#> [1] "Highway"  "Arterial"
+#>    highway   arterial 
+#>  "Highway" "Arterial" 
 #> 
 #> $classification$widths
 #>  highway arterial 
@@ -125,7 +130,8 @@ gq_style(reg, "road", field = "my_road_type")
 #> "#c0392b" "#e67e22" 
 #> 
 #> $classification$labels
-#> [1] "Highway"  "Arterial"
+#>    highway   arterial 
+#>  "Highway" "Arterial" 
 #> 
 #> $classification$widths
 #>  highway arterial 

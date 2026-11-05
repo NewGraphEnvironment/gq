@@ -75,10 +75,11 @@ alternatives.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list with <code>field</code>, <code>values</code> (named color vector), <code>labels</code>,
-<code>widths</code> (named line-width vector for line layers; <code>NULL</code> otherwise), and
-<code>dashes</code> (named raw-QGIS-dash vector for classes that are dashed; <code>NULL</code>
-otherwise). The dash value is the raw QGIS encoding (named style like
+    <p>A named list with <code>field</code>, <code>values</code> (named color vector), <code>labels</code>
+(named by class key, like <code>values</code>), <code>widths</code> (named line-width vector for
+line layers; <code>NULL</code> otherwise), <code>dashes</code> (named raw-QGIS-dash vector for
+classes that are dashed; <code>NULL</code> otherwise), and <code>opacities</code> (named, <code>NA</code>
+meaning opaque; <code>NULL</code> when no class carries an opacity). The dash value is the raw QGIS encoding (named style like
 "dash dot", or custom pattern like "0.66;2") — consumers map it to their
 backend's line type (e.g. tmap <code>lty = "dashed"</code> for non-NA entries).</p>
     </div>
@@ -96,13 +97,16 @@ backend's line type (e.g. tmap <code>lty = "dashed"</code> for non-NA entries).<
 <span class="r-out co"><span class="r-pr">#&gt;</span>   highway  arterial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> "#c0392b" "#e67e22" </span>
 <span class="r-in"><span><span class="va">cls</span><span class="op">$</span><span class="va">labels</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Highway"  "Arterial"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    highway   arterial </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  "Highway" "Arterial" </span>
 <span class="r-in"><span><span class="va">cls</span><span class="op">$</span><span class="va">widths</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  highway arterial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      2.0      1.5 </span>
 <span class="r-in"><span><span class="va">cls</span><span class="op">$</span><span class="va">dashes</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  highway arterial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       NA "0.66;2" </span>
+<span class="r-in"><span><span class="va">cls</span><span class="op">$</span><span class="va">opacities</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Object-based (backwards compatible)</span></span></span>
 <span class="r-in"><span><span class="va">cls</span> <span class="op">&lt;-</span> <span class="fu">gq_tmap_classes</span><span class="op">(</span><span class="va">reg</span><span class="op">$</span><span class="va">layers</span><span class="op">$</span><span class="va">road</span><span class="op">)</span></span></span>

@@ -32,13 +32,14 @@ gq_tmap_classes(layer_or_reg, name = NULL, field = NULL)
 
 ## Value
 
-A named list with `field`, `values` (named color vector), `labels`,
-`widths` (named line-width vector for line layers; `NULL` otherwise),
-and `dashes` (named raw-QGIS-dash vector for classes that are dashed;
-`NULL` otherwise). The dash value is the raw QGIS encoding (named style
-like "dash dot", or custom pattern like "0.66;2") — consumers map it to
-their backend's line type (e.g. tmap `lty = "dashed"` for non-NA
-entries).
+A named list with `field`, `values` (named color vector), `labels`
+(named by class key, like `values`), `widths` (named line-width vector
+for line layers; `NULL` otherwise), `dashes` (named raw-QGIS-dash vector
+for classes that are dashed; `NULL` otherwise), and `opacities` (named,
+`NA` meaning opaque; `NULL` when no class carries an opacity). The dash
+value is the raw QGIS encoding (named style like "dash dot", or custom
+pattern like "0.66;2") — consumers map it to their backend's line type
+(e.g. tmap `lty = "dashed"` for non-NA entries).
 
 ## Examples
 
@@ -54,13 +55,16 @@ cls$values
 #>   highway  arterial 
 #> "#c0392b" "#e67e22" 
 cls$labels
-#> [1] "Highway"  "Arterial"
+#>    highway   arterial 
+#>  "Highway" "Arterial" 
 cls$widths
 #>  highway arterial 
 #>      2.0      1.5 
 cls$dashes
 #>  highway arterial 
 #>       NA "0.66;2" 
+cls$opacities
+#> NULL
 
 # Object-based (backwards compatible)
 cls <- gq_tmap_classes(reg$layers$road)

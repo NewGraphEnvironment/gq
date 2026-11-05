@@ -47,6 +47,11 @@ change. Numeric axes (`lwd`, `size`) fall back to a scalar when the
 registry defines the value for only some classes, since a half-mapped
 axis would invent a size for the gaps.
 
+Per-class opacity is the exception to that rule. A class with no opacity
+is opaque, not unknown, so it is mapped as 1: polygon and point classes
+through `fill_alpha`, line classes through `col_alpha`. Opacity shared
+by every class is returned as a plain number.
+
 ## Examples
 
 ``` r
@@ -117,7 +122,8 @@ gq_tmap_style(reg, "road")
 #> [1] TRUE
 #> 
 #> $labels
-#> [1] "Highway"  "Arterial"
+#>    highway   arterial 
+#>  "Highway" "Arterial" 
 #> 
 #> $label.na
 #> [1] NA
@@ -362,7 +368,8 @@ gq_tmap_style(reg, "road", field = "my_road_type")
 #> [1] TRUE
 #> 
 #> $labels
-#> [1] "Highway"  "Arterial"
+#>    highway   arterial 
+#>  "Highway" "Arterial" 
 #> 
 #> $label.na
 #> [1] NA

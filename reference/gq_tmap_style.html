@@ -86,6 +86,10 @@ same shape <code>fill</code>/<code>col</code> already used, so <code><a href="ht
 change. Numeric axes (<code>lwd</code>, <code>size</code>) fall back to a scalar when the
 registry defines the value for only some classes, since a half-mapped
 axis would invent a size for the gaps.</p>
+<p>Per-class opacity is the exception to that rule. A class with no opacity
+is opaque, not unknown, so it is mapped as 1: polygon and point classes
+through <code>fill_alpha</code>, line classes through <code>col_alpha</code>. Opacity shared by
+every class is returned as a plain number.</p>
     </div>
 
     <div class="section level2">
@@ -157,7 +161,8 @@ axis would invent a size for the gaps.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $labels</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Highway"  "Arterial"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    highway   arterial </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  "Highway" "Arterial" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $label.na</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
@@ -402,7 +407,8 @@ axis would invent a size for the gaps.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $labels</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Highway"  "Arterial"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    highway   arterial </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  "Highway" "Arterial" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $label.na</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>

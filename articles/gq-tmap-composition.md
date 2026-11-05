@@ -128,7 +128,8 @@ gq_tmap_style(reg, "crossings_pscis_assessment")
 #> [1] TRUE
 #> 
 #> $labels
-#> [1] "Barrier"   "Passable"  "Potential" "Unknown"  
+#>     BARRIER    PASSABLE   POTENTIAL     UNKNOWN 
+#>   "Barrier"  "Passable" "Potential"   "Unknown" 
 #> 
 #> $label.na
 #> [1] NA

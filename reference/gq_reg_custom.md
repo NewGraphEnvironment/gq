@@ -17,12 +17,18 @@ gq_reg_custom(path)
 
 - path:
 
-  Path to a CSV file with columns: layer_key, type, source_layer,
-  class_field, class_value, fill_color, fill_opacity, stroke_color,
-  stroke_width, stroke_opacity, mark_color, mark_shape, mark_radius,
-  mark_stroke_color, mark_stroke_width, label_color, label_size,
-  label_font, label_halo_color, label_halo_width, label_offset_x,
-  label_offset_y, note.
+  Path to a CSV file. Only `layer_key` and `type` are required. Every
+  other column is optional, and one that is absent is read as empty for
+  every row: `source_layer`, `class_field`, `class_value`,
+  `class_label`, `fill_color`, `fill_opacity`, `stroke_color`,
+  `stroke_width`, `stroke_opacity`, `dash`, `mark_color`, `mark_shape`,
+  `mark_radius`, `mark_stroke_color`, `mark_stroke_width`,
+  `label_color`, `label_size`, `label_font`, `label_halo_color`,
+  `label_halo_width`, `label_offset_x`, `label_offset_y`, `note`. `dash`
+  takes a QGIS line style name as the extractor writes it (`solid`,
+  `no`, `dash`, `dot`, `dash dot`, `dash dot dot`) or a dash pattern of
+  two or more lengths separated by `;` or a space (`"4;2"`, `"0.66;2"`);
+  anything else is an error.
 
 ## Value
 
@@ -65,17 +71,29 @@ all refuse a raster rather than returning something plausible;
 [`gq_tmap_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_classes.md)
 works, since a palette is a classification like any other.
 
+## Classified lines
+
+A classified `line` reads its per-class style from the stroke columns,
+as an extracted one does: `color` from `stroke_color` (or `fill_color`
+when that is empty), `width` from `stroke_width`, `opacity` from
+`stroke_opacity` (or `fill_opacity`), and `dash` from `dash`. Polygon
+and raster classes read `fill_color` and `fill_opacity`, with the stroke
+columns as a per-class outline.
+
 ## Examples
 
 ``` r
 path <- system.file("registry", "reg_custom.csv", package = "gq")
 reg <- gq_reg_custom(path)
 names(reg$layers)
-#> [1] "bec_zone"                    "rivers_poly"                
-#> [3] "dam"                         "town"                       
-#> [5] "harvest_area"                "planting_site"              
-#> [7] "old_growth_management_areas" "national_park"              
-#> [9] "habitat_lateral"            
+#>  [1] "bec_zone"                    "rivers_poly"                
+#>  [3] "dam"                         "town"                       
+#>  [5] "harvest_area"                "planting_site"              
+#>  [7] "old_growth_management_areas" "national_park"              
+#>  [9] "habitat_lateral"             "habitat_rule_comparison"    
+#> [11] "habitat_expected_use"        "floodplain_flood_factor"    
+#> [13] "tree_cover_change"           "landcover_change_from"      
+#> [15] "landcover_change_to"        
 
 # Classified layer (multiple rows per layer_key)
 reg$layers$bec_zone$classification$field

@@ -76,6 +76,12 @@ names(reg$layers)
 #> [55] "old_growth_management_areas"                           
 #> [56] "national_park"                                         
 #> [57] "habitat_lateral"                                       
+#> [58] "habitat_rule_comparison"                               
+#> [59] "habitat_expected_use"                                  
+#> [60] "floodplain_flood_factor"                               
+#> [61] "tree_cover_change"                                     
+#> [62] "landcover_change_from"                                 
+#> [63] "landcover_change_to"                                   
 
 # Use directly with style translators
 gq_tmap_style(gq_reg_main()$layers$lake)

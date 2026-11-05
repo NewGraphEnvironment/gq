@@ -60,11 +60,18 @@ simple fill/stroke/mark/label styles.</p>
 
 
 <dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
-<dd><p>Path to a CSV file with columns: layer_key, type, source_layer,
-class_field, class_value, fill_color, fill_opacity, stroke_color,
-stroke_width, stroke_opacity, mark_color, mark_shape, mark_radius,
-mark_stroke_color, mark_stroke_width, label_color, label_size, label_font,
-label_halo_color, label_halo_width, label_offset_x, label_offset_y, note.</p></dd>
+<dd><p>Path to a CSV file. Only <code>layer_key</code> and <code>type</code> are required.
+Every other column is optional, and one that is absent is read as empty
+for every row: <code>source_layer</code>, <code>class_field</code>, <code>class_value</code>,
+<code>class_label</code>, <code>fill_color</code>, <code>fill_opacity</code>, <code>stroke_color</code>,
+<code>stroke_width</code>, <code>stroke_opacity</code>, <code>dash</code>, <code>mark_color</code>, <code>mark_shape</code>,
+<code>mark_radius</code>, <code>mark_stroke_color</code>, <code>mark_stroke_width</code>, <code>label_color</code>,
+<code>label_size</code>, <code>label_font</code>, <code>label_halo_color</code>, <code>label_halo_width</code>,
+<code>label_offset_x</code>, <code>label_offset_y</code>, <code>note</code>. <code>dash</code> takes a QGIS line style
+name as the extractor writes it (<code>solid</code>, <code>no</code>, <code>dash</code>, <code>dot</code>,
+<code>dash dot</code>, <code>dash dot dot</code>) or a dash pattern of two or more lengths
+separated by <code>;</code> or a space (<code>"4;2"</code>, <code>"0.66;2"</code>); anything else is an
+error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -96,17 +103,31 @@ for <code><a href="gq_style_qml.html">gq_style_qml()</a></code> whenever the con
 returning something plausible; <code><a href="gq_tmap_classes.html">gq_tmap_classes()</a></code> works, since a palette is
 a classification like any other.</p>
     </div>
+    <div class="section level2">
+    <h2 id="classified-lines">Classified lines<a class="anchor" aria-label="anchor" href="#classified-lines"></a></h2>
+
+
+<p>A classified <code>line</code> reads its per-class style from the stroke columns, as an
+extracted one does: <code>color</code> from <code>stroke_color</code> (or <code>fill_color</code> when that is
+empty), <code>width</code> from <code>stroke_width</code>, <code>opacity</code> from <code>stroke_opacity</code> (or
+<code>fill_opacity</code>), and <code>dash</code> from <code>dash</code>. Polygon and raster classes read
+<code>fill_color</code> and <code>fill_opacity</code>, with the stroke columns as a per-class
+outline.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"registry"</span>, <span class="st">"reg_custom.csv"</span>, package <span class="op">=</span> <span class="st">"gq"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu">gq_reg_custom</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">reg</span><span class="op">$</span><span class="va">layers</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "bec_zone"                    "rivers_poly"                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "dam"                         "town"                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "harvest_area"                "planting_site"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "old_growth_management_areas" "national_park"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [9] "habitat_lateral"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "bec_zone"                    "rivers_poly"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "dam"                         "town"                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "harvest_area"                "planting_site"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "old_growth_management_areas" "national_park"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "habitat_lateral"             "habitat_rule_comparison"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "habitat_expected_use"        "floodplain_flood_factor"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "tree_cover_change"           "landcover_change_from"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "landcover_change_to"        </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Classified layer (multiple rows per layer_key)</span></span></span>
 <span class="r-in"><span><span class="va">reg</span><span class="op">$</span><span class="va">layers</span><span class="op">$</span><span class="va">bec_zone</span><span class="op">$</span><span class="va">classification</span><span class="op">$</span><span class="va">field</span></span></span>

@@ -81,9 +81,13 @@ alternatives.</p></dd>
     <p>A named list with <code>type</code> and style properties. For simple layers:
 <code>fill</code>, <code>stroke</code>, <code>mark</code> as applicable. For classified layers: adds
 <code>classification</code> with <code>field</code>, <code>values</code> (named color vector), <code>labels</code>,
-and per-class <code>widths</code>/<code>radii</code>/<code>dashes</code> when available. <code>dashes</code> holds the
-raw QGIS dash value (named style like "dash dot", or custom pattern like
-"0.66;2") for classes that are dashed.</p>
+and per-class <code>widths</code>/<code>radii</code>/<code>dashes</code>/<code>opacities</code> when available.
+<code>labels</code> and every per-class vector are named by class key, as <code>values</code>
+is, so <code>cls$labels[codes]</code> and <code>cls$values[codes]</code> index the same classes.
+<code>dashes</code> holds the raw QGIS dash value (named style like "dash dot", or
+custom pattern like "0.66;2") for classes that are dashed. <code>opacities</code> is
+<code>NA</code> for a class the registry gives no opacity, which means opaque: the
+extractor records opacity only when it is below 1.</p>
     </div>
 
     <div class="section level2">
@@ -144,7 +148,8 @@ raw QGIS dash value (named style like "dash dot", or custom pattern like
 <span class="r-out co"><span class="r-pr">#&gt;</span> "#c0392b" "#e67e22" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $classification$labels</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Highway"  "Arterial"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    highway   arterial </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  "Highway" "Arterial" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $classification$widths</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  highway arterial </span>
@@ -170,7 +175,8 @@ raw QGIS dash value (named style like "dash dot", or custom pattern like
 <span class="r-out co"><span class="r-pr">#&gt;</span> "#c0392b" "#e67e22" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $classification$labels</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Highway"  "Arterial"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    highway   arterial </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  "Highway" "Arterial" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $classification$widths</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  highway arterial </span>
