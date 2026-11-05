@@ -286,7 +286,10 @@ if (!all(ok)) {
 # Quoted, unlike the registry CSVs. Layer names carry commas ("Crossings -
 # PSCIS,  modelled, dams") and a leading space, so an unquoted write would shift
 # every later column. read.csv() handles the quoting on the way back in.
-corpus <- corpus[order(corpus$kind, corpus$layer_key, corpus$template), ]
+# radix: order() otherwise collates by LC_COLLATE, so the committed index would
+# depend on the locale of whoever re-vendors (R/utils_vendored.R says why).
+corpus <- corpus[order(corpus$kind, corpus$layer_key, corpus$template,
+                       method = "radix"), ]
 utils::write.csv(corpus[c("layer_key", "layer", "template", "scope", "kind")],
                  file.path(dest, "index.csv"), row.names = FALSE)
 

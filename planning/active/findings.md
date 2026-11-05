@@ -116,3 +116,20 @@ Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52
 - Fragile: the four builders sorted with a bare `order()`, which collates by `LC_COLLATE`. Generators run in `en_US`, testthat in `C`. Reproduced: "Low detail - roads" vs "Low Detail - Salmon Model", and `roads_dra` vs `roads2`, swap between the two. Fixed with `method = "radix"`; the generators re-ran byte-identical.
 - Two comment inaccuracies fixed: the test compares lines, not bytes, and the QML is not "the fourth" artifact.
 - Separately, the private-refs scrub: soul's `private_refs.sh` counted 30 added `<private-repo>#N` lines (code comments, tests, planning). Replaced with words, only on lines this branch added; 151 standing references are untouched.
+
+## Code-check round 2 (review-round2.md): both findings were inside round 1's work
+
+- `data-raw/styles_vendor.R`: the `index.csv` sort was a bare `order()`, the one sort reaching a committed file that the radix fix missed. Fixed; the style vendoring re-ran with `index.csv` byte-identical.
+- `data-raw/reg_build_main.R`: two lines in the bcfishobs block still stated the old fact my #92 rewrite had corrected ("absent until rfp updates its templates", and the `stop()` reason). Fixed; the rebuild leaves `reg_main.json` unchanged.
+
+**Enumeration that ends the loop** (round 2 found defects inside a fix, so a quiet round 3 is not enough on its own):
+
+- *(A) every sort whose output decides a committed file's row order*: from a grep of every `order(`/`sort(`/`rev(`/`unique(` in `R/` and `data-raw/`. Five decide one: the four builders in `R/utils_vendored.R` and `styles_vendor.R`'s `index.csv`, and all five are radix now. The rest are `unique()` (first-seen order), integer or numeric keys (`gq_groups.R:174`, `gq_style_qml.R:123`), or runtime output never stored (`gq_groups.R:111,230`, `gq_tmap_legend.R:212`).
+- *(B) every remaining statement of each fact this branch rewrote*: 9 facts, grepped over the tree outside `planning/`, `inst/styles` and `NEWS.md` (`fact_restatements.py` in the scratchpad). One contradiction found, `test-composition_integrity.R:227` quoting the old `stop()` text, and fixed. The other hits agree with the rewrites, or are dated measurements labelled with their versions.
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
+| A helper `g(){ … git grep … }` became a fork bomb (about 3,600 processes, `fork: Resource temporarily unavailable`) | `g` is aliased to `git` in this shell, so the definition created a recursive `git()` function. Killed with `pkill -STOP/-KILL -f '<unique command text>'` until zero remained; other sessions' shells survived. Never define a shell function in this harness; call `/usr/bin/git`, or use a script file |
+| A Python script named `enum.py` failed with a circular-import error | It shadowed the standard library's `enum`. Renamed it and ran with `python3 -I` |

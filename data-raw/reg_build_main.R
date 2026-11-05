@@ -109,9 +109,9 @@ message("ACCESS labels corrected (bcfishpass#13): ", n_corrected)
 # nothing.
 #
 # source_layer is three things at once: the S3 object stem, the GeoPackage
-# table name, and the .qgs `layername=`. So this correction fixes the DOWNLOAD
-# and the layer stays absent from the map until rfp updates its templates --
-# tracked in the rfp issue named from gq#82.
+# table name, and the .qgs `layername=`. So this correction fixes the DOWNLOAD;
+# the map side needed rfp's templates to change too, which they did in v0.68.0
+# (above). A project built from an older template still names the old table.
 #
 # DELETE THIS BLOCK once reg_qgis_restoration.json is re-extracted from a
 # template carrying the new name (any rfp >= 0.68.0); whether and how that
@@ -132,7 +132,7 @@ if (identical(obs_have, obs_old)) {
   message("bcfishobs source_layer corrected (gq#82): ", obs_old, " -> ", obs_new)
 } else if (identical(obs_have, obs_new)) {
   stop("bcfishobs already reads '", obs_new, "' in the extracted registry.\n",
-       "  rfp's templates have been regenerated -- delete this block.",
+       "  reg_qgis_restoration.json has been re-extracted -- delete this block.",
        call. = FALSE)
 } else {
   stop("bcfishobs source_layer is neither the old nor the new name: ",

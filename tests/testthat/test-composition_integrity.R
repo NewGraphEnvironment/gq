@@ -224,8 +224,8 @@ test_that("the bcfishobs correction in reg_build_main.R is still doing work", {
   #
   # Without this, someone can hand-edit the extracted JSON to the new name and
   # not rebuild, leaving a landmine: the next `source("data-raw/reg_build_main.R")`
-  # stops with "rfp's templates have been regenerated -- delete this block"
-  # about templates nobody regenerated.
+  # stops with "reg_qgis_restoration.json has been re-extracted -- delete this
+  # block" about an extraction nobody ran.
   # `[[` throughout, never `$`. These are lists parsed from JSON, where `$`
   # partial-matches: a suffixed rename of this key would be silently answered
   # by a sibling and the pin would pass on a layer that no longer exists --
