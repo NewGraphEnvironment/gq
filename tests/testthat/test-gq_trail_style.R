@@ -7,12 +7,13 @@
 # every project it creates from the project's own `.qgs`, rfp's vector writer
 # has a style to apply, and this registry gives tmap and mapgl theirs.
 #
-# The route matters and is the reason these tests assert what they do. A
-# classified line authored the other way - by hand in `reg_custom.csv` - comes
-# back with `widths` and `dashes` both NULL, because that writer emits
-# `outline_width`/`outline_color` while `gq_style()` and `gq_tmap_classes()`
-# read per-class `width`/`dash`. Dash is exactly what distinguishes a trail
-# from a road, so the "did it survive" assertions below are not ceremony.
+# The route matters and is the reason these tests assert what they do. Until
+# #42 a classified line authored by hand in `reg_custom.csv` came back with
+# `widths` and `dashes` both NULL, because that writer emitted `outline_width`
+# while `gq_style()` and `gq_tmap_classes()` read per-class `width`/`dash`.
+# Both routes now write one vocabulary (pinned in test-gq_reg.R); dash is
+# exactly what distinguishes a trail from a road, so the "did it survive"
+# assertions below are not ceremony.
 
 trail <- function() gq_reg_main()$layers$trails
 
@@ -33,10 +34,9 @@ test_that("it is classified on highway, the only universally populated tag", {
 })
 
 test_that("per-class width and dash survive into the translators", {
-  # THE test. This is the property the hand-curated CSV route cannot produce -
-  # it returns NULL for both - so a green here is also the evidence for why the
-  # style is authored in a QGIS project and extracted rather than written by
-  # hand as registry rows.
+  # THE test. This is the property the hand-curated CSV route could not produce
+  # before #42 - it returned NULL for both - which is why the style was authored
+  # in a QGIS project and extracted rather than written by hand as registry rows.
   cls <- gq_tmap_classes(trail())
   expect_equal(cls$field, "highway")
   expect_false(is.null(cls$widths))

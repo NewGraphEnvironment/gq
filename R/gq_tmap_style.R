@@ -187,7 +187,8 @@ tmap_classified <- function(sty) {
 
   # A numeric axis is only mapped when every class has a value. A half-mapped
   # width silently invents a size for the gaps; a documented scalar does not.
-  # gq_reg_custom() can produce a partial vector (#42), so this is reachable.
+  # A CSV-authored line leaving stroke_width blank on some rows produces a
+  # partial vector, so this is reachable.
   complete <- function(v) !is.null(v) && !anyNA(v)
 
   if (sty$type == "polygon") {

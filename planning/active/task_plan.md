@@ -81,23 +81,23 @@ Decided by me (conventional defaults, reject the plan to change):
 
 ## Phase 2: Custom CSV reader (#42, #75)
 
-- [ ] Confirm `source("data-raw/reg_build_main.R")` on the branch tip runs and reproduces
+- [x] Confirm `source("data-raw/reg_build_main.R")` on the branch tip runs and reproduces
   `reg_main.json` byte for byte (moved here from Phase 3 by the plan review: this phase
   rebuilds first)
-- [ ] Failing tests first: a CSV of only `layer_key, type, source_layer, class_field,
+- [x] Failing tests first: a CSV of only `layer_key, type, source_layer, class_field,
   class_value, fill_color` reads without error (#75); a classified line from CSV yields
   non-NULL `widths` and `dashes` from `gq_tmap_classes()`; key-set test comparing a
   CSV-authored classified line class against an extracted one (`roads_dra`) so the two
   paths cannot drift; an invalid `dash` value errors naming layer and value
-- [ ] `R/gq_reg.R`: after `read.csv()`, add every absent optional column as `NA` (one
+- [x] `R/gq_reg.R`: after `read.csv()`, add every absent optional column as `NA` (one
   `cols_optional` vector, also used by the numeric coercion list); classified branch emits
   `color`/`width`/`opacity`/`dash`/`label` for `type == "line"`; `dash` validated and read
   in `csv_stroke()` too
-- [ ] `@param path` roxygen: `layer_key` and `type` required, every other column optional
+- [x] `@param path` roxygen: `layer_key` and `type` required, every other column optional
   and treated as absent; `dash` documented with its accepted spellings
-- [ ] Add an empty `dash` column to `inst/registry/reg_custom.csv` (after
+- [x] Add an empty `dash` column to `inst/registry/reg_custom.csv` (after
   `stroke_opacity`); rebuild `reg_main.json` and confirm the diff is empty
-- [ ] Restore the bug and watch the minimal-CSV test go red; commit `Fixes #42`,
+- [x] Restore the bug and watch the minimal-CSV test go red; commit `Fixes #42`,
   `Fixes #75`
 
 ## Phase 3: Register styles (#98, #67)

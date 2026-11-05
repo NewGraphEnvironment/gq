@@ -12,3 +12,13 @@
   with opacities dropped from gq_style(), the map/legend test red with them dropped from
   legend_entries() alone. The map/legend test first passed vacuously (empty loop) and was
   tightened. Edited #24's body to carry #31's casing/outline remainder.
+- Plan review delivered after the Phase 1 commit; findings and dispositions in
+  `review-plan.md`, folded into `task_plan.md` (commit a955f42).
+- Phase 2 (batch 4): `reg_main.json` rebuild confirmed byte-identical on unchanged
+  sources first. Absent optional columns read as empty; classified lines write
+  color/width/dash/opacity; `dash` column validated (QGIS style names or a pattern) and
+  read for simple strokes too; empty `dash` column added to `reg_custom.csv`; rebuild
+  still byte-identical. Guards: all 7 new tests red against main's reader in a worktree;
+  the 3 line tests red with only the line branch reverted. An in-memory swap probe was
+  wrong (tests resolve the attached export, not the namespace binding) and was redone in
+  a worktree.

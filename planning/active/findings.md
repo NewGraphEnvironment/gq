@@ -36,6 +36,8 @@ Batch 4: #42, #75 (custom CSV reader). Batch 5: #98, #67 (register styles).
 
 | Error | Resolution |
 |-------|------------|
+| In-memory `assign()` of an old function into the namespace left tests calling the new export | Tests resolve exported functions from the attached package env, not the namespace; restore a bug in a `git worktree` instead |
+| `write_reg_csv()` fixture deleted its file when an inner helper returned | Pass the caller's frame as the `withr::defer()` envir |
 
 ## Phase 1 measurements
 
@@ -45,3 +47,8 @@ Batch 4: #42, #75 (custom CSV reader). Batch 5: #98, #67 (register styles).
   `streams_all` draw too, not only `bec_zone`.
 - tmap 4.4.1 draws per-class line alpha as `gp$alpha` on `polyline` grobs and polygon alpha
   on `pathgrob`, so one `drawn_gp(m, "alpha", grob_class)` read covers both.
+
+## Phase 2 measurements
+
+- `data-raw/reg_build_main.R` on unchanged sources reproduces `reg_main.json` byte for byte
+  (57 layers), before and after the reader change and the new `dash` column.
