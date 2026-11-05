@@ -8,7 +8,7 @@ message: If you use gq, please cite it by its DOI, 10.5281/zenodo.23524719.
 type: software
 license: MIT
 title: 'gq: Cartographic Style Management Across Rendering Targets'
-version: 0.16.1
+version: 0.17.0
 doi: 10.5281/zenodo.23524719
 abstract: Extract symbology from QGIS projects, store in a canonical JSON registry,
   and translate to tmap, leaflet, MapLibre GL, and ggplot2. One source of truth for
@@ -27,8 +27,8 @@ preferred-citation:
     email: al@newgraphenvironment.com
     orcid: https://orcid.org/0000-0002-3495-2128
     affiliation: New Graph Environment Ltd.
-  version: 0.16.1
-  date-released: '2026-10-21'
+  version: 0.17.0
+  date-released: '2026-11-05'
   url: https://newgraphenvironment.github.io/gq/
   repository-code: https://github.com/NewGraphEnvironment/gq
   license: MIT
@@ -38,7 +38,7 @@ preferred-citation:
     name: New Graph Environment Ltd.
 repository-code: https://github.com/NewGraphEnvironment/gq
 url: https://newgraphenvironment.github.io/gq/
-date-released: '2026-10-21'
+date-released: '2026-11-05'
 contact:
 - family-names: Irvine
   given-names: Allan
