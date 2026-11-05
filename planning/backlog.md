@@ -12,7 +12,7 @@ ticked and not **waiting**; `/planning-init <umbrella>` plans it, one phase per 
 
 | move | umbrella | batches | state |
 |---|---|---|---|
-| - [ ] 1 | #100 | 1, 2: template agreement, vendored-artifact guards (7 issues) | open: start here, with a read of the peer repos' open themes and groups work |
+| - [x] 1 | #100 | 1, 2: template agreement, vendored-artifact guards (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/106 |
 | - [ ] 2 | #101 | 3, 4, 5: translator opacity and labels, custom CSV reader, register styles (7 issues) | open |
 | - [ ] 3 | #102 | 6, 7, 8: check gate, README and vignette, registry build inputs (8 issues) | open |
 | - [ ] 4 | #103 | 9, 10: extractor fidelity, label translators (5 issues) | open |
@@ -43,7 +43,7 @@ them.
 
 ### 1. Template agreement
 
-- [ ] Carried by move 1, #100
+- [x] Carried by move 1, #100 (merged in https://github.com/NewGraphEnvironment/gq/pull/106)
 
 Re-vendor `inst/registry/template_groups.csv` and `inst/registry/form_types.csv` against the
 template repo's current release, then settle what the fresh copies show. #70 deletes the
@@ -71,7 +71,7 @@ and the two habitat-parameter layers.
 
 ### 2. Vendored-artifact guards
 
-- [ ] Carried by move 1, #100
+- [x] Carried by move 1, #100 (merged in https://github.com/NewGraphEnvironment/gq/pull/106)
 
 Make the staleness batch 1 repairs loud. #78 moves the theme extractor from `data-raw/` into
 `R/` beside the group walker, with a perturbed fixture, so one currency test covers every
