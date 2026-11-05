@@ -303,16 +303,46 @@ test_that("an unknown dash spelling errors, naming the layer and the value (#42)
   }
 })
 
-test_that("a layer that reads as unstyled warns, naming the columns not read", {
+test_that("a column the reader does not know is named in a warning", {
   # Since #75 an absent column is an empty one, so a misspelled header reads
-  # as empty too. It used to error; without this it would draw tmap defaults.
-  csv <- write_reg_csv(data.frame(layer_key = "trk", type = "line",
-                                  stroke_colour = "#ff0000", stroke_width = 1))
-  expect_warning(gq_reg_custom(csv), "trk.*no style.*stroke_colour")
+  # as empty too, where it used to error. The cases review found, each of
+  # which loses style while something else on the layer is still filled:
+  cases <- list(
+    class_feild = data.frame(layer_key = "z", type = "polygon",
+                             class_feild = "ZONE", class_value = c("A", "B"),
+                             fill_color = c("#111111", "#222222")),
+    fill_colour = data.frame(layer_key = "z", type = "polygon",
+                             class_field = "ZONE", class_value = c("A", "B"),
+                             fill_colour = c("#111111", "#222222")),
+    stroke_colour = data.frame(layer_key = "t", type = "line",
+                               class_field = "hw", class_value = c("a", "b"),
+                               stroke_colour = "#ff0000", stroke_width = 1),
+    label_colour = data.frame(layer_key = "l", type = "line",
+                              stroke_color = "#000000", label_colour = "#111111",
+                              label_size = 8)
+  )
+  for (bad in names(cases)) {
+    csv <- write_reg_csv(cases[[bad]])
+    expect_warning(gq_reg_custom(csv), paste0("not read.*", bad), info = bad)
+  }
 
-  # An unread column on a styled layer is not a warning: drift's registry CSVs
-  # carry `notes`.
+  # drift's registry CSVs carry `notes`, which is deliberately not read.
   ok <- write_reg_csv(data.frame(layer_key = "pond", type = "polygon",
                                  fill_color = "#00ffff", notes = "x"))
   expect_no_warning(gq_reg_custom(ok))
+})
+
+test_that("every column the reader reads is in its known set", {
+  # The unread-column warning and the absent-column fill both rest on
+  # cols_reg_optional naming every column gq_reg_custom() reads. A column read
+  # without being listed would be absent-filled never and warned about always.
+  # So enumerate the reads from the code rather than trusting the list.
+  ns <- asNamespace("gq")
+  fns <- c("gq_reg_custom", grep("^csv_", ls(ns, all.names = TRUE), value = TRUE))
+  read <- unique(unlist(lapply(fns, function(f) {
+    txt <- deparse(get(f, ns))
+    sub(".*\\$", "", unlist(regmatches(txt, gregexpr("\\b(r|row|row1)\\$[A-Za-z_]+", txt))))
+  })))
+  expect_gt(length(read), 20)   # premise: the scan found the reads
+  expect_setequal(setdiff(read, c("layer_key", "type", cols_reg_optional)), character(0))
 })

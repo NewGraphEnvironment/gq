@@ -116,6 +116,18 @@ gq_reg_custom <- function(path) {
     stop("CSV missing required columns: ", paste(missing, collapse = ", "))
   }
 
+  # Reading an absent column as empty (#75) also reads a misspelled one as
+  # empty: `stroke_colour`, `fill_colour` or `class_feild` silently lose a
+  # style, a whole classification or every class colour, where they used to
+  # error. So name every column this reader will not read. Checked on the
+  # header, not on the layer that results: a check on the result ("no style
+  # at all") missed every case where something else was still filled.
+  unread <- setdiff(names(df), c(required, cols_reg_optional, cols_reg_ignored))
+  if (length(unread) > 0) {
+    warning(basename(path), ": column(s) not read by gq_reg_custom(): ",
+            paste(unread, collapse = ", "), call. = FALSE)
+  }
+
   # An absent optional column is an empty one (#75). Every branch below reads
   # columns as `r$x`, which is NULL when the column is missing, and `if` on
   # is.na(NULL) -- logical(0) -- raised an error naming neither the column nor
@@ -179,21 +191,6 @@ gq_reg_custom <- function(path) {
     label <- csv_label(row1)
     if (length(label) > 0) entry$label <- label
 
-    # Reading an absent column as empty (#75) means a misspelled header --
-    # `stroke_colour` -- is also read as empty, and the layer comes out with no
-    # style, which tmap draws as its defaults with no message. Warn at that
-    # outcome rather than on every column the reader does not know: drift's
-    # registry CSVs carry a `notes` column, harmless and unread.
-    styled <- c("fill", "stroke", "mark", "classification", "label")
-    if (!any(styled %in% names(entry))) {
-      unknown <- setdiff(names(df), c(required, cols_reg_optional))
-      warning("Layer '", key, "' in ", basename(path), " has no style: no ",
-              "style column is filled for it",
-              if (length(unknown) > 0) {
-                paste0(". Columns not read: ", paste(unknown, collapse = ", "))
-              },
-              call. = FALSE)
-    }
 
     layers[[key]] <- entry
   }
@@ -295,6 +292,12 @@ cols_reg_optional <- c(
   "label_font", "label_halo_color", "label_halo_width", "label_offset_x",
   "label_offset_y", "note"
 )
+
+#' Columns a registry CSV may carry that gq_reg_custom() knowingly ignores
+#'
+#' `notes`, which drift's registry CSVs use for what `note` holds here.
+#' @noRd
+cols_reg_ignored <- c("notes")
 
 #' The optional columns read as numbers
 #' @noRd
