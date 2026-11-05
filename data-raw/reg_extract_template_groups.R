@@ -10,7 +10,11 @@
 # CI can never read one. Same answer as the QML corpus and the theme roster: a
 # DEV-ONLY / build-time dependency on rfp, with the committed CSV as the shipped
 # source of truth. Structural guards run against the committed file everywhere;
-# the live comparison in test-template_drift.R skips when rfp is absent.
+# the live comparison, test-vendored_currency.R, runs only when RFP_TEMPLATE_DIR
+# points at an rfp checkout (gq#78).
+#
+# This script also writes template_layers.csv, the same walk's layer rows
+# (gq#68).
 #
 # Run after the templates change:
 #   Rscript data-raw/reg_extract_template_groups.R

@@ -310,7 +310,7 @@ too many.
   (268 rows, 9 template-theme pairs), extracted by `data-raw/reg_extract_themes.R`
 - `form_types.csv` — the Mergin form roster, vendored from rfp's
   `inst/lookups/rfp_form_types.csv` by `data-raw/reg_extract_form_types.R`.
-  Non-spatial child tables (`cabin_visit_pebble`) are excluded; `symbol` and
+  Non-spatial child tables (`cabin_visit_pebble`, `edna_sample`, `tree_visit`) are excluded; `symbol` and
   `color` are `NA` for a form rfp has registered but not styled
 - `xref_layers.csv` — prose cross-reference, read by humans not code
 

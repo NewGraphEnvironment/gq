@@ -83,3 +83,25 @@ Themes and groups are being reworked in the two repos that consume these rosters
 - Proven: a planted bad alias in `railway.qml` fails the corpus sweep; the test also injects a bad alias and a bad preview into a copy of `conservancy.qml`.
 - Tier 2, against the newgraph DB (2026-11-05, tunnel on 63333). `bcfishobs.observations` has 34 columns (matching rfp#307): `linear_feature_id` and `species_name` resolve. `fid` is not a view column; it is the key OGR adds to the GeoPackage layer the style is applied to, so it is legitimate. `fish_obsrvtn_pnt_distinct_id` is absent, so the 4 tags are dead, as #86 said. #86's original "7 dead fields" is superseded: `fid` and `linear_feature_id` are both fine.
 - Other undecidables: `national_park:english_name` resolves. `conservancy:protected_lands_name`, `first_nation_reserve:IR_NAME` and `roads_dra:structured_name_1_id` are not in the DB copies, but those copies are column subsets (7 to 16 columns) of the BC WFS layers rfp downloads through bcdata, so the result is inconclusive. `rmp_ogma_non_legal_current_svw` is not in the DB at all. All stay pinned.
+
+## Phase 2: claims about rfp (#92)
+
+Enumerated mechanically: every comment sentence naming rfp in `data-raw/*.R` (52, split by a script over the comment blocks), and every sentence naming rfp in `CLAUDE.md` above the conventions marker (14). Each was checked against rfp's own source at v0.93.0, in a detached worktree.
+
+| claim | where | verdict, with rfp's own source |
+|---|---|---|
+| rfp's templates still carry the old bcfishobs name | `reg_build_main.R:91` | **false**: `18e0004d` (v0.68.0) repointed them, and v0.93.0's `.qgs` says `layername=bcfishobs.observations`. Rewritten: the stale holder is `reg_qgis_restoration.json`, and the delete condition now points at its re-extract (#102) |
+| the live comparison is in `test-template_drift.R` | `reg_extract_template_groups.R:1` | **false** after #78. Rewritten |
+| last run against rfp 0.76.0 | `reg_extract_themes.R:1` | stale. Rewritten: re-run against 0.93.0, byte-identical |
+| rfp derives filenames with an independent `slugify()` | `styles_vendor.R:68` | true, but the source was unnamed. It is a test helper in rfp's `tests/testthat/test-rfp_qgs_style_store.R:30`, now cited. No rfp R file references `normalize_layer_name` |
+| `.rfp_form_layer_name()` is `paste0(" Form ", label)` | `reg_extract_form_types.R`, `CLAUDE.md` | true: `R/rfp_qgs_form_add.R:343` |
+| `rfp_project_create()` downloads `rfp_manifest_types()` minus `frozen`; `local`/`wms` dropped | `CLAUDE.md` (groups.csv) | true: `R/rfp_project_create.R:267`, `R/rfp_manifest_types.R:50` |
+| `osm.trail.qml` has no index row; rfp's guard walks index → file | `styles_vendor.R:53,110,122` | true: rfp#187 is open and says so; the file is present at v0.93.0 |
+| rfp records 3 template overrides by `scope` | `styles_vendor.R:96` | true: `vector/index.csv` carries `template,layer,slug,scope` |
+| the raster roster is in rfp's `data-raw`, which is `.Rbuildignore`'d | `styles_vendor.R:146` | true: `.Rbuildignore:4` |
+| raster styles carry `map-layer-style-manager` first because of the old `order =` override | `styles_vendor.R:188` | true: `R/rfp_qgs_style_set.R:521-523` (already cited, from #90) |
+| the source-tag boundary is pinned by a QGIS-container oracle (rfp#130) | `styles_vendor.R:1`, `CLAUDE.md` | true: `inst/testdata/nodes/` exists, and #130 is cited in `R/rfp_qgs_style_*.R` |
+| the bcfishpass_30k.qlr label bug reaches gq through rfp's templates | `reg_build_main.R:22` | true: bcfishpass#13 is still open, and the block's own guard reads the label |
+| child tables are only `cabin_visit_pebble` | `reg_extract_form_types.R`, `CLAUDE.md` | **false** at 0.93.0 (`edna_sample`, `tree_visit`); fixed |
+| "the installed rfp is routinely behind" (5 sentences) | the extractors' env-var blocks | dated measurements of this machine, labelled with versions; local, not causal claims about rfp |
+| the remaining 30-odd | — | local decisions or descriptions of gq's own scripts (DEV-ONLY dependency, provenance printed in the commit message, quoting rules) |

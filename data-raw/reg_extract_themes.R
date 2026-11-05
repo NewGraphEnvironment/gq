@@ -18,10 +18,10 @@
 # Run after the templates change:
 #   Rscript data-raw/reg_extract_themes.R
 #
-# Last run for gq#88, against rfp 0.76.0, after rfp#185 re-saved the presets to
+# Run for gq#88, against rfp 0.76.0, after rfp#185 re-saved the presets to
 # carry the other three xyz basemaps and `Trails` present-and-off: 268 rows over
-# 9 template-theme pairs. That is the example this header used to anticipate;
-# it has happened, so do not read it as still pending.
+# 9 template-theme pairs. Last run for gq#100, against rfp 0.93.0: byte-identical
+# to that output.
 #
 # Provenance note: the rfp version used is printed on each run and recorded in
 # the commit message rather than in the CSV. read.csv() sets comment.char = "",

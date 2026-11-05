@@ -66,9 +66,11 @@ idx <- utils::read.csv(file.path(src, "vector", "index.csv"),
 idx$layer_key <- normalize_layer_name(idx$layer)
 
 # gq keys the corpus with the SAME rule the registry and theme roster use, so a
-# caller holding a groups.csv key can reach the QML. rfp derives its filenames
-# with an independent slugify(); the two agree on all 53 current layer names,
-# but nothing enforces that they keep agreeing. Refuse rather than vendor a file
+# caller holding a groups.csv key can reach the QML. rfp's filenames follow an
+# independent rule, pinned by the `slugify()` helper in its
+# tests/testthat/test-rfp_qgs_style_store.R (the index's `slug` column must
+# equal it); the two agree on all 53 current layer names, but nothing on rfp's
+# side checks gq's rule. Refuse rather than vendor a file
 # under a key that will not resolve.
 drift <- idx[idx$layer_key != idx$slug, ]
 if (nrow(drift) > 0) {
