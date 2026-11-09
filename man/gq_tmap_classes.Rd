@@ -18,8 +18,10 @@ lookup.}
 \item{field}{Optional character string to override the classification field
 name. Useful when data comes from an alternative source with a different
 column name (e.g., bcfishpass \code{barrier_status} vs WHSE
-\code{barrier_result_code}). See \code{inst/registry/xref_layers.csv} for known
-alternatives.}
+\code{barrier_result_code}). \code{inst/registry/xref_layers.csv} lists the known
+alternatives: for each layer key, the database table the bundled data was
+queried from (\code{name_table}, e.g. \code{bcfishpass.crossings}) and the column
+that table classifies on (\code{class_field}).}
 }
 \value{
 A named list with \code{field}, \code{values} (named color vector), \code{labels}
