@@ -181,21 +181,10 @@ test_that("the three aws rows gq#82 settled still say what was decided", {
   # the old name 404s. Read from the producer rather than inferred from a
   # bucket listing.
   #
-  # NOTE this value is deliberately AHEAD of rfp's templates, whose maplayer
-  # datasource still reads `layername=bcfishobs.fiss_fish_obsrvtn_events_vw`.
-  # source_layer is simultaneously the S3 object stem, the GeoPackage table
-  # name and that datasource, so the layer only resolves once rfp lands its
-  # side. This assertion is what turns a re-extraction that reverts us red.
-  #
-  # And being ahead is not free, which is worth stating precisely because the
-  # obvious reading understates it. `.qgs_trim_absent()` drops a maplayer whose
-  # target is absent AND not in the requested set (rfp/R/rfp_layout.R:725).
-  # Before this change the old name WAS requested, so the 404 left the styled
-  # layer in place with a "refresh can fill it" warning. Now the old name is
-  # not requested and its table is still absent, so the maplayer is DROPPED --
-  # the layer and its symbology are removed from the .qgs, not merely left
-  # empty. Projects built between this release and rfp#305 need the layer
-  # re-added by hand. Land rfp#305 first, or ship the two together.
+  # rfp's templates carry the new name from v0.68.0, and reg_qgis_restoration.json
+  # was re-extracted from v0.93.0 in #102, so the extract and the master agree
+  # and no correction sits between them. This assertion is what turns a
+  # re-extraction from an older template red.
   ob <- row_for("bcfishobs_fiss_fish_observations")
   expect_equal(ob$source_type, "aws")
   expect_equal(ob$source_layer, "bcfishobs.observations")
@@ -216,26 +205,19 @@ test_that("the three aws rows gq#82 settled still say what was decided", {
   expect_equal(dm$source_layer, "bcfishpass.dams")
 })
 
-test_that("the bcfishobs correction in reg_build_main.R is still doing work", {
-  # The "must still be needed" half for a correction that lives in the build
-  # script rather than in the data. reg_main.json says `bcfishobs.observations`
-  # because data-raw/reg_build_main.R put it there; the EXTRACTED transcript
-  # must still carry the old name, or the correction is a no-op.
-  #
-  # Without this, someone can hand-edit the extracted JSON to the new name and
-  # not rebuild, leaving a landmine: the next `source("data-raw/reg_build_main.R")`
-  # stops with "reg_qgis_restoration.json has been re-extracted -- delete this
-  # block" about an extraction nobody ran.
-  # `[[` throughout, never `$`. These are lists parsed from JSON, where `$`
-  # partial-matches: a suffixed rename of this key would be silently answered
-  # by a sibling and the pin would pass on a layer that no longer exists --
-  # which is one of the states this guard exists to catch.
+test_that("the extract carries the renamed bcfishobs layer, so no correction is needed", {
+  # Until #102, reg_build_main.R rewrote this source_layer on the way into the
+  # master, because the extracted transcript predated rfp v0.68.0's rename. The
+  # transcript was re-extracted from v0.93.0 and the correction deleted. Pinned on
+  # the EXTRACT, not only the master: a re-extraction from a pre-0.68 template
+  # would bring the 404ing name back with nothing left to correct it.
+  # `[[` throughout, never `$`: these are lists parsed from JSON, where `$`
+  # partial-matches, so a suffixed rename of the key would be answered by a
+  # sibling and the pin would pass on a layer that no longer exists.
   rs <- gq_reg_read(system.file("registry", "reg_qgis_restoration.json",
                                package = "gq"))
   expect_equal(rs[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
-               "bcfishobs.fiss_fish_obsrvtn_events_vw")
-
-  # And the correction reached the master registry.
+               "bcfishobs.observations")
   expect_equal(
     gq_reg_main()[["layers"]][["bcfishobs_fiss_fish_observations"]][["source_layer"]],
     "bcfishobs.observations")
