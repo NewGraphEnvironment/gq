@@ -24,11 +24,11 @@ Every issue body was read and none has comments. The code was explored at `main`
 
 ## Phase 1: Check gate (batch 6: #51, #80)
 
-- [ ] Replace the three non-ASCII string literals with `" - "`, matching `R/gq_groups.R`. They are at `R/gq_qgs_extract.R:75`, `:197` and `R/gq_reg.R:19`. Leave the em dashes in roxygen and comments alone.
-- [ ] Remove the five demo datasets and `data-raw/demo_layers.R` (decision 1), with a NEWS entry.
-- [ ] `tests/testthat/test-vignette_legend_coverage.R`: generate the `00_pkg_src/gq/vignettes` candidates from `c("..", "../..", "../../..")` and search them **first**, as `build_root()` in `test-build_hygiene.R` does. Have `vignette_source()` report which layout answered.
-- [ ] Add a reachability test. When a `00_pkg_src/gq` tree exists, the resolved path must be inside it and not `system.file("doc", ...)`. Restore the old `../00_pkg_src` path and show the test goes red under `R CMD check`.
-- [ ] `.github/workflows/R-CMD-check.yaml`: drop `error-on: '"error"'` and its comment.
+- [x] Replace the three non-ASCII string literals with `" - "`, matching `R/gq_groups.R`. They are at `R/gq_qgs_extract.R:75`, `:197` and `R/gq_reg.R:19`. Leave the em dashes in roxygen and comments alone.
+- [x] Remove the five demo datasets and `data-raw/demo_layers.R` (decision 1), with a NEWS entry.
+- [x] `tests/testthat/test-vignette_legend_coverage.R`: generate the `00_pkg_src/gq/vignettes` candidates from `c("..", "../..", "../../..")` and search them **first**, as `build_root()` in `test-build_hygiene.R` does. Have `vignette_source()` report which layout answered.
+- [x] Add a reachability test. When a `00_pkg_src/gq` tree exists, the resolved path must be inside it and not `system.file("doc", ...)`. Restore the old `../00_pkg_src` path and show the test goes red under `R CMD check`.
+- [x] `.github/workflows/R-CMD-check.yaml`: drop `error-on: '"error"'` and its comment.
 - [ ] `devtools::check()` reports 0 errors and 0 warnings. The `.claude` and `gq.Rproj` NOTEs are already handled: both are in `.Rbuildignore`.
 
 ## Phase 2: Tile credit (#58)

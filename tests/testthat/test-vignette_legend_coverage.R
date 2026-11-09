@@ -21,14 +21,32 @@
 # R CMD check running from the unpacked tarball, which ships vignettes/ as well
 # as inst/doc/ once vignettes are built; and the installed package, where the
 # source is reachable as system.file("doc", ...).
+#
+# Tarball FIRST, as build_root() in test-build_hygiene.R does and for the same
+# reason: `R CMD check` run from inside the repo puts gq.Rcheck/ in the repo, so
+# a source-first walk reaches the real vignettes/ three levels up and the
+# tarball's copy is never read. Under check the working directory is
+# <pkg>.Rcheck/tests/testthat, so 00_pkg_src sits two levels up, not one. The
+# single hardcoded `../00_pkg_src` this replaced never existed, and the guard
+# only ran because system.file() caught it (gq#80).
+#
+# Returns the path AND which layout answered, so a test can assert the branch it
+# expects was the one taken rather than whichever fallback happened to exist.
 vignette_source <- function(file) {
-  rel <- file.path(c("..", "../..", "../../..", "../../../.."),
-                   "vignettes", file)
-  cand <- c(rel,
-            file.path("../00_pkg_src/gq/vignettes", file),
-            system.file("doc", file, package = "gq"))
-  hit <- cand[nzchar(cand) & file.exists(cand)]
-  if (!length(hit)) NA_character_ else normalizePath(hit[[1]])
+  up <- c("..", "../..", "../../..")
+  cand <- list(
+    tarball = file.path(up, "00_pkg_src", "gq", "vignettes", file),
+    source = file.path(c(up, "../../../.."), "vignettes", file),
+    installed = system.file("doc", file, package = "gq")
+  )
+  for (layout in names(cand)) {
+    p <- cand[[layout]]
+    hit <- p[nzchar(p) & file.exists(p)]
+    if (length(hit)) {
+      return(list(path = normalizePath(hit[[1]]), layout = layout))
+    }
+  }
+  list(path = NA_character_, layout = NA_character_)
 }
 
 # Parse the vignette's R with R's own parser rather than with regexes.
@@ -119,7 +137,7 @@ legend_keys <- function(expr) {
 legend_exempt <- character(0)
 
 test_that("gq-tmap-composition draws no registry layer it fails to legend", {
-  f <- vignette_source("gq-tmap-composition.Rmd")
+  f <- vignette_source("gq-tmap-composition.Rmd")$path
 
   # The one case where this legitimately cannot run: a build that ships no
   # vignette source at all (R CMD check --no-build-vignettes). Skip visibly
@@ -141,6 +159,20 @@ test_that("gq-tmap-composition draws no registry layer it fails to legend", {
 
   missing <- setdiff(drawn, c(legended, names(legend_exempt)))
   expect_equal(missing, character(0))
+})
+
+test_that("under R CMD check the vignette is read from the unpacked tarball (gq#80)", {
+  # The branch has to be shown to be TAKEN, not merely present. When the
+  # 00_pkg_src candidate was wrong, the guard above still ran -- on the
+  # installed copy -- so nothing failed and the dead line read as coverage.
+  # Asserting the layout is what tells the two candidates apart.
+  pkg_src <- file.path(c("..", "../..", "../../.."), "00_pkg_src", "gq")
+  pkg_src <- pkg_src[dir.exists(pkg_src)]
+  skip_if(!length(pkg_src), "not running inside an R CMD check directory")
+
+  v <- vignette_source("gq-tmap-composition.Rmd")
+  expect_identical(v$layout, "tarball")
+  expect_true(startsWith(v$path, normalizePath(pkg_src[[1]])))
 })
 
 test_that("the coverage guard actually fires on an unlegended layer", {

@@ -72,7 +72,7 @@ gq_qgs_extract <- function(path) {
       entry <- c(entry, parse_graduated(renderer, geom_type))
     } else if (renderer_type == "RuleRenderer") {
       entry$renderer <- "rule_based"
-      entry$note <- "Rule-based renderer — manual review needed"
+      entry$note <- "Rule-based renderer - manual review needed"
     }
 
     # labels
@@ -194,7 +194,7 @@ parse_single_symbol <- function(renderer, geom_type) {
   # check for additional symbol layers (overlay / casing)
   all_sym_layers <- xml2::xml_find_all(sym, ".//layer")
   if (length(all_sym_layers) > 1) {
-    out$note <- paste0(length(all_sym_layers), " symbol layers — overlay/casing may apply")
+    out$note <- paste0(length(all_sym_layers), " symbol layers - overlay/casing may apply")
   }
 
   out

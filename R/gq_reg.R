@@ -16,7 +16,7 @@
 #' @export
 gq_reg_main <- function() {
   path <- system.file("registry", "reg_main.json", package = "gq")
-  if (path == "") stop("reg_main.json not found — reinstall gq")
+  if (path == "") stop("reg_main.json not found - reinstall gq")
   gq_registry_read(path)
 }
 
