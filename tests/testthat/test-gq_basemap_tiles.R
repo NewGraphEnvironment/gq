@@ -181,14 +181,10 @@ test_that("gq_basemap_tiles attaches the provider's credit (gq#58)", {
 
   want <- maptiles::get_credit("Esri.WorldGrayCanvas")
   expect_true(is.character(want) && nzchar(want))
-  expect_identical(
-    attr(gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = NULL),
-         "credit"),
-    want)
-  expect_identical(
-    attr(gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = 3005),
-         "credit"),
-    want)
+  fetched <- gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = NULL)
+  projected <- gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = 3005)
+  expect_identical(attr(fetched, "credit"), want)
+  expect_identical(attr(projected, "credit"), want)
 })
 
 test_that("a failed fetch is still NULL, with no credit to render", {

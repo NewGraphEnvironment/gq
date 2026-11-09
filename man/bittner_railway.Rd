@@ -18,6 +18,7 @@ BC GBA Railway Tracks via newgraph database
 bittner_railway
 }
 \description{
-Railway track segments within expanded Bittner Creek watershed.
+Railway track segments within the Bittner Creek watershed's bounding box
+widened by 5 km.
 }
 \keyword{datasets}

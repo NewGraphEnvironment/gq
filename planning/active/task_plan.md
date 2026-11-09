@@ -73,7 +73,7 @@ Every issue body was read and none has comments. The code was explored at `main`
 
 - [x] Update `CLAUDE.md` above the marker: the registry sources list, `xref_layers.csv`, the rebuild test, the demo datasets, and the leaflet/ggplot2 and "GitHub Action (gq#11)" lines under Future (G2).
 - [ ] The PR body carries the NEWS lines for `/gh-pr-merge`. Breaking: the demo datasets, `reg_demo.json` and `reg_qgis_fishpassage.json` are removed. New: tiles carry a credit attribute.
-- [ ] `devtools::check()` again at the end (AC5).
+- [x] `devtools::check()` again at the end (AC5).
 
 ## Owed at the end (reported, done after merge)
 

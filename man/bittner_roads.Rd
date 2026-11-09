@@ -18,6 +18,7 @@ BC Digital Road Atlas via newgraph database
 bittner_roads
 }
 \description{
-DRA road segments within expanded Bittner Creek watershed.
+DRA road segments within the Bittner Creek watershed's bounding box widened
+by 5 km.
 }
 \keyword{datasets}

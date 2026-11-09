@@ -46,7 +46,8 @@
 
 #' Bittner Creek roads
 #'
-#' DRA road segments within expanded Bittner Creek watershed.
+#' DRA road segments within the Bittner Creek watershed's bounding box widened
+#' by 5 km.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
@@ -58,7 +59,8 @@
 
 #' Bittner Creek railway
 #'
-#' Railway track segments within expanded Bittner Creek watershed.
+#' Railway track segments within the Bittner Creek watershed's bounding box
+#' widened by 5 km.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
@@ -70,8 +72,8 @@
 
 #' Bittner Creek PSCIS assessments
 #'
-#' Fish passage assessments from PSCIS within 2 km of the Bittner Creek
-#' watershed, so some fall outside it.
+#' Fish passage assessments from PSCIS within the Bittner Creek watershed's
+#' bounding box widened by 2 km, so some fall outside the watershed.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{

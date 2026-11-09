@@ -149,7 +149,7 @@ legend_coverage <- function(file, chunk, min_drawn) {
   # rather than pass quietly -- and note that the parser logic itself is still
   # covered unconditionally by the test below, so a skip here never leaves the
   # guard entirely unexercised.
-  skip_if(is.na(f), "vignette source not shipped in this build")
+  testthat::skip_if(is.na(f), "vignette source not shipped in this build")
 
   code <- chunk_code(readLines(f, warn = FALSE), chunk)
   expr <- parse(text = code)
@@ -157,11 +157,11 @@ legend_coverage <- function(file, chunk, min_drawn) {
   drawn <- drawn_keys(expr)
   legended <- legend_keys(expr)
 
-  expect_gte(length(drawn), min_drawn)
-  expect_gte(length(legended), min_drawn)
+  testthat::expect_gte(length(drawn), min_drawn)
+  testthat::expect_gte(length(legended), min_drawn)
 
   missing <- setdiff(drawn, c(legended, names(legend_exempt)))
-  expect_equal(missing, character(0))
+  testthat::expect_equal(missing, character(0))
   invisible(code)
 }
 

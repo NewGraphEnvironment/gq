@@ -54,8 +54,8 @@ data(bittner_wsd, bittner_streams, bittner_lakes,
      bittner_roads, bittner_railway, bittner_pscis, neexdzii_bc,
      package = "gq")
 
-# The assessments are bundled for 2 km around the watershed, so some fall
-# outside it. The map is about Bittner Creek, so it shows the ones inside
+# The assessments are bundled for the watershed's bounding box widened by
+# 2 km, so some fall outside the watershed. The map is about Bittner Creek, so it shows the ones inside
 # rather than framing the watershed while symbols sit beyond it (gq#62).
 pscis_aoi <- bittner_pscis[lengths(st_intersects(bittner_pscis, bittner_wsd)) > 0, ]
 
@@ -109,7 +109,7 @@ stream_labels <- do.call(rbind, lapply(split(named, named$gnis_name), function(x
 }))
 ```
 
-```{r map-intro, fig.height = 6.25, fig.cap = "PSCIS fish passage assessments in the Bittner Creek watershed, classified by barrier status. Every colour, width and symbol resolves from the gq registry.", fig.alt = "Map of the Bittner Creek watershed near Prince George showing streams, lakes, roads, railway and twelve PSCIS crossings coloured by barrier status, with a legend, scale bar, logo and an inset locating the watershed in British Columbia"}
+```{r map-intro, fig.height = 6.25, fig.cap = "PSCIS fish passage assessments in the Bittner Creek watershed, classified by barrier status. Every colour, width and symbol resolves from the gq registry.", fig.alt = "Map of the Bittner Creek watershed near Prince George showing streams, lakes, roads, railway and the PSCIS crossings inside the watershed coloured by barrier status, with a legend, scale bar, logo and an inset locating the watershed in British Columbia"}
 stream_sty <- gq_style(reg, "streams_all")
 railway_sty <- gq_style(reg, "railway")
 label_sty <- gq_style(reg, "stream_labels")$label

@@ -113,6 +113,11 @@ bittner_pscis <- st_read(conn, query = sprintf("
 
 dbDisconnect(conn)
 
+# ST_Simplify() does not preserve topology, and an earlier pull came out invalid
+# ("Edge 145 crosses edge 148"): gq-intro's st_difference() mask then fails at
+# the pkgdown build, far from here. Refuse to save one.
+stopifnot(all(st_is_valid(bittner_wsd)))
+
 # Save
 usethis::use_data(
   bittner_wsd, bittner_streams, bittner_lakes,
