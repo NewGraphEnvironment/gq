@@ -191,6 +191,13 @@ test_that("under R CMD check the vignette is read from the unpacked tarball (gq#
   # and the resolver were wrong in the same way. Under check, no tree is a
   # failure.
   skip_if_not(testthat::is_checking(), "not running under R CMD check")
+  # R CMD check unpacks 00_pkg_src only for a TARBALL; a check run on a source
+  # directory has none, and failing there would be failing for nothing. The
+  # tarball case is told apart by the installed DESCRIPTION's `Packaged:` field,
+  # which R CMD build writes and a directory install lacks (measured: absent from
+  # `R CMD INSTALL <dir>`, present from the built tarball).
+  skip_if(is.null(utils::packageDescription("gq")[["Packaged"]]),
+          "R CMD check of a source directory: no tarball unpacked")
   pkg_src <- file.path(c("..", "../..", "../../.."), "00_pkg_src", "gq")
   pkg_src <- pkg_src[dir.exists(pkg_src)]
   expect_gt(length(pkg_src), 0)
