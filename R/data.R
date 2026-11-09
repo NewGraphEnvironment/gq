@@ -46,8 +46,8 @@
 
 #' Bittner Creek roads
 #'
-#' DRA road segments within the Bittner Creek watershed's bounding box widened
-#' by 5 km.
+#' DRA road segments that touch the Bittner Creek watershed's bounding box
+#' widened by 5 km, kept whole rather than clipped, so some run past it.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
@@ -59,8 +59,8 @@
 
 #' Bittner Creek railway
 #'
-#' Railway track segments within the Bittner Creek watershed's bounding box
-#' widened by 5 km.
+#' Railway track segments that touch the Bittner Creek watershed's bounding box
+#' widened by 5 km, kept whole rather than clipped, so some run past it.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{

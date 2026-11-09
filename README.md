@@ -10,7 +10,7 @@ gq keeps the map styles of New Graph's QGIS field projects in one registry and h
 
 <img src="man/figures/readme-map.png" alt="Map of the Bittner Creek watershed near Prince George showing streams, lakes, roads, railway and PSCIS fish passage assessments coloured by barrier status, with a legend, scale bar and an inset locating the watershed in British Columbia" width="100%" />
 
-*PSCIS fish passage assessments in the Bittner Creek watershed, classified by barrier status. Every colour, width and symbol on the map comes from the gq registry; the code is in the [Getting started](https://www.newgraphenvironment.com/gq/articles/gq-intro.html) article.*
+*PSCIS fish passage assessments in the Bittner Creek watershed, classified by barrier status. The crossings, roads and lakes are drawn straight from the gq registry, and the streams and railway take their colours from it; the code is in the [Getting started](https://www.newgraphenvironment.com/gq/articles/gq-intro.html) article.*
 
 ## Installation
 

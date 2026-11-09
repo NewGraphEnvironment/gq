@@ -136,6 +136,23 @@ legend_keys <- function(expr) {
 # layer genuinely should not be legended, and say why.
 legend_exempt <- character(0)
 
+# Every string constant in an expression that names a colour: a hex value or a
+# name R knows (grDevices::colors()). Parsed, so comments are never read.
+colour_literals <- function(expr) {
+  out <- character()
+  walk <- function(e) {
+    if (is.character(e)) {
+      out <<- c(out, e)
+    } else if (is.call(e)) {
+      for (i in seq_along(e)) if (!is.null(e[[i]])) walk(e[[i]])
+    }
+  }
+  for (e in expr) walk(e)
+  is_col <- grepl("^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$", out) |
+    tolower(out) %in% grDevices::colors()
+  unique(out[is_col])
+}
+
 # One check per vignette map. `min_drawn` is per map: the parser must be shown
 # to find things (a broken matcher makes the setdiff empty and the assertion
 # pass for nothing), and how many layers a map draws through the registry is a
@@ -174,10 +191,26 @@ test_that("gq-intro draws no registry layer it fails to legend (gq#62)", {
 
   # gq-intro's map had no registry legend and hand-typed every road, stream and
   # railway colour until gq#62. A colour typed into the chunk is one the
-  # registry no longer governs, so the only literals allowed are the two that
-  # have no registry key: the AOI outline and the white exterior mask.
-  hex <- unique(unlist(regmatches(code, gregexpr("#[0-9A-Fa-f]{6}\\b", code))))
-  expect_equal(setdiff(hex, "#2c3e50"), character(0))
+  # registry no longer governs. Read from the PARSED chunk, so a named colour
+  # ("red") counts as well as a hex one; matching only `#rrggbb` let "white"
+  # through unseen. Each allowed colour is one the registry has no entry for.
+  allowed <- c(
+    "#2c3e50" = "the watershed outline",
+    white = "the exterior mask, the railway's dashes and the legend box",
+    grey30 = "the tile credit text"
+  )
+  cols <- colour_literals(parse(text = code))
+  expect_gt(length(cols), 0)   # premise: the reader finds colours at all
+  expect_equal(setdiff(cols, names(allowed)), character(0))
+})
+
+test_that("the colour reader sees named and hex colours, not comments", {
+  cols <- colour_literals(parse(text = c(
+    'tm_lines(col = "red", lwd = 2)',
+    '# col = "blue" in a comment',
+    'tm_text("gnis_name", col = "#1A5276")'
+  )))
+  expect_setequal(cols, c("red", "#1A5276"))
 })
 
 test_that("under R CMD check the vignette is read from the unpacked tarball (gq#80)", {
