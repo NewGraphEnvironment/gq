@@ -46,7 +46,6 @@ if (nzchar(qgs)) {
 
 reg <- gq_qgs_extract(qgs)
 
-jsonlite::write_json(reg, "inst/registry/reg_qgis_restoration.json",
-                     pretty = TRUE, auto_unbox = TRUE)
+reg_json_write(reg, "inst/registry/reg_qgis_restoration.json")
 
 message("reg_qgis_restoration.json built: ", length(reg$layers), " layers")

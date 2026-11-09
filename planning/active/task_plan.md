@@ -65,9 +65,9 @@ Every issue body was read and none has comments. The code was explored at `main`
 - [ ] `xref_layers.csv` (#84): say in the `gq_style()` roxygen (`R/gq_style.R:16`) and in `CLAUDE.md` that `name_table` names the database table the bundled data was queried from.
   - Add a test that each row's key is a registry key and that its `class_field` differs from the registry's classification field. That difference is the only reason a row exists.
 - [x] In ONE commit (O1): re-extract `reg_qgis_restoration.json` from rfp's `bcrestoration_mobile.qgs` at tag v0.93.0 (identical to the checkout; A4), naming the tag in the commit message and script header, never in the JSON (G7). Delete the bcfishobs correction block; rebuild `reg_main.json`; rewrite (not flip) the bcfishobs test in `test-composition_integrity.R` and its stale comment (G3). Prove it by semantic compare (AC3): same 48 keys, every layer identical once `note` is dropped except bcfishobs `source_layer`, notes differing only by the dash. The ACCESS correction stays (bcfishpass#13 open).
-- [ ] Then move the merge and the ACCESS correction into `R/utils_reg_build.R` (required: `data-raw` is build-ignored, A5), with one JSON writer the script and the tests share (G7). Fix the script header's stale name, `build_reg_main.R`.
-- [ ] Add a CI test that rebuilds in memory and compares **byte for byte** with the shipped `reg_main.json` (#11); its failure message names a jsonlite formatting change as a possible cause (A3). Restore-the-bug as a committed test: temp inputs with one `reg_custom.csv` value changed, expect a mismatch (AC4).
-- [ ] Add a restoration-currency test to `test-vendored_currency.R`, gated on `RFP_TEMPLATE_DIR` like its siblings: re-extract and compare.
+- [x] Then move the merge and the ACCESS correction into `R/utils_reg_build.R` (required: `data-raw` is build-ignored, A5), with one JSON writer the script and the tests share (G7). Fix the script header's stale name, `build_reg_main.R`.
+- [x] Add a CI test that rebuilds in memory and compares **byte for byte** with the shipped `reg_main.json` (#11); its failure message names a jsonlite formatting change as a possible cause (A3). Restore-the-bug as a committed test: temp inputs with one `reg_custom.csv` value changed, expect a mismatch (AC4).
+- [x] Add a restoration-currency test to `test-vendored_currency.R`, gated on `RFP_TEMPLATE_DIR` like its siblings: re-extract and compare.
 
 ## Phase 6: Docs and NEWS
 
