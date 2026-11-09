@@ -66,6 +66,7 @@ Also here, from move 1 (#100): `inst/registry/reg_qgis_restoration.json` is extr
 
 | Error | Resolution |
 |-------|------------|
+| `relation "whse_basemapping.transport_line" does not exist` on the first Bittner re-pull | `~/.Renviron` sets PGHOST/PGPORT/PGDATABASE=fwapg/PGUSER, which override the shell's for Rscript, so the run hit the local fwapg db (no road or rail tables) instead of the tunnel. Re-run with `R_ENVIRON_USER=<empty file>`. Nothing was written: `use_data()` is last. |
 | `tm_credits(position = tm_pos_out(...))` with `tm_layout(meta.margins = 0)`: tmap 4.2.0.9000 stops with `missing value where TRUE/FALSE needed` (`if (scaleS > 1.01)`). A non-zero bottom meta margin avoids it but shrinks the frame off the 7:9 canvas (basemap bands left/right) and the device-placed keymap spills past the frame. | Credit drawn with `grid::grid.text()` in a 0.25 in strip below a map viewport; keymap nested in that viewport; `fig.height = 9.25`. Possible upstream report on tmap, not filed. |
 
 ## R CMD check on 9ea4d8d (Phase 1), 2026-11-09
@@ -75,3 +76,11 @@ Also here, from move 1 (#100): `inst/registry/reg_qgis_restoration.json` is extr
 ## Attributes through terra and stars (terra 1.9.46)
 
 An attribute on a SpatRaster survives `r * 2`, `clamp()` and `project()` (only the first operand's), and is dropped by `stars::st_as_stars()`. So the blend sets its credit explicitly on the result.
+
+## Bittner watershed at the mouth (2026-11-09, bcfishpass db via tunnel)
+
+`fwa_watershedatmeasure(356342733, m)`: 5,600 ha at m = 0-1; 5,267 ha at 5-100 m (952 ha of `fwa_rivers_poly` inside); 5,144 ha at 125-150 m (844 ha); 4,024 ha at 175-200 m and 4,008 ha from 225 m, none inside. The lowest segment, 0-165.97 m, is edge_type 1450 with its midpoint inside a river polygon; the next (edge 1000) starts at 165.97 m. At exactly 165.97 fwapg still returns 5,128 ha with 844 ha of river; at 166.97 m, 4,008 ha with none. `count(*)` arrives as integer64 read as double (4.94e-324 for 1); cast with `::int`.
+
+The local fwapg db (`~/.Renviron` default) has fwapg, the FWA tables and PSCIS, but no `transport_line` or `gba_railway_tracks_sp`, so the Bittner pull cannot run locally yet.
+
+Re-pulled data: wsd 4,008 ha (valid under GEOS now); streams 150 -> 36 segments (the old polygon held Fraser/Nechako main stem); lakes unchanged (byte-identical); roads 5,576 -> 2,849; railway 727 -> 698; PSCIS 95 -> 23 within 2 km, 10 inside.

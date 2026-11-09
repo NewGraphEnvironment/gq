@@ -21,6 +21,7 @@ PSCIS via newgraph database
 bittner_pscis
 }
 \description{
-Fish passage assessments from PSCIS within expanded Bittner Creek watershed.
+Fish passage assessments from PSCIS within 2 km of the Bittner Creek
+watershed, so some fall outside it.
 }
 \keyword{datasets}

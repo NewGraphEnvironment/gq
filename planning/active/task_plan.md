@@ -43,18 +43,18 @@ Every issue body was read and none has comments. The code was explored at `main`
 
 - [x] Switch to `gq_reg_main()` and the `gq_tmap_style(reg, "x")` signature (mapgl keeps its layer signature, G5). Follow the composition pattern (B2): roads via `field = "road_type"`; streams and railway coloured from registry values and drawn by hand, since the data has no `feature_code` and the registry has no railway overlay. Delete `inst/examples/reg_demo.json`, read by nothing after this (G1; breaking line in the PR body). Drop the leaflet/ggplot2 claims from the prose (G2).
 - [x] Filter crossings to `bittner_wsd` and dim the exterior, so the subject stays clear. (B1: done with s2 off and a `st_make_valid()` copy for the mask.)
-- [ ] Re-pull the six `bittner_*` datasets (owner, 2026-11-09, mid-run): `bittner_wsd` from `fwa_watershedatmeasure(blk, 0)` includes ~500 ha (9%) of Fraser/Nechako river corridor, one of the 12 "inside" crossings sits on the Fraser, and the strip widens the frame over downtown Prince George. Take the watershed from a measure just above the mouth in `data-raw/bittner_creek.R`. Needs the DB tunnel.
+- [x] Re-pull the six `bittner_*` datasets (owner, 2026-11-09, mid-run): `bittner_wsd` from `fwa_watershedatmeasure(blk, 0)` includes ~500 ha (9%) of Fraser/Nechako river corridor, one of the 12 "inside" crossings sits on the Fraser, and the strip widens the frame over downtown Prince George. Take the watershed from a measure just above the mouth in `data-raw/bittner_creek.R`. Needs the DB tunnel.
 - [x] Build the legend with `gq_tmap_legend()`. Add a scale bar from `gq_scale_breaks()` and a keymap from `gq_tmap_keymap()` with `neexdzii_bc` as BC context. Keep the logo, give each element its own corner, and put the credit below the frame.
 - [x] Size type for the published column width.
 - [x] The mapgl section uses the same filtered data and registry styles.
 - [x] Name the map chunk and extend the legend-coverage guard to it, with the minimum drawn count a per-vignette parameter (G6). Mechanical checks: the crossing count drawn, and no `#rrggbb` in the chunk beyond the named mask and AOI-outline exceptions (AC2).
-- [ ] Render both vignettes, then read each PNG against cartography self-review checks 1–13, including at its published width.
+- [x] Render both vignettes, then read each PNG against cartography self-review checks 1–13, including at its published width.
 
 ## Phase 4: README, DESCRIPTION and About (#95)
 
 - [x] Rewrite `README.md` in `readme.md`'s order. It opens with what gq is, what it works on and the decision it informs. Then come a figure, a short example with its real output, Learn more, and License.
   - #95's three tasks are resolved inside this rewrite. The roadmap is replaced by a link to the open issues. The reference page carries every export, including `gq_form_types()` and `gq_scale_breaks()`, so the README needs no function table. Registry counts are dropped.
-- [ ] Draw the README figure from committed code: `data-raw/readme_figure.R` renders gq-intro and copies its `map-intro` figure to `man/figures/README-map.png`, so the figure cannot drift from the vignette (G10). It gets alt text and a caption, and is checked at its published width.
+- [x] Draw the README figure from committed code: `data-raw/readme_figure.R` renders gq-intro and copies its `map-intro` figure to `man/figures/README-map.png`, so the figure cannot drift from the vignette (G10). It gets alt text and a caption, and is checked at its published width.
 - [x] The rewrite already omits `reg_qgis_fishpassage.json` and describes `xref_layers.csv` as database tables (O2).
 - [x] Bring DESCRIPTION `Title` and `Description` in line with the opening, then run `devtools::document()`. The About text is drafted here and set after merge (G9).
 - [x] Run the mechanical checks: every function the README names is exported, and every link resolves (absolute URLs for files pkgdown does not publish).

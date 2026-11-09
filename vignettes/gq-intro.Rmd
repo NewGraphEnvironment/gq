@@ -42,7 +42,7 @@ gq_style(reg, "lake")
 
 ## Real data: Bittner Creek
 
-gq ships real data for Bittner Creek near Prince George, a ~56 km² watershed
+gq ships real data for Bittner Creek near Prince George, a ~40 km² watershed
 pulled from the BC Freshwater Atlas and bcfishpass: the watershed boundary,
 streams, lakes, roads, railway and PSCIS fish passage assessments.
 
@@ -54,10 +54,9 @@ data(bittner_wsd, bittner_streams, bittner_lakes,
      bittner_roads, bittner_railway, bittner_pscis, neexdzii_bc,
      package = "gq")
 
-# The assessments bundled here run well beyond the watershed, toward Prince
-# George: 12 of 95 fall inside it. The map is about Bittner Creek, so it shows
-# the 12 rather than framing the watershed while most of its symbols sit
-# outside (gq#62).
+# The assessments are bundled for 2 km around the watershed, so some fall
+# outside it. The map is about Bittner Creek, so it shows the ones inside
+# rather than framing the watershed while symbols sit beyond it (gq#62).
 pscis_aoi <- bittner_pscis[lengths(st_intersects(bittner_pscis, bittner_wsd)) > 0, ]
 
 cat("Watershed:", round(bittner_wsd$area_ha), "ha\n")
@@ -120,9 +119,7 @@ stream_key <- names(stream_sty$classification$values)[[1]]
 
 # Knock back everything outside the watershed so the subject reads at a glance.
 bb_box <- st_as_sfc(bbox, crs = st_crs(bittner_wsd))
-# The bundled boundary is not valid to GEOS, so the mask is cut from a repaired
-# copy; the boundary itself is drawn as delivered.
-aoi_mask <- st_difference(bb_box, st_make_valid(st_geometry(bittner_wsd)))
+aoi_mask <- st_difference(bb_box, st_geometry(bittner_wsd))
 
 m <- basemap +
 tm_shape(bb_box) +
@@ -173,15 +170,17 @@ leg <- gq_tmap_legend(
 )
 m <- Reduce(`+`, c(list(m), lapply(leg, function(x) do.call(tm_add_legend, x))))
 
-# Four corners, one element each: legend bottom-left, scale bar top-left, logo
-# top-right, keymap bottom-right.
+# Four corners, one element each: legend bottom-left, scale bar top-left,
+# keymap top-right, logo bottom-right. The keymap took the bottom-right corner
+# first and covered two crossings on the watershed's south-east edge; the
+# north-east is empty ground, and the small logo fits beyond the boundary.
 m <- m +
 tm_scalebar(
   breaks = gq_scale_breaks(st_bbox(st_transform(bb_box, 3005))),
   text.size = 0.7, position = c("left", "top"), margins = c(0, 0, 0, 0)
 ) +
 tm_logo(system.file("logo", "nge_icon_200.png", package = "gq"),
-        position = c("right", "top"), height = 2.5, margins = c(0, 0, 0, 0)) +
+        position = c("right", "bottom"), height = 2.5, margins = c(0, 0, 0, 0)) +
 tm_layout(
   frame = TRUE, frame.lwd = 0.5, asp = 0,
   legend.position = c("left", "bottom"),
@@ -204,7 +203,8 @@ if (!is.null(credit)) {
   grid::grid.text(credit, x = grid::unit(0.004, "npc"), y = strip * 0.5,
                   just = "left", gp = grid::gpar(fontsize = 7, col = "grey30"))
 }
-km <- gq_tmap_keymap(bittner_wsd, neexdzii_bc, reg = reg, asp = 7 / 6)
+km <- gq_tmap_keymap(bittner_wsd, neexdzii_bc, reg = reg, asp = 7 / 6,
+                     corner = "topright")
 grid::pushViewport(map_vp)
 print(km$map, vp = km$viewport)
 grid::popViewport()
