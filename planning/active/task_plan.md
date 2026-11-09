@@ -52,16 +52,16 @@ Every issue body was read and none has comments. The code was explored at `main`
 
 ## Phase 4: README, DESCRIPTION and About (#95)
 
-- [ ] Rewrite `README.md` in `readme.md`'s order. It opens with what gq is, what it works on and the decision it informs. Then come a figure, a short example with its real output, Learn more, and License.
+- [x] Rewrite `README.md` in `readme.md`'s order. It opens with what gq is, what it works on and the decision it informs. Then come a figure, a short example with its real output, Learn more, and License.
   - #95's three tasks are resolved inside this rewrite. The roadmap is replaced by a link to the open issues. The reference page carries every export, including `gq_form_types()` and `gq_scale_breaks()`, so the README needs no function table. Registry counts are dropped.
 - [ ] Draw the README figure from committed code: `data-raw/readme_figure.R` renders gq-intro and copies its `map-intro` figure to `man/figures/README-map.png`, so the figure cannot drift from the vignette (G10). It gets alt text and a caption, and is checked at its published width.
-- [ ] The rewrite already omits `reg_qgis_fishpassage.json` and describes `xref_layers.csv` as database tables (O2).
-- [ ] Bring DESCRIPTION `Title` and `Description` in line with the opening, then run `devtools::document()`. The About text is drafted here and set after merge (G9).
-- [ ] Run the mechanical checks: every function the README names is exported, and every link resolves (absolute URLs for files pkgdown does not publish).
+- [x] The rewrite already omits `reg_qgis_fishpassage.json` and describes `xref_layers.csv` as database tables (O2).
+- [x] Bring DESCRIPTION `Title` and `Description` in line with the opening, then run `devtools::document()`. The About text is drafted here and set after merge (G9).
+- [x] Run the mechanical checks: every function the README names is exported, and every link resolves (absolute URLs for files pkgdown does not publish).
 
 ## Phase 5: Registry build inputs (batch 8: #85, #84, #11)
 
-- [ ] Delete `inst/registry/reg_qgis_fishpassage.json` (#85). Remove its mentions in the README and in `CLAUDE.md` above the marker.
+- [x] Delete `inst/registry/reg_qgis_fishpassage.json` (#85). Remove its mentions in the README and in `CLAUDE.md` above the marker.
 - [x] `xref_layers.csv` (#84): say in the `gq_style()` roxygen (`R/gq_style.R:16`) and in `CLAUDE.md` that `name_table` names the database table the bundled data was queried from.
   - Add a test that each row's key is a registry key and that its `class_field` differs from the registry's classification field. That difference is the only reason a row exists.
 - [x] In ONE commit (O1): re-extract `reg_qgis_restoration.json` from rfp's `bcrestoration_mobile.qgs` at tag v0.93.0 (identical to the checkout; A4), naming the tag in the commit message and script header, never in the JSON (G7). Delete the bcfishobs correction block; rebuild `reg_main.json`; rewrite (not flip) the bcfishobs test in `test-composition_integrity.R` and its stale comment (G3). Prove it by semantic compare (AC3): same 48 keys, every layer identical once `note` is dropped except bcfishobs `source_layer`, notes differing only by the dash. The ACCESS correction stays (bcfishpass#13 open).
@@ -71,14 +71,14 @@ Every issue body was read and none has comments. The code was explored at `main`
 
 ## Phase 6: Docs and NEWS
 
-- [ ] Update `CLAUDE.md` above the marker: the registry sources list, `xref_layers.csv`, the rebuild test, the demo datasets, and the leaflet/ggplot2 and "GitHub Action (gq#11)" lines under Future (G2).
+- [x] Update `CLAUDE.md` above the marker: the registry sources list, `xref_layers.csv`, the rebuild test, the demo datasets, and the leaflet/ggplot2 and "GitHub Action (gq#11)" lines under Future (G2).
 - [ ] The PR body carries the NEWS lines for `/gh-pr-merge`. Breaking: the demo datasets, `reg_demo.json` and `reg_qgis_fishpassage.json` are removed. New: tiles carry a credit attribute.
 - [ ] `devtools::check()` again at the end (AC5).
 
 ## Owed at the end (reported, done after merge)
 
 - [ ] `/gh-pr-merge` ticks move 3 in `planning/backlog.md` and does the release bookkeeping (version bump, tag).
-- [ ] Set the GitHub About text drafted in Phase 4 (`gh repo edit NewGraphEnvironment/gq --description`) (G9).
+- [ ] Set the GitHub About text drafted in Phase 4, "One set of map styles for QGIS field projects, report figures and web maps." (`gh repo edit NewGraphEnvironment/gq --description`) (G9).
 - [ ] Close #84 with the corrected premise (the database tables, not the bucket). Close #11 with a note that a test replaced the proposed Action and that its source file names are obsolete.
 
 ## Validation

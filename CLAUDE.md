@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**gq** is a style management system for cartography across multiple rendering targets. It extracts symbology from QGIS projects, stores it in a canonical format, and translates it to tmap, leaflet, MapLibre GL, and ggplot2.
+**gq** is a style management system for cartography across multiple rendering targets. It extracts symbology from QGIS projects, stores it in a canonical format, and translates it to tmap and MapLibre GL; the QGIS style files themselves ship alongside (leaflet and ggplot2 are under Future).
 
 The name is a reference — it's all about style.
 
@@ -273,8 +273,12 @@ too many.
 #### Registry sources (`inst/registry/`)
 
 - `reg_main.json` — master merged registry (single source of truth)
-- `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers)
-- `reg_qgis_fishpassage.json` — extracted from fish passage QGIS project (42 layers)
+- `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers) by
+  `data-raw/reg_extract_restoration.R`. A transcript of the template, so a name the
+  template carries wrong is corrected in the build, never here. Last extracted from the
+  template repo's v0.93.0 (#102); a gated test in `test-vendored_currency.R` re-extracts
+  and compares. The fish passage registry was deleted in #102: nothing read it and
+  nothing could regenerate it (#85).
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source.
   Only `layer_key` and `type` are required; an absent column reads as empty. A
   classified line takes its per-class style from the stroke columns and a `dash`
@@ -325,11 +329,22 @@ too many.
   `inst/lookups/rfp_form_types.csv` by `data-raw/reg_extract_form_types.R`.
   Non-spatial child tables (`cabin_visit_pebble`, `edna_sample`, `tree_visit`) are excluded; `symbol` and
   `color` are `NA` for a form rfp has registered but not styled
-- `xref_layers.csv` — prose cross-reference, read by humans not code
+- `xref_layers.csv` — prose cross-reference, read by humans not code: for a classified
+  layer, the **database table** an alternative source was queried from (`name_table`,
+  as `data-raw/neexdzii_kwa.R` queries it) and the column it classifies on, which is
+  the `field =` to pass. Not a bucket name, which is what #84 compared it with.
+  `test-xref_layers.R` holds each row to a classified registry layer whose field it
+  actually differs from
 
 #### Build script (`data-raw/reg_build_main.R`)
 
-Merges all registry sources into `reg_main.json`. Run manually after updating any source registry.
+Merges the registry sources into `reg_main.json`. Run it after updating any source
+registry. The merge and the bcfishpass#13 ACCESS-label correction are
+`reg_main_build()` in `R/utils_reg_build.R`, and `reg_json_write()` is the one writer
+for every registry JSON, because `test-reg_build_currency.R` rebuilds with the same code
+and fails when `reg_main.json` was not rebuilt after a source changed (#11). A test, not
+the bot commit #11 proposed: a commit pushed with the Actions token starts no workflow,
+and it would fix a stale source out of sight of review.
 
 ### Multi-Backend Data Sources
 
@@ -347,7 +362,6 @@ The registry maps **layer names** to styles, not data sources to styles. The con
 
 - **leaflet translator** — `gq_leaflet_style()` for interactive bookdown maps
 - **ggplot2 translator** — `gq_ggplot_style()` for statistical plots
-- **GitHub Action** — auto-rebuild `reg_main.json` on registry source changes (gq#11), potentially trigger QWC2 theme refresh
 - **QWC2 integration** — browser-based map viewer serving same `.qgs` projects via QGIS Server (sred#19). No style translation needed — QGIS Server renders natively. Complements Mergin Maps (field) and gq (reports).
 - **OGC API Styles** — serve styles via standard endpoint (infrastructure repo)
 

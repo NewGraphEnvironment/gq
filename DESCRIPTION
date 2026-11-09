@@ -1,5 +1,5 @@
 Package: gq
-Title: Cartographic Style Management Across Rendering Targets
+Title: One Set of Map Styles for QGIS, Report Figures and Web Maps
 Version: 0.18.0
 Date: 2026-11-05
 Authors@R: c(
@@ -8,10 +8,12 @@ Authors@R: c(
                        affiliation = "New Graph Environment Ltd.")),
     person("New Graph Environment Ltd.", role = c("cph", "fnd"))
     )
-Description: Extract symbology from QGIS projects, store in a canonical
-    JSON registry, and translate to tmap, leaflet, MapLibre GL, and
-    ggplot2. One source of truth for map styles across all rendering
-    targets.
+Description: Keeps the map styles of QGIS field projects in one registry,
+    extracted from the projects themselves, and translates them into
+    'tmap' arguments for figures in reports and 'MapLibre GL' paint
+    properties for web maps, so a layer keeps the colours and line widths
+    QGIS gives it. The QGIS style files ship alongside, for anything that
+    draws with QGIS itself. Under active development.
 License: MIT + file LICENSE
 URL: https://github.com/NewGraphEnvironment/gq,
     https://newgraphenvironment.github.io/gq/
