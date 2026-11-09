@@ -23,7 +23,7 @@ Three `/code-check` rounds ran. Round 3 found a defect inside round 2's fix, and
   | 165.97 (segment boundary) | 5,128 | 844 |
   | 166.97 (boundary + 1 m) | 4,008 | 0 |
 
-  The lowest 166 m segment lies inside the Fraser's river polygon.
+  The lowest 166 m segment lies inside the Fraser's river polygon. The durable finding is in [`research/fwa_watershed_at_mouth.md`](../../../research/fwa_watershed_at_mouth.md).
 - **Re-pulled data:**
   - PSCIS: 95 → 23 assessments, 10 inside the watershed (12 counted inside before, one of them on the Fraser).
   - Streams: 150 → 36 segments.
