@@ -66,3 +66,12 @@ Also here, from move 1 (#100): `inst/registry/reg_qgis_restoration.json` is extr
 
 | Error | Resolution |
 |-------|------------|
+| `tm_credits(position = tm_pos_out(...))` with `tm_layout(meta.margins = 0)`: tmap 4.2.0.9000 stops with `missing value where TRUE/FALSE needed` (`if (scaleS > 1.01)`). A non-zero bottom meta margin avoids it but shrinks the frame off the 7:9 canvas (basemap bands left/right) and the device-placed keymap spills past the frame. | Credit drawn with `grid::grid.text()` in a 0.25 in strip below a map viewport; keymap nested in that viewport; `fig.height = 9.25`. Possible upstream report on tmap, not filed. |
+
+## R CMD check on 9ea4d8d (Phase 1), 2026-11-09
+
+`devtools::check(args = "--no-manual")` from a detached worktree: 0 errors, 0 warnings, 0 notes. Tests under check: `[ FAIL 0 | WARN 1 | SKIP 8 | PASS 1268 ]`; the gq#80 tarball test is not among the 8 skips, so it ran and passed against `00_pkg_src`.
+
+## Attributes through terra and stars (terra 1.9.46)
+
+An attribute on a SpatRaster survives `r * 2`, `clamp()` and `project()` (only the first operand's), and is dropped by `stars::st_as_stars()`. So the blend sets its credit explicitly on the result.

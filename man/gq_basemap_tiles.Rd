@@ -30,7 +30,10 @@ Applied to width and height independently.}
 }
 \value{
 A \code{SpatRaster}, or \code{NULL} if the request failed. A single-colour tile
-warns but is still returned.
+warns but is still returned. The provider's attribution, from
+\code{\link[maptiles:get_credit]{maptiles::get_credit()}}, is attached as the \code{"credit"} attribute: render it
+with \code{\link[tmap:tm_credits]{tmap::tm_credits()}}, since tile providers' terms require it.
+\code{\link[=gq_basemap_blend]{gq_basemap_blend()}} carries it through.
 }
 \description{
 Thin wrapper over \code{\link[maptiles:get_tiles]{maptiles::get_tiles()}} that adds the padding a projected

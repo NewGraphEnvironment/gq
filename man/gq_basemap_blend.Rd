@@ -34,7 +34,10 @@ detecting which from the data.}
 \code{stars} object rather than a \code{SpatRaster}.}
 }
 \value{
-A \code{SpatRaster}, or a \code{stars} object when \code{as_stars = TRUE}.
+A \code{SpatRaster}, or a \code{stars} object when \code{as_stars = TRUE}. Its
+\code{"credit"} attribute carries the tile credits of both inputs, de-duplicated
+and joined with \code{"; "}, or is absent when neither input carries one. Render
+it with \code{\link[tmap:tm_credits]{tmap::tm_credits()}}: both providers are owed attribution.
 }
 \description{
 Shades a flat raster basemap with terrain so relief reads as backdrop rather

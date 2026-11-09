@@ -29,14 +29,14 @@ Every issue body was read and none has comments. The code was explored at `main`
 - [x] `tests/testthat/test-vignette_legend_coverage.R`: generate the `00_pkg_src/gq/vignettes` candidates from `c("..", "../..", "../../..")` and search them **first**, as `build_root()` in `test-build_hygiene.R` does. Have `vignette_source()` report which layout answered.
 - [x] Add a reachability test. When a `00_pkg_src/gq` tree exists, the resolved path must be inside it and not `system.file("doc", ...)`. Restore the old `../00_pkg_src` path and show the test goes red under `R CMD check`.
 - [x] `.github/workflows/R-CMD-check.yaml`: drop `error-on: '"error"'` and its comment.
-- [ ] `devtools::check()` reports 0 errors and 0 warnings. The `.claude` and `gq.Rproj` NOTEs are already handled: both are in `.Rbuildignore`.
+- [x] `devtools::check()` reports 0 errors and 0 warnings. The `.claude` and `gq.Rproj` NOTEs are already handled: both are in `.Rbuildignore`.
 
 ## Phase 2: Tile credit (#58)
 
-- [ ] `gq_basemap_tiles()` (`R/gq_basemap_blend.R`): set `attr(x, "credit") <- maptiles::get_credit(provider)` on the returned raster, after projection, and document it under `@return`.
-- [ ] `gq_basemap_blend()`: carry the unique credits of `base` and `relief`, joined with `"; "`, onto its result (both the SpatRaster and the stars form).
-- [ ] Tests, with the fetch mocked: the credit attribute is present; a blend combines and de-duplicates; the failure path still returns `NULL`.
-- [ ] `gq-tmap-composition.Rmd`: render the credit below the frame.
+- [x] `gq_basemap_tiles()` (`R/gq_basemap_blend.R`): set `attr(x, "credit") <- maptiles::get_credit(provider)` on the returned raster, after projection, and document it under `@return`.
+- [x] `gq_basemap_blend()`: carry the unique credits of `base` and `relief`, joined with `"; "`, onto its result (both the SpatRaster and the stars form).
+- [x] Tests, with the fetch mocked: the credit attribute is present; a blend combines and de-duplicates; the failure path still returns `NULL`.
+- [x] `gq-tmap-composition.Rmd`: render the credit below the frame.
 
 ## Phase 3: Re-compose gq-intro (#62)
 

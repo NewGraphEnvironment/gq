@@ -10,3 +10,6 @@
 - Phase 1: non-ASCII literals replaced (`tools:::.check_package_ASCII_code(".")` returns nothing); demo datasets and `data-raw/demo_layers.R` removed; `vignette_source()` searches `00_pkg_src` at three depths, tarball first, and reports its layout; `error-on` dropped (flows' default is `"warning"`).
   - Reachability test proved in an emulated `<pkg>.Rcheck/tests/testthat` layout in the scratchpad: passes with the fix, 2 failures with the one-level `../00_pkg_src` restored.
   - NEWS is written at release by `/gh-pr-merge` (v0.18.0's NEWS landed in the release commit), so the breaking-change lines go in the PR body rather than NEWS.md; Phase 6's NEWS item becomes that.
+- Phase 1 check: `devtools::check()` on 9ea4d8d, 0 errors / 0 warnings / 0 notes; the gq#80 test ran under check.
+- Phase 2: `gq_basemap_tiles()` attaches `maptiles::get_credit(provider)` as attribute `"credit"`; `gq_basemap_blend()` sets the de-duplicated union on its result (SpatRaster and stars). Mutation: removing either assignment turns its test red.
+  - Composition vignette: credit drawn below the frame with grid in a 0.25 in strip; `tm_pos_out()` route abandoned (see findings). Render read: frame, legend, keymap identical to main's render, credit line below.

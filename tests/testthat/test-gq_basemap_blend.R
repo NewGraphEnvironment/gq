@@ -132,3 +132,29 @@ test_that("an all-NA relief errors rather than blanking the map", {
                    relief_max = 255)
   )
 })
+
+test_that("a blend credits both providers, once each (gq#58)", {
+  # A blended basemap draws from two providers and owes both. terra copies only
+  # the first operand's attribute through arithmetic, and st_as_stars() drops
+  # it, so without the explicit carry the relief's credit vanished -- and on the
+  # stars path, which is what tm_rgb() takes, both did.
+  skip_if_no_terra()
+  skip_if_not_installed("stars")
+  base <- r_const(200)
+  relief <- r_const(128)
+  attr(base, "credit") <- "Tiles A"
+  attr(relief, "credit") <- "Tiles B"
+
+  for (as_stars in c(TRUE, FALSE)) {
+    out <- gq_basemap_blend(base, relief, as_stars = as_stars)
+    expect_identical(attr(out, "credit"), "Tiles A; Tiles B")
+  }
+
+  # The same provider twice is credited once.
+  attr(relief, "credit") <- "Tiles A"
+  expect_identical(attr(gq_basemap_blend(base, relief), "credit"), "Tiles A")
+
+  # Neither carries one (a caller's own rasters): no attribute, rather than an
+  # empty string a caller would render as a blank credit line.
+  expect_null(attr(gq_basemap_blend(r_const(200), r_const(128)), "credit"))
+})
