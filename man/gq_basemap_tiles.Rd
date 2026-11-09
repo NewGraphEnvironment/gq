@@ -31,9 +31,14 @@ Applied to width and height independently.}
 \value{
 A \code{SpatRaster}, or \code{NULL} if the request failed. A single-colour tile
 warns but is still returned. The provider's attribution, from
-\code{\link[maptiles:get_credit]{maptiles::get_credit()}}, is attached as the \code{"credit"} attribute: render it
-with \code{\link[tmap:tm_credits]{tmap::tm_credits()}}, since tile providers' terms require it.
-\code{\link[=gq_basemap_blend]{gq_basemap_blend()}} carries it through.
+\code{\link[maptiles:get_credit]{maptiles::get_credit()}}, is attached as the \code{"credit"} attribute, since tile
+providers' terms require it on the map. \code{\link[=gq_basemap_blend]{gq_basemap_blend()}} carries it
+through. Inside the frame, \code{\link[tmap:tm_credits]{tmap::tm_credits()}} places it. Below the frame,
+as the package vignettes draw it when all four corners are taken, print the
+map into a \code{\link[grid:viewport]{grid::viewport()}} above a strip and draw the text there with
+\code{\link[grid:grid.text]{grid::grid.text()}}: \code{tm_credits(position = tm_pos_out())} shrinks the frame
+off its canvas, and with \code{tm_layout(meta.margins = 0)} tmap 4.2 stops with
+"missing value where TRUE/FALSE needed".
 }
 \description{
 Thin wrapper over \code{\link[maptiles:get_tiles]{maptiles::get_tiles()}} that adds the padding a projected

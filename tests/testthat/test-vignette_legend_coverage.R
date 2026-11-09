@@ -136,8 +136,13 @@ legend_keys <- function(expr) {
 # layer genuinely should not be legended, and say why.
 legend_exempt <- character(0)
 
-test_that("gq-tmap-composition draws no registry layer it fails to legend", {
-  f <- vignette_source("gq-tmap-composition.Rmd")$path
+# One check per vignette map. `min_drawn` is per map: the parser must be shown
+# to find things (a broken matcher makes the setdiff empty and the assertion
+# pass for nothing), and how many layers a map draws through the registry is a
+# fact about that map. gq-intro draws three that way; streams and railway are
+# coloured from registry values by hand, which drawn_keys() does not see.
+legend_coverage <- function(file, chunk, min_drawn) {
+  f <- vignette_source(file)$path
 
   # The one case where this legitimately cannot run: a build that ships no
   # vignette source at all (R CMD check --no-build-vignettes). Skip visibly
@@ -146,19 +151,33 @@ test_that("gq-tmap-composition draws no registry layer it fails to legend", {
   # guard entirely unexercised.
   skip_if(is.na(f), "vignette source not shipped in this build")
 
-  code <- chunk_code(readLines(f, warn = FALSE), "map-composition")
+  code <- chunk_code(readLines(f, warn = FALSE), chunk)
   expr <- parse(text = code)
 
   drawn <- drawn_keys(expr)
   legended <- legend_keys(expr)
 
-  # The parser must actually be finding things; a broken regex would make the
-  # setdiff empty and the assertion pass for nothing.
-  expect_gt(length(drawn), 3)
-  expect_gt(length(legended), 3)
+  expect_gte(length(drawn), min_drawn)
+  expect_gte(length(legended), min_drawn)
 
   missing <- setdiff(drawn, c(legended, names(legend_exempt)))
   expect_equal(missing, character(0))
+  invisible(code)
+}
+
+test_that("gq-tmap-composition draws no registry layer it fails to legend", {
+  legend_coverage("gq-tmap-composition.Rmd", "map-composition", min_drawn = 4)
+})
+
+test_that("gq-intro draws no registry layer it fails to legend (gq#62)", {
+  code <- legend_coverage("gq-intro.Rmd", "map-intro", min_drawn = 3)
+
+  # gq-intro's map had no registry legend and hand-typed every road, stream and
+  # railway colour until gq#62. A colour typed into the chunk is one the
+  # registry no longer governs, so the only literals allowed are the two that
+  # have no registry key: the AOI outline and the white exterior mask.
+  hex <- unique(unlist(regmatches(code, gregexpr("#[0-9A-Fa-f]{6}\\b", code))))
+  expect_equal(setdiff(hex, "#2c3e50"), character(0))
 })
 
 test_that("under R CMD check the vignette is read from the unpacked tarball (gq#80)", {
@@ -166,9 +185,16 @@ test_that("under R CMD check the vignette is read from the unpacked tarball (gq#
   # 00_pkg_src candidate was wrong, the guard above still ran -- on the
   # installed copy -- so nothing failed and the dead line read as coverage.
   # Asserting the layout is what tells the two candidates apart.
+  #
+  # Keyed on testthat::is_checking() rather than on finding 00_pkg_src: a guard
+  # that skips when it cannot find the tree would skip, not fail, if the search
+  # and the resolver were wrong in the same way. Under check, no tree is a
+  # failure.
+  skip_if_not(testthat::is_checking(), "not running under R CMD check")
   pkg_src <- file.path(c("..", "../..", "../../.."), "00_pkg_src", "gq")
   pkg_src <- pkg_src[dir.exists(pkg_src)]
-  skip_if(!length(pkg_src), "not running inside an R CMD check directory")
+  expect_gt(length(pkg_src), 0)
+  skip_if(!length(pkg_src))  # the expectation above has already failed
 
   v <- vignette_source("gq-tmap-composition.Rmd")
   expect_identical(v$layout, "tarball")

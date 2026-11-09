@@ -38,8 +38,10 @@
 #'
 #' @return A `SpatRaster`, or a `stars` object when `as_stars = TRUE`. Its
 #'   `"credit"` attribute carries the tile credits of both inputs, de-duplicated
-#'   and joined with `"; "`, or is absent when neither input carries one. Render
-#'   it with [tmap::tm_credits()]: both providers are owed attribution.
+#'   and joined with `"; "`, or is absent when neither input carries one. Both
+#'   providers are owed attribution. Read it before subsetting or cropping a
+#'   `stars` result, which drops attributes. See [gq_basemap_tiles()] for where
+#'   to draw it.
 #'
 #' @examples
 #' if (requireNamespace("terra", quietly = TRUE)) {
@@ -184,9 +186,14 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #'
 #' @return A `SpatRaster`, or `NULL` if the request failed. A single-colour tile
 #'   warns but is still returned. The provider's attribution, from
-#'   [maptiles::get_credit()], is attached as the `"credit"` attribute: render it
-#'   with [tmap::tm_credits()], since tile providers' terms require it.
-#'   [gq_basemap_blend()] carries it through.
+#'   [maptiles::get_credit()], is attached as the `"credit"` attribute, since tile
+#'   providers' terms require it on the map. [gq_basemap_blend()] carries it
+#'   through. Inside the frame, [tmap::tm_credits()] places it. Below the frame,
+#'   as the package vignettes draw it when all four corners are taken, print the
+#'   map into a [grid::viewport()] above a strip and draw the text there with
+#'   [grid::grid.text()]: `tm_credits(position = tm_pos_out())` shrinks the frame
+#'   off its canvas, and with `tm_layout(meta.margins = 0)` tmap 4.2 stops with
+#'   "missing value where TRUE/FALSE needed".
 #'
 #' @examplesIf interactive() && requireNamespace("maptiles", quietly = TRUE)
 #' bb <- sf::st_bbox(
