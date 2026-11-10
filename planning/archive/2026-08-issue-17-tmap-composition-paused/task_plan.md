@@ -3,7 +3,7 @@
 **Branch:** `tmap-composition`
 **Split from:** gq#14
 **PR target:** `main`
-**SRED:** Relates to NewGraphEnvironment/sred-2025-2026#13
+**SRED:** Relates to an internal issue
 
 ## Goal
 

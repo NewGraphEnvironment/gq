@@ -55,7 +55,7 @@ away. Filed as **#92**.
 - The first enumeration swept **three of the six axes** the convention names and declared
   the class closed — and ticked the very paragraph that was false, against the half of the
   sentence already believed.
-- `species_name` was nearly filed upstream as a defect in rfp's repair. rfp#307 had already
+- `species_name` was nearly filed upstream as a defect in rfp's repair. An internal issue had already
   measured that table at 34 columns with `species_name` among them. The real finding is the
   inverse, and it went into #86: **its proposed tier-1 rule would refuse a correct file**,
   on the very file it was written for.

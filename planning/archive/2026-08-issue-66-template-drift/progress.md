@@ -48,6 +48,6 @@
 
 ### Phase 5 — issues
 
-- rfp#216 filed: three groups gq declares that the templates lack, with
+- An internal issue filed: three groups gq declares that the templates lack, with
   positions stated, plus the two prose misattributions.
 - gq#68 filed: the six remaining layer-placement disagreements.

@@ -99,7 +99,7 @@ someone who has never seen this watershed can tell what the map is about, and
 can find every prominent feature in the legend.
 
 
-## Phase 5 — self-review against the extended checklist (soul#78)
+## Phase 5 — self-review against the extended checklist
 
 First real use of the "does it communicate" half added to
 `cartography.md`. Verdict on `gq-tmap-composition.Rmd`'s figure:

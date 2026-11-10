@@ -76,7 +76,7 @@ No change to the package's functions. This release exists so the package has a c
   This resolves **part** of #86 — the preview expression, and 5 of the 7 fields it
   listed. Four `fish_obsrvtn_pnt_distinct_id` references remain. Whether the other two
   (`fid`, `linear_feature_id`) are dead **at all** is now an open question rather than a
-  finding: rfp#307 measured the surviving 19 against the live object and reports 0
+  finding: an internal issue measured the surviving 19 against the live object and reports 0
   dangling, which #86's original list contradicts. #86 has been re-scoped and retitled;
   its premise — that the byte-identity guard was green because upstream was identically
   wrong — expired when rfp moved.
@@ -144,7 +144,7 @@ No change to the package's functions. This release exists so the package has a c
 # gq 0.15.0
 
 - **The theme roster carries the three remaining xyz basemaps and `Trails` (#88).**
-  rfp#185 re-saved all nine visibility presets to hold every opaque basemap
+  An internal issue re-saved all nine visibility presets to hold every opaque basemap
   present-and-off, and `themes.csv` still recorded the pre-change membership, so
   gq and rfp disagreed about what nine themes contain. Re-extracted with
   `data-raw/reg_extract_themes.R` against rfp 0.76.0: **232 to 268 rows**, 36
@@ -193,7 +193,7 @@ No change to the package's functions. This release exists so the package has a c
     `bcfishobs.observations`, read from the job that stages it rather than inferred
     from a bucket listing. `source_layer` is the S3 object stem, the GeoPackage
     table name *and* the `.qgs` `layername=` at once, so this fixes the download
-    only — and **it must not ship ahead of NewGraphEnvironment/rfp#305.** rfp drops
+    only — and **it must not ship ahead of an internal issue.** rfp drops
     a maplayer whose target is absent and not in the requested set. Before this
     change the old name was requested, so the 404 left the styled layer in place for
     a later refresh; with the rename in and rfp's templates not, the old-named
@@ -202,7 +202,7 @@ No change to the package's functions. This release exists so the package has a c
     layer re-added by hand.
   - `dam` is unchanged on purpose. `bcfishpass.dams` is staged by no job on any
     branch — a gap, not a retirement — and dropping the row would have hidden it
-    (NewGraphEnvironment/db_newgraph#20).
+    (an internal issue).
 
 - **The `aws`/`bcdata`/`fwa`/`osm` source rule no longer blesses any string with a
   dot in it.** It checked `grepl(".", source_layer, fixed = TRUE)` while its own
@@ -264,7 +264,7 @@ No change to the package's functions. This release exists so the package has a c
 - **`High Detail - Crossings` shows its layers in `bcrestoration_mobile` again.**
   The roster recorded that theme as enumerating 28 layers and showing none of
   them. That was a faithful extraction of a template rfp shipped as a stub,
-  repaired upstream in NewGraphEnvironment/rfp#217 and released in rfp v0.47.0.
+  repaired upstream in an internal issue and released in rfp v0.47.0.
   27 rows flip to visible; `esri_world_topo` stays off, as it is in
   `bcfishpass_mobile` too. Totals are unchanged at 232 rows over 9
   template-theme pairs, and `reg_main.json` and `groups.csv` are untouched.
@@ -287,11 +287,11 @@ No change to the package's functions. This release exists so the package has a c
   because `Land Tenure` is restoration-only and a shared-scoped check cannot see
   an unshared theme at all. (Not because of the stub itself: `High Detail -
   Crossings` ships in both templates, so a shared-scoped check would have caught
-  rfp#217. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
+  an internal issue. The widening is justified by the theme the stub happened to miss.) Alongside them the roster's shape is now pinned (232 rows, 9 pairs, no
   duplicate key, `Land Tenure` at 26/22) and no theme may switch on any of the
   opaque xyz basemaps — with every wms layer *and every raster* pinned as opaque
   or overlay, and the subset the roster currently names pinned beside it, so
-  neither a new basemap nor the pending rfp#185 regeneration can be absorbed as
+  neither a new basemap nor the pending an internal issue regeneration can be absorbed as
   roster growth. To escape the guard now a layer would have to be an opaque
   basemap that is neither a wms nor a raster, which is definitional rather than
   a coincidence in the current data. Each

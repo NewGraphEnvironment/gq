@@ -59,7 +59,7 @@ google_satellite   in presets: FALSE
 
 All four exist as `<maplayer>` nodes; the presets were saved before they landed
 (gq `a579752`) and never re-saved. So the schema *can* express the case and the
-extracted data *will not*, until rfp#185 re-saves the presets. Decision: extract
+extracted data *will not*, until an internal issue re-saves the presets. Decision: extract
 truthfully now, re-run after. The schema change stands on the other two grounds.
 
 ### The normalizer already exists twice
@@ -157,7 +157,7 @@ xyz basemaps only `esri_world_topo` appears in any preset; `bing_aerial`,
 `esri_satellite` and `google_satellite` appear in none. The presets were saved
 before those layers landed and were never re-saved, so the templates do not
 encode the behaviour described above. Tracked in
-NewGraphEnvironment/rfp#185. This roster will honestly record only
+an internal issue. This roster will honestly record only
 `esri_world_topo` among the basemaps until that lands, then pick the rest up on
 a re-run. The schema change stands on its own — per-layer granularity and the
 per-template divergence are both independently required.
@@ -172,7 +172,7 @@ Breaking, but the function it replaces described themes that never existed.
 
 Originally this issue also proposed holding themes as reusable data to apply to
 any project. **That half has moved to the consumer** — see
-NewGraphEnvironment/rfp#178.
+an internal issue.
 
 The reason is a missing bridge in the *other* direction, and it constrains this
 issue too. A QGIS map theme references layers by **display name**
@@ -188,10 +188,10 @@ into a project today. The applier therefore keys on display names and lives with
 the consumer, which needs no translation.
 
 **Building that slug → display-name bridge belongs with the template build**
-(NewGraphEnvironment/rfp#174), which needs it anyway to name layers it generates
+(an internal issue), which needs it anyway to name layers it generates
 from scratch. If it lands, the two representations can converge; until then this
 registry's job is to describe what the templates ship.
 
-Relates to NewGraphEnvironment/rfp#174, NewGraphEnvironment/rfp#178,
-NewGraphEnvironment/rfp#185, #40
+Relates to internal issues,
+an internal issue, #40
 

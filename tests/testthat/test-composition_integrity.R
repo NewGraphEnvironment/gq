@@ -194,10 +194,10 @@ test_that("the three aws rows gq#82 settled still say what was decided", {
   # Nothing stages it: no job on any db_newgraph branch uploads a dams object,
   # and the database calls the view bcfishpass.dams_vw. That is a staging gap,
   # and dropping the row here would hide it, since the project side assumes the
-  # layer exists. Filed at NewGraphEnvironment/db_newgraph#20.
+  # layer exists. Filed at an internal issue.
   #
   # Note the expected resolution is a RENAME, not a restaging under this name:
-  # if db_newgraph#20 lands as `bcfishpass.dams_vw`, this value changes and the
+  # if an internal issue lands as `bcfishpass.dams_vw`, this value changes and the
   # pin below is what has to be edited. Do not read it as "this is the name
   # that will eventually work".
   dm <- row_for("dam")

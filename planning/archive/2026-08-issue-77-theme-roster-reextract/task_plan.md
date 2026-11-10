@@ -5,7 +5,7 @@
 
 That is faithful to what the template said, and the template was wrong. rfp
 shipped that preset as a stub: 28 layers enumerated, none visible, and no group
-checked. Repaired in NewGraphEnvironment/rfp#217, released in rfp **v0.47.0**.
+checked. Repaired in an internal issue, released in rfp **v0.47.0**.
 gq's roster is extracted from those templates, so it is now the last place
 holding the old answer.
 
@@ -24,7 +24,7 @@ Parsed `~/Projects/repo/rfp/inst/templates/*.qgs` directly at **v0.47.0**
 |---|---|
 | total rows / template-theme pairs | **232 / 9** — unchanged |
 | `High Detail - Crossings` | 28 layers, **27 visible** in *both* templates |
-| the one `false` row | `ESRI_World_Topo` in both (rfp#162, present-and-off) |
+| the one `false` row | `ESRI_World_Topo` in both (an internal issue, present-and-off) |
 | all 4 shared themes | identical `layer_key` sets, **zero** visible-flag differences |
 | stub themes remaining | **none** |
 | `Land Tenure` | restoration-only, 26 layers / 22 visible |
@@ -61,7 +61,7 @@ cause instead of one test meaning two things:
 - [x] `"no theme is a stub"` — over **all 9** template-theme pairs, not just the
       shared ones. The issue's version puts this inside the shared-themes loop, so
       `Land Tenure` (restoration-only) is never checked — which is *exactly* the
-      shape rfp#217 had. Widening it is the point of splitting.
+      shape an internal issue had. Widening it is the point of splitting.
 - [x] Keep the existing `"Land Tenure is restoration-only"` test (lines 134-139)
       untouched — it becomes the surviving witness for why `template` is in the key
 - [x] **Restore the bug and confirm the new stub test goes red.** Done three ways:
@@ -111,7 +111,7 @@ belongs in `R/gq_groups.R` followed by `devtools::document()`.
 - [ ] Run rfp's `test-qgs_build_harness.R` **before** pushing, not after merge
 - [ ] `/code-check` on the branch diff
 - [ ] `/planning-archive`, then `/gh-pr-push`
-- [ ] PR body: `Relates to NewGraphEnvironment/rfp#217` **and** the sred ref from
+- [ ] PR body: `Relates to an internal issue` **and** the sred ref from
       machine-local memory (`sred-experiment-refs`)
 - [ ] After merge, confirm the pkgdown deploy landed on this HEAD (a green run is
       not a current site — CLAUDE.md:531)

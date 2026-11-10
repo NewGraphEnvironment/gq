@@ -13,7 +13,7 @@
     visible-counts, so "which templates" must be explicit
   - plus: the original phase order committed the 4-column CSV before the reader,
     leaving the tree red mid-branch
-- Filed rfp#185 for the stale visibility presets; decision is to extract
+- Filed an internal issue for the stale visibility presets; decision is to extract
   truthfully now and re-run once that lands
 - Corrected #46's body — its basemap premise was disproved by measurement; the
   two findings that hold (fictional names, wrong granularity) kept, and the

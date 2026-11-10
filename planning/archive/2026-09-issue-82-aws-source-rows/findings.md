@@ -21,7 +21,7 @@ gq carries **13 `aws` rows** in `groups.csv`, **9 distinct `source_layer`** valu
 
 `habitat_lateral.tif` — **200**. `bcfishobs.observations.fgb.zip` — **200**.
 
-Bucket root holds 14 objects (`aws s3 ls s3://newgraph/`), matching rtj#318's count.
+Bucket root holds 14 objects (`aws s3 ls s3://newgraph/`), matching an internal issue's count.
 
 ## The issue body's premise is wrong
 
@@ -151,7 +151,7 @@ distinct `aws` source_layers (`habitat_lateral.tif` joined the set):
 | 404 | `bcfishobs.fiss_fish_obsrvtn_events_vw`, `bcfishpass.dams` | `bcfishpass.dams` only |
 
 The one remaining 404 is the deliberately-kept row, filed at
-NewGraphEnvironment/db_newgraph#20. `habitat_lateral.tif` is probed with its own
+an internal issue. `habitat_lateral.tif` is probed with its own
 extension, not `.fgb.zip`.
 
 End-to-end through the composition rfp actually consumes — `gq_template_layers()`, both

@@ -1,7 +1,7 @@
 # How rfp resolves and fetches a project's layers
 
 **Verified:** 2026-09-07 against rfp 0.62.0 (`main`) · **Issues:** gq#82; spawned
-NewGraphEnvironment/rfp#305, NewGraphEnvironment/db_newgraph#20 · **Produced by:** direct
+internal issues · **Produced by:** direct
 reading of rfp's `R/` and `inst/scripts/`, plus anonymous HEAD probes of the `newgraph`
 bucket
 
@@ -101,7 +101,7 @@ the hillcrestgeo fwapg feature service — but it *is* written as an ordinary Ge
 table via `-nln`, and gq types it `fwa` (`layer_key` `stream_labels`), so it never
 reaches the aws pass at all. It is not a second file-target candidate.
 
-Also list-gated rather than unconditional since rfp#12 phase 3: `habitat_lateral.tif`,
+Also list-gated rather than unconditional since an internal issue phase 3: `habitat_lateral.tif`,
 `parameters_habitat_method`, `parameters_habitat_thresholds` and `fwa_named_streams` are
 ordinary entries now, so *a manifest that omits them leaves them alone*.
 
@@ -119,7 +119,7 @@ curl -s -o /dev/null -w '%{http_code}\n' --max-time 20 -I \
 Mind the extension: `.fgb.zip` for tables, but `habitat_lateral.tif` is its own.
 
 Measured 2026-09-07: 7 of gq's 9 distinct `aws` source_layers resolved; after gq#82,
-9 of 10, the remaining 404 being `bcfishpass.dams` (db_newgraph#20).
+9 of 10, the remaining 404 being `bcfishpass.dams`.
 
 ## What stages the objects
 

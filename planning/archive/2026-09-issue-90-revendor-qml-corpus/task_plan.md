@@ -74,7 +74,7 @@ enumeration had not swept — and half of it was a sentence the fix itself added
       reference nodes in `rfp/inst/testdata/nodes/` open with `<flags>`, `raster_hillshade.qml`
       included, so authorship does not discriminate. I preserved that clause while
       correcting the member list around it
-- [x] …and added "`airphoto_gray` was repaired out of that form upstream (rfp#235
+- [x] …and added "`airphoto_gray` was repaired out of that form upstream (an internal issue
       follow-up)". Also false — `<flags>` at `11ec65fc` (creation), `4938318c~1`,
       `4938318c` and HEAD. rfp's "bare sidecar" names a *deployment mode*, not a document
       form, and I inverted its meaning carrying it across from a commit title
@@ -101,9 +101,9 @@ this diff touches.
 
 - [x] Edit #86's body: correct the expired "guard is green" premise, narrow to the residue
 - [x] Retitle #86
-- [x] **Read rfp#307 before asserting anything about the residue.** This changed the
+- [x] **Read an internal issue before asserting anything about the residue.** This changed the
       conclusion — see findings.md. A first draft of the #86 edit claimed the repaired
-      `previewExpression` was "still dangling"; rfp#307 had already measured
+      `previewExpression` was "still dangling"; an internal issue had already measured
       `bcfishobs.observations` at 34 columns with `species_name` among them, so the
       expression resolves and it is **tier-1's naive rule that is wrong**, not the file
 - [ ] Comment on #86 pointing at this PR
@@ -147,7 +147,7 @@ for the sibling `data-raw/` scripts.
 
 - **Any CI guard for the skip inversion** — that is #78, where the automation design
   (GitHub Action, and in which repo) is written up.
-- **rfp#335** — the corpus is vendored from rfp's *store*, not a `.qgs`;
+- **an internal issue** — the corpus is vendored from rfp's *store*, not a `.qgs`;
   `styles_vendor.R` never reads a template.
 
 ## Validation

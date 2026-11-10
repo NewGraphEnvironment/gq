@@ -10,7 +10,7 @@
 # boundary is positional rather than a filter (`expressionfields` appears in
 # both the source and style blocks, so filtering drops the style copy too),
 # which means the source-tag list has to be COMPLETE, not merely correct — one
-# missing tag and every later source tag leaks into the QML. That was rfp#130,
+# missing tag and every later source tag leaks into the QML. That was an internal issue,
 # and it is pinned there by a QGIS-container oracle (rfp/inst/testdata/nodes/).
 # Mirroring the rule here would be two copies of something subtle that must
 # agree. gq vendors the committed artifact instead.
@@ -53,7 +53,7 @@ stem <- function(p) sub("[.]qml$", "", basename(p))
 # --- vector: enumerate from the index, never from the filesystem --------------
 #
 # rfp's store carries vector/osm.trail.qml, which is tracked but has NO index
-# row — the gq#41 trail donor, hand-added by rfp#171 the day before the store
+# row — the gq#41 trail donor, hand-added by an internal issue the day before the store
 # gained an index, superseded by the generated trails.qml. rfp's own guard walks
 # index -> file only, so a stray file is invisible to it. Globbing the directory
 # would silently vendor a file whose name is not even slug-shaped.
@@ -122,11 +122,11 @@ on_disk <- c(
 # someone reads this. Anything NOT named here still aborts.
 orphans_known <- c(
   # The gq#41 trail donor, lifted from the Roads - DRA symbology and committed
-  # by rfp#171 (7caeeeb, 2026-08-22) one day before rfp#174 gave the store an
+  # by an internal issue (7caeeeb, 2026-08-22) one day before an internal issue gave the store an
   # index. Once spliced into both templates the generator re-extracted it as the
   # indexed trails.qml, which is what gq vendors; this one is the superseded
   # input. Not slug-shaped either ("osm.trail", not "osm_trail"). Tracked as
-  # rfp#187 — drop this entry once that lands.
+  # An internal issue — drop this entry once that lands.
   "vector/osm.trail.qml"
 )
 orphans <- setdiff(setdiff(on_disk, rel), orphans_known)

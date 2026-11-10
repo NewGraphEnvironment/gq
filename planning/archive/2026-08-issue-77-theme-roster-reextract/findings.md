@@ -11,7 +11,7 @@ plan was written.
 |---|---|
 | total rows / template-theme pairs | **232 / 9** — unchanged |
 | `High Detail - Crossings` | 28 layers, **27 visible** in *both* templates |
-| the one `false` row | `ESRI_World_Topo` in both (rfp#162, present-and-off) |
+| the one `false` row | `ESRI_World_Topo` in both (an internal issue, present-and-off) |
 | shared themes | 4: High Detail - Crossings, Low Detail - {Bull Trout, Salmon, Steelhead} Model |
 | shared themes agreeing | all 4 — identical `layer_key` sets, **zero** visible-flag differences |
 | stub themes remaining | **none** |
@@ -25,7 +25,7 @@ All of the issue's claims hold.
 
 The issue's replacement puts `expect_gt(sum(a$visible), 0L)` **inside** the
 `for (t in shared)` loop. `Land Tenure` ships only in `bcrestoration_mobile`, so
-it is not in `shared` and is never checked — which is precisely the shape rfp#217
+it is not in `shared` and is never checked — which is precisely the shape an internal issue
 had, a stub preset living in one template.
 
 Resolved by splitting into two separately-named tests: one asserting the shared
@@ -49,7 +49,7 @@ of the *documentation*.
 
 Deliberately **not** touched: `NEWS.md:340-341` states the same fact in a dated
 0.3.0 entry. It is a historical record of what was true at that release, and the
-trail rfp#217 sits on. Same for `planning/archive/2026-08-issue-46-themes-roster/`.
+trail an internal issue sits on. Same for `planning/archive/2026-08-issue-46-themes-roster/`.
 
 Confirmed still true and left alone: `CLAUDE.md:271` and `NEWS.md:336`, both
 citing 232 rows / 9 pairs.
@@ -122,7 +122,7 @@ Beyond the counts the issue predicts, the diff was checked for what it should
 
 That is faithful to what the template said, and the template was wrong. rfp
 shipped that preset as a stub: 28 layers enumerated, none visible, and no group
-checked. Repaired in NewGraphEnvironment/rfp#217, released in rfp **v0.47.0**.
+checked. Repaired in an internal issue, released in rfp **v0.47.0**.
 gq's roster is extracted from those templates, so it is now the last place
 holding the old answer.
 
@@ -142,7 +142,7 @@ RFP_TEMPLATE_DIR=/path/to/rfp/inst/lookups/../templates \
 Expected: `themes.csv built: 232 rows, 9 template-theme pairs`, and a diff of
 **27 insertions / 27 deletions** — every `bcrestoration_mobile,High Detail -
 Crossings` row flipping to `true` **except `esri_world_topo`**, which stays
-`false` in both templates (rfp#162, present-and-off).
+`false` in both templates (an internal issue, present-and-off).
 
 Nothing else to rebuild — `reg_main.json` and `groups.csv` are untouched.
 
@@ -183,7 +183,7 @@ index e714403..d4dfb53 100644
 +  # This test used to demonstrate that with `High Detail - Crossings`, whose
 +  # restoration copy had every layer switched off. That was not a legitimate
 +  # difference: bcrestoration shipped the preset as a STUB, enumerating 28
-+  # layers and showing none of them, and rfp#217 repaired it. Pinning the zero
++  # layers and showing none of them, and an internal issue repaired it. Pinning the zero
 +  # made a defect look like a design, so the assertion is now that the shared
 +  # themes agree - which is what would break if a template drifted again.
    xing <- gq_theme_layers("High Detail - Crossings")
@@ -205,7 +205,7 @@ index e714403..d4dfb53 100644
 +               by = "layer_key")
 +    expect_equal(sum(m$visible.x != m$visible.y), 0L, info = t)
 +    # ... and none of them is a stub. A preset showing nothing is the shape of
-+    # rfp#217 and reads as a deliberate minimal variant.
++    # an internal issue and reads as a deliberate minimal variant.
 +    expect_gt(sum(a$visible), 0L)
 +    expect_gt(sum(b$visible), 0L)
 +  }
@@ -231,7 +231,6 @@ Worth noting for next time: **both** registries recorded the stub faithfully,
 because both derive from the same templates. A failure of that cross-check does
 not mean gq is the stale side by default; check which one moved.
 
-Relates to NewGraphEnvironment/rfp#217
 
 
 ## Phase 2: proving the guards can fail

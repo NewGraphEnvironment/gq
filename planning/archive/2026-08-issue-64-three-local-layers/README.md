@@ -60,4 +60,4 @@ filed as #71.
 - #72 widen the Floodplain group (19 layers in the field against 1 declared);
   blocked on a `source_type` for project rasters and on colliding layer names
 - #73 `Tracking` and the two habitat-parameter layers
-- NewGraphEnvironment/rfp#229 `edna` and `monitoring` have no declared symbology
+- An internal issue `edna` and `monitoring` have no declared symbology

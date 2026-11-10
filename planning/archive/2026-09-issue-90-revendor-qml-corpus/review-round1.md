@@ -159,7 +159,7 @@ the checkout it was read from — measured, and benign.)
 | "All three skipped styles happen to back that roster" | all three present in that CSV | ✓ |
 | **superlative**: dem_hillshade and dem_turbo "alone" open with `<map-layer-style-manager>` | `grep -rl` across **all 66** QMLs in rfp's store → exactly those two | ✓ |
 | "airphoto_gray ... is an ordinary QML" | parsed: root `qgis`, first child `flags` (same shape as habitat_lateral) | ✓ |
-| "repaired out of that form upstream (rfp#235 follow-up)" | rfp#235 is *"stretch is a silent no-op on singlebandgray"*, closed by `11ec65fc` (merge `86f11a32`, 2026-08-30); `4938318c` *"Harden the raster stretch writer, and fix airphoto_gray as a bare sidecar"* is a direct descendant, 2026-08-31 | ✓ |
+| "repaired out of that form upstream (an internal issue follow-up)" | an internal issue is *"stretch is a silent no-op on singlebandgray"*, closed by `11ec65fc` (merge `86f11a32`, 2026-08-30); `4938318c` *"Harden the raster stretch writer, and fix airphoto_gray as a bare sidecar"* is a direct descendant, 2026-08-31 | ✓ |
 
 Nothing over-stated. The superlative is the one that could have been wrong and
 is not.
@@ -214,7 +214,7 @@ Recording these so the next reader does not re-derive them.
 - **`<alias index=>` now has gaps** in `bcfishobs_fiss_fish_observations.qml`
   (0, 1, 3, 6, 8, …) because upstream dropped five fields without renumbering.
   Looks alarming in the diff; is not a defect. QGIS resolves aliases by name, not
-  index (the rfp#186 finding in the conventions), and it is upstream's merged
+  index (the internal issue finding in the conventions), and it is upstream's merged
   artifact, which gq is contractually required to copy byte-for-byte.
 - **The new `previewExpression` `"species_name"` is not in that QML's own
   19-field `<fieldConfiguration>` list** — and the *old* one

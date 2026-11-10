@@ -41,7 +41,7 @@ issue (marked); the remaining six are **out of scope here** and filed as gq#68:
 
 | layer_key | template | gq |
 |---|---|---|
-| `floodplains` | `Base - misc` | `Floodplain` — **settled**: gq keeps its group, declared divergence, rfp#216 |
+| `floodplains` | `Base - misc` | `Floodplain` — **settled**: gq keeps its group, declared divergence, an internal issue |
 | `fisheries_sensitive_watersheds` | `Basemap` | `Streams` |
 | `first_nation_reserve` | `Basemap/Waterbodies` | `Basemap` |
 | `streams_all` | `Basemap/Waterbodies` | `Streams` |

@@ -3,7 +3,7 @@
 ## Session 2026-08-24
 
 - Plan-mode exploration — two Explore agents (gq extraction/registry layout, rfp
-  QML machinery). Found #39's premise superseded by rfp#174 Phase A.
+  QML machinery). Found #39's premise superseded by an internal issue Phase A.
 - Scoping decision put to the user: host in gq / accessor only / close as
   satisfied elsewhere. **Chose: host in gq**, with rfp keeping its copy for now
   and a follow-up rfp issue to repoint its builder.
@@ -35,7 +35,7 @@
 - The drift test failed first time against the INSTALLED rfp (0.25.1, 3 raster
   QMLs, no store) and reported 59 false drifts. That is the installed-vs-source
   trap `reg_extract_themes.R` already warns about; the test now takes
-  `RFP_STYLES_DIR` first and skips when upstream predates rfp#174. Verified both
+  `RFP_STYLES_DIR` first and skips when upstream predates an internal issue. Verified both
   answers: skips on installed, 101 pass against the checkout.
 - `WARN 1` in `test-gq_registry_read.R:25` is baseline — untouched by this
   branch, fires in isolation.
@@ -52,7 +52,7 @@
 - Found, not fixed (out of scope): `.claude/` and `gq.Rproj` ship in the tarball
   on main too — `.Rbuildignore` excludes neither.
 - **Phase 5 done** — #39's body reconciled in place (premise superseded, layout
-  corrected, what-shipped recorded). Filed rfp#187 (unindexed `osm.trail.qml`,
-  guard walks one direction) and rfp#188 (read the store from gq, delete rfp's
-  copy). The vendoring script's declared exception now cites rfp#187.
+  corrected, what-shipped recorded). Filed an internal issue (unindexed `osm.trail.qml`,
+  guard walks one direction) and an internal issue (read the store from gq, delete rfp's
+  copy). The vendoring script's declared exception now cites an internal issue.
 - Released 0.4.0 — new export, so minor. Bumped as the final commit.

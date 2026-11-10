@@ -38,11 +38,11 @@ against `https://newgraph.s3.us-west-2.amazonaws.com/` — the same request rfp'
 | 404 | `bcfishobs.fiss_fish_obsrvtn_events_vw`, `bcfishpass.dams` | `bcfishpass.dams` only |
 
 The set grew by one because `habitat_lateral.tif` joined it. The remaining 404 is the
-deliberately-kept row, filed at NewGraphEnvironment/db_newgraph#20.
+deliberately-kept row, filed at an internal issue.
 
 What changed because of it: `habitat_lateral` stops being hand-clipped per project, and
 the fish-observations download stops failing on every build — though the layer does not
-return to the map until NewGraphEnvironment/rfp#305 lands, because `source_layer` is
+return to the map until an internal issue lands, because `source_layer` is
 simultaneously the S3 object stem, the GeoPackage table name and the `.qgs` `layername=`.
 
 Two wrong turns, both kept because they are the useful part:

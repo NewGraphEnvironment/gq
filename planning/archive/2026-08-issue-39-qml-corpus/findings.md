@@ -4,7 +4,7 @@
 
 #39 was filed 2026-08-03 arguing "the canonical cartography for a project type
 lives in whichever field project someone last styled, not in a versioned
-package." That was true then. rfp#174 Phase A landed 2026-08-23 and made it
+package." That was true then. An internal issue Phase A landed 2026-08-23 and made it
 false.
 
 `rfp/inst/extdata/styles/` — 64 tracked files, 3.4 MB:
@@ -56,7 +56,7 @@ guard rather than an assumption.
 
 The 5 store-only: `national_park`, `old_growth_management_areas`,
 `parameters_habitat_method`, `parameters_habitat_thresholds`, `tracking`.
-Template layers gq's roster never carried — consistent with rfp#174's "the
+Template layers gq's roster never carried — consistent with an internal issue's "the
 registry diverges in BOTH directions".
 
 The 17 gq-only decompose cleanly: 4 forms (owned by `rfp_form_build()`, out of
@@ -77,7 +77,7 @@ History:
 46a475e 2026-08-22  Put the styled trail layer into both templates (#171)
 ```
 
-It is the gq#41 trail style's *donor*, hand-added one day before rfp#174 gave the
+It is the gq#41 trail style's *donor*, hand-added one day before an internal issue gave the
 store an index. Once spliced into the templates, the generator re-extracted it as
 the indexed `trails.qml`. The two differ in bytes (`4e41ef19…` vs `83e65f11…`) —
 expected, since the indexed one came back through a template round-trip.
@@ -94,7 +94,7 @@ nothing. Enumerate from `index.csv`, and assert *both* directions in gq.
 ## Layout: shared + override, not per-template
 
 #39 proposes `inst/styles/<template>/<layer_key>.qml`. That writes 50 shared
-files twice. rfp#174 measured that of 54 shared layers, exactly **3** differ in
+files twice. An internal issue measured that of 54 shared layers, exactly **3** differ in
 symbology once labels/customproperties/cached-extents are canonicalized away —
 and those 3 are already `vector/overrides/bcfishpass_mobile/`. Mirror that.
 
@@ -105,7 +105,7 @@ filter**: `which(!tags %in% src)[1]`, copying to the end. Because
 `expressionfields` appears in both the source and style blocks, a filter would
 drop the style copy too. The consequence is that the source-tag list must be
 *complete*, not merely correct — one missing tag and every later source tag leaks
-into the QML. That was rfp#130, and it is now pinned by a QGIS-container oracle
+into the QML. That was an internal issue, and it is now pinned by a QGIS-container oracle
 (`rfp/inst/testdata/nodes/`).
 
 Mirroring that rule in gq would be the cross-function-consistency trap at its

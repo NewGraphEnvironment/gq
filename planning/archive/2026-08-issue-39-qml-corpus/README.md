@@ -15,10 +15,10 @@ QGIS.
 
 The issue's premise died before implementation started. It was filed 2026-08-03
 arguing the QML lived "in whichever field project someone last styled, not in a
-versioned package"; rfp#174 Phase A landed a committed store in rfp on
+versioned package"; an internal issue Phase A landed a committed store in rfp on
 2026-08-23. So the work was never "build the corpus" — it was "decide where it
 lives", which was put to the user as an explicit scoping question rather than
-assumed. Answer: host it in gq, rfp keeps its copy until rfp#188 repoints its
+assumed. Answer: host it in gq, rfp keeps its copy until an internal issue repoints its
 builder.
 
 Two design points came from measuring rather than reading:
@@ -26,7 +26,7 @@ Two design points came from measuring rather than reading:
 - **Vendor through `index.csv`, never by globbing.** `vector/osm.trail.qml` is
   tracked upstream with no index row — the gq#41 trail donor, superseded by the
   generated `trails.qml`. rfp's own guard walks index → file only, so it cannot
-  see a stray. Filed as rfp#187; carried here as a declared exception with a
+  see a stray. Filed as an internal issue; carried here as a declared exception with a
   reason, to be dropped when that lands.
 - **`(layer_key, template)` has zero collisions** across all 53 index rows, so
   no styleName-style discriminator was needed. Worth checking because rfp's
@@ -41,7 +41,7 @@ Two design points came from measuring rather than reading:
   compared against the *installed* rfp 0.25.1 (3 raster QMLs, no store) rather
   than the 0.30.1 checkout. That is the installed-vs-source trap
   `reg_extract_themes.R` already documents. It now takes `RFP_STYLES_DIR` first
-  and skips when upstream predates rfp#174 — honest when it cannot compare,
+  and skips when upstream predates an internal issue — honest when it cannot compare,
   strict when it can.
 
 ## Verification
@@ -59,8 +59,8 @@ every install.
 
 ## Follow-ups
 
-- rfp#187 — delete `osm.trail.qml`, add the reverse index assertion
-- rfp#188 — read the store from gq, delete rfp's copy, retire gq's drift test
+- An internal issue — delete `osm.trail.qml`, add the reverse index assertion
+- An internal issue — read the store from gq, delete rfp's copy, retire gq's drift test
 
 ## Second round — the Plan review landed after the PR
 
@@ -85,7 +85,7 @@ other seven. That, in turn, let two guards get stronger:
 - the structural guard asserts the positional invariant rfp actually uses —
   the style block starts at `<flags>` — which the previous absence-only check
   could not do while those two sidecars were present, and which would not have
-  caught an rfp#130-class leak
+  caught an internal issue-class leak
 
 Also fixed: an unknown `template` silently returned the shared style, on exactly
 the 3 layers where an override exists *because* the shared one is wrong for that

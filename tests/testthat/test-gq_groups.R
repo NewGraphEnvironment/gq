@@ -170,7 +170,7 @@ test_that("a theme shipping in both templates agrees layer for layer", {
   # This test used to demonstrate the point with `High Detail - Crossings`, whose
   # restoration copy had every layer switched off. That was not a legitimate
   # difference: bcrestoration shipped the preset as a STUB, enumerating 28 layers
-  # and showing none, and rfp#217 repaired it. Pinning the zero made a defect
+  # and showing none, and an internal issue repaired it. Pinning the zero made a defect
   # look like a design.
   #
   # What replaces it is a drift guard. The templates are separate .qgs files that
@@ -237,7 +237,7 @@ test_that("a theme shipping in both templates agrees layer for layer", {
 })
 
 test_that("no theme is a stub", {
-  # rfp#217's shape: a preset that enumerates layers and shows none of them. It
+  # An internal issue's shape: a preset that enumerates layers and shows none of them. It
   # reads as a deliberate minimal variant, so nothing downstream reports it.
   #
   # Deliberately over ALL template-theme pairs, not only the shared ones,
@@ -245,7 +245,7 @@ test_that("no theme is a stub", {
   # see an unshared theme at all.
   #
   # Note what that argument is NOT. `High Detail - Crossings` ships in both
-  # templates, so the shared-scoped version WOULD have caught rfp#217. The
+  # templates, so the shared-scoped version WOULD have caught an internal issue. The
   # widening is not justified by the stub that prompted it; it is justified by
   # the theme the stub happened to miss.
   #
@@ -297,9 +297,9 @@ test_that("no theme turns an opaque basemap on", {
   # records it as having twice cost a field user a layer.
   #
   # `Base - misc` holds FOUR opaque xyz basemaps. The roster named only
-  # esri_world_topo until rfp#185, so asserting that key alone would have scoped
+  # esri_world_topo until an internal issue, so asserting that key alone would have scoped
   # the guard by coincidence rather than by the property. That expiry has now
-  # arrived: rfp#185 re-saved the presets to carry the other three
+  # arrived: an internal issue re-saved the presets to carry the other three
   # present-and-off, and gq#88 re-extracted the roster. The shape counts above
   # moved as routine roster growth -- exactly what this file's own comment tells
   # the next person to do -- so had the set been pinned to esri_world_topo alone,
@@ -349,7 +349,7 @@ test_that("no theme turns an opaque basemap on", {
 
   # And pin which of them the roster names, so a template change that adds or
   # DROPS one fails HERE, naming the reason, rather than silently changing what
-  # the check below is responsible for. Post-rfp#185 that is all four; a drop is
+  # the check below is responsible for. Post-an internal issue that is all four; a drop is
   # now the live direction, and it is the quiet one -- a key absent from the
   # roster makes the property below vacuous for that key while staying green.
   expect_setequal(intersect(unique(df$layer_key), opaque), opaque)
@@ -364,8 +364,8 @@ test_that("no theme turns an opaque basemap on", {
   )
 
   # Each opaque basemap is named by all 9 pairs. esri_world_topo was the one row
-  # gq#77's re-extraction had to leave alone; rfp#185 brought the other three to
-  # the same shape. "Present in every preset, off in every preset" is rfp#185's
+  # gq#77's re-extraction had to leave alone; an internal issue brought the other three to
+  # the same shape. "Present in every preset, off in every preset" is an internal issue's
   # stated design, and it is what keeps the property above non-vacuous: a key
   # named by only some presets is unguarded in the rest, which the set pin above
   # cannot see because the key is still present somewhere.
