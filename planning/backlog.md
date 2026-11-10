@@ -14,7 +14,7 @@ ticked and not **waiting**; `/planning-init <umbrella>` plans it, one phase per 
 |---|---|---|---|
 | - [x] 1 | #100 | 1, 2: template agreement, vendored-artifact guards (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/106 |
 | - [x] 2 | #101 | 3, 4, 5: translator opacity and labels, custom CSV reader, register styles (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/108 |
-| - [ ] 3 | #102 | 6, 7, 8: check gate, README and vignette, registry build inputs (8 issues) | open |
+| - [x] 3 | #102 | 6, 7, 8: check gate, README and vignette, registry build inputs (8 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/109 |
 | - [ ] 4 | #103 | 9, 10: extractor fidelity, label translators (5 issues) | open |
 | - [ ] 5 | #104 | 11: registry schema decisions (4 issues) | open: last, after moves 2 and 4 |
 
@@ -131,7 +131,7 @@ it.
 
 ### 6. Check gate
 
-- [ ] Carried by move 3, #102
+- [x] Carried by move 3, #102 (merged in https://github.com/NewGraphEnvironment/gq/pull/109)
 
 Clear the two `R CMD check` WARNINGs and drop `error-on: '"error"'` from
 `.github/workflows/R-CMD-check.yaml` (#51); fix the off-by-one `00_pkg_src` path in
@@ -144,7 +144,7 @@ lands first.
 
 ### 7. README and vignette
 
-- [ ] Carried by move 3, #102
+- [x] Carried by move 3, #102 (merged in https://github.com/NewGraphEnvironment/gq/pull/109)
 
 Move finished roadmap items into the README's function overview and reconcile the registry
 count (#95); re-compose `vignettes/gq-intro.Rmd` with a registry legend, scale bar and keymap
@@ -156,7 +156,7 @@ legend, logo, scale bar and keymap hold the four corners; what a blended basemap
 
 ### 8. Registry build inputs
 
-- [ ] Carried by move 3, #102
+- [x] Carried by move 3, #102 (merged in https://github.com/NewGraphEnvironment/gq/pull/109)
 
 Decide what `data-raw/reg_build_main.R` reads and what proves `reg_main.json` is current.
 #85: `reg_qgis_fishpassage.json` is an input to nothing. #84: `xref_layers.csv` names a layer
