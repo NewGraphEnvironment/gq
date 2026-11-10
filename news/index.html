@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.18.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.19.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,9 +33,25 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.19.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.19.0" id="gq-0190">gq 0.19.0<a class="anchor" aria-label="anchor" href="#gq-0190"></a></h2>
+<ul><li>
+<strong>Breaking: the demo datasets <code>crossing</code>, <code>lake</code>, <code>road</code>, <code>stream</code> and <code>watershed</code> are removed (<a href="https://github.com/NewGraphEnvironment/gq/issues/51" class="external-link">#51</a>).</strong> Nothing had used them since the first vignette moved to real Bittner Creek data. <code>R CMD check</code> now runs clean, and CI fails on a WARNING.</li>
+<li>
+<strong>Breaking: <code>inst/registry/reg_qgis_fishpassage.json</code> and <code>inst/examples/reg_demo.json</code> are removed (<a href="https://github.com/NewGraphEnvironment/gq/issues/85" class="external-link">#85</a>).</strong> Neither was read by anything.</li>
+<li>
+<strong>Changed data: <code>bittner_wsd</code> is about 40 km², down from about 56 km² (<a href="https://github.com/NewGraphEnvironment/gq/issues/62" class="external-link">#62</a>).</strong> It had been taken at the creek’s mouth, which lies inside the Fraser’s river polygon, so it took in the river corridor. It now comes from just above the mouth, and the other <code>bittner_*</code> datasets were re-pulled to match.</li>
+<li>
+<strong>Basemap tiles carry their provider’s credit (<a href="https://github.com/NewGraphEnvironment/gq/issues/58" class="external-link">#58</a>).</strong> <code><a href="../reference/gq_basemap_tiles.html">gq_basemap_tiles()</a></code> sets a <code>"credit"</code> attribute, and <code><a href="../reference/gq_basemap_blend.html">gq_basemap_blend()</a></code> carries the credits of both inputs. Both vignettes draw the credit below the frame.</li>
+<li>
+<strong>The intro vignette is composed from the registry (<a href="https://github.com/NewGraphEnvironment/gq/issues/62" class="external-link">#62</a>)</strong>, with a registry legend, scale bar, keymap and tile credit, and the README describes what gq does today (<a href="https://github.com/NewGraphEnvironment/gq/issues/95" class="external-link">#95</a>).</li>
+<li>
+<strong><code>reg_main.json</code> has a currency test (<a href="https://github.com/NewGraphEnvironment/gq/issues/11" class="external-link">#11</a>).</strong> A test fails when the shipped registry differs from a rebuild of its sources. <code>reg_qgis_restoration.json</code> is re-extracted from the template repo’s v0.93.0, and <code>xref_layers.csv</code> is documented as naming database tables (<a href="https://github.com/NewGraphEnvironment/gq/issues/84" class="external-link">#84</a>).</li>
+<li>References to private repositories in NEWS and test comments are described in words.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.18.0" id="gq-0180">gq 0.18.0<a class="anchor" aria-label="anchor" href="#gq-0180"></a></h2>
 <ul><li>
