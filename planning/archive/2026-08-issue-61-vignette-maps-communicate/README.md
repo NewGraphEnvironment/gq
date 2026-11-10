@@ -55,7 +55,7 @@ nothing. Worst of the three: the first version listed all nine drawn layers as
 exemptions with the reason "drawn and legended" — exempting everything and
 making the assertion **incapable of failing**. It reads as diligence.
 
-**First real use of `cartography.md`'s "does it communicate" half** (soul#78,
+**First real use of `cartography.md`'s "does it communicate" half** (an internal issue,
 written the same day). All twelve checks pass; two were failing before this
 branch. Check 8 — rank the rendered image, then confirm each of the top few is
 in the legend — is the one that would have caught this, and it works only

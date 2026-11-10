@@ -3,7 +3,7 @@
 **Outcome.** `inst/registry/themes.csv` recorded `High Detail - Crossings` as
 enumerating 28 layers in `bcrestoration_mobile` and showing none of them. That
 was a faithful extraction of a preset rfp shipped as a stub, repaired upstream in
-rfp#217 and released in rfp v0.47.0; gq was the last place holding the old
+an internal issue and released in rfp v0.47.0; gq was the last place holding the old
 answer, on the fleet's most-used theme. The roster was regenerated from rfp
 v0.47.0 (27 rows flip, `esri_world_topo` stays off, totals unchanged at 232 rows
 / 9 pairs), the test that pinned the zero **as a design** was replaced by guards
@@ -18,7 +18,7 @@ fix and a ready-made diff, and both were correct as far as they went. Three
 things were added after verifying them independently rather than accepting them:
 
 - The proposed test's stub check sat inside a `for (t in shared)` loop, so
-  `Land Tenure` — restoration-only, and the exact shape rfp#217 had — was never
+  `Land Tenure` — restoration-only, and the exact shape an internal issue had — was never
   evaluated by a test written to catch stubs. Widened to all 9 pairs.
 - "Nothing else to rebuild" was true of the artifacts and not the documentation.
   Four prose locations and two generated `.Rd` files asserted the old fact.

@@ -2,25 +2,25 @@
 
 gq is the source of truth for layer styles, but ships only the *registry* — the
 cross-backend abstraction that drives tmap and mapgl. The QGIS-native form, the
-QML itself, has no home here. rfp#17 measured why that matters: against a
+QML itself, has no home here. An internal issue measured why that matters: against a
 147-layer project the registry keeps 53 layers, one symbol layer of up to five,
 ~20 properties of up to 73. That is the right trade for tmap/mapgl and the wrong
 one for QGIS, where the full QML is available and lossless.
 
-**#39's premise changed after it was filed** (2026-08-03). On 2026-08-23 rfp#174
+**#39's premise changed after it was filed** (2026-08-03). On 2026-08-23 an internal issue
 Phase A landed a committed, versioned QML store at `rfp/inst/extdata/styles/` —
 64 files, 3.4 MB, with an index and standing drift tests. The corpus is no longer
 "wherever someone last styled a field project"; it exists, in rfp.
 
 Decision taken 2026-08-24: **host it in gq anyway**, because gq is where
-cross-backend style ownership lives and rfp#174's own build diagram already reads
+cross-backend style ownership lives and an internal issue's own build diagram already reads
 gq's CSVs beside rfp's QMLs. rfp keeps its copy for now; a follow-up rfp issue
 repoints its builder at gq and deletes the duplicate.
 
 ## What exploration established
 
 - **gq needs none of rfp's lift machinery.** The `<maplayer>` → QML boundary is
-  positional-not-filter, was wrong once (rfp#130), and is pinned by a
+  positional-not-filter, was wrong once, and is pinned by a
   QGIS-container oracle in rfp. gq vendors the *committed artifact*, the same way
   `data-raw/reg_extract_themes.R` already reaches rfp's templates. No mirrored
   rule, no dependency cycle.
@@ -30,7 +30,7 @@ repoints its builder at gq and deletes the duplicate.
   begins with a space. Two independent implementations that happen to match:
   worth a guard, not an assumption.
 - **Vendor through `index.csv`, never by globbing.** `vector/osm.trail.qml` is
-  tracked but has no index row — the gq#41 trail donor, hand-added by rfp#171 one
+  tracked but has no index row — the gq#41 trail donor, hand-added by an internal issue one
   day before the index existed, superseded by the generated `trails.qml` (they
   differ in bytes). rfp's guard walks index → file only, so a stray file is
   invisible to it. A directory copy would silently vendor it.
@@ -104,7 +104,7 @@ repoints its builder at gq and deletes the duplicate.
 
 ## Phase 5 — Reconcile upstream
 
-- [x] Edit **gq#39**'s body in place: premise superseded by rfp#174 Phase A,
+- [x] Edit **gq#39**'s body in place: premise superseded by an internal issue Phase A,
       layout is shared+override not per-template, rfp retains its copy
 - [x] File **rfp**: `vector/osm.trail.qml` is an unindexed leftover, and the
       store guard walks index → file only so it cannot see one

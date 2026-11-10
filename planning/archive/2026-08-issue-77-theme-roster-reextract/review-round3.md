@@ -50,7 +50,7 @@ it, in the origin of round 2's own hardcoded list.
      `expect_equal(nrow(df), 232L)` does catch a new roster row today. But
      `test-gq_groups.R:247-248` tells the next person those counts "move when
      rfp changes a template, and are meant to be re-pinned deliberately", and
-     `:273-277` names the pending regeneration (rfp#185) at which that will
+     `:273-277` names the pending regeneration at which that will
      happen. At that moment the count is re-pinned as routine growth and the
      new basemap rides through — which is the scenario the guard's own comment
      describes, one basemap out of its reach.

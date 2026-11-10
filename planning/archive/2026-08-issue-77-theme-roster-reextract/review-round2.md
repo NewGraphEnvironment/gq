@@ -39,7 +39,7 @@ carry, under a test name and a NEWS bullet that both state the general property.
 
   **It is not hypothetical, and the repo already predicts the exact trigger.**
   `data-raw/reg_extract_themes.R:18-20` says: *"Run after the templates change,
-  e.g. once rfp#185 re-saves the presets to include the other three xyz
+  e.g. once an internal issue re-saves the presets to include the other three xyz
   basemaps"*. The anticipated next regeneration adds precisely the three keys the
   guard does not cover.
 

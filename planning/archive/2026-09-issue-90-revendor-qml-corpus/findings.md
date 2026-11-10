@@ -137,7 +137,7 @@ own beside it. **Both halves are false**, and both are now measured:
   `<flags>` form, next to a shipped `dem_hillshade.qml` in style-manager form, means
   authorship cannot be the discriminator.
 - **The history, which was mine.** "`airphoto_gray` was repaired out of that form
-  upstream (rfp#235 follow-up)" — it was never in that form:
+  upstream (an internal issue follow-up)" — it was never in that form:
 
   ```
   11ec65fc     <flags     (the commit that creates it)
@@ -377,15 +377,15 @@ What ends this is the two bottom rows being found and removed, and the axes that
 them now being in the sweep. Not a reviewer returning quiet, and explicitly not the
 first enumeration, which returned quiet while being wrong.
 
-## rfp#307 corrected my #86 re-scope — read the upstream issue before asserting
+## An internal issue corrected my #86 re-scope — read the upstream issue before asserting
 
 A first draft of the #86 edit reported a new finding: the repaired `previewExpression`
 names `species_name`, which is **absent from the file's own 19-name field roster** (the
 roster carries `species_code`, and line 689 is `species_name`'s only occurrence). True,
 and I framed it as "rfp swapped one dangling reference for another".
 
-Checking rfp#307 before filing anything upstream showed that conclusion was wrong.
-rfp#307 enumerates `bcfishobs.observations` as **34 fields — 19 configured, 15 with no
+Checking an internal issue before filing anything upstream showed that conclusion was wrong.
+An internal issue enumerates `bcfishobs.observations` as **34 fields — 19 configured, 15 with no
 widget — and `species_name` is one of the 15.** The expression resolves. A QML roster is
 a *subset* of the layer's columns, so a reference can be roster-absent and perfectly
 correct.
@@ -396,7 +396,7 @@ it on the very file the guard was written for, which is how a guard acquires an 
 and becomes decoration. The rule needs "resolves against the roster, **or** is undecidable
 without the table and handed to tier-2".
 
-rfp#307 also contradicts #86's original "7 dead fields": it measured the surviving 19 as
+An internal issue also contradicts #86's original "7 dead fields": it measured the surviving 19 as
 **0 dangling**, so `fid` and `linear_feature_id` may not be dead at all. Both claims are
 now recorded in #86 as an open tier-2 question rather than as a measurement.
 
@@ -415,4 +415,4 @@ reproduce every claim in it — except its "4 removed", which lists 5 names and 
 |-------|------------|
 | `diff` returned `git diff` output; a 62-line drift reported as 1 line | Shell function shadowing. Use `command diff` / `cmp -s` for anything treated as evidence |
 | A `&&` chain silently truncated after `grep -c` printed `0` | `grep -c` exits 1 on a zero count, so the rest of the chain never ran and a residue check looked like it had returned nothing. Assign without a fallback and normalise, or use `\|\| echo`; never chain past a bare `grep -c` |
-| Reported `species_name` as a new upstream defect | It is a real column (rfp#307). Read the upstream issue before characterising an upstream repair |
+| Reported `species_name` as a new upstream defect | It is a real column. Read the upstream issue before characterising an upstream repair |

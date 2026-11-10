@@ -68,7 +68,7 @@
 - Filed gq#71 (per-class opacity dropped; bec_zone renders at full opacity),
   gq#72 (widen Floodplain; needs a source_type for project rasters and a fix for
   colliding layer names), gq#73 (Tracking + habitat parameters unregistered),
-  and rfp#229 (edna/monitoring have no declared symbology).
+  and an internal issue (edna/monitoring have no declared symbology).
 - Repointed `test-template_drift.R`'s "Project Specific" exemption from gq#64 to
   gq#73. The reason stayed true when #64 closed; only its citation went stale.
 - Rewrote the #64 body and title — it asserted nothing described the forms and

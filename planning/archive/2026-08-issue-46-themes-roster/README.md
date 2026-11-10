@@ -23,7 +23,7 @@ before acting:
 1. **The issue's motivating case is not in the data.** Three of the four xyz
    basemaps appear in zero presets, so extraction could never produce the
    "one aerial on, the rest present-but-off" behaviour #46 argued from. Filed
-   rfp#185; extracted truthfully instead. The schema change stood on its other
+   an internal issue; extracted truthfully instead. The schema change stood on its other
    two grounds.
 2. `normalize_layer_name()` already existed — the plan would have created a
    third copy of one rule.
@@ -35,7 +35,7 @@ commit, making the PWF convention impossible to follow. Removed.
 
 ## Follow-ups
 
-- **rfp#185** — re-save the templates' presets with all four xyz basemaps, then
+- **an internal issue** — re-save the templates' presets with all four xyz basemaps, then
   re-run `data-raw/reg_extract_themes.R` here
 - `habitat_lateral` has a `groups.csv` row but no `reg_main.json` entry (it is a
   raster; the extractor reads only vector maplayers)

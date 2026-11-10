@@ -22,7 +22,7 @@ current.
   > `dem_hillshade and dem_turbo alone are QGIS-authored sidecars rather than`
   > `lifted <maplayer> blocks, which is why they alone open with`
   > `<map-layer-style-manager> instead of <flags>. airphoto_gray was repaired out`
-  > `of that form upstream (rfp#235 follow-up) and is an ordinary QML.`
+  > `of that form upstream (an internal issue follow-up) and is an ordinary QML.`
 
   **(a) "QGIS-authored sidecars … which is why" is a false cause, refuted by a file the
   same paragraph names.** `airphoto_gray.qml` is QGIS-authored — more directly than either
@@ -43,7 +43,7 @@ current.
   the style-manager category, which is written when a style is saved from the Style dialog
   / `saveNamedStyle` rather than from `writeLayerXml()` on a bare layer.
 
-  **(b) "airphoto_gray was repaired out of that form upstream (rfp#235 follow-up)" is
+  **(b) "airphoto_gray was repaired out of that form upstream (an internal issue follow-up)" is
   false.** It was never in that form. Measured per revision with `xml2`:
 
   | rev | first child |
@@ -70,7 +70,7 @@ current.
   of the three is gq's to ship, for the roster reason above."*
 
   `planning/active/findings.md` carries the same wrong characterisation ("rfp repaired it
-  out of the bare-sidecar form after rfp#235") and wants the same correction.
+  out of the bare-sidecar form after an internal issue") and wants the same correction.
 
 - **[fragile]** `NEWS.md:48-53` — *"The class is closed by enumeration … All hold"* is not
   supported, and it is the sentence that tells the next reader to stop looking.
@@ -78,13 +78,13 @@ current.
   Three separate problems, each independently sufficient:
 
   1. **The axis set is three of six.** The enumeration was scoped to "a count, a member
-     list or a superlative". `conventions/code-check.md` (rfp#299 row) names six ways a
+     list or a superlative". `conventions/code-check.md` (an internal issue row) names six ways a
      restatement identifies its population — count, member list, **rank or superlative**,
      what a sibling assertion catches, **behaviour of a second function**, universal
      quantifier — and prescribes sweeping each across four subjects including *external
      systems*. Finding 1 sits squarely on the unswept axes (a causal claim about how rfp
      authors files, plus a historical claim about an rfp repair). The sweep's own axis
-     choice is what let it through, which is exactly the failure rfp#299 records.
+     choice is what let it through, which is exactly the failure an internal issue records.
   2. **The `:199` row reads a truncated version of the line it checks.**
      `findings.md` logs it as *"dem_hillshade and dem_turbo **alone open with**
      `<map-layer-style-manager>`" → ✓*. That half is true (`grep -rl` over all 66 store
@@ -115,11 +115,11 @@ current.
 
   > "Do not carry '7 dead fields' forward as a measurement; it is superseded and only
   > partly re-verified."
-  > "rfp#307 measured the surviving 19 against the live object and reports **0 dangling**.
+  > "an internal issue measured the surviving 19 against the live object and reports **0 dangling**.
   > Both cannot be right about `fid` and `linear_feature_id`."
 
   This is the same roster-absent ≠ column-absent inference the branch already caught itself
-  making about `species_name` (findings.md, "rfp#307 corrected my #86 re-scope"), surviving
+  making about `species_name` (findings.md, "an internal issue corrected my #86 re-scope"), surviving
   into the release note one noun over. Suggest "5 of the 7 fields it listed; whether the
   remaining 2 are dead at all is an open question in #86" or similar.
 
@@ -196,7 +196,7 @@ extraction, not from the QML corpus.
 `data-raw/reg_extract_themes.R` both exist and the latter uses `RFP_TEMPLATE_DIR` (5
 occurrences); `rfp/inst/testdata/nodes/` exists; `rfp/.Rbuildignore` carries `^data-raw$`;
 `vector/osm.trail.qml` is still present upstream, so the `orphans_known` entry and its
-rfp#187 note are live and the script's `stale` message correctly stays silent.
+an internal issue note are live and the script's `stale` message correctly stays silent.
 `^planning$` is in gq's `.Rbuildignore`, so the new PWF files do not ship.
 
 **Minor, not a finding:** `findings.md` (unstaged) says "the dated `6bf069d` note in the new

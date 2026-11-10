@@ -111,7 +111,7 @@ test_that("every QML is a QGIS style document with no source binding", {
                info = paste("Source-bound:", paste(bound, collapse = ", ")))
 
   # The absence check above passes on all 60 files and would keep passing
-  # through an rfp#130-class regression, where a source tag LEAKS IN rather
+  # through an internal issue-class regression, where a source tag LEAKS IN rather
   # than a known one appearing. rfp's real assertion is positional — the style
   # block starts at <flags> — because the lift copies from the first non-source
   # tag to the end, so anything left over shows up as a different first child.
@@ -211,7 +211,7 @@ test_that("the vendored corpus is byte-identical to rfp's", {
   }
   skip_if(src == "" || !dir.exists(src), "no rfp style store to compare against")
   skip_if(!file.exists(file.path(src, "vector", "index.csv")),
-          "rfp store predates its index (rfp#174) - nothing to compare")
+          "rfp store predates its index - nothing to compare")
 
   idx <- read_styles_index()
   differing <- character(0)

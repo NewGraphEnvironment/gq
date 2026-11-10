@@ -237,9 +237,9 @@ findings:
 | line | claim | verdict |
 |---|---|---|
 | `:10-12` | "`expressionfields` appears in both the source and style blocks, so filtering drops the style copy too" | ✓ — rfp says the same at `test-rfp_qgs_style_store.R:65` and `test-rfp_qgs_style_set.R:485` |
-| `:13` | "That was rfp#130, pinned by a QGIS-container oracle" | ✓ — rfp#130 CLOSED, *"Exported QMLs leak source binding…"*; `nodes/README.md:3-5` names `qgis/qgis:4.2` |
-| `:123-127` | "`7caeeeb`, 2026-08-22, rfp#171, one day before rfp#174 gave the store an index" | ✓ — `7caeeebd 2026-08-22 (#171)`; `index.csv` added `32db2516 2026-08-23 (#174)` |
-| `:127` | "Tracked as rfp#187 — drop this entry once that lands" | ✓ — rfp#187 **OPEN**, so the entry correctly stays |
+| `:13` | "That was an internal issue, pinned by a QGIS-container oracle" | ✓ — an internal issue CLOSED, *"Exported QMLs leak source binding…"*; `nodes/README.md:3-5` names `qgis/qgis:4.2` |
+| `:123-127` | "`7caeeeb`, 2026-08-22, an internal issue, one day before an internal issue gave the store an index" | ✓ — `7caeeebd 2026-08-22 (#171)`; `index.csv` added `32db2516 2026-08-23 (#174)` |
+| `:127` | "Tracked as an internal issue — drop this entry once that lands" | ✓ — an internal issue **OPEN**, so the entry correctly stays |
 | `:153-157` | "the roster lives in rfp's `data-raw`, which is `.Rbuildignore`'d" | ✓ |
 | `:63-65` | "one layer name begins with a space" | ✓ |
 | `:279-281` | layer names carry commas / a leading space | ✓ |
@@ -347,8 +347,8 @@ Everything the branch claims numerically, re-measured against the final tree:
 | `previewExpression` now `species_name` | `NEWS.md` | ✓ | ✓ |
 | 4 `fish_obsrvtn_pnt_distinct_id` refs remain | `findings.md` | `grep -c` → 4 | ✓ |
 | `floodplains.qml` one line, `feature_name`→`floodplain_name` | diff | ✓ single-line change | ✓ |
-| rfp#307 "0 dangling among the surviving 19" | `NEWS.md` | rfp#307 body: *"19 entries, 0 dangling"* | ✓ |
-| `species_name` is one of the 15 unwidgeted | `findings.md` | rfp#307's 15-column list includes it | ✓ |
+| an internal issue "0 dangling among the surviving 19" | `NEWS.md` | an internal issue body: *"19 entries, 0 dangling"* | ✓ |
+| `species_name` is one of the 15 unwidgeted | `findings.md` | an internal issue's 15-column list includes it | ✓ |
 | "bare sidecar" = a deployment mode | `findings.md` | rfp `4938318c` body: *"`rfp_styles_apply()`, which writes a `.qml` byte-verbatim as a sidecar"*; *"rendered 99.5% white as a bare sidecar"* | ✓ |
 | `4938318c` repaired the stretch, not the form | `findings.md` | commit body is entirely stretch/renderer; first child `flags` before and after | ✓ |
 | both `store_qmls()` sweeps structural | `findings.md` | `test-rfp_qgs_style_store.R:53-78` — source-binding, flags-start | ✓ |

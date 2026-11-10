@@ -147,7 +147,7 @@ layers (`:147` is in the unclassified branch only).
 
 - [ ] Render both, extract the PNGs, **read them**
 - [ ] Check against the extended 12-point self-review just added to
-      `soul/conventions/cartography.md` (soul#78) — including check 8, ranking
+      `soul/conventions/cartography.md` — including check 8, ranking
       what draws the eye and confirming each is in the legend. This is the
       review's first real use; if a check turns out to be unworkable, fix the
       convention rather than quietly skipping it

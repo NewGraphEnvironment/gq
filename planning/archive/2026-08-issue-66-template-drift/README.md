@@ -23,5 +23,5 @@ A concurrent plan review caught two defects in the fix itself: declaring
 failure mode at depth 2, invisible to a union-based check), and `Base - lidar` is
 empty in both templates so cannot be declared at all.
 
-Closed by a877534 / PR #69. Released 0.11.0. Follow-ups: rfp#216 (three groups
+Closed by a877534 / PR #69. Released 0.11.0. Follow-ups: an internal issue (three groups
 the templates lack), gq#68 (six layer-placement disagreements).

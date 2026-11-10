@@ -2,7 +2,7 @@
 
 Three rows where gq's registry and rfp's aws sourcing disagree. Two cost a silent
 failure on every project build; one costs hand-clipping a raster per project. Found
-building `thompson_20260907` (rtj#316, rtj#318).
+building `thompson_20260907`.
 
 Exploration changed the shape of the issue — see `findings.md`. The short version:
 **gq's registry is the cause of the two failed requests**, not a bystander to rfp's
@@ -54,12 +54,12 @@ Decisions taken at the plan gate, 2026-09-07:
 
 ## Phase 4: Cross-repo issues and body reconciliation
 
-- [x] File rfp issue — rfp#305. FOUR lines, not two: each template carries the old
+- [x] File rfp issue — an internal issue. FOUR lines, not two: each template carries the old
       name in both the `<datasource>` element and the layer-tree `source=` attribute
-- [x] File NewGraphEnvironment/db_newgraph issue — db_newgraph#20
+- [x] File NewGraphEnvironment/db_newgraph issue — an internal issue
 - [x] Edit gq#82's body — corrected in place, and retitled: the counterparty is the
       bucket, not rfp's list
-- [x] Comment on rtj#318 pointing at the resolution
+- [x] Comment on an internal issue pointing at the resolution
 
 ## Phase 5: Release and PR
 

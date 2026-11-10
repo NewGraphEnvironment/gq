@@ -18,7 +18,7 @@ groups appearing only as `<checked-group-nodes>` UI state.
 3. `habitat_lateral` gets a `groups.csv` row so its theme rows resolve.
 4. Retire `gq_theme_groups()`, add `gq_theme_layers()`. Breaking → 0.3.0.
 5. Extract truthfully: only `esri_world_topo` among the basemaps, because that
-   is what the presets contain. rfp#185 tracks re-saving them upstream.
+   is what the presets contain. An internal issue tracks re-saving them upstream.
 
 ## Phase 1 — Shared normalizer
 

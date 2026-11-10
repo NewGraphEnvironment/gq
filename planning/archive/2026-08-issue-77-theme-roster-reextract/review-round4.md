@@ -206,7 +206,7 @@ against clean HEAD   ->  FAIL 0 | PASS 77                        (control)
 ```
 
 Keep the existing `Base - misc` pin beside it — it is what catches (c), and it
-is the one that carries the rfp#185 story.
+is the one that carries the internal issue story.
 
 **Why this one terminates.** After it, the residual is "an opaque basemap could
 arrive with a `source_type` other than `wms`". That is not a data coincidence but
