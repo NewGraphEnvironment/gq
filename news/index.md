@@ -131,8 +131,8 @@ has a citable, archived version.
   preview expression, and 5 of the 7 fields it listed. Four
   `fish_obsrvtn_pnt_distinct_id` references remain. Whether the other
   two (`fid`, `linear_feature_id`) are dead **at all** is now an open
-  question rather than a finding: rfp#307 measured the surviving 19
-  against the live object and reports 0 dangling, which
+  question rather than a finding: an internal issue measured the
+  surviving 19 against the live object and reports 0 dangling, which
   [\#86](https://github.com/NewGraphEnvironment/gq/issues/86)’s original
   list contradicts.
   [\#86](https://github.com/NewGraphEnvironment/gq/issues/86) has been
@@ -219,9 +219,9 @@ has a citable, archived version.
 
 - **The theme roster carries the three remaining xyz basemaps and
   `Trails`
-  ([\#88](https://github.com/NewGraphEnvironment/gq/issues/88)).**
-  rfp#185 re-saved all nine visibility presets to hold every opaque
-  basemap present-and-off, and `themes.csv` still recorded the
+  ([\#88](https://github.com/NewGraphEnvironment/gq/issues/88)).** An
+  internal issue re-saved all nine visibility presets to hold every
+  opaque basemap present-and-off, and `themes.csv` still recorded the
   pre-change membership, so gq and rfp disagreed about what nine themes
   contain. Re-extracted with `data-raw/reg_extract_themes.R` against rfp
   0.76.0: **232 to 268 rows**, 36 additions and 0 removals, the 9
@@ -279,16 +279,16 @@ has a citable, archived version.
     than inferred from a bucket listing. `source_layer` is the S3 object
     stem, the GeoPackage table name *and* the `.qgs` `layername=` at
     once, so this fixes the download only — and **it must not ship ahead
-    of NewGraphEnvironment/rfp#305.** rfp drops a maplayer whose target
-    is absent and not in the requested set. Before this change the old
-    name was requested, so the 404 left the styled layer in place for a
-    later refresh; with the rename in and rfp’s templates not, the
-    old-named maplayer is **removed from the project**, symbology and
-    all, while the data lands under a name nothing references. Projects
-    built in that window need the layer re-added by hand.
+    of an internal issue.** rfp drops a maplayer whose target is absent
+    and not in the requested set. Before this change the old name was
+    requested, so the 404 left the styled layer in place for a later
+    refresh; with the rename in and rfp’s templates not, the old-named
+    maplayer is **removed from the project**, symbology and all, while
+    the data lands under a name nothing references. Projects built in
+    that window need the layer re-added by hand.
   - `dam` is unchanged on purpose. `bcfishpass.dams` is staged by no job
     on any branch — a gap, not a retirement — and dropping the row would
-    have hidden it (NewGraphEnvironment/db_newgraph#20).
+    have hidden it (an internal issue).
 
 - **The `aws`/`bcdata`/`fwa`/`osm` source rule no longer blesses any
   string with a dot in it.** It checked
@@ -360,11 +360,11 @@ has a citable, archived version.
 - **`High Detail - Crossings` shows its layers in `bcrestoration_mobile`
   again.** The roster recorded that theme as enumerating 28 layers and
   showing none of them. That was a faithful extraction of a template rfp
-  shipped as a stub, repaired upstream in NewGraphEnvironment/rfp#217
-  and released in rfp v0.47.0. 27 rows flip to visible;
-  `esri_world_topo` stays off, as it is in `bcfishpass_mobile` too.
-  Totals are unchanged at 232 rows over 9 template-theme pairs, and
-  `reg_main.json` and `groups.csv` are untouched.
+  shipped as a stub, repaired upstream in an internal issue and released
+  in rfp v0.47.0. 27 rows flip to visible; `esri_world_topo` stays off,
+  as it is in `bcfishpass_mobile` too. Totals are unchanged at 232 rows
+  over 9 template-theme pairs, and `reg_main.json` and `groups.csv` are
+  untouched.
 
   It is the most used theme in the fleet, so it is worth being right.
 
@@ -385,18 +385,18 @@ has a citable, archived version.
   only the shared ones, because `Land Tenure` is restoration-only and a
   shared-scoped check cannot see an unshared theme at all. (Not because
   of the stub itself: `High Detail - Crossings` ships in both templates,
-  so a shared-scoped check would have caught rfp#217. The widening is
-  justified by the theme the stub happened to miss.) Alongside them the
-  roster’s shape is now pinned (232 rows, 9 pairs, no duplicate key,
-  `Land Tenure` at 26/22) and no theme may switch on any of the opaque
-  xyz basemaps — with every wms layer *and every raster* pinned as
-  opaque or overlay, and the subset the roster currently names pinned
-  beside it, so neither a new basemap nor the pending rfp#185
-  regeneration can be absorbed as roster growth. To escape the guard now
-  a layer would have to be an opaque basemap that is neither a wms nor a
-  raster, which is definitional rather than a coincidence in the current
-  data. Each guard was run against a restored defect rather than assumed
-  to work.
+  so a shared-scoped check would have caught an internal issue. The
+  widening is justified by the theme the stub happened to miss.)
+  Alongside them the roster’s shape is now pinned (232 rows, 9 pairs, no
+  duplicate key, `Land Tenure` at 26/22) and no theme may switch on any
+  of the opaque xyz basemaps — with every wms layer *and every raster*
+  pinned as opaque or overlay, and the subset the roster currently names
+  pinned beside it, so neither a new basemap nor the pending an internal
+  issue regeneration can be absorbed as roster growth. To escape the
+  guard now a layer would have to be an opaque basemap that is neither a
+  wms nor a raster, which is definitional rather than a coincidence in
+  the current data. Each guard was run against a restored defect rather
+  than assumed to work.
 
   What none of them assert is that the roster still equals what the
   templates say; that needs a live-template test and is tracked
