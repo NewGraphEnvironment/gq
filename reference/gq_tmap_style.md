@@ -30,8 +30,10 @@ gq_tmap_style(layer_or_reg, name = NULL, field = NULL)
   Optional character string to override the classification field name.
   Useful when data comes from an alternative source with a different
   column name (e.g., bcfishpass `barrier_status` vs WHSE
-  `barrier_result_code`). See `inst/registry/xref_layers.csv` for known
-  alternatives.
+  `barrier_result_code`). `inst/registry/xref_layers.csv` lists the
+  known alternatives: for each layer key, the database table the bundled
+  data was queried from (`name_table`, e.g. `bcfishpass.crossings`) and
+  the column that table classifies on (`class_field`).
 
 ## Value
 

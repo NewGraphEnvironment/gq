@@ -1,7 +1,7 @@
 # Bittner Creek PSCIS assessments
 
-Fish passage assessments from PSCIS within expanded Bittner Creek
-watershed.
+Fish passage assessments from PSCIS within the Bittner Creek watershed's
+bounding box widened by 2 km, so some fall outside the watershed.
 
 ## Usage
 

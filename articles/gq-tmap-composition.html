@@ -388,14 +388,19 @@ published site (gq#57).</p>
 <span><span class="co"># the stars object to NULL and passing it on only moves the failure sixty lines</span></span>
 <span><span class="co"># down -- the guard reads as if it works and does not. `NULL + tm_shape(...)`</span></span>
 <span><span class="co"># composes fine, so an absent layer is the shape that actually holds.</span></span>
+<span><span class="co"># The tile providers' terms require attribution, and a blend owes both</span></span>
+<span><span class="co"># (gq#58). It is drawn below the frame when the map is printed; NULL here means</span></span>
+<span><span class="co"># no tiles were drawn, so no credit is owed.</span></span>
+<span><span class="va">credit</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span><span class="va">basemap</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">canvas</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">relief</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="cn">NULL</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="co"># A relief tile service spans the full range, so the gamma operator suits it.</span></span>
 <span>  <span class="co"># A hillshade derived from a DEM is far more contrasty and wants</span></span>
 <span>  <span class="co"># `method = "weight"`, which caps how much brightness can be removed.</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="fu"><a href="../reference/gq_basemap_blend.html">gq_basemap_blend</a></span><span class="op">(</span><span class="va">canvas</span>, <span class="va">relief</span>, method <span class="op">=</span> <span class="st">"gamma"</span>, gamma <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_rgb.html" class="external-link">tm_rgb</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">blended</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_basemap_blend.html">gq_basemap_blend</a></span><span class="op">(</span><span class="va">canvas</span>, <span class="va">relief</span>, method <span class="op">=</span> <span class="st">"gamma"</span>, gamma <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span>  <span class="va">credit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">blended</span>, <span class="st">"credit"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">blended</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_rgb.html" class="external-link">tm_rgb</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Now that the frame is known, drop anything outside it. gq_bbox_clip() returns</span></span>
@@ -651,23 +656,42 @@ labels last.</p>
 <span>  meta.margins <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="co"># The tile credit goes BELOW the frame: the four corners are taken -- scale</span></span>
+<span><span class="co"># bar, logo, legend, keymap -- and a line under the map collides with none of</span></span>
+<span><span class="co"># them and travels with the image. The map prints into a viewport above a fixed</span></span>
+<span><span class="co"># strip, so it keeps its 7:9 canvas (the figure is 9.25 in tall for that) and</span></span>
+<span><span class="co"># the keymap below nests inside it, placed against the frame rather than the</span></span>
+<span><span class="co"># device. tm_credits(position = tm_pos_out()) was the obvious route; it shrinks</span></span>
+<span><span class="co"># the frame off 7:9, which bands the basemap, and with meta.margins = 0 tmap</span></span>
+<span><span class="co"># 4.2 stops with "missing value where TRUE/FALSE needed".</span></span>
+<span><span class="va">strip</span> <span class="op">&lt;-</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="st">"inches"</span><span class="op">)</span></span>
+<span><span class="va">map_vp</span> <span class="op">&lt;-</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewport.html" class="external-link">viewport</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">1</span>, just <span class="op">=</span> <span class="st">"top"</span>,</span>
+<span>                         height <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"npc"</span><span class="op">)</span> <span class="op">-</span> <span class="va">strip</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">m</span>, vp <span class="op">=</span> <span class="va">map_vp</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">credit</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/grid.text.html" class="external-link">grid.text</a></span><span class="op">(</span><span class="va">credit</span>, x <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.004</span>, <span class="st">"npc"</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">strip</span> <span class="op">*</span> <span class="fl">0.5</span>,</span>
+<span>                  just <span class="op">=</span> <span class="st">"left"</span>, gp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize <span class="op">=</span> <span class="fl">7</span>, col <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span><span class="co"># gq_tmap_keymap() supplies the PLACEMENT here, not the map: it derives the</span></span>
 <span><span class="co"># viewport centre from the corner and margin and sizes it off the canvas aspect,</span></span>
 <span><span class="co"># which is the arithmetic every hand-rolled inset hardcodes. Its own two-layer</span></span>
 <span><span class="co"># map is discarded in favour of `keymap` above, which carries a third layer</span></span>
 <span><span class="co"># (watershed groups) that the (aoi, context) signature cannot express.</span></span>
 <span><span class="va">km</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_keymap.html">gq_tmap_keymap</a></span><span class="op">(</span><span class="va">neexdzii_wsd</span>, <span class="va">neexdzii_bc</span>, asp <span class="op">=</span> <span class="fl">7</span> <span class="op">/</span> <span class="fl">9</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">keymap</span>, vp <span class="op">=</span> <span class="va">km</span><span class="op">$</span><span class="va">viewport</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewports.html" class="external-link">pushViewport</a></span><span class="op">(</span><span class="va">map_vp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">keymap</span>, vp <span class="op">=</span> <span class="va">km</span><span class="op">$</span><span class="va">viewport</span><span class="op">)</span></span>
+<span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewports.html" class="external-link">popViewport</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="gq-tmap-composition_files/figure-html/map-composition-1.png" class="r-plt" alt="Map of a Neexdzii Kwa subbasin showing salmon habitat, crossings, fish observations, streams, lakes, wetlands, roads, and railway styled from the gq registry" width="1050"><p class="caption">
 Neexdzii Kwa subbasin: salmon habitat classified by use and barrier
-status, over the assessed PSCIS crossing inventory. Every colour, width
-and dash resolves from the gq registry.
+status, over the assessed PSCIS crossing inventory. Habitat, crossings,
+fish observations, falls, roads, lakes and wetlands are drawn from the
+gq registry.
 </p>
 </div>
-<p>Every color on this map traces back to
-<code><a href="../reference/gq_reg_main.html">gq_reg_main()</a></code>:</p>
+<p>Every registry layer on this map traces back to
+<code><a href="../reference/gq_reg_main.html">gq_reg_main()</a></code>; the watershed outline, the shading outside
+it and the label colour are set by hand:</p>
 <ul>
 <li>
 <strong>Simple layers</strong> (lake, wetland) use

@@ -1,7 +1,9 @@
 # Bittner Creek watershed boundary
 
-Watershed polygon for Bittner Creek near Prince George, BC (~56 km²).
-Pulled from the BC Freshwater Atlas via fwapg.
+Watershed polygon for Bittner Creek near Prince George, BC (~40 km²),
+taken from just above the creek's mouth so it excludes the Fraser River
+channel the creek's lowest segment runs through. Pulled from the BC
+Freshwater Atlas via fwapg.
 
 ## Usage
 

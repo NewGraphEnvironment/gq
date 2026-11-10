@@ -69,8 +69,10 @@ lookup.</p></dd>
 <dd><p>Optional character string to override the classification field
 name. Useful when data comes from an alternative source with a different
 column name (e.g., bcfishpass <code>barrier_status</code> vs WHSE
-<code>barrier_result_code</code>). See <code>inst/registry/xref_layers.csv</code> for known
-alternatives.</p></dd>
+<code>barrier_result_code</code>). <code>inst/registry/xref_layers.csv</code> lists the known
+alternatives: for each layer key, the database table the bundled data was
+queried from (<code>name_table</code>, e.g. <code>bcfishpass.crossings</code>) and the column
+that table classifies on (<code>class_field</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

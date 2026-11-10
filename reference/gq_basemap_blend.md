@@ -57,7 +57,13 @@ gq_basemap_blend(
 
 ## Value
 
-A `SpatRaster`, or a `stars` object when `as_stars = TRUE`.
+A `SpatRaster`, or a `stars` object when `as_stars = TRUE`. Its
+`"credit"` attribute carries the tile credits of both inputs,
+de-duplicated and joined with `"; "`, or is absent when neither input
+carries one. Both providers are owed attribution. Read it before
+subsetting or cropping a `stars` result, which drops attributes. See
+[`gq_basemap_tiles()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_tiles.md)
+for where to draw it.
 
 ## Two operators, deliberately
 

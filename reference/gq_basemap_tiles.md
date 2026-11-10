@@ -46,7 +46,21 @@ gq_basemap_tiles(
 ## Value
 
 A `SpatRaster`, or `NULL` if the request failed. A single-colour tile
-warns but is still returned.
+warns but is still returned. The provider's attribution, from
+[`maptiles::get_credit()`](https://rdrr.io/pkg/maptiles/man/get_credit.html),
+is attached as the `"credit"` attribute, since tile providers' terms
+require it on the map.
+[`gq_basemap_blend()`](https://newgraphenvironment.github.io/gq/reference/gq_basemap_blend.md)
+carries it through. Inside the frame,
+[`tmap::tm_credits()`](https://r-tmap.github.io/tmap/reference/tm_credits.html)
+places it. Below the frame, as the package vignettes draw it when all
+four corners are taken, print the map into a
+[`grid::viewport()`](https://rdrr.io/r/grid/viewport.html) above a strip
+and draw the text there with
+[`grid::grid.text()`](https://rdrr.io/r/grid/grid.text.html):
+`tm_credits(position = tm_pos_out())` shrinks the frame off its canvas,
+and with `tm_layout(meta.margins = 0)` tmap 4.2 stops with "missing
+value where TRUE/FALSE needed".
 
 ## Details
 

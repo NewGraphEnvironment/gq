@@ -101,7 +101,12 @@ detecting which from the data.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>SpatRaster</code>, or a <code>stars</code> object when <code>as_stars = TRUE</code>.</p>
+    <p>A <code>SpatRaster</code>, or a <code>stars</code> object when <code>as_stars = TRUE</code>. Its
+<code>"credit"</code> attribute carries the tile credits of both inputs, de-duplicated
+and joined with <code>"; "</code>, or is absent when neither input carries one. Both
+providers are owed attribution. Read it before subsetting or cropping a
+<code>stars</code> result, which drops attributes. See <code><a href="gq_basemap_tiles.html">gq_basemap_tiles()</a></code> for where
+to draw it.</p>
     </div>
     <div class="section level2">
     <h2 id="two-operators-deliberately">Two operators, deliberately<a class="anchor" aria-label="anchor" href="#two-operators-deliberately"></a></h2>
