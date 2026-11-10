@@ -159,3 +159,44 @@ test_that("the providers gq recommends still return real tiles", {
     expect_false(tile_is_flat(tiles), label = paste(p, "is a flat tile"))
   }
 })
+
+test_that("gq_basemap_tiles attaches the provider's credit (gq#58)", {
+  # maptiles supplies an attribution string with every provider and gq used to
+  # discard it, so no gq map carried a tile credit. Checked through both return
+  # paths: the Web Mercator tile as fetched, and the reprojected one.
+  skip_if_no_terra()
+  skip_if_not_installed("maptiles")
+  skip_if_not_installed("sf")
+
+  bb <- sf::st_bbox(c(xmin = 1e6, ymin = 9e5, xmax = 1.02e6, ymax = 9.2e5),
+                    crs = 3005)
+  set.seed(3)
+  varied <- terra::rast(nrows = 8, ncols = 8, nlyrs = 3,
+                        vals = stats::runif(192, 0, 255))
+  terra::crs(varied) <- "EPSG:3857"
+  terra::ext(varied) <- c(-1.4e7, -1.39e7, 6.5e6, 6.6e6)
+  testthat::local_mocked_bindings(
+    get_tiles = function(...) varied, .package = "maptiles"
+  )
+
+  want <- maptiles::get_credit("Esri.WorldGrayCanvas")
+  expect_true(is.character(want) && nzchar(want))
+  fetched <- gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = NULL)
+  projected <- gq_basemap_tiles(bb, provider = "Esri.WorldGrayCanvas", crs = 3005)
+  expect_identical(attr(fetched, "credit"), want)
+  expect_identical(attr(projected, "credit"), want)
+})
+
+test_that("a failed fetch is still NULL, with no credit to render", {
+  skip_if_no_terra()
+  skip_if_not_installed("maptiles")
+  skip_if_not_installed("sf")
+
+  bb <- sf::st_bbox(c(xmin = 1e6, ymin = 9e5, xmax = 1.02e6, ymax = 9.2e5),
+                    crs = 3005)
+  testthat::local_mocked_bindings(
+    get_tiles = function(...) stop("no network"), .package = "maptiles"
+  )
+  expect_warning(out <- gq_basemap_tiles(bb), "tile fetch failed")
+  expect_null(out)
+})

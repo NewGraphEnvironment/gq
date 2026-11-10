@@ -16,8 +16,6 @@ jobs:
   R-CMD-check:
     uses: NewGraphEnvironment/flows/.github/workflows/r-cmd-check.yaml@v1
     with:
-      # error-on "error" until #51 clears two WARNINGs that predate this workflow; a test
-      # failure is still an ERROR, so every corpus guard gates the build. Compacted vignettes,
-      # as before.
-      error-on: '"error"'
+      # error-on is left at the action's default, so a new WARNING fails the build (#51).
+      # Compacted vignettes, as before.
       build-args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'

@@ -36,7 +36,12 @@
 #' @param as_stars Convert the result for `tmap::tm_rgb()`, which takes a
 #'   `stars` object rather than a `SpatRaster`.
 #'
-#' @return A `SpatRaster`, or a `stars` object when `as_stars = TRUE`.
+#' @return A `SpatRaster`, or a `stars` object when `as_stars = TRUE`. Its
+#'   `"credit"` attribute carries the tile credits of both inputs, de-duplicated
+#'   and joined with `"; "`, or is absent when neither input carries one. Both
+#'   providers are owed attribution. Read it before subsetting or cropping a
+#'   `stars` result, which drops attributes. See [gq_basemap_tiles()] for where
+#'   to draw it.
 #'
 #' @examples
 #' if (requireNamespace("terra", quietly = TRUE)) {
@@ -69,9 +74,30 @@ gq_basemap_blend <- function(base, relief, method = c("gamma", "weight"),
     stop("`gamma` must be a single positive number", call. = FALSE)
   }
 
+  credit <- basemap_credit(base, relief)
   out <- blend_multiply(base, relief, method = method, gamma = gamma,
                         weight = weight, relief_max = relief_max)
-  if (as_stars) stars::st_as_stars(out) else out
+  if (as_stars) out <- stars::st_as_stars(out)
+  # Set on the result explicitly (gq#58). terra 1.9.46 happens to copy an
+  # attribute through arithmetic, but only the first operand's, so the relief's
+  # credit would be lost; and stars::st_as_stars() drops it altogether.
+  attr(out, "credit") <- credit
+  out
+}
+
+
+#' The tile credits of several basemap rasters, as one display string
+#'
+#' Reads the `"credit"` attribute gq_basemap_tiles() sets. A blend owes
+#' attribution to every provider it draws from, so the credits are kept, not
+#' chosen between; identical ones collapse. `NULL` when none carries one, so
+#' `attr<-` leaves no attribute rather than an empty string a caller would
+#' render as a blank credit line.
+#' @noRd
+basemap_credit <- function(...) {
+  cr <- unlist(lapply(list(...), attr, which = "credit", exact = TRUE))
+  cr <- unique(cr[!is.na(cr) & nzchar(cr)])
+  if (length(cr)) paste(cr, collapse = "; ") else NULL
 }
 
 
@@ -159,7 +185,15 @@ blend_multiply <- function(base, relief, method, gamma, weight,
 #' @param crs CRS to reproject tiles into. `NULL` keeps Web Mercator.
 #'
 #' @return A `SpatRaster`, or `NULL` if the request failed. A single-colour tile
-#'   warns but is still returned.
+#'   warns but is still returned. The provider's attribution, from
+#'   [maptiles::get_credit()], is attached as the `"credit"` attribute, since tile
+#'   providers' terms require it on the map. [gq_basemap_blend()] carries it
+#'   through. Inside the frame, [tmap::tm_credits()] places it. Below the frame,
+#'   as the package vignettes draw it when all four corners are taken, print the
+#'   map into a [grid::viewport()] above a strip and draw the text there with
+#'   [grid::grid.text()]: `tm_credits(position = tm_pos_out())` shrinks the frame
+#'   off its canvas, and with `tm_layout(meta.margins = 0)` tmap 4.2 stops with
+#'   "missing value where TRUE/FALSE needed".
 #'
 #' @examplesIf interactive() && requireNamespace("maptiles", quietly = TRUE)
 #' bb <- sf::st_bbox(
@@ -211,10 +245,15 @@ gq_basemap_tiles <- function(bbox, provider = "Esri.WorldGrayCanvas",
             "at zoom ", zoom, ". Either the extent is genuinely uniform, or ",
             "the provider is serving a placeholder.", call. = FALSE)
   }
-  if (is.null(crs)) return(tiles)
-  # WKT rather than paste0("EPSG:", $epsg): a CRS with no authority code gives
-  # NA there, and "EPSG:NA" reaches terra as a parse error.
-  terra::project(tiles, sf::st_crs(crs)$wkt, method = "bilinear")
+  if (!is.null(crs)) {
+    # WKT rather than paste0("EPSG:", $epsg): a CRS with no authority code gives
+    # NA there, and "EPSG:NA" reaches terra as a parse error.
+    tiles <- terra::project(tiles, sf::st_crs(crs)$wkt, method = "bilinear")
+  }
+  # maptiles supplies the string with every provider; gq discarded it until
+  # gq#58, and no gq map carried a credit.
+  attr(tiles, "credit") <- maptiles::get_credit(provider)
+  tiles
 }
 
 #' Is a fetched tile a single flat colour?

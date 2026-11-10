@@ -7,6 +7,11 @@
 # consumers (tmap, mapgl, link) never need rfp or the `.qgs`. That decoupling is
 # the point: gq owns the canonical styles; rfp owns the upstream project.
 #
+# Last extracted from rfp's tag v0.93.0 (#102). The version lives here and in the
+# commit message, never in the JSON: the extractor writes only name, version and
+# the template's basename, and the gated currency test re-extracts and compares
+# the file, so a provenance field would make the two unequal forever.
+#
 # Run after changing the extractor (R/gq_qgs_extract.R) or the template, then
 # rebuild the master registry with data-raw/reg_build_main.R:
 #   Rscript data-raw/reg_extract_restoration.R
@@ -41,7 +46,6 @@ if (nzchar(qgs)) {
 
 reg <- gq_qgs_extract(qgs)
 
-jsonlite::write_json(reg, "inst/registry/reg_qgis_restoration.json",
-                     pretty = TRUE, auto_unbox = TRUE)
+reg_json_write(reg, "inst/registry/reg_qgis_restoration.json")
 
 message("reg_qgis_restoration.json built: ", length(reg$layers), " layers")

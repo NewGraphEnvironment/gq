@@ -109,8 +109,8 @@ forbidden <- c(".claude", "gq.Rproj")
 # `inst/.claude` or `R/.DS_Store` would ship and it would not notice. That is a
 # real residual, and it is covered -- R's own `checking for hidden files and
 # directories` walks recursively. What R's version does NOT do is fail the
-# build: .github/workflows/R-CMD-check.yaml sets error-on: '"error"', so the
-# NOTE has been printed on every run since CI landed and blocked nothing. A
+# build: the check workflow fails on a WARNING (#51), and this is a NOTE, so it
+# prints on every run and blocks nothing. A
 # test failure is an ERROR in `checking tests`, so this guard is what turns the
 # top-level case into a gate, and R's recursive check is what covers the rest.
 

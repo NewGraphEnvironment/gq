@@ -1,148 +1,23 @@
 # Rebuild inst/registry/reg_main.json from source registries
 #
 # Run this script after updating any source registry:
-#   Rscript data-raw/build_reg_main.R
+#   Rscript data-raw/reg_build_main.R
 #
-# Sources (priority order — later wins for duplicate keys):
+# Sources (priority order -- later wins for duplicate keys):
 #   1. inst/registry/reg_qgis_restoration.json  (QGIS extraction)
-#   2. inst/registry/reg_custom.csv          (hand-curated)
+#   2. inst/registry/reg_custom.csv             (hand-curated)
 #
-# To add a new source, append it to the merge call below.
+# The merge and the bcfishpass#13 label correction are reg_main_build() in
+# R/utils_reg_build.R, and the writer is reg_json_write(), so
+# tests/testthat/test-reg_build_currency.R rebuilds with the same code and fails
+# when reg_main.json was not rebuilt after a source changed (#11). To add a
+# source, add it there.
 
 devtools::load_all()
 
-rs <- gq_reg_read("inst/registry/reg_qgis_restoration.json")
-csv_reg <- gq_reg_custom("inst/registry/reg_custom.csv")
-
-master <- gq_reg_merge(rs, csv_reg)
-master$name <- "main"
-master$source <- "reg_qgis_restoration.json + reg_custom.csv"
-
-
-# --- Upstream label correction: bcfishpass#13 --------------------------------
-#
-# `mapping_code` is `<habitat use>;<barrier status>[;INTERMITTENT]`. The source
-# QGIS project labels token1 `ACCESS` with the token2 vocabulary -- "No known
-# barriers" -- so every ACCESS class reads back as "No known barriers; known
-# barrier", which contradicts itself in a legend. `SPAWN` -> "Spawning" and
-# `REAR` -> "Rearing" are correct, as is every token2 status.
-#
-# This is not a gq defect. The bug is authored in qgis/bcfishpass_30k.qlr,
-# reaches gq through the rfp .qgs templates, and `gq_qgs_extract()` copies the
-# category label verbatim, which is the right behaviour. Tracked at source
-# in NewGraphEnvironment/bcfishpass#13, which carries the full class table.
-#
-# Correcting it here rather than waiting was a deliberate call: three consumer
-# repos had each independently hand-rolled a token decoder to work around it,
-# which is precisely the duplication the registry exists to prevent.
-#
-# DELETE THIS BLOCK once bcfishpass#13 lands and the rfp templates are
-# regenerated. The guard below tells you when that has happened -- it stops,
-# rather than quietly correcting nothing and living here forever.
-
-bad_prefix <- "No known barriers; "
-good_prefix <- "Accessible; "
-
-n_corrected <- 0L
-n_already_good <- 0L
-n_unrecognised <- 0L
-
-for (key in names(master$layers)) {
-  cls <- master$layers[[key]]$classification$classes
-  if (is.null(cls)) next
-
-  for (cv in grep("^ACCESS;", names(cls), value = TRUE)) {
-    lab <- cls[[cv]]$label
-    if (is.null(lab) || is.na(lab)) next
-
-    if (startsWith(lab, bad_prefix)) {
-      master$layers[[key]]$classification$classes[[cv]]$label <-
-        paste0(good_prefix, substring(lab, nchar(bad_prefix) + 1L))
-      n_corrected <- n_corrected + 1L
-    } else if (startsWith(lab, good_prefix)) {
-      n_already_good <- n_already_good + 1L
-    } else {
-      n_unrecognised <- n_unrecognised + 1L
-      message("  unrecognised ACCESS label: ", key, " / ", cv, " -> ", lab)
-    }
-  }
-}
-
-# Fail toward "something changed", never toward "nothing to do". A correction
-# that silently matches nothing is indistinguishable from a working one, and
-# outlives the bug it was written for.
-if (n_corrected == 0L) {
-  stop("No ACCESS labels needed correcting (", n_already_good,
-       " already read 'Accessible; ').\n",
-       "  If bcfishpass#13 has landed and the rfp templates were regenerated, ",
-       "delete this block.\n",
-       "  If it has not, the class keys have changed and this correction is ",
-       "no longer finding them.",
-       call. = FALSE)
-}
-if (n_unrecognised > 0L) {
-  stop(n_unrecognised, " ACCESS label(s) matched neither the buggy nor the ",
-       "corrected prefix -- see above. Upstream wording has changed; ",
-       "re-check bcfishpass#13 before trusting this correction.",
-       call. = FALSE)
-}
-message("ACCESS labels corrected (bcfishpass#13): ", n_corrected)
-
-# --- Upstream rename: bcfishobs observations (gq#82) -------------------------
-#
-# db_newgraph renamed the staged object. `jobs/dump_weekly` now writes
-# `bcfishobs.observations.fgb.zip` from `select * from bcfishobs.observations`;
-# the old name 404s in the bucket. rfp's templates carried the old name in
-# their maplayer datasource until rfp v0.68.0 (18e0004d, "Repoint the
-# fish-observations layer"); they now say `layername=bcfishobs.observations`
-# (checked against v0.93.0's bcrestoration_mobile.qgs, gq#100). What still
-# carries the old name is reg_qgis_restoration.json, extracted before that and
-# not re-extracted since -- `gq_qgs_extract()` copied it faithfully, which is
-# the right behaviour for a transcript of a template.
-#
-# Corrected here rather than in the extracted JSON for the same reason as the
-# ACCESS block above: the JSON is a record of what the template says, and
-# editing it would make it lie about its own provenance AND be silently
-# reverted by the next re-extraction. reg_custom.csv is not the route either --
-# gq_reg_merge() REPLACES a layer entry rather than merging its fields, so a
-# one-column row would delete this layer's mark and label and it would draw as
-# nothing.
-#
-# source_layer is three things at once: the S3 object stem, the GeoPackage
-# table name, and the .qgs `layername=`. So this correction fixes the DOWNLOAD;
-# the map side needed rfp's templates to change too, which they did in v0.68.0
-# (above). A project built from an older template still names the old table.
-#
-# DELETE THIS BLOCK once reg_qgis_restoration.json is re-extracted from a
-# template carrying the new name (any rfp >= 0.68.0); whether and how that
-# registry is regenerated is batch 8, gq#102. The guard below tells you when
-# that has happened.
-
-obs_key <- "bcfishobs_fiss_fish_observations"
-obs_old <- "bcfishobs.fiss_fish_obsrvtn_events_vw"
-obs_new <- "bcfishobs.observations"
-
-# `[[` on both hops, never `$`. A `$` read partial-matches, so if a future
-# extraction produced `source_layer_qgis` and no `source_layer`, `$source_layer`
-# would return it and the `else` arm below would stop with a message naming a
-# value that is not the one it thinks it read.
-obs_have <- master$layers[[obs_key]][["source_layer"]]
-if (identical(obs_have, obs_old)) {
-  master$layers[[obs_key]]$source_layer <- obs_new
-  message("bcfishobs source_layer corrected (gq#82): ", obs_old, " -> ", obs_new)
-} else if (identical(obs_have, obs_new)) {
-  stop("bcfishobs already reads '", obs_new, "' in the extracted registry.\n",
-       "  reg_qgis_restoration.json has been re-extracted -- delete this block.",
-       call. = FALSE)
-} else {
-  stop("bcfishobs source_layer is neither the old nor the new name: ",
-       if (is.null(obs_have)) "<absent>" else obs_have, "\n",
-       "  The layer key or the upstream name has moved; re-check gq#82 before ",
-       "trusting this correction.", call. = FALSE)
-}
-
-jsonlite::write_json(master, "inst/registry/reg_main.json",
-                     pretty = TRUE, auto_unbox = TRUE)
+master <- reg_main_build("inst/registry/reg_qgis_restoration.json",
+                         "inst/registry/reg_custom.csv")
+reg_json_write(master, "inst/registry/reg_main.json")
 
 conflicts <- attr(master, "conflicts")
 if (!is.null(conflicts) && nrow(conflicts) > 0) {

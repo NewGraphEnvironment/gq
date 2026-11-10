@@ -1,0 +1,49 @@
+# Code-check round 3: branch 102-move-3-package-face-and-check-gate-batch (base 7d0ce85, HEAD f484a30)
+
+## Checklist read
+
+- **code-check.md** (37 headings, index read): read the prose of all 14 under `## Mechanisms`, skipping table rows: A guard that fails toward pass; A fixture that cannot reach the failure mode; A proxy is not the property; Verification that reads its own output; A guard's scope, escape hatches, and remedies; A fix lands in one of two callers that share a harness; Restore the bug and prove the guard fires; A shared working tree, and what generators leave in it; A wrapper's exit is not the work; Zero-length, empty, and unset are three different things; The probe is broken before the world is; Written data outlives the fix; Serialization loses meaning silently; One fact derived twice. Not read: 23.
+- **code-check-r.md** (117 headings, index read): read A `data-raw/` script must load the source tree, not the installed package; Under `R CMD check`, tests run from a temp dir against the INSTALLED package; CSV whitespace: `trim_ws` and `strip.white` do not do what the name suggests; `sprintf("%g", x)` writes `Inf` and `NA` into SQL as bare words... Not read: 113.
+- **code-check-shell.md** (70 headings, index read): no section read; the branch's only shell-adjacent change is one YAML input and a comment. Not read: 70.
+- **code-check-spatial.md** (94 headings, index read): read A name is not a key: `GNIS_NAME` matches features all over BC; A Freshwater Atlas main stem's downstream end lies on the receiving river's centreline, not at the confluence; sf: reproject the polygon to get a lat/lon bbox, never transform the projected bbox corners. Not read: 91.
+
+## The mechanism behind rounds 1 and 2
+
+Each earlier finding is a sentence that states a scope, count or behaviour from what the author meant the code to do. Nothing ever ran the sentence against the artifact. Captions, alt text, roxygen, `R/data.R` and comments have no consumer, so a wrong one never fails. Round 2's "within 2 km of the watershed" described the intent of `ST_Expand`, not what it selects. "twelve crossings" was true for an earlier pull. Round 1's `is_checking()` was the same thing in code: a condition that stood in for the property it was named after. The check that closes this class enumerates each claim on the branch by the population it quantifies over (a universal quantifier, a scope, a source, a count) and runs it against the code or data. That is what this round did.
+
+## Claims enumerated and found to hold
+
+- README example output: `gq_tmap_style(reg, "lake")` gives `#dcecf4` / 0.7 / `#1f78b4` / 0.2, and `gq_tmap_classes(...)$values` gives the four hex values shown. Both reproduced exactly.
+- "Most registry styles are extracted ... the rest curated by hand" (README, gq-intro): 48 of 63 come from `reg_qgis_restoration.json`, and the custom CSV overrides none of them.
+- Every layer the intro map draws through the registry (`crossings_pscis_assessment`, `lake`, `roads_dra`, `railway`, `streams_all`, `stream_labels`) is in the QGIS extract, so "the same values QGIS draws" holds for the crossings.
+- CLAUDE.md / `data-raw/reg_extract_restoration.R` / the test-composition_integrity comment: rfp's `inst/templates/bcrestoration_mobile.qgs` carries `fiss_fish_obsrvtn_events_vw` at v0.67.0 and `bcfishobs.observations` from v0.68.0. Re-extracting v0.93.0 with `gq_qgs_extract()` + `reg_json_write()` reproduces the committed `reg_qgis_restoration.json` exactly (`identical(readLines())` TRUE).
+- xref roxygen, CLAUDE.md and test comments: `bcfishpass.crossings` and `bcfishpass.streams_salmon_vw` are the tables `data-raw/neexdzii_kwa.R` queries. The bundled `neexdzii_crossings` carries `barrier_status` and `neexdzii_habitat` carries `mapping_code`. The registry's own fields (`barrier_result_code`, `mapping_code_salmon`) differ from both.
+- The `gq_basemap_tiles` @return says tmap 4.2 stops with "missing value where TRUE/FALSE needed" under `tm_credits(position = tm_pos_out(...))` + `meta.margins = 0`. Reproduced on tmap 4.2.0.9000. The `gq_basemap_blend` comment that terra 1.9.46 copies only the first operand's attribute was also reproduced (`a*b` gives A, `b*a` gives B).
+- PSCIS "bounding box widened by 2 km": all 23 bundled points lie inside the watershed's 3005 bbox +2 km. `bittner_wsd` is 4,008 ha, which matches "~40 km²". Every bundled stream has order >= 2.
+- gq-intro: the 7:6 viewport arithmetic (7 x (6.25 - 0.25)) holds. The committed PNG shows 10 crossings, the keymap top-right over no crossing, and the logo bottom-right beyond the boundary. The test comment "gq-intro draws three that way" matches `lake`, `roads_dra` and `crossings_pscis_assessment`.
+- README links: every Ecosystem repo is PUBLIC, and its site, the NEWS page, both articles and the reference index each return 200. The tags `v0.16.1` to `v0.18.0` exist, so the `@vX.Y.Z` pin form is real.
+
+## Findings
+
+- **[severity: bug]** README.md:421, vignettes/gq-intro.Rmd:112 (`fig.cap`) and vignettes/gq-intro.Rmd:213: these say "Every colour, width and symbol on the map comes from the gq registry", "...resolves from the gq registry" and "Every colour on that map comes from the registry". The `map-intro` chunk shows otherwise:
+  - The watershed outline, the darkest and heaviest line on the map, is `col = "#2c3e50", lwd = 1.5` at :130. No registry layer is drawn there; `#2c3e50` is only `town`'s point colour. The branch's own test comment (tests/testthat/test-vignette_legend_coverage.R:176-178) calls it a literal "that has no registry key".
+  - The exterior mask is `fill = "white"` at :128.
+  - The railway's white dashed overlay (`col = "white"`, `lty = "42"`, :151) is something the chunk's own comment at :144-145 says "the registry does not model yet".
+  - Stream and railway widths are the registry's width times 3.
+
+  The published caption (README figure, vignette caption) states a universal quantifier that the code on this branch contradicts, and it does so beside a test that names the exceptions. The same caption in gq-tmap-composition.Rmd (`map-composition`, a line the branch touched for `fig.height`) has the same problem: `#2c3e50`, `#1a5276` and `"white"` are hand-typed in that chunk. Fix the wording, e.g. "Every layer's colour, width and symbol comes from the registry; the watershed outline and mask are drawn by hand", or move the outline into the registry.
+  - **Rule:** code-check.md "A guard's scope, escape hatches, and remedies" ; code-check.md "One fact derived twice"
+
+- **[severity: fragile]** tests/testthat/test-vignette_legend_coverage.R:173-181: the guard is meant to stop hand-typed colours in `map-intro`, but it extracts only `#RRGGBB` literals, so a named colour passes. `tm_lines(col = "red")` on the roads would leave it green. The comment says "the only literals allowed are the two that have no registry key", but the chunk already carries a third, `col = "white"` on the railway overlay (gq-intro.Rmd:151), and the guard cannot see it. The comment's premise is false today, and the property ("no colour the registry does not govern") is wider than the syntax the regex checks. Collect colour-valued arguments by parsing (the file already parses the chunk with `parse()`), or at least match named colours via `grDevices::colors()`, and list each allowed literal with its reason.
+  - **Rule:** code-check.md "A proxy is not the property" ; code-check.md "A guard's scope, escape hatches, and remedies"
+
+- **[severity: fragile]** data-raw/readme_map.R:5-17: the README figure is generated by rendering gq-intro, which runs `library(gq)` and so draws with the INSTALLED package's registry, data and functions. The script says "install the branch first or the figure shows the installed release", but nothing enforces it. A run against a stale install commits a README figure whose colours or data disagree with the source tree, and nothing errors. Round 2 confirmed the committed PNG came from a current install, so this is a hazard for the next regeneration, not a defect in the committed file. A two-line guard before `render()` closes it: compare `tools::md5sum()` of the installed `system.file("registry", "reg_main.json", package = "gq")` and `data/*.rda` with the tree's, and stop on a mismatch. Alternatively, install to a scratch library and render with `R_LIBS` pointing at it.
+  - **Rule:** code-check-r.md "A `data-raw/` script must load the source tree, not the installed package"
+
+- **[severity: bug]** R/data.R:49-50 and :62-63 (and man/bittner_roads.Rd, man/bittner_railway.Rd): these call the bundled roads and railway "segments within the Bittner Creek watershed's bounding box widened by 5 km". The query is `ST_Intersects(t.geom, ST_Expand(ws.geom, 5000))` with no clip, so it keeps whole segments that merely reach the box. Measured on the bundled data in BC Albers: 74 of 2,849 road segments and 8 of 698 railway segments extend beyond the widened box, with 16.5 km of road outside it. Same class as round 2's PSCIS finding, one dataset over. Write "segments that intersect ..." to match the query.
+  - **Rule:** none
+
+- **[severity: bug]** vignettes/gq-intro.Rmd:45-47: "a ~40 km² watershed pulled from the BC Freshwater Atlas and bcfishpass: the watershed boundary, streams, lakes, roads, railway and PSCIS fish passage assessments". Per data-raw/bittner_creek.R, roads come from `whse_basemapping.transport_line` (DRA), railway from `gba_railway_tracks_sp` and PSCIS from `whse_fish.pscis_assessment_svw`. These are BC Data Catalogue tables, and none of the six datasets is read from a bcfishpass table. The README's "Data and methods" on this branch says it correctly ("PSCIS assessments, roads and railway from the BC Data Catalogue"), so the two published texts contradict each other. Low impact.
+  - **Rule:** none
+
+No other issues found.

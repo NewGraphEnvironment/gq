@@ -1,10 +1,16 @@
 # gq <img src="man/figures/logo.png" align="right" height="139" alt="gq hex sticker" />
 
-> It's all about style.
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
 
-Cartographic style management across QGIS, tmap, leaflet, MapLibre GL, and ggplot2. One canonical registry; every rendering target reads from it.
+> One set of map styles for QGIS field projects, report figures and web maps
 
-**gq** extracts symbology from QGIS projects (QML), stores it in a canonical JSON registry alongside hand-curated layers, and serves it back to whatever R / web mapping target needs it — so a colour edit in QGIS, or a width tweak in the registry, propagates to every static report, leaflet popup, and web tile without copying values around.
+gq keeps the map styles of New Graph's QGIS field projects in one registry and hands them to the other tools a map is drawn with: tmap for figures in reports and MapLibre GL for web maps. A crossing classed as a barrier is the same red in the field project, the report and the web map, so the maps behind fish passage and restoration planning read the same wherever they are seen. Change a style in the registry and every map that reads it follows.
+
+<img src="man/figures/readme-map.png" alt="Map of the Bittner Creek watershed near Prince George showing streams, lakes, roads, railway and PSCIS fish passage assessments coloured by barrier status, with a legend, scale bar and an inset locating the watershed in British Columbia" width="100%" />
+
+*PSCIS fish passage assessments in the Bittner Creek watershed, classified by barrier status. The crossings, roads and lakes are drawn straight from the gq registry, and the streams and railway take their colours from it; the code is in the [Getting started](https://www.newgraphenvironment.com/gq/articles/gq-intro.html) article.*
 
 ## Installation
 
@@ -12,118 +18,73 @@ Cartographic style management across QGIS, tmap, leaflet, MapLibre GL, and ggplo
 pak::pak("NewGraphEnvironment/gq")
 ```
 
-The Python-side extractor (`python/gq/`) needs PyQGIS — install via your system's QGIS Python or a `conda` environment with `pyqgis`. The R side has no PyQGIS dependency: registries ship in `inst/registry/`, and you only re-run the extractor when QGIS projects change.
+gq is under active development and its functions change between releases (see [NEWS](https://www.newgraphenvironment.com/gq/news/index.html)). Pin a release for reproducible work: `pak::pak("NewGraphEnvironment/gq@vX.Y.Z")`.
 
-## Architecture
+## Example
 
-```
-                                ┌──────────────────────────┐
-                                │  Hand-curated CSVs:      │
-                                │  groups / templates /    │
-                                │  themes / xref_layers    │
-                                └──────────┬───────────────┘
-QGIS Project (.qgs / .qgz)                 │
-        │ PyQGIS extract                   │ gq_reg_custom()
-        ▼                                  │
-   QML files (.qml)                        │
-        │ parse                            │
-        ▼                                  ▼
-   per-project registry JSON ──── gq_reg_merge() ─── reg_main.json
-        (reg_qgis_restoration,                       (master registry)
-         reg_qgis_fishpassage)                              │
-                                                            │ gq_style()
-                                                            │ gq_*_style()
-                                                            ▼
-                                        ┌─────────┬──────────┬─────────────┬─────────┐
-                                        │  tmap   │ leaflet  │ MapLibre GL │ ggplot2 │
-                                        │  (R)    │   (R)    │   (JSON)    │  (R)    │
-                                        └─────────┴──────────┴─────────────┴─────────┘
-```
-
-## Quick start
+Load the registry once, then ask for a layer's style by name. For tmap, a style comes back as arguments for `do.call()`:
 
 ```r
 library(gq)
-
-# Read the master registry shipped with the package
 reg <- gq_reg_main()
 
-# Backend-agnostic resolver — by layer name
-gq_style(reg, "lake")
-gq_style(reg, "Crossings - PSCIS assessment")
-#> $type
-#> [1] "polygon"
+gq_tmap_style(reg, "lake")
 #> $fill
-#> $fill$color
-#> [1] "#3b8bd2"
-#> ...
+#> [1] "#dcecf4"
+#>
+#> $fill_alpha
+#> [1] 0.7
+#>
+#> $col
+#> [1] "#1f78b4"
+#>
+#> $lwd
+#> [1] 0.2
 
-# tmap rendering — categorical scales wired up for you
-tmap::tm_shape(lakes_sf) +
-  gq_tmap_style(reg, "lake")
-
-# MapLibre GL style spec (returns JSON-ready list)
-gl_style <- gq_mapgl_style(reg, "crossings_pscis_assessment")
-
-# Compose a project from groups + themes (drives QGIS project assembly + QWC2 visibility presets)
-gq_themes()            # the theme roster, per template
-gq_group_layers("Crossings")
-gq_template_layers("bcrestoration_mobile")
-
-# QGIS-native style — the full QML, for anything that speaks to QGIS
-gq_style_qml("lake")
-gq_style_qml("land_ownership", template = "bcfishpass_mobile")
-
-# Composition — bbox padding, basemap blending, legends, keymap insets
-bbox <- gq_bbox_aspect(aoi_sf, asp = 7 / 9)
-basemap <- gq_basemap_blend(
-  gq_basemap_tiles(bbox, provider = "Esri.WorldGrayCanvas"),
-  gq_basemap_tiles(bbox, provider = "Esri.WorldShadedRelief")
-)
-leg <- gq_tmap_legend(reg, c("lake", "railway", "roads_dra"))
+# tm_shape(lakes) + do.call(tm_polygons, gq_tmap_style(reg, "lake"))
 ```
 
-## Concepts
+A classified layer carries a colour for each class, and the same registry builds a MapLibre GL expression with `gq_mapgl_classes()`:
 
-| Concept | What it is |
+```r
+gq_tmap_classes(reg, "crossings_pscis_assessment")$values
+#>   BARRIER  PASSABLE POTENTIAL   UNKNOWN
+#> "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4"
+```
+
+For QGIS itself, `gq_style_qml()` returns the path to the style file QGIS wrote, with nothing lost in translation.
+
+## Learn more
+
+- [Getting started](https://www.newgraphenvironment.com/gq/articles/gq-intro.html): the registry, a tmap map and a MapLibre GL map of Bittner Creek, and extracting styles from a QGIS project.
+- [Map composition with gq and tmap](https://www.newgraphenvironment.com/gq/articles/gq-tmap-composition.html): a full report map with basemap, legend, scale bar, logo and keymap, for a Neexdzii Kwa subbasin.
+- [Function reference](https://www.newgraphenvironment.com/gq/reference/)
+
+## Ecosystem
+
+| Package | Role |
 |---|---|
-| **Registry** | The canonical JSON — per-layer styling (color, opacity, stroke, mark, font, label, classification breaks). Shipped under `inst/registry/`; one per QGIS project family (`reg_qgis_restoration`, `reg_qgis_fishpassage`) plus a merged `reg_main.json` master. |
-| **Groups** | Named bundles of layers with nesting + z-order (e.g. `Crossings`, `Streams`, `Base - misc`). Drives QGIS legend tree and front-end layer pickers. |
-| **Templates** | Project-level compositions — which groups belong to which QGIS project (`bcfishpass_mobile`, `bcrestoration_mobile`). Project-assembly tools read templates to decide which layers belong in a new field project. |
-| **Themes** | Per-layer visibility presets, extracted from the templates (e.g. `High Detail - Crossings`, `Land Tenure`). Keyed by template as well as theme, because a theme name is not global — `Land Tenure` ships in one template only, and the templates can drift independently. Drives QGIS map themes and is exportable as QWC2 web-map visibility config. |
-| **xref_layers** | Cross-reference table mapping registry keys to source-system layer names (BC Data Catalogue WMS layers, fwapg views, internal pgsql schemas) so consumers can look up the underlying data when they want it. |
-| **QML corpus** | The same styles in QGIS's own format, shipped under `inst/styles/`. The registry models roughly 20 symbol properties and one symbol layer, because that is what tmap and MapLibre can render; a QML carries everything QGIS authored — multi-layer symbols, casing and overlay, labelling, per-class dash. Shared vector styles, with per-template overrides for the few layers whose symbology genuinely differs, plus raster and service styles. |
+| **gq** | Shared map symbology (this package) |
+| [fresh](https://www.newgraphenvironment.com/fresh/) | Stream network modelling engine: segment, classify, cluster, aggregate |
+| [link](https://www.newgraphenvironment.com/link/) | Intrinsic habitat models: develop, test and communicate |
+| [wet](https://www.newgraphenvironment.com/wet/) | Stream flow and water temperature for BC's Freshwater Atlas |
+| [flooded](https://www.newgraphenvironment.com/flooded/) | Delineate floodplain extents from DEMs and stream networks |
+| [drift](https://www.newgraphenvironment.com/drift/) | Track land cover change within floodplains over time |
+| [floodplains](https://www.newgraphenvironment.com/floodplains/) | Floodplain and land cover change modelling for BC watershed groups |
+| [stac_floodplains_bc](https://www.newgraphenvironment.com/stac_floodplains_bc/) | STAC catalogue of floodplain land cover change in BC, 2017-2023, by watershed group |
+| [cd](https://www.newgraphenvironment.com/cd/) | Climate departure analysis from ERA5-Land reanalysis |
+| [fly](https://www.newgraphenvironment.com/fly/) | Estimate airphoto footprints and select photos that cover a study area |
 
-## Producer ⇄ consumer
+## Data and methods it builds on
 
-| Side | What it does | Where |
-|---|---|---|
-| **Producer** | Extract from `.qgs` / `.qml` via PyQGIS → write per-project registry JSON. Update only when QGIS projects change. | `python/gq/`, `gq_qgs_extract()`, `data-raw/`. |
-| **Consumer** | Read the registry, resolve a layer name to a backend-specific style. Pure R, no PyQGIS dependency. | `gq_style()`, `gq_tmap_style()`, `gq_mapgl_style()`, `gq_reg_main()`, `gq_reg_read()`. |
+Most registry styles are extracted from New Graph's QGIS field project templates by `gq_qgs_extract()`, which reads the project's XML; the rest are curated by hand. The bundled example data was queried from a database built with [fwapg](https://smnorris.github.io/fwapg/) and [bcfishpass](https://smnorris.github.io/bcfishpass/): streams, lakes and watersheds from the [BC Freshwater Atlas](https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/freshwater), modelled habitat and crossings from bcfishpass, and PSCIS assessments, roads and railway from the [BC Data Catalogue](https://catalogue.data.gov.bc.ca/). Basemap tiles are fetched with [maptiles](https://CRAN.R-project.org/package=maptiles), and each tile layer carries its provider's credit for the map.
 
-The registry JSON is the contract between the two: producers don't know about tmap or MapLibre, and a consumer rendering to those backends never touches QGIS.
+## Citation
 
-Consumers rendering **to** QGIS are the exception, and `gq_style_qml()` serves them. Round-tripping a style through the registry is lossy by design; the QML corpus is the lossless path, so a Mergin field project, a QGIS Server / QWC2 deployment or a `layer_styles` table gets the symbology QGIS actually authored rather than the subset tmap needs.
-
-## Roadmap
-
-Active issues track the in-flight scope:
-
-- **Symbol size/shape translator** for tmap + mapgl ([#16](https://github.com/NewGraphEnvironment/gq/issues/16))
-- **Composition helpers** for tmap ([#17](https://github.com/NewGraphEnvironment/gq/issues/17)), mapgl ([#18](https://github.com/NewGraphEnvironment/gq/issues/18)), leaflet (deferred — [#19](https://github.com/NewGraphEnvironment/gq/issues/19))
-- **Project-specific style overrides** convention so reports can override registry defaults without forking the registry ([#20](https://github.com/NewGraphEnvironment/gq/issues/20))
-- **Multi-layer symbol extraction** — casing + overlay layers in `gq_qgs_extract()` so complex highway/road styles round-trip ([#24](https://github.com/NewGraphEnvironment/gq/issues/24))
-- **QLR file support** in the extractor so layer-definition files outside `.qgs` projects can contribute styles ([#23](https://github.com/NewGraphEnvironment/gq/issues/23))
-- **Shiny layer picker** module so projects can be assembled interactively from the registry ([#22](https://github.com/NewGraphEnvironment/gq/issues/22))
-- **`gq_tmap_legend()`** helper — pending tmap upstream review ([#27](https://github.com/NewGraphEnvironment/gq/issues/27))
-
-The long-term direction is [OGC API Styles](https://ogcapi.ogc.org/styles/) — once the spec is widely adopted by GIS tooling, the canonical registry becomes a server endpoint and the per-target translators become thin client wrappers.
-
-## Vignettes
-
-- [`gq-intro`](vignettes/gq-intro.Rmd) — registry concepts, the four registries shipped with the package, name-based lookup.
-- [`gq-tmap-composition`](vignettes/gq-tmap-composition.Rmd) — composing a full tmap from the registry.
+```r
+citation("gq")
+```
 
 ## License
 
-MIT (see [`LICENSE`](LICENSE)).
+MIT (see [`LICENSE`](https://github.com/NewGraphEnvironment/gq/blob/main/LICENSE)).

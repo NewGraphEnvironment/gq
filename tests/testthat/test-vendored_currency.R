@@ -68,6 +68,26 @@ test_that("themes.csv is what the templates say now", {
 })
 
 
+test_that("reg_qgis_restoration.json is what the restoration template says now", {
+  # A registry input rather than a roster, so test-reg_build_currency.R's CI
+  # check cannot see it go stale: that test rebuilds reg_main.json FROM this
+  # file. It sat behind the template's bcfishobs rename until #102, with a
+  # correction in the build script standing in for a re-extract. Same writer
+  # as data-raw/reg_extract_restoration.R, compared line for line.
+  dir <- rfp_source("RFP_TEMPLATE_DIR")
+  live <- tempfile(fileext = ".json")
+  on.exit(unlink(live), add = TRUE)
+  reg_json_write(
+    gq_qgs_extract(file.path(dir, "bcrestoration_mobile.qgs")), live
+  )
+  committed <- system.file("registry", "reg_qgis_restoration.json",
+                           package = "gq")
+  expect_identical(readLines(committed), readLines(live),
+                   info = paste("re-run data-raw/reg_extract_restoration.R,",
+                                "then data-raw/reg_build_main.R"))
+})
+
+
 test_that("form_types.csv is what rfp's form roster says now", {
   dir <- rfp_source("RFP_LOOKUPS_DIR")
   r <- roster_lines(form_types_build(file.path(dir, "rfp_form_types.csv")),

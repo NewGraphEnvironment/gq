@@ -5,7 +5,9 @@
 
 #' Bittner Creek watershed boundary
 #'
-#' Watershed polygon for Bittner Creek near Prince George, BC (~56 km²).
+#' Watershed polygon for Bittner Creek near Prince George, BC (~40 km²),
+#' taken from just above the creek's mouth so it excludes the Fraser River
+#' channel the creek's lowest segment runs through.
 #' Pulled from the BC Freshwater Atlas via fwapg.
 #'
 #' @format An `sf` data frame with 1 row and columns:
@@ -44,7 +46,8 @@
 
 #' Bittner Creek roads
 #'
-#' DRA road segments within expanded Bittner Creek watershed.
+#' DRA road segments that touch the Bittner Creek watershed's bounding box
+#' widened by 5 km, kept whole rather than clipped, so some run past it.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
@@ -56,7 +59,8 @@
 
 #' Bittner Creek railway
 #'
-#' Railway track segments within expanded Bittner Creek watershed.
+#' Railway track segments that touch the Bittner Creek watershed's bounding box
+#' widened by 5 km, kept whole rather than clipped, so some run past it.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
@@ -68,7 +72,8 @@
 
 #' Bittner Creek PSCIS assessments
 #'
-#' Fish passage assessments from PSCIS within expanded Bittner Creek watershed.
+#' Fish passage assessments from PSCIS within the Bittner Creek watershed's
+#' bounding box widened by 2 km, so some fall outside the watershed.
 #'
 #' @format An `sf` data frame with columns:
 #'   \describe{
