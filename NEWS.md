@@ -1,3 +1,25 @@
+# gq 0.19.0
+
+- **Breaking: the demo datasets `crossing`, `lake`, `road`, `stream` and `watershed`
+  are removed (#51).** Nothing had used them since the first vignette moved to real
+  Bittner Creek data. `R CMD check` now runs clean, and CI fails on a WARNING.
+- **Breaking: `inst/registry/reg_qgis_fishpassage.json` and
+  `inst/examples/reg_demo.json` are removed (#85).** Neither was read by anything.
+- **Changed data: `bittner_wsd` is about 40 km², down from about 56 km² (#62).** It
+  had been taken at the creek's mouth, which lies inside the Fraser's river polygon,
+  so it took in the river corridor. It now comes from just above the mouth, and the
+  other `bittner_*` datasets were re-pulled to match.
+- **Basemap tiles carry their provider's credit (#58).** `gq_basemap_tiles()` sets a
+  `"credit"` attribute, and `gq_basemap_blend()` carries the credits of both inputs.
+  Both vignettes draw the credit below the frame.
+- **The intro vignette is composed from the registry (#62)**, with a registry legend,
+  scale bar, keymap and tile credit, and the README describes what gq does today (#95).
+- **`reg_main.json` has a currency test (#11).** A test fails when the shipped
+  registry differs from a rebuild of its sources. `reg_qgis_restoration.json` is
+  re-extracted from the template repo's v0.93.0, and `xref_layers.csv` is documented
+  as naming database tables (#84).
+- References to private repositories in NEWS and test comments are described in words.
+
 # gq 0.18.0
 
 - **Classified layers draw at the opacity the registry gives them (#71, #31).**
