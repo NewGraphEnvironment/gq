@@ -1,7 +1,7 @@
 # A watershed taken at a creek's mouth can include the receiving river
 
 **Verified:** 2026-11-09 · **Issues:** #102 (found while re-composing gq-intro, #62) ·
-**Produced by:** `data-raw/bittner_creek.R`, queries against a fwapg database; the
+**Produced by:** `data-raw/bittner_wsd.R` (in `bittner_creek.R` until #110), queries against a fwapg database; the
 measurements are in `planning/archive/2026-11-issue-102-move-3-package-face-check-gate/README.md`
 
 `fwa_watershedatmeasure(blue_line_key, 0)` returns the watershed upstream of a stream's
@@ -28,7 +28,7 @@ plus 1 m:
 - **The check:** the river polygon area inside the result should be about 0. The script
   stops if it is over 1 ha.
 
-The query is in `data-raw/bittner_creek.R`.
+The query is in `data-raw/bittner_wsd.R`.
 
 ## Where else this applies
 

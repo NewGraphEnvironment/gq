@@ -1,121 +1,139 @@
-# Pull real spatial data for Bittner Creek near Prince George
+# Pull real spatial data for Bittner Creek near Prince George -- no database.
 #
-# Needs a PostgreSQL database with fwapg (fwa_watershedatmeasure()) and the
-# tables queried below: FWA streams, lakes and river polygons, the Digital Road
-# Atlas, railway tracks and PSCIS assessments. The connection comes from the
-# standard libpq variables -- PGHOST, PGPORT, PGUSER, PGDATABASE (default
-# bcfishpass) -- so the script runs against whichever database holds them.
+# The watershed polygon is the one input that needs fwapg, so it is computed once
+# by data-raw/bittner_wsd.R and read here from data-raw/bittner_wsd.gpkg. Every
+# other layer is fetched over HTTP and clipped to it:
+#   - streams, lakes, railway and PSCIS assessments from the BC Data Catalogue
+#     with bcdata, queried by a rectangle and filtered here;
+#   - roads from bcfishpass's public GeoParquet copy of the Digital Road Atlas
+#     `transport_line`, the only no-database source carrying
+#     `transport_line_type_code`, which the registry's `roads_dra` style
+#     classifies on (the catalogue's web layer carries `ROAD_CLASS` instead).
+#
+# Everything is worked in BC Albers and transformed to WGS 84 at the end.
 
 library(sf)
-library(DBI)
-library(RPostgres)
 
-conn <- dbConnect(Postgres(), dbname = Sys.getenv("PGDATABASE", "bcfishpass"))
+# A read that fails partway can return the rows it got with only a warning, which
+# would bundle a short layer. Treat any warning as a failed read.
+read_strict <- function(expr, what) {
+  withCallingHandlers(expr, warning = function(w) {
+    stop("reading ", what, " warned, so it may be incomplete: ",
+         conditionMessage(w), call. = FALSE)
+  })
+}
 
-blk <- 356342733  # Bittner Creek blue_line_key
+ws <- st_read("data-raw/bittner_wsd.gpkg", quiet = TRUE)
+stopifnot(nrow(ws) == 1L, st_crs(ws) == st_crs(3005), all(st_is_valid(ws)))
+wsg <- st_geometry(ws)
 
-# Where the watershed is taken from. Not measure 0: Bittner Creek's lowest
-# segment runs inside the Fraser River's polygon, and a watershed taken from a
-# point in a river polygon takes in the river corridor too -- at measure 0 that
-# was ~500 ha of Fraser and Nechako channel through Prince George, which put one
-# Fraser crossing "inside" the watershed and widened every map over downtown
-# (#102). So: the lowest measure whose segment lies outside every river polygon,
-# plus 1 m, because at the exact boundary fwapg still takes the segment below.
-# Measured 2026-11-09: the boundary is 165.97 m; 5,128 ha with 844 ha of river
-# polygon there, 4,008 ha with none at +1 m.
-drm <- dbGetQuery(conn, sprintf("
-  SELECT min(s.downstream_route_measure) AS drm
-  FROM whse_basemapping.fwa_stream_networks_sp s
-  WHERE s.blue_line_key = %d
-    AND NOT EXISTS (
-      SELECT 1 FROM whse_basemapping.fwa_rivers_poly r
-      WHERE ST_Within(ST_LineInterpolatePoint(ST_Force2D(s.geom), 0.5), r.geom)
-    )
-", blk))$drm + 1
-stopifnot(length(drm) == 1L, is.finite(drm))
+# The watershed's bounding box grown by `d` metres on every side, as PostGIS's
+# ST_Expand() gave the earlier database queries.
+box <- function(d) {
+  b <- st_bbox(wsg)
+  b[c("xmin", "ymin")] <- b[c("xmin", "ymin")] - d
+  b[c("xmax", "ymax")] <- b[c("xmax", "ymax")] + d
+  st_as_sfc(b)
+}
 
-river_ha <- dbGetQuery(conn, sprintf("
-  SELECT coalesce(sum(ST_Area(ST_Intersection(r.geom, w.geom))), 0) / 10000 AS ha
-  FROM whse_basemapping.fwa_rivers_poly r, fwa_watershedatmeasure(%d, %f) w
-  WHERE ST_Intersects(r.geom, w.geom)
-", blk, drm))$ha
-if (river_ha > 1) {
-  stop("the watershed at measure ", round(drm, 2), " still holds ",
-       round(river_ha), " ha of river polygon", call. = FALSE)
+# Features of a catalogue layer that intersect `area`. The query sends only the
+# rectangle around `area`; the exact test happens here.
+bcdc_within <- function(record, area) {
+  q_box <- st_as_sfc(st_bbox(area))
+  x <- read_strict(
+    bcdata::bcdc_query_geodata(record) |>
+      bcdata::filter(bcdata::INTERSECTS(q_box)) |>
+      bcdata::collect(),
+    record
+  )
+  stopifnot(st_crs(x) == st_crs(3005))
+  x[lengths(st_intersects(x, area)) > 0, ]
 }
 
 # -- Watershed polygon --
-bittner_wsd <- st_read(conn, query = sprintf("
-  SELECT ST_Transform(ST_Simplify(geom, 50), 4326) as geom,
-         ST_Area(geom) / 10000 as area_ha
-  FROM fwa_watershedatmeasure(%d, %f)
-", blk, drm))
+bittner_wsd <- st_sf(
+  area_ha = ws$area_ha,
+  geom = st_transform(st_simplify(wsg, preserveTopology = TRUE, dTolerance = 50), 4326)
+)
 
-# -- Streams (all orders, clipped to watershed) --
-bittner_streams <- st_read(conn, query = sprintf("
-  WITH ws AS (
-    SELECT geom FROM fwa_watershedatmeasure(%d, %f)
+# -- Streams (order >= 2, no subsurface or construction-line edges, clipped) --
+s <- bcdc_within("WHSE_BASEMAPPING.FWA_STREAM_NETWORKS_SP", wsg)
+s <- s[!s$EDGE_TYPE %in% c(1100, 1200, 1300, 1400, 1500, 1600) &
+         s$STREAM_ORDER >= 2, ]
+bittner_streams <- st_sf(
+  gnis_name = s$GNIS_NAME,
+  stream_order = as.integer(s$STREAM_ORDER),
+  geom = st_transform(st_intersection(st_geometry(s), wsg), 4326)
+)
+
+# -- Lakes (whole polygons that touch the watershed) --
+l <- bcdc_within("WHSE_BASEMAPPING.FWA_LAKES_POLY", wsg)
+bittner_lakes <- st_sf(
+  name = l$GNIS_NAME_1,
+  area_ha = as.numeric(st_area(l)) / 10000,
+  geom = st_transform(st_cast(st_geometry(l), "MULTIPOLYGON"), 4326)
+)
+
+# -- Roads (DRA, within 5 km of the watershed's box) --
+# The GDAL that sf links is often built without the Parquet driver, so the
+# rectangle is cut out with the command-line ogr2ogr, which must have it. The
+# file has no bbox column, so GDAL still reads every row group (~36 s, 2026-11-11).
+road_types <- c("RH1", "RA1", "RA2", "RC2", "RLO")
+road_box <- box(5000)
+fmts <- suppressWarnings(system2("ogrinfo", "--formats", stdout = TRUE, stderr = TRUE))
+if (!is.null(attr(fmts, "status")) || !any(grepl("^\\s*Parquet ", fmts))) {
+  stop("the command-line ogrinfo/ogr2ogr needs GDAL's Parquet driver for the roads",
+       call. = FALSE)
+}
+road_gpkg <- tempfile(fileext = ".gpkg")
+out <- suppressWarnings(system2("ogr2ogr", c(
+  "-f", "GPKG", road_gpkg,
+  "/vsicurl/https://nrs.objectstore.gov.bc.ca/bchamp/bcdata/whse_basemapping.transport_line.parquet",
+  "-spat", st_bbox(road_box)[c("xmin", "ymin", "xmax", "ymax")],
+  "-where", shQuote(sprintf("transport_line_type_code IN (%s)",
+                            paste0("'", road_types, "'", collapse = ", "))),
+  "-select", "transport_line_type_code",
+  "-nln", "roads"
+), stdout = TRUE, stderr = TRUE))
+if (!is.null(attr(out, "status")) || any(grepl("ERROR", out))) {
+  stop("ogr2ogr could not read transport_line:\n", paste(out, collapse = "\n"),
+       call. = FALSE)
+}
+r <- read_strict(st_read(road_gpkg, quiet = TRUE), "transport_line")
+stopifnot(st_crs(r) == st_crs(3005), nrow(r) > 0)
+r <- r[lengths(st_intersects(r, road_box)) > 0, ]
+bittner_roads <- st_sf(
+  road_type = r$transport_line_type_code,
+  geom = st_transform(
+    st_cast(st_simplify(st_geometry(r), dTolerance = 20), "MULTILINESTRING"),
+    4326
   )
-  SELECT s.gnis_name, s.stream_order,
-         ST_Transform(ST_Intersection(s.geom, ws.geom), 4326) as geom
-  FROM whse_basemapping.fwa_stream_networks_sp s, ws
-  WHERE ST_Intersects(s.geom, ws.geom)
-    AND s.edge_type NOT IN (1100, 1200, 1300, 1400, 1500, 1600)
-    AND s.stream_order >= 2
-", blk, drm))
+)
 
-# -- Lakes --
-bittner_lakes <- st_read(conn, query = sprintf("
-  WITH ws AS (
-    SELECT geom FROM fwa_watershedatmeasure(%d, %f)
+# -- Railway (within 5 km of the watershed's box) --
+rw <- bcdc_within("WHSE_BASEMAPPING.GBA_RAILWAY_TRACKS_SP", box(5000))
+bittner_railway <- st_sf(
+  track_classification = rw$TRACK_CLASSIFICATION,
+  geom = st_transform(
+    st_cast(st_simplify(st_geometry(rw), dTolerance = 20), "MULTILINESTRING"),
+    4326
   )
-  SELECT l.gnis_name_1 as name,
-         ST_Transform(l.geom, 4326) as geom,
-         ST_Area(l.geom) / 10000 as area_ha
-  FROM whse_basemapping.fwa_lakes_poly l, ws
-  WHERE ST_Intersects(l.geom, ws.geom)
-", blk, drm))
+)
 
-# -- Roads (DRA, clipped to expanded watershed) --
-bittner_roads <- st_read(conn, query = sprintf("
-  WITH ws AS (
-    SELECT geom FROM fwa_watershedatmeasure(%d, %f)
-  )
-  SELECT t.transport_line_type_code as road_type,
-         ST_Transform(ST_Simplify(t.geom, 20), 4326) as geom
-  FROM whse_basemapping.transport_line t, ws
-  WHERE ST_Intersects(t.geom, ST_Expand(ws.geom, 5000))
-    AND t.transport_line_type_code IN ('RH1', 'RA1', 'RA2', 'RC2', 'RLO')
-", blk, drm))
+# -- PSCIS assessments (within 2 km of the watershed's box) --
+p <- bcdc_within("WHSE_FISH.PSCIS_ASSESSMENT_SVW", box(2000))
+bittner_pscis <- st_sf(
+  stream_crossing_id = as.integer(p$STREAM_CROSSING_ID),
+  road_name = p$ROAD_NAME,
+  stream_name = p$STREAM_NAME,
+  barrier_result_code = p$BARRIER_RESULT_CODE,
+  geom = st_transform(st_cast(st_geometry(p), "MULTIPOINT"), 4326)
+)
 
-# -- Railway --
-bittner_railway <- st_read(conn, query = sprintf("
-  WITH ws AS (
-    SELECT geom FROM fwa_watershedatmeasure(%d, %f)
-  )
-  SELECT r.track_classification,
-         ST_Transform(ST_Simplify(r.geom, 20), 4326) as geom
-  FROM whse_basemapping.gba_railway_tracks_sp r, ws
-  WHERE ST_Intersects(r.geom, ST_Expand(ws.geom, 5000))
-", blk, drm))
-
-# -- PSCIS assessments (the real crossing data) --
-bittner_pscis <- st_read(conn, query = sprintf("
-  WITH ws AS (
-    SELECT geom FROM fwa_watershedatmeasure(%d, %f)
-  )
-  SELECT a.stream_crossing_id, a.road_name, a.stream_name,
-         a.barrier_result_code,
-         ST_Transform(a.geom, 4326) as geom
-  FROM whse_fish.pscis_assessment_svw a, ws
-  WHERE ST_Intersects(a.geom, ST_Expand(ws.geom, 2000))
-", blk, drm))
-
-dbDisconnect(conn)
-
-# ST_Simplify() does not preserve topology, and an earlier pull came out invalid
+# An earlier pull, simplified without preserving topology, came out invalid
 # ("Edge 145 crosses edge 148"): gq-intro's st_difference() mask then fails at
-# the pkgdown build, far from here. Refuse to save one.
+# the pkgdown build, far from here. The watershed is now simplified with
+# preserveTopology = TRUE; refuse to save an invalid one regardless.
 stopifnot(all(st_is_valid(bittner_wsd)))
 
 # Save

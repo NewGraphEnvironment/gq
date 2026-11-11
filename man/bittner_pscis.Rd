@@ -15,7 +15,7 @@ An \code{sf} data frame with columns:
 }
 }
 \source{
-PSCIS via newgraph database
+PSCIS assessments, from the BC Data Catalogue
 }
 \usage{
 bittner_pscis

@@ -13,7 +13,7 @@ An \code{sf} data frame with columns:
 }
 }
 \source{
-BC Freshwater Atlas via newgraph database
+BC Freshwater Atlas, from the BC Data Catalogue
 }
 \usage{
 bittner_streams
