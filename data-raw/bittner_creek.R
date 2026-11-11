@@ -15,12 +15,19 @@
 library(sf)
 
 # A read that fails partway can return the rows it got with only a warning, which
-# would bundle a short layer. Treat any warning as a failed read.
+# would bundle a short layer. Treat any warning as a failed read: note it in the
+# handler and stop once the call has returned, since GDAL's warnings arrive from C++.
 read_strict <- function(expr, what) {
-  withCallingHandlers(expr, warning = function(w) {
-    stop("reading ", what, " warned, so it may be incomplete: ",
-         conditionMessage(w), call. = FALSE)
+  warned <- character()
+  x <- withCallingHandlers(expr, warning = function(w) {
+    warned <<- c(warned, conditionMessage(w))
+    invokeRestart("muffleWarning")
   })
+  if (length(warned) > 0) {
+    stop("reading ", what, " warned, so it may be incomplete: ",
+         paste(warned, collapse = "; "), call. = FALSE)
+  }
+  x
 }
 
 ws <- st_read("data-raw/bittner_wsd.gpkg", quiet = TRUE)

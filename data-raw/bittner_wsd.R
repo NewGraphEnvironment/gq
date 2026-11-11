@@ -57,5 +57,7 @@ dbDisconnect(conn)
 
 stopifnot(nrow(wsd) == 1L, st_crs(wsd) == st_crs(3005), all(st_is_valid(wsd)))
 
+# A fixed write date, so an unchanged polygon rewrites byte-identical.
 st_write(wsd, "data-raw/bittner_wsd.gpkg", layer = "bittner_wsd",
-         delete_dsn = TRUE, quiet = TRUE)
+         delete_dsn = TRUE, quiet = TRUE,
+         config_options = c(OGR_CURRENT_DATE = "2000-01-01T00:00:00.000Z"))
