@@ -58,6 +58,7 @@ For QGIS itself, `gq_style_qml()` returns the path to the style file QGIS wrote,
 
 - [Getting started](https://www.newgraphenvironment.com/gq/articles/gq-intro.html): the registry, a tmap map and a MapLibre GL map of Bittner Creek, and extracting styles from a QGIS project.
 - [Map composition with gq and tmap](https://www.newgraphenvironment.com/gq/articles/gq-tmap-composition.html): a full report map with basemap, legend, scale bar, logo and keymap, for a Neexdzii Kwa subbasin.
+- [Web maps with gq and mapgl](https://www.newgraphenvironment.com/gq/articles/gq-mapgl-composition.html): interactive maps with a layer switch, legends and popups, for the same subbasin.
 - [Function reference](https://www.newgraphenvironment.com/gq/reference/)
 
 ## Ecosystem

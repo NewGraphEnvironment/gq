@@ -109,7 +109,7 @@ test_that("a species map over a stream network is a few calls", {
   expect_identical(m$x$layers_control$layers, present)
   for (k in present) {
     expect_match(m$x$legend_html, paste0('data-layer-id="', k, '"'))
-    n <- nrow(jsonlite::fromJSON(m$x$sources[[which(ids == k) ]]$data)$features)
+    n <- nrow(jsonlite::fromJSON(m$x$sources[[which(ids == k)]]$data)$features)
     expect_identical(n, sum(obs$species_code == k))
   }
 })

@@ -218,8 +218,9 @@ Every per-class vector a classified style returns — `labels`, `widths`, `dashe
 `opacities` — is named by class key, as `values` is (gq#55). A class with no
 `opacity` is opaque, not unknown: the extractor records opacity only below 1, so
 `tmap_classified()` reads `NA` as 1 and maps polygon opacity to `fill_alpha` and
-line opacity to `col_alpha` (gq#71). mapgl does not read per-class opacity yet
-(gq#107).
+line opacity to `col_alpha` (gq#71). mapgl reads it the same way through
+`gq_mapgl_classes(layer, "fill-opacity")` and its line and circle siblings: a
+scalar when every class shares one, a match expression otherwise (gq#107).
 
 **Composition (tmap):**
 - `gq_bbox_aspect(x, asp)` — pad a bbox to a canvas aspect ratio
@@ -228,6 +229,24 @@ line opacity to `col_alpha` (gq#71). mapgl does not read per-class opacity yet
 - `gq_basemap_tiles()` / `gq_basemap_blend()` — tiles, and relief multiply
 - `gq_tmap_legend(reg, layers)` — `tm_add_legend()` args from the registry
 - `gq_tmap_keymap(aoi, context)` — overview inset plus its viewport
+
+**Composition (mapgl):**
+- `gq_mapgl_basemap(x, basemap)` — `maplibre()` on voyager, positron, openfreemap or Esri topo, fitted to `x`
+- `gq_mapgl_network(map, streams, water, reg)` — water from `lake`, streams from `streams_all`, wider by order
+- `gq_mapgl_layer(map, id, x, key | classes | color)` — one layer and its legend; layers can share a source
+- `gq_mapgl_popup(x, fields)` — popup text columns plus the browser-side `concat` expression
+- `gq_mapgl_controls(map, layers)` — navigation, scale bar and the layer switch
+
+Extracted from knowledge's `knw_compare_mapgl()`, and held to it:
+`test-gq_mapgl_compose.R` rebuilds that map on the helpers and asserts the widget
+spec is `identical()`, against a copy in `tests/testthat/fixtures/`. The spec is
+seeded because `add_layers_control()` names its control with `sample()`.
+
+mapgl draws every legend absolutely at its corner, one over another, and a
+legend id with a space is not a CSS selector. So `gq_mapgl_layer()` sanitises
+legend ids and prepends one stylesheet (`map$prepend`, outside the spec) that
+stacks the legends. Known gaps: a classified registry layer draws every class
+at one width with no dash, and a registry point shape draws as a circle.
 
 These encode the cartography conventions as defaults. Layout stays tmap's:
 4.4 handles ordering, grouping, stacking and placement better than a wrapper
@@ -394,6 +413,14 @@ add_fill_layer(id = "lakes", source = lakes_sf, fill_color = lake_gl$paint[["fil
 # Classified layer → mapgl
 bec_expr <- gq_mapgl_classes(reg$layers$bec_zone)
 add_fill_layer(id = "bec", source = bec_sf, fill_color = bec_expr)
+
+# A whole web map → mapgl composition helpers
+gq_mapgl_basemap(aoi, "positron") |>
+  gq_mapgl_network(streams = streams_sf["stream_order"], water = lakes_sf["gnis_name"],
+                   reg = reg, legend = TRUE) |>
+  gq_mapgl_layer("crossings", crossings_sf, key = "crossings_pscis_assessment",
+                 reg = reg, field = "barrier_status") |>
+  gq_mapgl_controls()
 ```
 
 ### Style precedence

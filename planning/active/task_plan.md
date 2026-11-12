@@ -95,10 +95,10 @@ need the same pipeline.
 - [ ] `devtools::document()`, the examples for all five exports, `lintr` with a per-file
       comparison against main, and the README / CLAUDE.md function lists (the Components list
       gains the composition (mapgl) entries).
-- [ ] CLAUDE.md: drop "mapgl does not read per-class opacity yet (gq#107)" (review 12), add the
+- [x] CLAUDE.md: drop "mapgl does not read per-class opacity yet (gq#107)" (review 12), add the
       mapgl composition functions, and name the known gaps: classified registry layers carry no
       per-class width or dash in mapgl, and a registry point shape draws as a circle (review 19).
-- [ ] Legend coverage (review 13): the new article either legends what `gq_mapgl_network()` draws
+- [x] Legend coverage (review 13): the new article either legends what `gq_mapgl_network()` draws
       or `test-vignette_legend_coverage.R` records why it is exempt.
 - [ ] NEWS: none on the branch; the PR body's summary is what `/gh-pr-merge` writes from.
 

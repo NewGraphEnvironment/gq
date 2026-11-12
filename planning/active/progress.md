@@ -62,3 +62,10 @@
     an upstream draft for mapgl.
 - `gq_mapgl_network(legend = TRUE)` added (review 13): one-row legends `Lake` and `Stream`,
   off by default for parity.
+- Phase 5: CLAUDE.md (Composition (mapgl) block, the #107 sentence, the legend stylesheet, known
+  gaps, a usage example) and README Learn more. Legend coverage: the article passes
+  `legend = TRUE` to the network, so lakes and streams are in its legend; the tmap-only
+  `test-vignette_legend_coverage.R` is not extended to mapgl.
+- Lint, per file/linter/line against an `origin/main` worktree: 2 new rows. Fixed the test's
+  `[[which(ids == k) ]]`; the other is in `fixtures/knw_compare_mapgl.R`, a verbatim copy of
+  knowledge, left as copied (there is no `.lintr` to exclude it with).
