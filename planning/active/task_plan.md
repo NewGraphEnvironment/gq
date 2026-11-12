@@ -92,7 +92,7 @@ need the same pipeline.
       classified-layer example, written per `writing.md` (answer first, plain terms).
 
 ## Phase 5: Docs and release prep
-- [ ] `devtools::document()`, the examples for all five exports, `lintr` with a per-file
+- [x] `devtools::document()`, the examples for all five exports, `lintr` with a per-file
       comparison against main, and the README / CLAUDE.md function lists (the Components list
       gains the composition (mapgl) entries).
 - [x] CLAUDE.md: drop "mapgl does not read per-class opacity yet (gq#107)" (review 12), add the
@@ -100,7 +100,7 @@ need the same pipeline.
       per-class width or dash in mapgl, and a registry point shape draws as a circle (review 19).
 - [x] Legend coverage (review 13): the new article either legends what `gq_mapgl_network()` draws
       or `test-vignette_legend_coverage.R` records why it is exempt.
-- [ ] NEWS: none on the branch; the PR body's summary is what `/gh-pr-merge` writes from.
+- [x] NEWS: none on the branch; the PR body's summary is what `/gh-pr-merge` writes from.
 
 ## Owed at the end (reported, done after merge)
 - [ ] File a knowledge issue: rewrite `knw_compare_mapgl()` on gq's helpers and pin gq to the
@@ -112,9 +112,9 @@ need the same pipeline.
       each repo.
 
 ## Validation
-- [ ] Tests pass (`devtools::test()`, 0 failures)
-- [ ] `/code-check` clean (once over the branch with `/code-check branch`)
-- [ ] PWF checkboxes match landed work
+- [x] Tests pass (`devtools::test()`, 0 failures)
+- [x] `/code-check` clean (once over the branch with `/code-check branch`)
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 
 **How each change is proved:**

@@ -111,3 +111,22 @@
   Fixed: outlines only without a `key`; the network checks streams draw as lines; `check_labels()`
   validates `classes$values` in `layer_paint()` for every source (no NA, no TRUE/FALSE, whole
   numbers or text, unique); a raster source is refused. Tests red on the pre-fix tree.
+- `/code-check branch` ended by enumeration. Summary:
+
+  | Round | Findings | Fixed | Accepted | Inside previous fix? |
+  |---|---|---|---|---|
+  | 1 | 4 | 4 | 0 | — |
+  | 2 | 4 | 4 | 0 | y (bbox densify) |
+  | 3 | 9 | 9 | 0 | y (sibling forms of R1/R2 fixes); mechanism named, enumeration table |
+  | 4 | 4 | 4 | 0 | y (the R3 restructure) |
+  | 5 | 2 | 2 | 0 | y (R4 fixes) |
+
+  Terminal enumeration: round 5 re-walked every argument form of the five helpers (rounds 3+4
+  tables, all REF/OK by probe), and every `stop()` site in `R/gq_mapgl_*.R` was instrumented in a
+  worktree copy: 52 of 54 reached by a test. The two not reached: `mapgl_need()`'s missing-package
+  message (base `requireNamespace()` cannot be mocked without a package binding) and
+  `mapgl_data()`'s sf check, which every exported caller checks first. Spend: 5 review rounds +
+  1 plan review = 6 reviewer agents, past the usual ~5.
+- Final: `devtools::test()` 1542 expectations, 0 failed (1 known warning in
+  test-gq_registry_read.R, also on main); `devtools::check()` 0/0/0; `check_pkgdown()` clean;
+  article re-rendered against the installed branch.
