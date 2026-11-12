@@ -198,8 +198,8 @@ test_that("a source or layer id already on the map is refused", {
   m <- base() |> gq_mapgl_layer("a", pts(), source = "s", color = "#111111")
   expect_error(gq_mapgl_layer(m, "b", pts(), source = "s", color = "#222222"), "already has a source")
   expect_error(gq_mapgl_layer(m, "a", source = "s", color = "#222222"), "already has a layer")
-  ln <- sf::st_sf(stream_order = 1L, geometry = sf::st_sfc(
-    sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326))
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(stream_order = 1L, geometry = g)
   n <- gq_mapgl_network(base(ln), streams = ln)
   expect_error(gq_mapgl_network(n, streams = ln), "already has a source or layer `gq_streams`")
   expect_error(gq_mapgl_layer(n, "gq_streams", ln, source = "x", color = "#000000"), "already has a layer")
