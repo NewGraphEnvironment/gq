@@ -1,9 +1,11 @@
 #' Build a popup for a MapLibre GL layer from column names
 #'
-#' Returns the data with each popup column written as display text, and the
-#' MapLibre expression that assembles the popup from them in the browser:
-#' `Label: value`, one per line. Pass `data` as the layer's `x` and `expr` as
-#' its `popup` in [gq_mapgl_layer()].
+#' Returns the data with the popup's display text added as new columns
+#' (`popup_1`, `popup_2`, ...), and the MapLibre expression that assembles the
+#' popup from them in the browser: `Label: value`, one per line. Pass `data`
+#' as the layer's `x` and `expr` as its `popup` in [gq_mapgl_layer()]. The
+#' columns the popup reads are left as they are, so a layer can still be styled
+#' on one: a stream order written as text would no longer scale a line.
 #'
 #' The popup is assembled in the browser rather than pasted into an HTML
 #' string per feature, which more than doubled the page in the map these
@@ -19,8 +21,9 @@
 #'   = "stream_order")`. The labels may carry HTML.
 #' @param missing The text shown for a missing value.
 #' @param digits Significant figures for numeric columns.
-#' @return A list of `data` (`x` with the popup columns as text) and `expr`
-#'   (the popup expression).
+#' @return A list of `data` (`x` with the popup text columns added) and `expr`
+#'   (the popup expression). Keep only the columns the map reads before
+#'   calling: every column is written into the page.
 #'
 #' @seealso [gq_mapgl_layer()]
 #'
@@ -48,11 +51,17 @@ gq_mapgl_popup <- function(x, fields, missing = "none", digits = 3L) {
   check_digits(digits)
   if (digits < 1) stop("`digits` must be 1 or more", call. = FALSE)
 
-  for (k in unique(fields)) x[[k]] <- popup_text(x[[k]], missing, digits)
+  keys <- paste0("popup_", seq_along(fields))
+  clash <- intersect(keys, names(x))
+  if (length(clash)) {
+    stop("`x` already has a column ", paste0("`", clash, "`", collapse = ", "),
+         "; gq_mapgl_popup() writes its text there", call. = FALSE)
+  }
   expr <- list("concat")
   for (i in seq_along(fields)) {
+    x[[keys[[i]]]] <- popup_text(x[[fields[[i]]]], missing, digits)
     lead <- if (i == 1L) "" else "<br>"
-    expr <- c(expr, list(paste0(lead, labs[[i]], ": ")), list(list("get", fields[[i]])))
+    expr <- c(expr, list(paste0(lead, labs[[i]], ": ")), list(list("get", keys[[i]])))
   }
   list(data = x, expr = expr)
 }

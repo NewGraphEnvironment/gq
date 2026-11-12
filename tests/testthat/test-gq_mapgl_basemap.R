@@ -117,3 +117,12 @@ test_that("gq_mapgl_network can legend what it draws, and does not by default", 
   expect_match(m$x$legend_html, 'data-layer-id="gq_streams".*Stream')
   expect_match(m$x$legend_html, "legend-shape-line")
 })
+
+test_that("a projected bbox fits the whole area, not only its corners", {
+  bb <- sf::st_bbox(c(xmin = 400000, ymin = 400000, xmax = 1800000, ymax = 1700000), crs = 3005)
+  dense <- sf::st_segmentize(sf::st_as_sfc(bb), 1000)
+  want <- as.numeric(sf::st_bbox(sf::st_transform(dense, 4326)))
+  got <- as.numeric(gq_mapgl_basemap(bb)$x$additional_params$bounds)
+  expect_gt(got[4], 60.2)                                       # corners alone gave 59.87
+  expect_equal(got, want, tolerance = 1e-3)
+})

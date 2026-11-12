@@ -69,3 +69,10 @@
 - Lint, per file/linter/line against an `origin/main` worktree: 2 new rows. Fixed the test's
   `[[which(ids == k) ]]`; the other is in `fixtures/knw_compare_mapgl.R`, a verbatim copy of
   knowledge, left as copied (there is no `.lintr` to exclude it with).
+- `/code-check branch` round 1 (`review-round1.md`): 2 bugs, 2 fragile, all reproduced, all fixed,
+  each new test shown red on the pre-fix tree:
+  - legend look-collapse ran before the present-class filter (roads_dra RH1 alone errored);
+  - `gq_mapgl_popup()` overwrote the columns it read, so a styled column reached MapLibre as text;
+    it now writes `popup_1..n`;
+  - a projected bbox was fitted by its corners (45 km short of a provincial view); densified first;
+  - an unstyled registry layer drew in MapLibre's default colour; now refused.

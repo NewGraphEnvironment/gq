@@ -103,7 +103,11 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
     # A legend naming classes the map does not draw is a common and quiet error, so
     # a registry layer's legend lists only the classes in `x`, one row per look.
     keep <- if (!is.null(x) && sty$field %in% names(x)) sty$keys %in% x[[sty$field]] else TRUE
-    keep <- keep & !duplicated(paste(sty$labels, sty$swatches))
+    keep <- rep_len(keep, length(sty$keys))
+    # Collapse looks among the classes kept, not before: QGIS groups several keys
+    # under one look (roads_dra's Highway is RRP, RH1 and RH2), and dropping the
+    # first key before the filter dropped the row for data holding only the others.
+    keep[keep] <- !duplicated(paste(sty$labels, sty$swatches)[keep])
     if (!any(keep)) stop("`x` has none of registry layer `", key, "`'s classes in `",
                          sty$field, "`", call. = FALSE)
     sty$labels <- sty$labels[keep]
@@ -235,6 +239,11 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
   if (is.null(lyr$classification)) {
     p <- gq_mapgl_style(lyr)$paint
     pre <- paste0(type, "-")
+    if (is.null(p[[paste0(pre, "color")]])) {
+      # an entry the extractor could not style (a rule-based renderer, say) would
+      # draw in MapLibre's default colour, as if it were styled
+      stop("registry layer `", key, "` carries no colour to draw", call. = FALSE)
+    }
     dash <- p[["line-dasharray"]]
     return(list(color = p[[paste0(pre, "color")]], opacity = p[[paste0(pre, "opacity")]],
                 outline = p[["fill-outline-color"]], width = p[["line-width"]],

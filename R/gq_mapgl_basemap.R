@@ -32,7 +32,16 @@ gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap"
   mapgl_need()
   basemap <- match.arg(basemap)
   check_digits(digits)
-  if (inherits(x, "bbox")) x <- sf::st_as_sfc(x)
+  if (inherits(x, "bbox")) {
+    x <- sf::st_as_sfc(x)
+    # A projected rectangle's edges bow in EPSG:4326, so its four corners alone
+    # fit a view short of the area: 45 km off the north of a provincial bbox in
+    # BC Albers. Densify it in its own CRS first.
+    if (isFALSE(sf::st_is_longlat(x))) {
+      bb <- sf::st_bbox(x)
+      x <- sf::st_segmentize(x, max(bb[["xmax"]] - bb[["xmin"]], bb[["ymax"]] - bb[["ymin"]]) / 100)
+    }
+  }
   if (!inherits(x, c("sf", "sfc"))) {
     stop("`x` must be an sf, an sfc or a bbox", call. = FALSE)
   }

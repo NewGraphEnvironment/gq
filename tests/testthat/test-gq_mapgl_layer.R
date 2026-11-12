@@ -151,3 +151,40 @@ test_that("a registry layer's legend lists only the classes in the data", {
   expect_error(gq_mapgl_layer(base(polys("XX")), "bec", polys("XX"), key = "bec_zone", reg = reg),
                "none of registry layer")
 })
+
+test_that("a legend keeps a shared look whichever of its keys the data holds", {
+  # roads_dra's Highway is RRP, RH1 and RH2 under one look; collapsing looks before
+  # the filter to the data's classes dropped the row for data with only RH1 (round 1)
+  reg <- gq_reg_main()
+  cls <- reg$layers$roads_dra$classification$classes
+  hw <- names(cls)[vapply(cls, function(x) identical(x$label, "Highway"), logical(1))]
+  expect_gt(length(hw), 1L)                                     # premise: a shared look
+  later <- hw[length(hw)]
+  mk <- function(code) {
+    g <- sf::st_sfc(lapply(seq_along(code), function(i) {
+      sf::st_linestring(rbind(c(-126.5, 54.4 + i / 100), c(-126.4, 54.5)))
+    }), crs = 4326)
+    sf::st_sf(transport_line_type_code = code, geometry = g)
+  }
+  m <- base(mk(later)) |> gq_mapgl_layer("r", mk(later), key = "roads_dra", reg = reg)
+  expect_match(m$x$legend_html, ">Highway<")
+  two <- mk(c(later, "RF"))
+  m2 <- base(two) |> gq_mapgl_layer("r", two, key = "roads_dra", reg = reg)
+  expect_match(m2$x$legend_html, ">Highway<")
+})
+
+test_that("a registry layer with no colour is refused, not drawn in MapLibre's default", {
+  reg <- gq_reg_main()
+  expect_null(gq_mapgl_style(reg$layers$crossings_pscis_modelled_dams)$paint[["circle-color"]])
+  expect_error(gq_mapgl_layer(base(), "d", pts(), key = "crossings_pscis_modelled_dams",
+                              reg = reg, legend = FALSE), "carries no colour")
+})
+
+test_that("a popup on a styled column leaves the style reading numbers", {
+  ln <- sf::st_sf(stream_order = 3L, geometry = sf::st_sfc(
+    sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326))
+  pop <- gq_mapgl_popup(ln, c("Stream order" = "stream_order"))
+  m <- base(ln) |> gq_mapgl_layer("s", pop$data, color = "#000000", width = "stream_order",
+                                  popup = pop$expr)
+  expect_match(m$x$sources[[1]]$data, '"stream_order":3[,}]')
+})
