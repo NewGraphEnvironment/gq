@@ -332,3 +332,32 @@ test_that("a raster source is refused", {
   m <- base() |> mapgl::add_raster_source("r", tiles = "https://example.invalid/{z}/{x}/{y}.png")
   expect_error(gq_mapgl_layer(m, "a", source = "r", color = "#000000", type = "fill"), "raster")
 })
+
+# --- every reachable refusal is exercised (enumeration after round 5) ---------------------------
+
+test_that("each input check refuses what it names", {
+  reg <- gq_reg_main()
+  expect_error(gq_mapgl_layer(base(), "a", data.frame(a = 1), color = "#000000"), "must be an sf")
+  empty <- sf::st_sf(a = 1, geometry = sf::st_sfc(sf::st_point(), crs = 4326))
+  expect_error(gq_mapgl_layer(base(), "a", empty, color = "#000000"), "no geometry to draw")
+  none <- base() |> mapgl::add_source("z", pts()[0, ])
+  expect_error(gq_mapgl_layer(none, "a", source = "z", color = "#000000"), "has no features")
+  expect_error(gq_mapgl_layer(base(), "a", pts(), color = c("#000000", "#111111")), "one colour")
+  cls <- list(field = "sp", values = c("CO", "RB"), colors = c("#111111", "#222222"))
+  expect_error(gq_mapgl_layer(base(), "k", pts(), classes = modifyList(cls, list(labels = "x"))),
+               "one label per value")
+  expect_error(gq_mapgl_layer(base(), "k", pts(),
+                              classes = modifyList(cls, list(values = as.Date(c("2020-01-01", "2020-01-02"))))),
+               "text or whole numbers")
+  expect_error(gq_mapgl_network(base(polys("x")), water = polys("x"), ids = c(streams = "s")),
+               "name a water id")
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(stream_order = 1L, geometry = g)
+  expect_error(gq_mapgl_network(base(ln), streams = ln, ids = c(water = "w")), "name a streams id")
+  no_lake <- reg
+  no_lake$layers$lake <- NULL
+  expect_error(gq_mapgl_network(base(polys("x")), water = polys("x"), reg = no_lake),
+               "no layer `lake`")
+  expect_error(gq_mapgl_controls(base(), layers = 1), "layer ids")
+  expect_error(gq_mapgl_popup(data.frame(a = 1), c(A = "a"), missing = NA), "one string")
+})
