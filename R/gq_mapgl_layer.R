@@ -88,8 +88,18 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
     stop("give exactly one of `key`, `classes` or `color`", call. = FALSE)
   }
   if (!is.null(x) && !nrow(x)) stop("`x` has no rows to draw", call. = FALSE)
-  if (is.null(x) && !source %in% vapply(map$x$sources, `[[`, "", "id")) {
+  have_src <- vapply(map$x$sources, `[[`, "", "id")
+  if (is.null(x) && !source %in% have_src) {
     stop("`x` is NULL and the map has no source `", source, "` to draw", call. = FALSE)
+  }
+  # MapLibre throws on a second source or layer with an id already on the map,
+  # and every source and layer after it then fails to draw
+  if (!is.null(x) && source %in% have_src) {
+    stop("the map already has a source `", source, "`; give `x = NULL` to draw it again, ",
+         "or another `source`", call. = FALSE)
+  }
+  if (id %in% vapply(map$x$layers, `[[`, "", "id")) {
+    stop("the map already has a layer `", id, "`", call. = FALSE)
   }
 
   lyr <- NULL
@@ -102,7 +112,13 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
   if (!is.null(sty$keys)) {
     # A legend naming classes the map does not draw is a common and quiet error, so
     # a registry layer's legend lists only the classes in `x`, one row per look.
-    keep <- if (!is.null(x) && sty$field %in% names(x)) sty$keys %in% x[[sty$field]] else TRUE
+    if (!is.null(x) && !sty$field %in% names(x)) {
+      # the match would read a property no feature has: every feature in the
+      # fallback grey, under a legend of classes the map does not draw
+      stop("`x` has no `", sty$field, "` column, which registry layer `", key,
+           "` is classified on; name the column with `field =`", call. = FALSE)
+    }
+    keep <- if (!is.null(x)) sty$keys %in% x[[sty$field]] else TRUE
     keep <- rep_len(keep, length(sty$keys))
     # Collapse looks among the classes kept, not before: QGIS groups several keys
     # under one look (roads_dra's Highway is RRP, RH1 and RH2), and dropping the

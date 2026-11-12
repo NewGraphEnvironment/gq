@@ -58,14 +58,19 @@ test_that("a classified registry layer takes its colours, opacity and legend fro
   expect_identical(p[["fill-opacity"]], 0.25)                  # #107
   expect_match(m$x$legend_html, "SBS")
   # field override, as gq_style() takes it
-  m2 <- base(polys()) |> gq_mapgl_layer("bec", polys(), key = "bec_zone", reg = reg, field = "zone")
+  renamed <- polys()
+  names(renamed)[1] <- "zone"
+  m2 <- base(renamed) |> gq_mapgl_layer("bec", renamed, key = "bec_zone", reg = reg, field = "zone")
   expect_identical(m2$x$layers[[1]]$paint[["fill-color"]][[2]], list("get", "zone"))
+  # without `field`, the match would read a column no feature has (round 2)
+  expect_error(gq_mapgl_layer(base(renamed), "bec", renamed, key = "bec_zone", reg = reg),
+               "no `ZONE` column.*field =")
 })
 
 test_that("a mixed-opacity registry layer gets an opacity expression on its field", {
   reg <- gq_reg_main()
   g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
-  ln <- sf::st_sf(transport_line_type_code = "RH1", geometry = g)
+  ln <- sf::st_sf(road = "RH1", geometry = g)
   m <- base(ln) |> gq_mapgl_layer("roads", ln, key = "roads_dra", reg = reg, field = "road")
   op <- m$x$layers[[1]]$paint[["line-opacity"]]
   expect_identical(op[[1]], "match")
@@ -187,4 +192,15 @@ test_that("a popup on a styled column leaves the style reading numbers", {
   m <- base(ln) |> gq_mapgl_layer("s", pop$data, color = "#000000", width = "stream_order",
                                   popup = pop$expr)
   expect_match(m$x$sources[[1]]$data, '"stream_order":3[,}]')
+})
+
+test_that("a source or layer id already on the map is refused", {
+  m <- base() |> gq_mapgl_layer("a", pts(), source = "s", color = "#111111")
+  expect_error(gq_mapgl_layer(m, "b", pts(), source = "s", color = "#222222"), "already has a source")
+  expect_error(gq_mapgl_layer(m, "a", source = "s", color = "#222222"), "already has a layer")
+  ln <- sf::st_sf(stream_order = 1L, geometry = sf::st_sfc(
+    sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326))
+  n <- gq_mapgl_network(base(ln), streams = ln)
+  expect_error(gq_mapgl_network(n, streams = ln), "already has a source or layer `gq_streams`")
+  expect_error(gq_mapgl_layer(n, "gq_streams", ln, source = "x", color = "#000000"), "already has a layer")
 })

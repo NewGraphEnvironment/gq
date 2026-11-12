@@ -40,6 +40,12 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
   mapgl_need()
   check_digits(digits)
   ids <- as.list(ids)
+  taken <- intersect(unlist(ids[c(if (!is.null(water) && nrow(water)) "water",
+                                  if (!is.null(streams) && nrow(streams)) "streams")]),
+                     c(vapply(map$x$sources, `[[`, "", "id"), vapply(map$x$layers, `[[`, "", "id")))
+  if (length(taken)) {
+    stop("the map already has a source or layer `", taken[[1]], "`; set `ids`", call. = FALSE)
+  }
   if (!is.null(water) && nrow(water)) {
     id <- or_null(ids[["water"]], stop("`ids` must name a water id", call. = FALSE))
     paint <- gq_mapgl_style(reg_layer(reg, "lake"))$paint

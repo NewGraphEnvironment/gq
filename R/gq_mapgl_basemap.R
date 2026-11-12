@@ -32,20 +32,12 @@ gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap"
   mapgl_need()
   basemap <- match.arg(basemap)
   check_digits(digits)
-  if (inherits(x, "bbox")) {
-    x <- sf::st_as_sfc(x)
-    # A projected rectangle's edges bow in EPSG:4326, so its four corners alone
-    # fit a view short of the area: 45 km off the north of a provincial bbox in
-    # BC Albers. Densify it in its own CRS first.
-    if (isFALSE(sf::st_is_longlat(x))) {
-      bb <- sf::st_bbox(x)
-      x <- sf::st_segmentize(x, max(bb[["xmax"]] - bb[["xmin"]], bb[["ymax"]] - bb[["ymin"]]) / 100)
-    }
-  }
+  if (inherits(x, "bbox")) x <- sf::st_as_sfc(x)
   if (!inherits(x, c("sf", "sfc"))) {
     stop("`x` must be an sf, an sfc or a bbox", call. = FALSE)
   }
   if (length(sf::st_geometry(x)) == 0L) stop("`x` has no geometry to fit", call. = FALSE)
+  x <- densify_extent(sf::st_geometry(x))
   style <- switch(basemap,
                   voyager = mapgl::carto_style("voyager"),
                   positron = mapgl::carto_style("positron"),
@@ -109,6 +101,23 @@ mapgl_data <- function(x, digits) {
   att <- sf::st_drop_geometry(x)
   if (ncol(att) == 0L) att <- data.frame(id = seq_len(nrow(x)))
   sf::st_sf(att, geometry = mapgl_geom(x, digits))
+}
+
+#' A projected geometry densified, so its extent survives the move to 4326
+#'
+#' A projected straight edge bows in EPSG:4326, so a sparse outline -- a
+#' bbox's four corners above all -- fits a view short of the area it bounds:
+#' 45 km off the north of a provincial BC Albers box. Vertices every 1/100 of
+#' the longer side keep it. A point, or anything with no extent, is returned
+#' as it is: `st_segmentize()` refuses a length of 0.
+#' @noRd
+densify_extent <- function(g) {
+  if (!isFALSE(sf::st_is_longlat(g))) return(g)
+  bb <- sf::st_bbox(g)
+  len <- max(bb[["xmax"]] - bb[["xmin"]], bb[["ymax"]] - bb[["ymin"]]) / 100
+  if (!is.finite(len) || len <= 0) return(g)
+  if (all(sf::st_geometry_type(g) %in% c("POINT", "MULTIPOINT"))) return(g)
+  sf::st_segmentize(g, len)
 }
 
 #' Round every coordinate of an sfc, keeping its structure

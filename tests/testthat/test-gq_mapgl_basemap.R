@@ -125,4 +125,14 @@ test_that("a projected bbox fits the whole area, not only its corners", {
   got <- as.numeric(gq_mapgl_basemap(bb)$x$additional_params$bounds)
   expect_gt(got[4], 60.2)                                       # corners alone gave 59.87
   expect_equal(got, want, tolerance = 1e-3)
+  # the same rectangle as an sfc or sf fits the same (round 2)
+  expect_identical(as.numeric(gq_mapgl_basemap(sf::st_as_sfc(bb))$x$additional_params$bounds), got)
+  expect_identical(as.numeric(gq_mapgl_basemap(sf::st_sf(geometry = sf::st_as_sfc(bb)))$x$additional_params$bounds), got)
+})
+
+test_that("an extent with no size still fits: one projected point, as a bbox or an sf", {
+  p <- sf::st_sf(a = 1, geometry = sf::st_sfc(sf::st_point(c(1200000, 1000000)), crs = 3005))
+  from_sf <- as.numeric(gq_mapgl_basemap(p)$x$additional_params$bounds)
+  expect_identical(as.numeric(gq_mapgl_basemap(sf::st_bbox(p))$x$additional_params$bounds), from_sf)
+  expect_identical(from_sf[1], from_sf[3])
 })

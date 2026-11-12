@@ -76,3 +76,10 @@
     it now writes `popup_1..n`;
   - a projected bbox was fitted by its corners (45 km short of a provincial view); densified first;
   - an unstyled registry layer drew in MapLibre's default colour; now refused.
+- Round 2 (`review-round2.md`): 2 bugs, 2 fragile; two INSIDE round 1's bbox fix (a one-point
+  projected bbox now errored; an sfc/sf of the same rectangle was still fitted by its corners).
+  Fixed: `densify_extent()` for any projected input, skipping points and zero extents; a
+  registry layer whose classification field is not a column of `x` is refused (it drew all grey
+  under a legend of every class); a duplicate source or layer id is refused (MapLibre throws
+  and drops everything after it), in `gq_mapgl_layer()` and `gq_mapgl_network()`. Parity still
+  identical with the densified bounds. New tests red on the pre-fix tree.
