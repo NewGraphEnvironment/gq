@@ -96,3 +96,11 @@
     translation had skipped every check), with `type` pinned to fill and line.
   - all-empty extent refused in the basemap; a partly named switch gets the ids as labels.
   Parity still identical; new tests red on the pre-fix tree; article re-rendered.
+- Round 4 (`review-round4.md`, terminal enumeration): all nine round-3 SW rows now REF/OK by
+  probe; parity green. 1 bug, 3 fragile, all inside round 3's restructure: a tile/PMTiles source
+  was refused and a GeoJSON URL source was fetched by R (both drew before); `type = "line"` over
+  polygons was refused; `width`/`radius` expressions and an `opacity` override skipped
+  `check_reads()`; boolean class labels passed (MapLibre rejects them). Fixed: `source_frame()`
+  returns NULL for anything but inline GeoJSON and the layer is drawn as told (type from `type` or
+  the registry key, never fetched); line-over-fill allowed; every paint argument goes through
+  `check_reads()`; TRUE/FALSE classes refused. Network roxygen legend text corrected.

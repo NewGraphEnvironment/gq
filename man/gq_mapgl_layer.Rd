@@ -34,6 +34,10 @@ gq_mapgl_layer(
 legend's \code{layer_id}.}
 
 \item{x}{An \code{sf} to draw, or \code{NULL} to draw a source already on the map.
+gq checks the data a layer draws: its geometry, and that every column the
+style or popup reads is there. A source it cannot read without fetching
+it (vector tiles, PMTiles, a GeoJSON URL) is drawn unchecked, and needs
+\code{type} unless \code{key} gives it.
 Its coordinates are taken to EPSG:4326 and rounded to \code{digits}; keep only
 the columns the style and popup read, since every one is written into the
 page.}
@@ -57,8 +61,9 @@ of anything else, default \code{"#cccccc"}).}
 \code{\link[=gq_style]{gq_style()}}, when the data names the column differently. A registry
 layer's legend lists only the classes found in this column of \code{x}.}
 
-\item{type}{\code{"line"}, \code{"fill"} or \code{"circle"}. Read from \code{x}'s geometry, or
-the registry layer's type, when not given.}
+\item{type}{\code{"line"}, \code{"fill"} or \code{"circle"}. Read from the data's
+geometry when not given; a type given must agree with it, except
+\code{"line"} over polygons, which draws their outlines.}
 
 \item{width}{A line width in pixels, a MapLibre expression, or the name of
 a stream order column, which draws order 1 at \code{widths[1]} pixels and

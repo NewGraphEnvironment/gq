@@ -23,6 +23,10 @@
 #' @param id The layer id: what [gq_mapgl_controls()] switches, and the
 #'   legend's `layer_id`.
 #' @param x An `sf` to draw, or `NULL` to draw a source already on the map.
+#'   gq checks the data a layer draws: its geometry, and that every column the
+#'   style or popup reads is there. A source it cannot read without fetching
+#'   it (vector tiles, PMTiles, a GeoJSON URL) is drawn unchecked, and needs
+#'   `type` unless `key` gives it.
 #'   Its coordinates are taken to EPSG:4326 and rounded to `digits`; keep only
 #'   the columns the style and popup read, since every one is written into the
 #'   page.
@@ -39,8 +43,9 @@
 #' @param field Overrides the registry layer's classification field, as in
 #'   [gq_style()], when the data names the column differently. A registry
 #'   layer's legend lists only the classes found in this column of `x`.
-#' @param type `"line"`, `"fill"` or `"circle"`. Read from `x`'s geometry, or
-#'   the registry layer's type, when not given.
+#' @param type `"line"`, `"fill"` or `"circle"`. Read from the data's
+#'   geometry when not given; a type given must agree with it, except
+#'   `"line"` over polygons, which draws their outlines.
 #' @param width A line width in pixels, a MapLibre expression, or the name of
 #'   a stream order column, which draws order 1 at `widths[1]` pixels and
 #'   order 6 and above at `widths[2]`.
@@ -112,27 +117,42 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
     if (!source %in% have_src) {
       stop("`x` is NULL and the map has no source `", source, "` to draw", call. = FALSE)
     }
+    # NULL for a source gq cannot read without fetching it: tiles, PMTiles, a
+    # GeoJSON URL. Those are drawn as told, unchecked; never fetched here.
     drawn <- source_frame(map, source)
   }
-  type <- layer_type(drawn$types, type)
 
   lyr <- NULL
   if (!is.null(key)) {
     if (is.null(reg)) stop("`key` needs `reg`, such as gq_reg_main()", call. = FALSE)
     lyr <- reg_layer(reg, key)
   }
+  if (is.null(drawn)) {
+    type <- or_null(type, switch(or_null(lyr$type, ""), line = "line", polygon = "fill",
+                                 point = "circle", NULL))
+    if (is.null(type)) {
+      stop("give `type`: source `", source, "` is not GeoJSON on the map, so gq cannot read ",
+           "its geometry", call. = FALSE)
+    }
+  } else {
+    type <- layer_type(drawn$types, type)
+  }
   sty <- layer_paint(type, lyr, classes, color, field, key, legend_title)
-  if (!is.null(sty$keys) && !sty$field %in% names(drawn$props)) {
+  if (!is.null(drawn) && !is.null(sty$keys) && !sty$field %in% names(drawn$props)) {
     stop("the data has no `", sty$field, "` column, which registry layer `", key,
          "` is classified on; name the column with `field =`", call. = FALSE)
   }
-  check_reads(list(sty$color, sty$opacity, if (is.character(width)) list("get", width),
-                   if (is.character(popup)) list("get", popup) else popup),
-              drawn$props, source)
+  if (!is.null(drawn)) {
+    check_reads(list(sty$color, opacity, sty$opacity, radius,
+                     if (is.character(width)) list("get", width) else width,
+                     if (is.character(popup)) list("get", popup) else popup),
+                drawn$props, source)
+  }
   if (!is.null(sty$keys)) {
     # A legend naming classes the map does not draw is a common and quiet error, so
     # a registry layer's legend lists only the classes in the data, one row per look.
-    keep <- sty$keys %in% drawn$props[[sty$field]]
+    # a source gq cannot read lists every class: there is no data to cut it to
+    keep <- if (is.null(drawn)) rep(TRUE, length(sty$keys)) else sty$keys %in% drawn$props[[sty$field]]
     # Collapse looks among the classes kept, not before: QGIS groups several keys
     # under one look (roads_dra's Highway is RRP, RH1 and RH2), and dropping the
     # first key before the filter dropped the row for data holding only the others.
@@ -227,6 +247,8 @@ layer_type <- function(types, type = NULL) {
   } else {
     stop("cannot draw mixed or unsupported geometry: ", paste(g, collapse = ", "), call. = FALSE)
   }
+  # a line layer over polygons draws their outlines, which MapLibre allows
+  if (identical(type, "line") && drawn == "fill") return("line")
   if (!is.null(type) && !identical(type, drawn)) {
     stop("`type` is \"", type, "\", but the data is drawn as \"", drawn, "\"", call. = FALSE)
   }
@@ -237,9 +259,9 @@ layer_type <- function(types, type = NULL) {
 #' @noRd
 source_frame <- function(map, source) {
   src <- Filter(function(s) identical(s$id, source), map$x$sources)[[1]]
-  if (!is.character(src$data) || length(src$data) != 1L) {
-    stop("source `", source, "` is not GeoJSON gq can read; give the data as `x`", call. = FALSE)
-  }
+  inline <- identical(src$type, "geojson") && is.character(src$data) && length(src$data) == 1L &&
+    startsWith(trimws(src$data), "{")
+  if (!inline) return(NULL)
   j <- jsonlite::fromJSON(src$data, simplifyVector = TRUE)
   f <- j$features
   if (!length(f) || !NROW(f)) stop("source `", source, "` has no features", call. = FALSE)
@@ -267,6 +289,10 @@ check_reads <- function(exprs, props, source) {
           identical(e[[2]][[1]], "get")) {
       col <- e[[2]][[2]]
       labels <- e[seq(3L, length(e) - 1L, by = 2L)]
+      if (length(labels) && is.logical(labels[[1]])) {
+        stop("column `", col, "` is classed on TRUE and FALSE, which MapLibre cannot match; ",
+             "convert the column and the class values to text", call. = FALSE)
+      }
       if (col %in% names(props) && length(labels)) {
         if (value_kind(props[[col]]) != value_kind(labels[[1]])) {
           stop("column `", col, "` holds ", value_kind(props[[col]]), "s but its classes are ",

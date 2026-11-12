@@ -18,8 +18,9 @@
 #'   switch them in [gq_mapgl_controls()].
 #' @param order_field The stream order column of `streams`.
 #' @param widths Line width in pixels at order 1 and at order 6 and above.
-#' @param legend Add a one-row legend for each layer drawn, named by the
-#'   registry: `Lake`, and the stream class's label.
+#' @param legend Add a legend for each layer drawn: `Lake`, and the stream
+#'   classes the network holds, or one row named by the registry's first
+#'   class (`Stream`) when it carries no `feature_code`.
 #' @param digits Decimal places kept in the coordinates; 5 is about 1 m.
 #' @return `map`, with the layers added.
 #'

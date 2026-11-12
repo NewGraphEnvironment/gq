@@ -262,3 +262,43 @@ test_that("the network's layers get the same checks", {
   bad$layers$lake$type <- "line"
   expect_error(gq_mapgl_network(base(polys("x")), water = polys("x"), reg = bad), "line layer")
 })
+
+# --- round 4 ------------------------------------------------------------------------------------
+
+test_that("a source gq cannot read is drawn as told, and never fetched", {
+  m <- base() |>
+    mapgl::add_vector_source("v", url = "https://example.invalid/tiles.json") |>
+    mapgl::add_source("u", "http://127.0.0.1:9/never-fetched.geojson")
+  expect_error(gq_mapgl_layer(m, "a", source = "v", color = "#000000"), "give `type`")
+  v <- gq_mapgl_layer(m, "a", source = "v", color = "#000000", type = "line", source_layer = "streams")
+  expect_identical(v$x$layers[[1]]$type, "line")
+  u <- gq_mapgl_layer(m, "b", source = "u", key = "lake", reg = gq_reg_main())  # type from key
+  expect_identical(u$x$layers[[1]]$type, "fill")
+})
+
+test_that("a line layer over polygons draws their outlines", {
+  m <- base(polys("x")) |> gq_mapgl_layer("edge", polys("x"), color = "#2c3e50", type = "line")
+  expect_identical(m$x$layers[[1]]$type, "line")
+})
+
+test_that("an expression for width, radius or opacity must read columns the data has", {
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(stream_order = 1L, geometry = g)
+  w <- mapgl::interpolate("order", values = c(1, 6), stops = c(0.6, 3))
+  expect_error(gq_mapgl_layer(base(ln), "s", ln, color = "#000000", width = w), "no column `order`")
+  expect_error(gq_mapgl_layer(base(), "p", pts(), color = "#000000", radius = list("get", "size")),
+               "no column `size`")
+  expect_error(gq_mapgl_layer(base(), "p", pts(), color = "#000000", opacity = list("get", "alpha")),
+               "no column `alpha`")
+  # a zoom expression reads no column, and is fine
+  z <- list("interpolate", list("linear"), list("zoom"), 6, 3, 16, 8)
+  expect_identical(gq_mapgl_layer(base(), "p", pts(), color = "#000000", radius = z)$x$layers[[1]]$type,
+                   "circle")
+})
+
+test_that("classes on TRUE and FALSE are refused: MapLibre cannot match them", {
+  lg <- pts()
+  lg$ok <- c(TRUE, FALSE, TRUE)
+  cls <- list(field = "ok", values = c(TRUE, FALSE), colors = c("#111111", "#222222"))
+  expect_error(gq_mapgl_layer(base(), "k", lg, classes = cls), "TRUE and FALSE")
+})

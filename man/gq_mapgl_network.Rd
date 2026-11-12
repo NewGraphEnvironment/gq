@@ -33,8 +33,9 @@ switch them in \code{\link[=gq_mapgl_controls]{gq_mapgl_controls()}}.}
 
 \item{widths}{Line width in pixels at order 1 and at order 6 and above.}
 
-\item{legend}{Add a one-row legend for each layer drawn, named by the
-registry: \code{Lake}, and the stream class's label.}
+\item{legend}{Add a legend for each layer drawn: \code{Lake}, and the stream
+classes the network holds, or one row named by the registry's first
+class (\code{Stream}) when it carries no \code{feature_code}.}
 
 \item{digits}{Decimal places kept in the coordinates; 5 is about 1 m.}
 }
