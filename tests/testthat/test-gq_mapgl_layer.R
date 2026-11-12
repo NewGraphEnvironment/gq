@@ -39,13 +39,15 @@ test_that("an R colour name reaches MapLibre as hex, and NA is refused", {
 test_that("caller classes keep their value type and default", {
   cls <- list(field = "code", values = 1:2, colors = c("#111111", "#222222"),
               labels = c("one", "two"))
-  m <- base() |> gq_mapgl_layer("k", pts(), classes = cls)
+  coded <- pts()
+  coded$code <- c(1L, 2L, 1L)
+  m <- base() |> gq_mapgl_layer("k", coded, classes = cls)
   col <- m$x$layers[[1]]$paint[["circle-color"]]
   expect_identical(col[[3]], 1L)                               # integers stay integers
   expect_identical(col[[length(col)]], "#cccccc")              # the default
   expect_match(m$x$legend_html, "one")
-  expect_error(gq_mapgl_layer(base(), "k", pts(), classes = cls[1:2]), "colors")
-  expect_error(gq_mapgl_layer(base(), "k", pts(),
+  expect_error(gq_mapgl_layer(base(), "k", coded, classes = cls[1:2]), "colors")
+  expect_error(gq_mapgl_layer(base(), "k", coded,
                               classes = modifyList(cls, list(colors = "#111111"))), "one colour per value")
 })
 
@@ -105,6 +107,7 @@ test_that("two layers can draw one source, and the second legend is added to the
 test_that("width by stream order, a radius expression, popup and extra arguments", {
   g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
   ln <- sf::st_sf(stream_order = 3L, geometry = g)
+  ln$x <- "a"
   m <- base(ln) |> gq_mapgl_layer("s", ln, color = "#000000", width = "stream_order", popup = "x")
   expect_identical(m$x$layers[[1]]$paint[["line-width"]],
                    mapgl::interpolate("stream_order", values = c(1, 6), stops = c(0.6, 3)))
@@ -201,6 +204,61 @@ test_that("a source or layer id already on the map is refused", {
   g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
   ln <- sf::st_sf(stream_order = 1L, geometry = g)
   n <- gq_mapgl_network(base(ln), streams = ln)
-  expect_error(gq_mapgl_network(n, streams = ln), "already has a source or layer `gq_streams`")
+  expect_error(gq_mapgl_network(n, streams = ln), "already has a layer `gq_streams`")
   expect_error(gq_mapgl_layer(n, "gq_streams", ln, source = "x", color = "#000000"), "already has a layer")
+})
+
+# --- round 3: every check is made on the data drawn, whichever form it arrives in ---------------
+
+test_that("a source already on the map is checked like `x`", {
+  reg <- gq_reg_main()
+  renamed <- polys()
+  names(renamed)[1] <- "zone"
+  m <- base(renamed) |> gq_mapgl_layer("a", renamed, source = "s", color = "#111111")
+  expect_error(gq_mapgl_layer(m, "b", source = "s", key = "bec_zone", reg = reg),
+               "no `ZONE` column.*field =")                     # was all grey, every class
+  ok <- gq_mapgl_layer(m, "b", source = "s", key = "bec_zone", reg = reg, field = "zone")
+  expect_match(ok$x$legend_html, ">SBS<")
+  expect_match(ok$x$legend_html, ">ESSF<")
+  mp <- base() |> gq_mapgl_layer("p", pts(), source = "pt", color = "#111111")
+  expect_error(gq_mapgl_layer(mp, "l", source = "pt", key = "lake", reg = reg),
+               "polygon layer, not a point one")                # was a fill layer over points
+})
+
+test_that("an explicit type must agree with the data", {
+  expect_error(gq_mapgl_layer(base(), "a", pts(), color = "#000000", type = "fill"),
+               "drawn as \"circle\"")
+  expect_error(gq_mapgl_layer(base(), "a", pts(), key = "lake", reg = gq_reg_main(), type = "fill"),
+               "drawn as \"circle\"")
+})
+
+test_that("a column the style reads must be in the data, and match its kind", {
+  cls <- list(field = "nope", values = 1:2, colors = c("#111111", "#222222"))
+  expect_error(gq_mapgl_layer(base(), "k", pts(), classes = cls), "no column `nope`")
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(order = 1L, geometry = g)
+  expect_error(gq_mapgl_layer(base(ln), "s", ln, color = "#000000", width = "stream_order"),
+               "no column `stream_order`")
+  expect_error(gq_mapgl_layer(base(), "p", pts(), color = "#000000", popup = "nope"),
+               "no column `nope`")
+  num <- pts()
+  num$sp <- c(1, 2, 1)
+  txt <- list(field = "sp", values = c("1", "2"), colors = c("#111111", "#222222"))
+  expect_error(gq_mapgl_layer(base(), "k", num, classes = txt), "holds numbers but its classes are strings")
+})
+
+test_that("the network's layers get the same checks", {
+  reg <- gq_reg_main()
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(stream_order = 1L, geometry = g)
+  expect_error(gq_mapgl_network(base(ln), streams = ln, water = polys("x"), ids = c(water = "x", streams = "x")),
+               "already has a layer `x`")
+  pt_streams <- pts()
+  pt_streams$stream_order <- 1L
+  expect_error(gq_mapgl_network(base(), streams = pt_streams), "drawn as \"circle\"|not a point")
+  bad <- reg
+  bad$layers$lake$fill$color <- NULL
+  expect_error(gq_mapgl_network(base(polys("x")), water = polys("x"), reg = bad), "carries no colour")
+  bad$layers$lake$type <- "line"
+  expect_error(gq_mapgl_network(base(polys("x")), water = polys("x"), reg = bad), "line layer")
 })

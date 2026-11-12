@@ -83,3 +83,16 @@
   under a legend of every class); a duplicate source or layer id is refused (MapLibre throws
   and drops everything after it), in `gq_mapgl_layer()` and `gq_mapgl_network()`. Parity still
   identical with the densified bounds. New tests red on the pre-fix tree.
+- Round 3 (`review-round3.md`, mechanism + enumeration): 5 bugs, 4 fragile, every one a round-1/2
+  fix missing from a sibling form of an argument. Mechanism named by the reviewer: each guard was
+  attached to the form of the argument in front of the fix, not to the outcome it protects.
+  Structural fix rather than per-row patches:
+  - `gq_mapgl_layer()` now checks the data it draws, from `x` or parsed from the GeoJSON source
+    already on the map (`source_frame()`): geometry decides the type (`layer_type()`, a given
+    `type` must agree); every `["get", col]` in colour, opacity, width and popup must name a
+    column, and a `match` must compare like kinds (`check_reads()`); the registry field check
+    and legend filter read the same data.
+  - `gq_mapgl_network()` now draws both layers through `gq_mapgl_layer()` (a second registry
+    translation had skipped every check), with `type` pinned to fill and line.
+  - all-empty extent refused in the basemap; a partly named switch gets the ids as labels.
+  Parity still identical; new tests red on the pre-fix tree; article re-rendered.

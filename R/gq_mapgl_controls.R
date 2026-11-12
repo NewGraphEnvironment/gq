@@ -33,6 +33,11 @@ gq_mapgl_controls <- function(map, layers = NULL, position = "top-right",
   have <- vapply(map$x$layers, `[[`, "", "id")
   if (is.null(layers)) layers <- have
   if (!is.character(layers)) stop("`layers` must be layer ids", call. = FALSE)
+  # a partly named vector would give the unnamed layers a switch with no text
+  if (!is.null(names(layers))) {
+    blank <- is.na(names(layers)) | !nzchar(names(layers))
+    names(layers)[blank] <- layers[blank]
+  }
   miss <- setdiff(unname(layers), have)
   if (length(miss)) {
     stop("the map has no layer ", paste0("`", miss, "`", collapse = ", "), call. = FALSE)

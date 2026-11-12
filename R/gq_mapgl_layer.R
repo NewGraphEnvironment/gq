@@ -87,51 +87,64 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
   if (sum(!is.null(key), !is.null(classes), !is.null(color)) != 1L) {
     stop("give exactly one of `key`, `classes` or `color`", call. = FALSE)
   }
-  if (!is.null(x) && !nrow(x)) stop("`x` has no rows to draw", call. = FALSE)
-  have_src <- vapply(map$x$sources, `[[`, "", "id")
-  if (is.null(x) && !source %in% have_src) {
-    stop("`x` is NULL and the map has no source `", source, "` to draw", call. = FALSE)
-  }
   # MapLibre throws on a second source or layer with an id already on the map,
   # and every source and layer after it then fails to draw
-  if (!is.null(x) && source %in% have_src) {
-    stop("the map already has a source `", source, "`; give `x = NULL` to draw it again, ",
-         "or another `source`", call. = FALSE)
-  }
   if (id %in% vapply(map$x$layers, `[[`, "", "id")) {
     stop("the map already has a layer `", id, "`", call. = FALSE)
   }
+
+  # Every check below is made on the data the layer will draw, whichever way it
+  # arrives -- as `x`, or as a source already on the map -- because a guard
+  # written against one form of an argument let the other forms through to a
+  # map drawn wrong without an error (gq#18 review rounds 1-3).
+  have_src <- vapply(map$x$sources, `[[`, "", "id")
+  if (!is.null(x)) {
+    if (!inherits(x, c("sf", "sfc"))) stop("`x` must be an sf or sfc", call. = FALSE)
+    if (source %in% have_src) {
+      stop("the map already has a source `", source, "`; give `x = NULL` to draw it again, ",
+           "or another `source`", call. = FALSE)
+    }
+    if (!length(sf::st_geometry(x))) stop("`x` has no rows to draw", call. = FALSE)
+    d <- mapgl_data(x, digits)
+    drawn <- list(props = sf::st_drop_geometry(d),
+                  types = as.character(sf::st_geometry_type(d)[!sf::st_is_empty(d)]))
+  } else {
+    if (!source %in% have_src) {
+      stop("`x` is NULL and the map has no source `", source, "` to draw", call. = FALSE)
+    }
+    drawn <- source_frame(map, source)
+  }
+  type <- layer_type(drawn$types, type)
 
   lyr <- NULL
   if (!is.null(key)) {
     if (is.null(reg)) stop("`key` needs `reg`, such as gq_reg_main()", call. = FALSE)
     lyr <- reg_layer(reg, key)
   }
-  type <- or_null(type, layer_type(x, lyr, map, source))
   sty <- layer_paint(type, lyr, classes, color, field, key, legend_title)
+  if (!is.null(sty$keys) && !sty$field %in% names(drawn$props)) {
+    stop("the data has no `", sty$field, "` column, which registry layer `", key,
+         "` is classified on; name the column with `field =`", call. = FALSE)
+  }
+  check_reads(list(sty$color, sty$opacity, if (is.character(width)) list("get", width),
+                   if (is.character(popup)) list("get", popup) else popup),
+              drawn$props, source)
   if (!is.null(sty$keys)) {
     # A legend naming classes the map does not draw is a common and quiet error, so
-    # a registry layer's legend lists only the classes in `x`, one row per look.
-    if (!is.null(x) && !sty$field %in% names(x)) {
-      # the match would read a property no feature has: every feature in the
-      # fallback grey, under a legend of classes the map does not draw
-      stop("`x` has no `", sty$field, "` column, which registry layer `", key,
-           "` is classified on; name the column with `field =`", call. = FALSE)
-    }
-    keep <- if (!is.null(x)) sty$keys %in% x[[sty$field]] else TRUE
-    keep <- rep_len(keep, length(sty$keys))
+    # a registry layer's legend lists only the classes in the data, one row per look.
+    keep <- sty$keys %in% drawn$props[[sty$field]]
     # Collapse looks among the classes kept, not before: QGIS groups several keys
     # under one look (roads_dra's Highway is RRP, RH1 and RH2), and dropping the
     # first key before the filter dropped the row for data holding only the others.
     keep[keep] <- !duplicated(paste(sty$labels, sty$swatches)[keep])
-    if (!any(keep)) stop("`x` has none of registry layer `", key, "`'s classes in `",
+    if (!any(keep)) stop("the data has none of registry layer `", key, "`'s classes in `",
                          sty$field, "`", call. = FALSE)
     sty$labels <- sty$labels[keep]
     sty$swatches <- sty$swatches[keep]
   }
 
   args <- list(id = id, source = source)
-  if (!is.null(x)) map <- mapgl::add_source(map, source, mapgl_data(x, digits))
+  if (!is.null(x)) map <- mapgl::add_source(map, source, d)
   p <- function(prop) paste0(type, "_", prop)
   args[[p("color")]] <- sty$color
   op <- or_null(opacity, sty$opacity)
@@ -160,6 +173,7 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
                 layer_id = id, unique_id = paste0("legend_", gsub("[^A-Za-z0-9_-]", "_", id)),
                 add = !is.null(map$x$legend_html))
     if (type == "circle") leg$patch_shape <- "circle"
+    if (type == "line" && isTRUE(sty$single)) leg$patch_shape <- "line"
     map <- do.call(mapgl::add_categorical_legend, c(list(map), leg))
     map <- legend_stack(map)
   }
@@ -195,27 +209,87 @@ legend_stack <- function(map) {
 
 # --- internal helpers --------------------------------------------------------
 
-#' The MapLibre layer type for an sf's geometry, a registry layer's type, or
-#' the type of a layer already drawing the same source
+#' The MapLibre layer type for the geometry a layer draws
+#'
+#' Read from the data, never from the registry or an existing layer: those name
+#' what the layer should be, and only the data says what it would draw. A
+#' `type` the caller gives must agree with it.
 #' @noRd
-layer_type <- function(x, lyr, map = NULL, source = NULL) {
-  if (!is.null(x)) {
-    g <- unique(as.character(sf::st_geometry_type(x)))
-    if (all(g %in% c("LINESTRING", "MULTILINESTRING"))) return("line")
-    if (all(g %in% c("POLYGON", "MULTIPOLYGON"))) return("fill")
-    if (all(g %in% c("POINT", "MULTIPOINT"))) return("circle")
-    stop("cannot draw mixed or unsupported geometry: ", paste(g, collapse = ", "),
-         call. = FALSE)
+layer_type <- function(types, type = NULL) {
+  g <- unique(toupper(types))
+  if (!length(g)) stop("the data has no geometry to draw", call. = FALSE)
+  drawn <- if (all(g %in% c("LINESTRING", "MULTILINESTRING"))) {
+    "line"
+  } else if (all(g %in% c("POLYGON", "MULTIPOLYGON"))) {
+    "fill"
+  } else if (all(g %in% c("POINT", "MULTIPOINT"))) {
+    "circle"
+  } else {
+    stop("cannot draw mixed or unsupported geometry: ", paste(g, collapse = ", "), call. = FALSE)
   }
-  t <- lyr$type
-  if (is.null(t)) {
-    same <- Filter(function(l) identical(l$source, source), map$x$layers)
-    if (length(same)) return(same[[1]]$type)
-    stop("give `type`: `x` is NULL, there is no `key`, and no layer draws `", source, "` yet",
-         call. = FALSE)
+  if (!is.null(type) && !identical(type, drawn)) {
+    stop("`type` is \"", type, "\", but the data is drawn as \"", drawn, "\"", call. = FALSE)
   }
-  switch(t, line = "line", polygon = "fill", point = "circle",
-         stop("Unknown layer type: ", t, call. = FALSE))
+  drawn
+}
+
+#' The properties and geometry types of a GeoJSON source already on the map
+#' @noRd
+source_frame <- function(map, source) {
+  src <- Filter(function(s) identical(s$id, source), map$x$sources)[[1]]
+  if (!is.character(src$data) || length(src$data) != 1L) {
+    stop("source `", source, "` is not GeoJSON gq can read; give the data as `x`", call. = FALSE)
+  }
+  j <- jsonlite::fromJSON(src$data, simplifyVector = TRUE)
+  f <- j$features
+  if (!length(f) || !NROW(f)) stop("source `", source, "` has no features", call. = FALSE)
+  props <- if (is.data.frame(f$properties)) f$properties else data.frame(row.names = seq_len(NROW(f)))
+  types <- f$geometry$type
+  list(props = props, types = types[!is.na(types)])
+}
+
+#' Refuse a paint expression or popup that reads what the data does not hold
+#'
+#' MapLibre reads a missing property as null and a mismatched one as no match,
+#' so either draws the fallback colour or width with no error anywhere. Every
+#' `["get", column]` must name a column, and a `match` must compare like with
+#' like: its comparison is type-strict, so text keys never match numbers.
+#' @noRd
+check_reads <- function(exprs, props, source) {
+  gets <- character()
+  walk <- function(e) {
+    if (!is.list(e)) return()
+    if (length(e) == 2L && identical(e[[1]], "get") && is.character(e[[2]])) {
+      gets <<- c(gets, e[[2]])
+      return()
+    }
+    if (length(e) >= 4L && identical(e[[1]], "match") && is.list(e[[2]]) &&
+          identical(e[[2]][[1]], "get")) {
+      col <- e[[2]][[2]]
+      labels <- e[seq(3L, length(e) - 1L, by = 2L)]
+      if (col %in% names(props) && length(labels)) {
+        if (value_kind(props[[col]]) != value_kind(labels[[1]])) {
+          stop("column `", col, "` holds ", value_kind(props[[col]]), "s but its classes are ",
+               value_kind(labels[[1]]), "s, and MapLibre matches neither to the other; ",
+               "convert the column", call. = FALSE)
+        }
+      }
+    }
+    for (k in e) walk(k)
+  }
+  for (e in exprs) walk(e)
+  miss <- setdiff(unique(gets), names(props))
+  if (length(miss)) {
+    stop("the data for `", source, "` has no column ", paste0("`", miss, "`", collapse = ", "),
+         ", which the layer's style or popup reads", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+#' The JSON kind a value is written as
+#' @noRd
+value_kind <- function(v) {
+  if (is.numeric(v)) "number" else if (is.logical(v)) "boolean" else "string"
 }
 
 #' Colour, opacity, width and legend entries for one layer, from one source

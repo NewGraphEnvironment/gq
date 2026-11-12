@@ -27,3 +27,8 @@ test_that("gq_mapgl_controls switches every layer by default, and can add nothin
 test_that("gq_mapgl_controls refuses a layer the map does not have", {
   expect_error(gq_mapgl_controls(two_layers(), c(X = "c")), "no layer `c`")
 })
+
+test_that("a partly named switch shows the ids it was not given names for", {
+  m <- gq_mapgl_controls(two_layers(), c(First = "a", "b"))
+  expect_identical(m$x$layers_control$layers, c(First = "a", b = "b"))
+})

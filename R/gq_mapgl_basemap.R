@@ -36,7 +36,9 @@ gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap"
   if (!inherits(x, c("sf", "sfc"))) {
     stop("`x` must be an sf, an sfc or a bbox", call. = FALSE)
   }
-  if (length(sf::st_geometry(x)) == 0L) stop("`x` has no geometry to fit", call. = FALSE)
+  if (length(sf::st_geometry(x)) == 0L || all(sf::st_is_empty(sf::st_geometry(x)))) {
+    stop("`x` has no geometry to fit", call. = FALSE)
+  }
   x <- densify_extent(sf::st_geometry(x))
   style <- switch(basemap,
                   voyager = mapgl::carto_style("voyager"),

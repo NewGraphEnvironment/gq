@@ -137,3 +137,8 @@ test_that("an extent with no size still fits: one projected point, as a bbox or 
   expect_identical(as.numeric(gq_mapgl_basemap(sf::st_bbox(p))$x$additional_params$bounds), from_sf)
   expect_identical(from_sf[1], from_sf[3])
 })
+
+test_that("an extent whose geometries are all empty is refused", {
+  e <- sf::st_sf(a = 1, geometry = sf::st_sfc(sf::st_point(), crs = 3005))
+  expect_error(gq_mapgl_basemap(e), "no geometry")
+})

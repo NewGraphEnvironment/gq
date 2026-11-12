@@ -40,21 +40,13 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
   mapgl_need()
   check_digits(digits)
   ids <- as.list(ids)
-  taken <- intersect(unlist(ids[c(if (!is.null(water) && nrow(water)) "water",
-                                  if (!is.null(streams) && nrow(streams)) "streams")]),
-                     c(vapply(map$x$sources, `[[`, "", "id"), vapply(map$x$layers, `[[`, "", "id")))
-  if (length(taken)) {
-    stop("the map already has a source or layer `", taken[[1]], "`; set `ids`", call. = FALSE)
-  }
+  # Both layers go through gq_mapgl_layer(), so they get its checks on the data
+  # they draw: geometry, columns, ids. A second translation of the registry here
+  # had skipped them (gq#18 review round 3).
   if (!is.null(water) && nrow(water)) {
     id <- or_null(ids[["water"]], stop("`ids` must name a water id", call. = FALSE))
-    paint <- gq_mapgl_style(reg_layer(reg, "lake"))$paint
-    map <- map |>
-      mapgl::add_source(id, mapgl_data(water, digits)) |>
-      mapgl::add_fill_layer(id, source = id, fill_color = paint$`fill-color`,
-                            fill_opacity = paint$`fill-opacity`,
-                            fill_outline_color = paint$`fill-outline-color`)
-    if (isTRUE(legend)) map <- network_legend(map, id, "Lake", paint$`fill-color`, "square")
+    map <- gq_mapgl_layer(map, id, water, key = "lake", reg = reg, type = "fill", legend = legend,
+                          legend_title = "Lake", digits = digits)
   }
   if (!is.null(streams) && nrow(streams)) {
     id <- or_null(ids[["streams"]], stop("`ids` must name a streams id", call. = FALSE))
@@ -63,35 +55,20 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
            "set `order_field`", call. = FALSE)
     }
     lyr <- reg_layer(reg, "streams_all")
-    fld <- lyr$classification$field
-    if (fld %in% names(streams)) {
-      col <- gq_mapgl_classes(lyr, "line-color")
-      op <- gq_mapgl_classes(lyr, "line-opacity")
+    if (lyr$classification$field %in% names(streams)) {
+      map <- gq_mapgl_layer(map, id, streams, key = "streams_all", reg = reg, type = "line",
+                            width = order_field, widths = widths, legend = legend,
+                            legend_title = "Streams", digits = digits)
     } else {
-      first <- lyr$classification$classes[[setdiff(names(lyr$classification$classes), "__empty__")[1]]]
-      col <- first$color
-      op <- or_null(first$opacity, 1)
-    }
-    first <- lyr$classification$classes[[setdiff(names(lyr$classification$classes), "__empty__")[1]]]
-    map <- map |>
-      mapgl::add_source(id, mapgl_data(streams, digits)) |>
-      mapgl::add_line_layer(id, source = id, line_color = col, line_opacity = op,
-                            line_width = order_width(order_field, widths))
-    if (isTRUE(legend)) {
-      map <- network_legend(map, id, or_null(first$label, "Stream"), first$color, "line")
+      keys <- setdiff(names(lyr$classification$classes), "__empty__")
+      first <- lyr$classification$classes[[keys[1]]]
+      map <- gq_mapgl_layer(map, id, streams, color = first$color, type = "line",
+                            opacity = or_null(first$opacity, 1), width = order_field,
+                            widths = widths, legend = legend,
+                            legend_title = or_null(first$label, "Stream"), digits = digits)
     }
   }
   map
-}
-
-#' A one-row, untitled legend tied to a network layer
-#' @noRd
-network_legend <- function(map, id, label, color, shape) {
-  map <- mapgl::add_categorical_legend(map, legend_title = NULL, values = label, colors = color,
-                                       patch_shape = shape, position = "top-left", layer_id = id,
-                                       unique_id = paste0("legend_", gsub("[^A-Za-z0-9_-]", "_", id)),
-                                       add = !is.null(map$x$legend_html))
-  legend_stack(map)
 }
 
 #' A registry layer by key, or an error naming it
