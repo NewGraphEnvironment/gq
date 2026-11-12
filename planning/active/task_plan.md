@@ -42,13 +42,14 @@ need the same pipeline.
   meaning.
 
 ## Phase 1: Per-class opacity in mapgl (#107)
-- [ ] Failing tests: `bec_zone` gives a `fill-opacity` match expression whose values are 0.25.
+- [x] Failing tests: `bec_zone` gives a `fill-opacity` match expression whose values are 0.25.
       A mixed-opacity layer gives 1 for the classes that carry no opacity. A line layer gives
       `line-opacity`.
-- [ ] Implement it in `R/gq_mapgl_style.R`: `gq_mapgl_classes(layer, property =)` builds the
+- [x] Implement it in `R/gq_mapgl_style.R`: `gq_mapgl_classes(layer, property =)` builds the
       opacity match when `property` ends in `-opacity`, and reads `NA` as 1, as
       `tmap_alpha_args()` does.
-- [ ] Update the roxygen, an example and NEWS. The commit says `Fixes #107`.
+- [x] Update the roxygen and an example. The commit says `Fixes #107`. (NEWS is written at
+      merge by `/gh-pr-merge`, so the branch leaves it alone; the PR body carries the note.)
 
 ## Phase 2: Basemap and network
 - [ ] Tests first. `gq_mapgl_basemap(bbox_or_sf, basemap =)` returns a `maplibregl` widget with
@@ -94,7 +95,7 @@ need the same pipeline.
 - [ ] `devtools::document()`, the examples for all five exports, `lintr` with a per-file
       comparison against main, and the README / CLAUDE.md function lists (the Components list
       gains the composition (mapgl) entries).
-- [ ] NEWS entry.
+- [ ] NEWS: none on the branch; the PR body's summary is what `/gh-pr-merge` writes from.
 
 ## Owed at the end (reported, done after merge)
 - [ ] File a knowledge issue: rewrite `knw_compare_mapgl()` on gq's helpers and pin gq to the

@@ -139,3 +139,57 @@ test_that("gq_mapgl_classes refuses a layer with no type at all", {
   expect_null(untyped$type)                                   # premise
   expect_error(gq_mapgl_classes(untyped), "Unknown layer type")
 })
+
+# --- per-class opacity (#107) -------------------------------------------------
+
+test_that("gq_mapgl_classes gives bec_zone its registry opacity", {
+  reg <- gq_reg_main()
+  # premise: every bec_zone class carries 0.25, so one value stands for all
+  ops <- vapply(reg$layers$bec_zone$classification$classes,
+                function(x) x$opacity %||% NA_real_, numeric(1))
+  expect_true(all(ops == 0.25))
+  expect_identical(gq_mapgl_classes(reg$layers$bec_zone, "fill-opacity"), 0.25)
+})
+
+test_that("gq_mapgl_classes reads a class with no opacity as opaque", {
+  # The extractor records opacity only below 1, so an absent opacity is a class
+  # drawn at full opacity, as tmap_alpha_args() reads it (#71).
+  layer <- list(
+    type = "line",
+    classification = list(field = "road_type", classes = list(
+      highway = list(color = "#c0392b"),
+      track = list(color = "#888888", opacity = 0.6),
+      `__empty__` = list(color = "#888888", opacity = 0.2)
+    ))
+  )
+  expr <- gq_mapgl_classes(layer, "line-opacity")
+  expect_identical(expr, list("match", list("get", "road_type"),
+                              "highway", 1, "track", 0.6, 1))
+})
+
+test_that("gq_mapgl_classes builds roads_dra's mixed opacity from the registry", {
+  reg <- gq_reg_main()
+  cls <- reg$layers$roads_dra$classification$classes
+  cls <- cls[names(cls) != "__empty__"]
+  want <- vapply(cls, function(x) x$opacity %||% 1, numeric(1))
+  expect_true(any(want < 1) && any(want == 1))              # premise: mixed
+  expr <- gq_mapgl_classes(reg$layers$roads_dra, "line-opacity")
+  got <- unlist(expr[seq(4, length(expr) - 1, by = 2)])
+  expect_identical(unlist(expr[seq(3, length(expr) - 1, by = 2)]), names(cls))
+  expect_identical(unname(got), unname(want))
+  expect_identical(expr[[length(expr)]], 1)
+})
+
+test_that("gq_mapgl_classes still builds colour for a colour property or none", {
+  reg <- gq_reg_main()
+  col <- gq_mapgl_classes(reg$layers$roads_dra)
+  expect_identical(gq_mapgl_classes(reg$layers$roads_dra, "line-color"), col)
+  expect_true(all(grepl("^#", unlist(col[seq(4, length(col), by = 2)]))))
+})
+
+test_that("gq_mapgl_classes refuses a property it cannot build", {
+  reg <- gq_reg_main()
+  expect_error(gq_mapgl_classes(reg$layers$roads_dra, "line-width"), "property")
+  expect_error(gq_mapgl_classes(reg$layers$roads_dra, c("a-color", "b-color")),
+               "property")
+})

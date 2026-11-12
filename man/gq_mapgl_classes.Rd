@@ -9,15 +9,23 @@ gq_mapgl_classes(layer, property = NULL)
 \arguments{
 \item{layer}{A classified layer entry from the registry.}
 
-\item{property}{The paint property to set (e.g., "fill-color", "line-color",
-"circle-color").}
+\item{property}{The paint property the expression is for. \code{NULL} or a
+colour property (\code{"fill-color"}, \code{"line-color"}, \code{"circle-color"}) builds
+the colour expression; an opacity property (\code{"fill-opacity"},
+\code{"line-opacity"}, \code{"circle-opacity"}) builds the opacity one.}
 }
 \value{
-A list representing a MapLibre match expression.
+A list representing a MapLibre match expression. For opacity, a
+single number when every class shares one.
 }
 \description{
 For categorized layers, returns a MapLibre-style match expression
-suitable for use in paint properties.
+suitable for use in paint properties: each class's colour, or with an
+opacity \code{property}, each class's opacity.
+}
+\details{
+A class with no opacity is drawn opaque, not left unknown: the extractor
+records opacity only below 1, which is how the tmap translators read it too.
 }
 \examples{
 path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -27,6 +35,13 @@ reg <- gq_registry_read(path)
 expr <- gq_mapgl_classes(reg$layers$road)
 # Returns: ["match", ["get", "road_type"], "highway", "#c0392b", "arterial", "#e67e22", "#888888"]
 str(expr)
+
+# Per-class opacity: one number when every class shares it ...
+reg_main <- gq_reg_main()
+gq_mapgl_classes(reg_main$layers$bec_zone, "fill-opacity")
+
+# ... and a match expression, 1 for the opaque classes, when they differ
+str(gq_mapgl_classes(reg_main$layers$roads_dra, "line-opacity")[1:6])
 
 # Use with mapgl:
 # maplibre() |>
