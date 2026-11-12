@@ -192,4 +192,8 @@ test_that("gq_mapgl_classes refuses a property it cannot build", {
   expect_error(gq_mapgl_classes(reg$layers$roads_dra, "line-width"), "property")
   expect_error(gq_mapgl_classes(reg$layers$roads_dra, c("a-color", "b-color")),
                "property")
+  # the registry keeps outline colour and opacity per class apart from the fill,
+  # so an outline or stroke property must not be answered with the fill's values
+  expect_error(gq_mapgl_classes(reg$layers$bec_zone, "fill-outline-color"), "property")
+  expect_error(gq_mapgl_classes(reg$layers$bec_zone, "circle-stroke-opacity"), "property")
 })

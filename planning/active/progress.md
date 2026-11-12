@@ -15,3 +15,9 @@
   `esri_topo_style()`, `order_width()`, `reg_layer()`. 33 tests pass.
 - Found: `maplibre(bounds =)` reduces an `sf` to its bbox but stores an `sfc` raw, so the basemap
   wraps the geometry in an `sf`.
+- Plan review (Plan agent) landed as Phase 3 began: `planning/active/review-plan.md`. Already met
+  by the Phase 3 draft: 2, 4-9 (fixed legend ids, computed `add`, `width` column, typed classes,
+  hex passthrough, typed adders, source sharing). Taken now: 17 (property check restricted to
+  `^(fill|line|circle)-(color|opacity)$`, test added), 15 (plan text). Folded into the plan: 12,
+  13, 19 (Phase 5), 1/3/11/21/22 (Phase 4 parity test: seeded, controls off, water in fixture,
+  default-removal mutation). 16 (14 stacked legends) is checked in the browser in Phase 4.

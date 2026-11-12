@@ -42,7 +42,7 @@ need the same pipeline.
   meaning.
 
 ## Phase 1: Per-class opacity in mapgl (#107)
-- [x] Failing tests: `bec_zone` gives a `fill-opacity` match expression whose values are 0.25.
+- [x] Failing tests: `bec_zone` gives a `fill-opacity` of 0.25 (a scalar: every class shares it).
       A mixed-opacity layer gives 1 for the classes that carry no opacity. A line layer gives
       `line-opacity`.
 - [x] Implement it in `R/gq_mapgl_style.R`: `gq_mapgl_classes(layer, property =)` builds the
@@ -95,6 +95,11 @@ need the same pipeline.
 - [ ] `devtools::document()`, the examples for all five exports, `lintr` with a per-file
       comparison against main, and the README / CLAUDE.md function lists (the Components list
       gains the composition (mapgl) entries).
+- [ ] CLAUDE.md: drop "mapgl does not read per-class opacity yet (gq#107)" (review 12), add the
+      mapgl composition functions, and name the known gaps: classified registry layers carry no
+      per-class width or dash in mapgl, and a registry point shape draws as a circle (review 19).
+- [ ] Legend coverage (review 13): the new article either legends what `gq_mapgl_network()` draws
+      or `test-vignette_legend_coverage.R` records why it is exempt.
 - [ ] NEWS: none on the branch; the PR body's summary is what `/gh-pr-merge` writes from.
 
 ## Owed at the end (reported, done after merge)
@@ -110,7 +115,7 @@ need the same pipeline.
 - [ ] `/planning-archive` on completion
 
 **How each change is proved:**
-- **Opacity:** `bec_zone`'s expression carries 0.25, and the mixed layer carries 1 where a class
+- **Opacity:** `bec_zone` gives 0.25, and the mixed layer carries 1 where a class
   has no opacity.
 - **knowledge parity:** the widget spec is `identical()`, and the mutation turns it red.
 - **Second caller:** the test counts layers and legends against the species present in the data.

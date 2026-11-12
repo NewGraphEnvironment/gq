@@ -113,9 +113,12 @@ mapgl_point <- function(layer) {
 #' @param property The paint property the expression is for. `NULL` or a
 #'   colour property (`"fill-color"`, `"line-color"`, `"circle-color"`) builds
 #'   the colour expression; an opacity property (`"fill-opacity"`,
-#'   `"line-opacity"`, `"circle-opacity"`) builds the opacity one.
+#'   `"line-opacity"`, `"circle-opacity"`) builds the opacity one. An outline
+#'   or stroke property is refused: the registry keeps those per class apart
+#'   from the fill.
 #' @return A list representing a MapLibre match expression. For opacity, a
-#'   single number when every class shares one.
+#'   single number when every class shares one, which is 1 when no class
+#'   carries an opacity.
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -161,7 +164,7 @@ gq_mapgl_classes <- function(layer, property = NULL) {
   }
 
   ok_property <- is.character(property) && length(property) == 1L &&
-    grepl("-(color|opacity)$", property)
+    grepl("^(fill|line|circle)-(color|opacity)$", property)
   if (!is.null(property) && !ok_property) {
     stop("`property` must be one colour or opacity paint property, ",
          "such as \"fill-color\" or \"line-opacity\"", call. = FALSE)

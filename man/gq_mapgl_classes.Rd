@@ -12,11 +12,14 @@ gq_mapgl_classes(layer, property = NULL)
 \item{property}{The paint property the expression is for. \code{NULL} or a
 colour property (\code{"fill-color"}, \code{"line-color"}, \code{"circle-color"}) builds
 the colour expression; an opacity property (\code{"fill-opacity"},
-\code{"line-opacity"}, \code{"circle-opacity"}) builds the opacity one.}
+\code{"line-opacity"}, \code{"circle-opacity"}) builds the opacity one. An outline
+or stroke property is refused: the registry keeps those per class apart
+from the fill.}
 }
 \value{
 A list representing a MapLibre match expression. For opacity, a
-single number when every class shares one.
+single number when every class shares one, which is 1 when no class
+carries an opacity.
 }
 \description{
 For categorized layers, returns a MapLibre-style match expression
