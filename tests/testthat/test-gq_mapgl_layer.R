@@ -181,8 +181,8 @@ test_that("a registry layer with no colour is refused, not drawn in MapLibre's d
 })
 
 test_that("a popup on a styled column leaves the style reading numbers", {
-  ln <- sf::st_sf(stream_order = 3L, geometry = sf::st_sfc(
-    sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326))
+  g <- sf::st_sfc(sf::st_linestring(rbind(c(-126.5, 54.4), c(-126.4, 54.5))), crs = 4326)
+  ln <- sf::st_sf(stream_order = 3L, geometry = g)
   pop <- gq_mapgl_popup(ln, c("Stream order" = "stream_order"))
   m <- base(ln) |> gq_mapgl_layer("s", pop$data, color = "#000000", width = "stream_order",
                                   popup = pop$expr)
