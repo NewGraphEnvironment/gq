@@ -115,7 +115,7 @@ need the same pipeline.
 - [x] Tests pass (`devtools::test()`, 0 failures)
 - [x] `/code-check` clean (once over the branch with `/code-check branch`)
 - [x] PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `/planning-archive` on completion
 
 **How each change is proved:**
 - **Opacity:** `bec_zone` gives 0.25, and the mixed layer carries 1 where a class
