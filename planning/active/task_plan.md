@@ -52,15 +52,15 @@ need the same pipeline.
       merge by `/gh-pr-merge`, so the branch leaves it alone; the PR body carries the note.)
 
 ## Phase 2: Basemap and network
-- [ ] Tests first. `gq_mapgl_basemap(bbox_or_sf, basemap =)` returns a `maplibregl` widget with
+- [x] Tests first. `gq_mapgl_basemap(bbox_or_sf, basemap =)` returns a `maplibregl` widget with
       the expected style and bounds. `esri_topo` carries the attribution. An unknown basemap
       errors.
-- [ ] `R/gq_mapgl_basemap.R` holds the basemap, the internal esri style helper and
+- [x] `R/gq_mapgl_basemap.R` holds the basemap, the internal esri style helper and
       `round_sfc()`.
-- [ ] Tests first. `gq_mapgl_network(map, streams =, water =, reg =, order_field =, widths =)`
+- [x] Tests first. `gq_mapgl_network(map, streams =, water =, reg =, order_field =, widths =)`
       adds a water fill styled from registry `lake` and stream lines whose width is an
       `interpolate()` on stream order. Either input may be `NULL`.
-- [ ] `R/gq_mapgl_network.R`.
+- [x] `R/gq_mapgl_network.R`.
 
 ## Phase 3: Layers, legends, popups, controls
 - [ ] Tests first. `gq_mapgl_layer()`:
