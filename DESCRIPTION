@@ -24,6 +24,8 @@ RoxygenNote: 7.3.3
 Suggests:
     bookdown,
     farver,
+    htmltools,
+    htmlwidgets,
     knitr,
     mapgl,
     maptiles,

@@ -84,3 +84,32 @@ test_that("the parity holds with no water", {
   ours <- withr::with_seed(2, knw_rewrite(knw_segments(), title = "T"))
   expect_identical(ours$x, hand$x)
 })
+
+# --- the second caller: one switchable layer per species, over a stream network --------------
+
+test_that("a species map over a stream network is a few calls", {
+  reg <- gq_reg_main()
+  obs <- neexdzii_fish_obs
+  cols <- c(RB = "#377EB8", BT = "#E41A1C", CO = "#FF7F00", ZZ = "#000000")
+  present <- intersect(names(cols), obs$species_code)
+  expect_identical(present, c("RB", "BT", "CO"))            # premise: ZZ is not in the data
+
+  m <- gq_mapgl_basemap(neexdzii_wsd, "positron") |>
+    gq_mapgl_network(streams = neexdzii_streams["stream_order"], water = neexdzii_lakes["gnis_name_1"],
+                     reg = reg, legend = TRUE)
+  for (k in present) {
+    pop <- gq_mapgl_popup(obs[obs$species_code == k, c("species_code", "life_stage")],
+                          c(Species = "species_code", "Life stage" = "life_stage"))
+    m <- gq_mapgl_layer(m, k, pop$data, color = cols[[k]], radius = 6, popup = pop$expr)
+  }
+  m <- gq_mapgl_controls(m, present)
+
+  ids <- vapply(m$x$layers, `[[`, "", "id")
+  expect_identical(ids, c("gq_water", "gq_streams", present))
+  expect_identical(m$x$layers_control$layers, present)
+  for (k in present) {
+    expect_match(m$x$legend_html, paste0('data-layer-id="', k, '"'))
+    n <- nrow(jsonlite::fromJSON(m$x$sources[[which(ids == k) ]]$data)$features)
+    expect_identical(n, sum(obs$species_code == k))
+  }
+})

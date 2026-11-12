@@ -60,7 +60,7 @@ or_null <- function(a, b) if (is.null(a)) b else a
 #' Stop early, and say so, when mapgl or sf is missing
 #' @noRd
 mapgl_need <- function() {
-  for (p in c("mapgl", "sf")) {
+  for (p in c("mapgl", "sf", "htmltools", "htmlwidgets")) {
     if (!requireNamespace(p, quietly = TRUE)) {
       stop("the ", p, " package is needed for gq's mapgl helpers", call. = FALSE)
     }

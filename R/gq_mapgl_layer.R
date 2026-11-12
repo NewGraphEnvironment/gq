@@ -13,6 +13,12 @@
 #' draw in tmap but MapLibre cannot read them and drops the whole layer, so
 #' they are converted here.
 #'
+#' Legends stack down the top-left corner in the order the layers were added,
+#' and a hidden layer's legend leaves no gap. mapgl draws every legend at the
+#' corner itself, one over another, so gq adds a stylesheet beside the map
+#' that lets them flow. A one-colour layer's legend is a single row named by
+#' `legend_title`, with no title above it.
+#'
 #' @param map A map from [gq_mapgl_basemap()].
 #' @param id The layer id: what [gq_mapgl_controls()] switches, and the
 #'   legend's `layer_id`.
@@ -31,7 +37,8 @@
 #'   `classes`.
 #' @param reg A registry, as from [gq_reg_main()]; read only with `key`.
 #' @param field Overrides the registry layer's classification field, as in
-#'   [gq_style()], when the data names the column differently.
+#'   [gq_style()], when the data names the column differently. A registry
+#'   layer's legend lists only the classes found in this column of `x`.
 #' @param type `"line"`, `"fill"` or `"circle"`. Read from `x`'s geometry, or
 #'   the registry layer's type, when not given.
 #' @param width A line width in pixels, a MapLibre expression, or the name of
@@ -43,7 +50,8 @@
 #'   one that grows with zoom.
 #' @param opacity An opacity for every feature, overriding the registry's.
 #' @param legend Add the layer's legend.
-#' @param legend_title The legend's title. Defaults to `id`.
+#' @param legend_title The legend's title, or for one colour the row's name.
+#'   Defaults to `id`.
 #' @param popup A column name, or the `expr` of [gq_mapgl_popup()].
 #' @param visible `FALSE` adds the layer switched off.
 #' @param digits Decimal places kept in the coordinates; 5 is about 1 m.
@@ -91,6 +99,16 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
   }
   type <- or_null(type, layer_type(x, lyr, map, source))
   sty <- layer_paint(type, lyr, classes, color, field, key, legend_title)
+  if (!is.null(sty$keys)) {
+    # A legend naming classes the map does not draw is a common and quiet error, so
+    # a registry layer's legend lists only the classes in `x`, one row per look.
+    keep <- if (!is.null(x) && sty$field %in% names(x)) sty$keys %in% x[[sty$field]] else TRUE
+    keep <- keep & !duplicated(paste(sty$labels, sty$swatches))
+    if (!any(keep)) stop("`x` has none of registry layer `", key, "`'s classes in `",
+                         sty$field, "`", call. = FALSE)
+    sty$labels <- sty$labels[keep]
+    sty$swatches <- sty$swatches[keep]
+  }
 
   args <- list(id = id, source = source)
   if (!is.null(x)) map <- mapgl::add_source(map, source, mapgl_data(x, digits))
@@ -115,13 +133,43 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
   map <- do.call(adder, c(list(map), args, list(...)))
 
   if (isTRUE(legend)) {
-    leg <- list(legend_title = legend_title, values = sty$labels, colors = sty$swatches,
-                position = "top-left", layer_id = id, unique_id = paste0("legend_", id),
+    # The legend id is a CSS selector in mapgl's stylesheet, so a layer id with a
+    # space ("rainbow trout") left its legend unstyled: no swatch, no box.
+    leg <- list(legend_title = if (isTRUE(sty$single)) NULL else legend_title,
+                values = sty$labels, colors = sty$swatches, position = "top-left",
+                layer_id = id, unique_id = paste0("legend_", gsub("[^A-Za-z0-9_-]", "_", id)),
                 add = !is.null(map$x$legend_html))
     if (type == "circle") leg$patch_shape <- "circle"
     map <- do.call(mapgl::add_categorical_legend, c(list(map), leg))
+    map <- legend_stack(map)
   }
   map
+}
+
+#' The stylesheet that stacks a map's legends down its top-left corner
+#'
+#' mapgl wraps the legends in one element and positions each at the corner
+#' absolutely, so a second legend is drawn over the first. Measured in the
+#' browser on mapgl 0.4.4.9000. These rules let the legends flow in the
+#' wrapper instead, and drop the empty heading of an untitled legend. They sit
+#' beside the widget's spec (`map$prepend`), not in it.
+#' @noRd
+legend_stack_css <- paste(
+  ".maplibregl-map > .mapboxgl-legend { position: absolute; top: 0; left: 0;",
+  "width: auto; height: auto; z-index: 1002; pointer-events: none; display: flex;",
+  "flex-direction: column; align-items: flex-start; }",
+  ".maplibregl-map > .mapboxgl-legend > .mapboxgl-legend.top-left { position: static !important;",
+  "pointer-events: auto; margin: 6px 0 0 10px !important; padding: 6px 12px !important; }",
+  ".maplibregl-map .mapboxgl-legend h2:empty { display: none; }"
+)
+
+#' @noRd
+legend_stack <- function(map) {
+  have <- vapply(map$prepend, function(x) identical(attr(x, "gq"), "legend_stack"), logical(1))
+  if (any(have)) return(map)
+  tag <- htmltools::tags$style(htmltools::HTML(legend_stack_css))
+  attr(tag, "gq") <- "legend_stack"
+  htmlwidgets::prependContent(map, tag)
 }
 
 
@@ -156,7 +204,7 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
   if (!is.null(color)) {
     col <- to_hex(color, "color")
     if (length(col) != 1L) stop("`color` must be one colour", call. = FALSE)
-    return(list(color = col, labels = legend_title, swatches = col))
+    return(list(color = col, labels = legend_title, swatches = col, single = TRUE))
   }
   if (!is.null(classes)) {
     need <- c("field", "values", "colors")
@@ -190,7 +238,7 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
     dash <- p[["line-dasharray"]]
     return(list(color = p[[paste0(pre, "color")]], opacity = p[[paste0(pre, "opacity")]],
                 outline = p[["fill-outline-color"]], width = p[["line-width"]],
-                radius = p[["circle-radius"]], dash = dash,
+                radius = p[["circle-radius"]], dash = dash, single = TRUE,
                 labels = legend_title, swatches = p[[paste0(pre, "color")]]))
   }
   col <- gq_mapgl_classes(lyr, paste0(type, "-color"))
@@ -207,8 +255,8 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
     or_null(cl$label, to_title(k))
   }, character(1))
   sw <- vapply(keys, function(k) lyr$classification$classes[[k]]$color, character(1))
-  keep <- !duplicated(paste(labs, sw))
-  list(color = col, opacity = op, labels = unname(labs[keep]), swatches = unname(sw[keep]))
+  list(color = col, opacity = op, labels = unname(labs), swatches = unname(sw), keys = keys,
+       field = or_null(field, lyr$classification$field))
 }
 
 #' Colours as hex, leaving hex untouched

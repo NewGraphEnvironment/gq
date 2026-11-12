@@ -121,3 +121,33 @@ test_that("gq_mapgl_layer refuses ambiguous or empty input", {
   mixed <- rbind(pts()[1, "sp"], sf::st_sf(sp = "x", geometry = g))
   expect_error(gq_mapgl_layer(base(), "a", mixed, color = "#000000"), "mixed")
 })
+
+test_that("legends get CSS-safe ids, one stacking stylesheet, and a one-colour row has no title", {
+  m <- base() |>
+    gq_mapgl_layer("rainbow trout", pts(), color = "#377EB8") |>
+    gq_mapgl_layer("coho", pts(), color = "#FF7F00")
+  expect_match(m$x$legend_html, 'id="legend_rainbow_trout"')
+  expect_match(m$x$legend_html, 'data-layer-id="rainbow trout"')   # still tied to the layer id
+  expect_match(m$x$legend_html, "<h2></h2>")                        # untitled
+  stack <- vapply(m$prepend, function(x) identical(attr(x, "gq"), "legend_stack"), logical(1))
+  expect_identical(sum(stack), 1L)                                  # once, not per legend
+  expect_match(as.character(m$prepend[[which(stack)]]), "position: static")
+  # classes keep their title
+  cls <- list(field = "sp", values = c("CO", "RB"), colors = c("#111111", "#222222"))
+  m2 <- base() |> gq_mapgl_layer("k", pts(), classes = cls, legend_title = "Species")
+  expect_match(m2$x$legend_html, "<h2>Species</h2>")
+  # no legend, no stylesheet
+  expect_null(gq_mapgl_layer(base(), "a", pts(), color = "#000000", legend = FALSE)$prepend)
+})
+
+test_that("a registry layer's legend lists only the classes in the data", {
+  reg <- gq_reg_main()
+  m <- base(polys("SBS")) |> gq_mapgl_layer("bec", polys("SBS"), key = "bec_zone", reg = reg)
+  expect_match(m$x$legend_html, ">SBS<")
+  expect_no_match(m$x$legend_html, ">ESSF<")
+  # the colour expression still carries every class
+  expect_identical(m$x$layers[[1]]$paint[["fill-color"]],
+                   gq_mapgl_classes(reg$layers$bec_zone, "fill-color"))
+  expect_error(gq_mapgl_layer(base(polys("XX")), "bec", polys("XX"), key = "bec_zone", reg = reg),
+               "none of registry layer")
+})

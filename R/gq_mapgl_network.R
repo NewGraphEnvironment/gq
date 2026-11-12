@@ -18,6 +18,8 @@
 #'   switch them in [gq_mapgl_controls()].
 #' @param order_field The stream order column of `streams`.
 #' @param widths Line width in pixels at order 1 and at order 6 and above.
+#' @param legend Add a one-row legend for each layer drawn, named by the
+#'   registry: `Lake`, and the stream class's label.
 #' @param digits Decimal places kept in the coordinates; 5 is about 1 m.
 #' @return `map`, with the layers added.
 #'
@@ -34,7 +36,7 @@
 gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_main(),
                              ids = c(water = "gq_water", streams = "gq_streams"),
                              order_field = "stream_order", widths = c(0.6, 3),
-                             digits = 5L) {
+                             legend = FALSE, digits = 5L) {
   mapgl_need()
   check_digits(digits)
   ids <- as.list(ids)
@@ -46,6 +48,7 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
       mapgl::add_fill_layer(id, source = id, fill_color = paint$`fill-color`,
                             fill_opacity = paint$`fill-opacity`,
                             fill_outline_color = paint$`fill-outline-color`)
+    if (isTRUE(legend)) map <- network_legend(map, id, "Lake", paint$`fill-color`, "square")
   }
   if (!is.null(streams) && nrow(streams)) {
     id <- or_null(ids[["streams"]], stop("`ids` must name a streams id", call. = FALSE))
@@ -63,12 +66,26 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
       col <- first$color
       op <- or_null(first$opacity, 1)
     }
+    first <- lyr$classification$classes[[setdiff(names(lyr$classification$classes), "__empty__")[1]]]
     map <- map |>
       mapgl::add_source(id, mapgl_data(streams, digits)) |>
       mapgl::add_line_layer(id, source = id, line_color = col, line_opacity = op,
                             line_width = order_width(order_field, widths))
+    if (isTRUE(legend)) {
+      map <- network_legend(map, id, or_null(first$label, "Stream"), first$color, "line")
+    }
   }
   map
+}
+
+#' A one-row, untitled legend tied to a network layer
+#' @noRd
+network_legend <- function(map, id, label, color, shape) {
+  map <- mapgl::add_categorical_legend(map, legend_title = NULL, values = label, colors = color,
+                                       patch_shape = shape, position = "top-left", layer_id = id,
+                                       unique_id = paste0("legend_", gsub("[^A-Za-z0-9_-]", "_", id)),
+                                       add = !is.null(map$x$legend_html))
+  legend_stack(map)
 }
 
 #' A registry layer by key, or an error naming it

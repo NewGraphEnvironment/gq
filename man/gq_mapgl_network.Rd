@@ -12,6 +12,7 @@ gq_mapgl_network(
   ids = c(water = "gq_water", streams = "gq_streams"),
   order_field = "stream_order",
   widths = c(0.6, 3),
+  legend = FALSE,
   digits = 5L
 )
 }
@@ -31,6 +32,9 @@ switch them in \code{\link[=gq_mapgl_controls]{gq_mapgl_controls()}}.}
 \item{order_field}{The stream order column of \code{streams}.}
 
 \item{widths}{Line width in pixels at order 1 and at order 6 and above.}
+
+\item{legend}{Add a one-row legend for each layer drawn, named by the
+registry: \code{Lake}, and the stream class's label.}
 
 \item{digits}{Decimal places kept in the coordinates; 5 is about 1 m.}
 }

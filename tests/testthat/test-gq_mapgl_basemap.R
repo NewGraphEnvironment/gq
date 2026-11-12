@@ -106,3 +106,14 @@ test_that("gq_mapgl_network refuses a network it cannot scale", {
   expect_error(gq_mapgl_network(gq_mapgl_basemap(st), streams = st, order_field = "order",
                                 widths = c(1, NA)), "two positive numbers")
 })
+
+test_that("gq_mapgl_network can legend what it draws, and does not by default", {
+  ring <- rbind(c(1e6, 1e6), c(1e6 + 200, 1e6), c(1e6 + 200, 1e6 + 200), c(1e6, 1e6))
+  water <- sf::st_sf(kind = "lake", geometry = sf::st_sfc(sf::st_polygon(list(ring)), crs = 3005))
+  m0 <- gq_mapgl_basemap(line_3005())
+  expect_null(gq_mapgl_network(m0, streams = line_3005(), water = water)$x$legend_html)
+  m <- gq_mapgl_network(m0, streams = line_3005(), water = water, legend = TRUE)
+  expect_match(m$x$legend_html, 'data-layer-id="gq_water".*Lake')
+  expect_match(m$x$legend_html, 'data-layer-id="gq_streams".*Stream')
+  expect_match(m$x$legend_html, "legend-shape-line")
+})

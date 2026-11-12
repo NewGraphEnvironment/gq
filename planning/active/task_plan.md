@@ -85,10 +85,10 @@ need the same pipeline.
       helpers on a small synthetic segment set, and checks `expect_identical(helper$x, hand$x)`.
       A restore-the-bug check proves it can fail: change one colour or one width and watch it go
       red.
-- [ ] A second-caller test builds the bundled Neexdzii fish observations, one layer per species,
+- [x] A second-caller test builds the bundled Neexdzii fish observations, one layer per species,
       over the streams and lakes in a few calls. It checks one layer and one legend per species
       present, and a toggle listing them all.
-- [ ] New article `vignettes/gq-mapgl-composition.Rmd` covers the Neexdzii species map and a short
+- [x] New article `vignettes/gq-mapgl-composition.Rmd` covers the Neexdzii species map and a short
       classified-layer example, written per `writing.md` (answer first, plain terms).
 
 ## Phase 5: Docs and release prep
@@ -105,6 +105,9 @@ need the same pipeline.
 ## Owed at the end (reported, done after merge)
 - [ ] File a knowledge issue: rewrite `knw_compare_mapgl()` on gq's helpers and pin gq to the
       release.
+- [ ] Draft (not post) an upstream mapgl issue: `add_layers_control()` stores a named layer vector
+      that jsonlite flags for future array serialisation; and `add = TRUE` legends overprint.
+      Check mapgl's open issues first; show the draft to the user.
 - [ ] Note the eDNA reporting maps as later callers in that issue or a gq comment. Do not file in
       each repo.
 

@@ -38,3 +38,27 @@
   | classes default `#cccccc` -> `#888888` | layer unit test (1); parity cannot see it (knowledge passes its default) |
   | hex passthrough removed (all colours via col2rgb) | layer unit (2), parity (2) |
   | popup NA not replaced | popup unit (2) |
+- Phase 4 boxes 2-3: second-caller test (Neexdzii species map in a few calls; layers, legends and
+  feature counts per species) and `vignettes/gq-mapgl-composition.Rmd` (species map; assessed
+  crossings from `crossings_pscis_assessment` with `field = "barrier_status"`; limits).
+  Species shown: the salmon, trout and char whose FISS codes resolve in a FISS species table
+  (RB, BT, CO, DV, CH, ST, CT); GR, SB, TR were not in it and are left out rather than guessed.
+- Browser check (Chrome, local http server, mapgl 0.4.4.9000):
+  - mapgl draws every legend absolutely at the corner, so a second legend overprints the first.
+    knowledge's map does this too when both its layers are on. Fix: a stylesheet gq prepends
+    once (`map$prepend`, outside `m$x`, so parity holds) that lets legends flow; a hidden
+    layer's legend leaves no gap (checked by switching rainbow trout off).
+  - A legend id with a space ("legend_rainbow trout") is not a CSS selector, so mapgl's own
+    styles missed it (no swatch). Legend ids are now sanitised; the `data-layer-id` keeps the id.
+  - A one-colour legend repeated its name as title and row; it is now one untitled row.
+  - A registry legend listed POTENTIAL on a map that filters it out; the legend now lists only
+    classes present in `x`.
+  - Article maps were 288 px tall and clipped the legends; now `fig.height = 7` (672 px).
+  - Popups open with values and `none` for a missing life stage. Console: no `Could not parse
+    color` / `Cannot style non-existing layer`. knowledge parity map with both layers on: the two
+    legends stack.
+  - mapgl's named layer switch makes jsonlite print a future-deprecation message when the page is
+    written (knowledge's map too). Not worked around: changing it would change the spec. Owed:
+    an upstream draft for mapgl.
+- `gq_mapgl_network(legend = TRUE)` added (review 13): one-row legends `Lake` and `Stream`,
+  off by default for parity.

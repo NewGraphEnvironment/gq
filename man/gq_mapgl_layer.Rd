@@ -54,7 +54,8 @@ of anything else, default \code{"#cccccc"}).}
 \item{reg}{A registry, as from \code{\link[=gq_reg_main]{gq_reg_main()}}; read only with \code{key}.}
 
 \item{field}{Overrides the registry layer's classification field, as in
-\code{\link[=gq_style]{gq_style()}}, when the data names the column differently.}
+\code{\link[=gq_style]{gq_style()}}, when the data names the column differently. A registry
+layer's legend lists only the classes found in this column of \code{x}.}
 
 \item{type}{\code{"line"}, \code{"fill"} or \code{"circle"}. Read from \code{x}'s geometry, or
 the registry layer's type, when not given.}
@@ -73,7 +74,8 @@ one that grows with zoom.}
 
 \item{legend}{Add the layer's legend.}
 
-\item{legend_title}{The legend's title. Defaults to \code{id}.}
+\item{legend_title}{The legend's title, or for one colour the row's name.
+Defaults to \code{id}.}
 
 \item{popup}{A column name, or the \code{expr} of \code{\link[=gq_mapgl_popup]{gq_mapgl_popup()}}.}
 
@@ -101,6 +103,12 @@ separate switch, as in a map that colours one set of segments two ways.
 Colours are given to MapLibre as hex. R colour names such as \code{grey80}
 draw in tmap but MapLibre cannot read them and drops the whole layer, so
 they are converted here.
+
+Legends stack down the top-left corner in the order the layers were added,
+and a hidden layer's legend leaves no gap. mapgl draws every legend at the
+corner itself, one over another, so gq adds a stylesheet beside the map
+that lets them flow. A one-colour layer's legend is a single row named by
+\code{legend_title}, with no title above it.
 }
 \examples{
 \dontshow{if (requireNamespace("mapgl", quietly = TRUE) && requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
