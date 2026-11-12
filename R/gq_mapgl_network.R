@@ -55,6 +55,9 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
       stop("`streams` has no `", order_field, "` column to scale width by; ",
            "set `order_field`", call. = FALSE)
     }
+    # streams must be lines: the `type = "line"` below would otherwise draw
+    # polygon outlines in stream style
+    layer_type(as.character(sf::st_geometry_type(streams)), "line")
     lyr <- reg_layer(reg, "streams_all")
     if (lyr$classification$field %in% names(streams)) {
       map <- gq_mapgl_layer(map, id, streams, key = "streams_all", reg = reg, type = "line",

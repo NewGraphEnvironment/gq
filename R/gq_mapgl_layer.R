@@ -135,7 +135,8 @@ gq_mapgl_layer <- function(map, id, x = NULL, source = id, key = NULL, classes =
            "its geometry", call. = FALSE)
     }
   } else {
-    type <- layer_type(drawn$types, type)
+    # outlines only where no registry style asserts a geometry of its own
+    type <- layer_type(drawn$types, type, outline_ok = is.null(key))
   }
   sty <- layer_paint(type, lyr, classes, color, field, key, legend_title)
   if (!is.null(drawn) && !is.null(sty$keys) && !sty$field %in% names(drawn$props)) {
@@ -235,7 +236,7 @@ legend_stack <- function(map) {
 #' what the layer should be, and only the data says what it would draw. A
 #' `type` the caller gives must agree with it.
 #' @noRd
-layer_type <- function(types, type = NULL) {
+layer_type <- function(types, type = NULL, outline_ok = FALSE) {
   g <- unique(toupper(types))
   if (!length(g)) stop("the data has no geometry to draw", call. = FALSE)
   drawn <- if (all(g %in% c("LINESTRING", "MULTILINESTRING"))) {
@@ -248,7 +249,7 @@ layer_type <- function(types, type = NULL) {
     stop("cannot draw mixed or unsupported geometry: ", paste(g, collapse = ", "), call. = FALSE)
   }
   # a line layer over polygons draws their outlines, which MapLibre allows
-  if (identical(type, "line") && drawn == "fill") return("line")
+  if (outline_ok && identical(type, "line") && drawn == "fill") return("line")
   if (!is.null(type) && !identical(type, drawn)) {
     stop("`type` is \"", type, "\", but the data is drawn as \"", drawn, "\"", call. = FALSE)
   }
@@ -259,6 +260,9 @@ layer_type <- function(types, type = NULL) {
 #' @noRd
 source_frame <- function(map, source) {
   src <- Filter(function(s) identical(s$id, source), map$x$sources)[[1]]
+  if (identical(src$type, "raster") || identical(src$type, "raster-dem")) {
+    stop("source `", source, "` is a raster; gq draws vector layers", call. = FALSE)
+  }
   inline <- identical(src$type, "geojson") && is.character(src$data) && length(src$data) == 1L &&
     startsWith(trimws(src$data), "{")
   if (!inline) return(NULL)
@@ -289,10 +293,6 @@ check_reads <- function(exprs, props, source) {
           identical(e[[2]][[1]], "get")) {
       col <- e[[2]][[2]]
       labels <- e[seq(3L, length(e) - 1L, by = 2L)]
-      if (length(labels) && is.logical(labels[[1]])) {
-        stop("column `", col, "` is classed on TRUE and FALSE, which MapLibre cannot match; ",
-             "convert the column and the class values to text", call. = FALSE)
-      }
       if (col %in% names(props) && length(labels)) {
         if (value_kind(props[[col]]) != value_kind(labels[[1]])) {
           stop("column `", col, "` holds ", value_kind(props[[col]]), "s but its classes are ",
@@ -332,6 +332,7 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
     if (length(miss)) {
       stop("`classes` needs ", paste(miss, collapse = ", "), call. = FALSE)
     }
+    check_labels(classes$values)
     cols <- to_hex(classes$colors, "classes$colors")
     if (length(cols) != length(classes$values)) {
       stop("`classes` needs one colour per value", call. = FALSE)
@@ -382,6 +383,31 @@ layer_paint <- function(type, lyr, classes, color, field, key, legend_title) {
   sw <- vapply(keys, function(k) lyr$classification$classes[[k]]$color, character(1))
   list(color = col, opacity = op, labels = unname(labs), swatches = unname(sw), keys = keys,
        field = or_null(field, lyr$classification$field))
+}
+
+#' Refuse class values MapLibre cannot use as `match` labels
+#'
+#' MapLibre takes a branch label only as a string or a whole number, and drops
+#' the whole layer otherwise, leaving its legend behind. Checked here, on the
+#' values themselves, so it holds whatever source the layer draws.
+#' @noRd
+check_labels <- function(values) {
+  if (is.logical(values)) {
+    stop("`classes` values are TRUE and FALSE, which MapLibre cannot match; ",
+         "convert the column and the values to text", call. = FALSE)
+  }
+  if (!length(values) || anyNA(values)) {
+    stop("`classes` values must be given, with none missing", call. = FALSE)
+  }
+  if (is.numeric(values) && any(!is.finite(values) | values != round(values))) {
+    stop("`classes` values must be whole numbers or text: MapLibre matches no other number",
+         call. = FALSE)
+  }
+  if (!is.numeric(values) && !is.character(values)) {
+    stop("`classes` values must be text or whole numbers", call. = FALSE)
+  }
+  if (anyDuplicated(values)) stop("`classes` values must be unique", call. = FALSE)
+  invisible(TRUE)
 }
 
 #' Colours as hex, leaving hex untouched

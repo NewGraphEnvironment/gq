@@ -104,3 +104,10 @@
   returns NULL for anything but inline GeoJSON and the layer is drawn as told (type from `type` or
   the registry key, never fetched); line-over-fill allowed; every paint argument goes through
   `check_reads()`; TRUE/FALSE classes refused. Network roxygen legend text corrected.
+- Round 5 (`review-round5.md`, enumeration re-walk at b3fd90a): every round-3 and round-4 row
+  REF/OK by probe; parity green. 2 fragile, both inside round 4's fixes: line-over-fill skipped the
+  registry geometry check (and the network's streams check, which relied on `type = "line"`);
+  the boolean label guard was a proxy (`NA`, 1.5 passed) and was skipped for unreadable sources.
+  Fixed: outlines only without a `key`; the network checks streams draw as lines; `check_labels()`
+  validates `classes$values` in `layer_paint()` for every source (no NA, no TRUE/FALSE, whole
+  numbers or text, unique); a raster source is refused. Tests red on the pre-fix tree.

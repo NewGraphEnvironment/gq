@@ -302,3 +302,33 @@ test_that("classes on TRUE and FALSE are refused: MapLibre cannot match them", {
   cls <- list(field = "ok", values = c(TRUE, FALSE), colors = c("#111111", "#222222"))
   expect_error(gq_mapgl_layer(base(), "k", lg, classes = cls), "TRUE and FALSE")
 })
+
+# --- round 5 ------------------------------------------------------------------------------------
+
+test_that("class values are checked whatever the source", {
+  m <- base() |> mapgl::add_vector_source("v", url = "https://example.invalid/tiles.json")
+  bool <- list(field = "ok", values = c(TRUE, FALSE), colors = c("#111111", "#222222"))
+  expect_error(gq_mapgl_layer(m, "k", source = "v", type = "circle", classes = bool), "TRUE and FALSE")
+  with_na <- modifyList(bool, list(field = "sp", values = c("CO", NA)))
+  expect_error(gq_mapgl_layer(base(), "k", pts(), classes = with_na), "none missing")
+  num <- pts()
+  num$n <- c(1, 2, 1)
+  frac <- modifyList(bool, list(field = "n", values = c(1.5, 2)))
+  expect_error(gq_mapgl_layer(base(), "k", num, classes = frac), "whole numbers")
+  dupe <- modifyList(bool, list(field = "n", values = c(1, 1)))
+  expect_error(gq_mapgl_layer(base(), "k", num, classes = dupe), "unique")
+})
+
+test_that("an outline is allowed only where no registry style asserts a geometry", {
+  reg <- gq_reg_main()
+  expect_error(gq_mapgl_layer(base(polys("x")), "o", polys("x"), key = "streams_all", reg = reg,
+                              type = "line"), "drawn as \"fill\"")
+  p <- polys("x")
+  p$stream_order <- 1L
+  expect_error(gq_mapgl_network(base(p), streams = p), "drawn as \"fill\"")
+})
+
+test_that("a raster source is refused", {
+  m <- base() |> mapgl::add_raster_source("r", tiles = "https://example.invalid/{z}/{x}/{y}.png")
+  expect_error(gq_mapgl_layer(m, "a", source = "r", color = "#000000", type = "fill"), "raster")
+})
