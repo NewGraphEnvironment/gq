@@ -39,7 +39,7 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
   check_digits(digits)
   ids <- as.list(ids)
   if (!is.null(water) && nrow(water)) {
-    id <- ids[["water"]] %||% stop("`ids` must name a water id", call. = FALSE)
+    id <- or_null(ids[["water"]], stop("`ids` must name a water id", call. = FALSE))
     paint <- gq_mapgl_style(reg_layer(reg, "lake"))$paint
     map <- map |>
       mapgl::add_source(id, mapgl_data(water, digits)) |>
@@ -48,7 +48,7 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
                             fill_outline_color = paint$`fill-outline-color`)
   }
   if (!is.null(streams) && nrow(streams)) {
-    id <- ids[["streams"]] %||% stop("`ids` must name a streams id", call. = FALSE)
+    id <- or_null(ids[["streams"]], stop("`ids` must name a streams id", call. = FALSE))
     if (!order_field %in% names(streams)) {
       stop("`streams` has no `", order_field, "` column to scale width by; ",
            "set `order_field`", call. = FALSE)
@@ -61,7 +61,7 @@ gq_mapgl_network <- function(map, streams = NULL, water = NULL, reg = gq_reg_mai
     } else {
       first <- lyr$classification$classes[[setdiff(names(lyr$classification$classes), "__empty__")[1]]]
       col <- first$color
-      op <- first$opacity %||% 1
+      op <- or_null(first$opacity, 1)
     }
     map <- map |>
       mapgl::add_source(id, mapgl_data(streams, digits)) |>

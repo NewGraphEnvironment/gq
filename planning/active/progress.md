@@ -21,3 +21,20 @@
   `^(fill|line|circle)-(color|opacity)$`, test added), 15 (plan text). Folded into the plan: 12,
   13, 19 (Phase 5), 1/3/11/21/22 (Phase 4 parity test: seeded, controls off, water in fixture,
   default-removal mutation). 16 (14 stacked legends) is checked in the browser in Phase 4.
+- Phase 3: `gq_mapgl_layer()` (registry key / caller classes / one colour; shared sources; width
+  by order; legend tied by id with computed `add`; hex conversion that leaves hex as typed),
+  `gq_mapgl_popup()`, `gq_mapgl_controls()` (navigation and scale switchable). gq's `%||%` is
+  scalar-only (it calls `is.na()`), so the mapgl files use an internal `or_null()`.
+- Phase 4 box 1 (parity): `fixtures/knw_compare_mapgl.R` is knowledge eac16623 lines 147-327 minus
+  the `chk::` checks; `test-gq_mapgl_compose.R` asserts `identical(ours$x, hand$x)` under
+  `withr::with_seed()`, voyager and esri_topo with water, and voyager with none. Passed on the
+  first full run.
+- Mutation table (each restored and `cmp`-checked after):
+
+  | mutant | caught by |
+  |---|---|
+  | legend `unique_id = NULL` | parity (2 failing) |
+  | legend `add = TRUE` always | parity (2) |
+  | classes default `#cccccc` -> `#888888` | layer unit test (1); parity cannot see it (knowledge passes its default) |
+  | hex passthrough removed (all colours via col2rgb) | layer unit (2), parity (2) |
+  | popup NA not replaced | popup unit (2) |

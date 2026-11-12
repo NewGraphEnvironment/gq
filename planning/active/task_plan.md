@@ -63,7 +63,7 @@ need the same pipeline.
 - [x] `R/gq_mapgl_network.R`.
 
 ## Phase 3: Layers, legends, popups, controls
-- [ ] Tests first. `gq_mapgl_layer()`:
+- [x] Tests first. `gq_mapgl_layer()`:
       - draws a registry key and a classified registry key, and gives a classified registry
         layer its per-class opacity from Phase 1;
       - draws caller classes (`values` + `colors`);
@@ -71,17 +71,17 @@ need the same pipeline.
       - takes a shared source id and `visibility = "none"`;
       - adds the categorical legend tied to `layer_id`, with a unique legend id;
       - has a circle-radius expression for point layers.
-- [ ] `R/gq_mapgl_layer.R`.
-- [ ] Tests first. `gq_mapgl_popup(x, fields)` (named labels to columns) returns the properties
+- [x] `R/gq_mapgl_layer.R`.
+- [x] Tests first. `gq_mapgl_popup(x, fields)` (named labels to columns) returns the properties
       and the `concat` expression. A missing value reads `"none"`, and numbers keep their
       formatting per value.
-- [ ] `R/gq_mapgl_popup.R`.
-- [ ] Tests first. `gq_mapgl_controls(map, layers =, position =)` adds navigation, scale and the
+- [x] `R/gq_mapgl_popup.R`.
+- [x] Tests first. `gq_mapgl_controls(map, layers =, position =)` adds navigation, scale and the
       layer toggle for the named layers.
-- [ ] `R/gq_mapgl_controls.R`.
+- [x] `R/gq_mapgl_controls.R`.
 
 ## Phase 4: Prove both callers
-- [ ] `tests/testthat/test-gq_mapgl_compose.R` builds the knowledge fixture by hand and with the
+- [x] `tests/testthat/test-gq_mapgl_compose.R` builds the knowledge fixture by hand and with the
       helpers on a small synthetic segment set, and checks `expect_identical(helper$x, hand$x)`.
       A restore-the-bug check proves it can fail: change one colour or one width and watch it go
       red.

@@ -50,6 +50,13 @@ gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap"
 
 # --- internal helpers --------------------------------------------------------
 
+#' `b` when `a` is NULL
+#'
+#' gq's `%||%` also replaces `NA` and so calls `is.na()` on `a`, which fails on
+#' a vector or a MapLibre expression (a list): the mapgl helpers pass both.
+#' @noRd
+or_null <- function(a, b) if (is.null(a)) b else a
+
 #' Stop early, and say so, when mapgl or sf is missing
 #' @noRd
 mapgl_need <- function() {
