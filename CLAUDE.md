@@ -248,6 +248,11 @@ legend ids and prepends one stylesheet (`map$prepend`, outside the spec) that
 stacks the legends. Known gaps: a classified registry layer draws every class
 at one width with no dash, and a registry point shape draws as a circle.
 
+CI installs mapgl from CRAN, so a local pass means nothing if the installed mapgl
+is older: check `packageVersion("mapgl")` against CRAN before trusting one. A
+0.4.4.9000 dev build passed tests that 0.5.2 failed, because 0.5 adds a class to
+the legend heading (`<h2 class="mapgl-legend-title">`).
+
 These encode the cartography conventions as defaults. Layout stays tmap's:
 4.4 handles ordering, grouping, stacking and placement better than a wrapper
 could, so `z` and `group_id` pass straight through `gq_tmap_legend()`.
