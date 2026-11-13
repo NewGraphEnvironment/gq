@@ -279,6 +279,16 @@ Mergin, QGIS Server / QWC2, a `layer_styles` table).
 Unlike every other export it returns a **file path**, so a caller can copy or
 read the bytes QGIS wrote without gq re-serializing them.
 
+- `gq_qgis_style(layer_or_reg, name, field, path)` — a QML built from a registry layer
+- `gq_gpkg_style_write(gpkg, layer, styles, default)` — QMLs into a GeoPackage's `layer_styles`
+
+For a layer only a custom CSV defines, which has no shipped QML (#115).
+`gq_qgis_style()` writes what the registry holds, line and polygon only, and is
+read back in its tests by `gq_qgs_extract()`'s own parsers. `gq_gpkg_style_write()`
+goes through GDAL, so the table is registered in `gpkg_contents`, and writes
+`f_table_catalog` and `f_table_schema` as empty strings: QGIS matches a row on all
+four `f_*` columns, and a NULL there leaves the layer unstyled.
+
 #### QML corpus (`inst/styles/`)
 
 - `vector/<layer_key>.qml` — 50 shared vector styles

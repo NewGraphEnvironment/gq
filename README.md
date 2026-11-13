@@ -52,7 +52,7 @@ gq_tmap_classes(reg, "crossings_pscis_assessment")$values
 #> "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4"
 ```
 
-For QGIS itself, `gq_style_qml()` returns the path to the style file QGIS wrote, with nothing lost in translation.
+For QGIS itself, `gq_style_qml()` returns the path to the style file QGIS wrote, with nothing lost in translation. A layer defined in your own registry CSV gets a QML from `gq_qgis_style()`, which `gq_gpkg_style_write()` stores in a GeoPackage so the layer opens in QGIS already styled.
 
 ## Learn more
 
