@@ -1,5 +1,24 @@
 # Changelog
 
+## gq (development version)
+
+- **A registry layer’s style can go to QGIS as a QML, and into a
+  GeoPackage
+  ([\#115](https://github.com/NewGraphEnvironment/gq/issues/115)).**
+  [`gq_qgis_style()`](https://newgraphenvironment.github.io/gq/reference/gq_qgis_style.md)
+  builds a QGIS QML from any line or polygon layer in a registry,
+  including one only a
+  [`gq_reg_custom()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_custom.md)
+  CSV defines: a categorized renderer with each class’s value, label,
+  colour, width, dash and opacity, or a single symbol for an
+  unclassified layer.
+  [`gq_gpkg_style_write()`](https://newgraphenvironment.github.io/gq/reference/gq_gpkg_style_write.md)
+  stores one or more QMLs in a GeoPackage’s `layer_styles` table through
+  GDAL, one of them the default, so the layer opens in QGIS styled as
+  the tmap and mapgl maps draw it. For layers gq ships a QML for,
+  [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
+  is still the lossless choice.
+
 ## gq 0.21.0
 
 - **The Bittner Creek data regenerates without a database

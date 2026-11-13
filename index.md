@@ -76,7 +76,11 @@ gq_tmap_classes(reg, "crossings_pscis_assessment")$values
 For QGIS itself,
 [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md)
 returns the path to the style file QGIS wrote, with nothing lost in
-translation.
+translation. A layer defined in your own registry CSV gets a QML from
+[`gq_qgis_style()`](https://newgraphenvironment.github.io/gq/reference/gq_qgis_style.md),
+which
+[`gq_gpkg_style_write()`](https://newgraphenvironment.github.io/gq/reference/gq_gpkg_style_write.md)
+stores in a GeoPackage so the layer opens in QGIS already styled.
 
 ## Learn more
 

@@ -25,6 +25,8 @@
   left
 - [`gq_form_types()`](https://newgraphenvironment.github.io/gq/reference/gq_form_types.md)
   : The roster of Mergin survey forms
+- [`gq_gpkg_style_write()`](https://newgraphenvironment.github.io/gq/reference/gq_gpkg_style_write.md)
+  : Store QGIS styles for a layer in a GeoPackage
 - [`gq_group_layers()`](https://newgraphenvironment.github.io/gq/reference/gq_group_layers.md)
   : Get layers in a group
 - [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)
@@ -44,6 +46,8 @@
   : Build a popup for a MapLibre GL layer from column names
 - [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
   : Translate a registry layer style to mapgl arguments
+- [`gq_qgis_style()`](https://newgraphenvironment.github.io/gq/reference/gq_qgis_style.md)
+  : Translate a registry layer style to a QGIS QML document
 - [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)
   : Extract layer styles from a QGIS project file
 - [`gq_reg_custom()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_custom.md)

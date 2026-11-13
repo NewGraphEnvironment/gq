@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/v0.21.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/main/inst/CITATION)
 
 Irvine A (2026). *gq: One Set of Map Styles for QGIS, Report Figures and
 Web Maps*. New Graph Environment Ltd.

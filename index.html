@@ -102,7 +102,7 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/gq_tmap_classes.html">gq_tmap_classes</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span><span class="op">)</span><span class="op">$</span><span class="va">values</span></span>
 <span><span class="co">#&gt;   BARRIER  PASSABLE POTENTIAL   UNKNOWN</span></span>
 <span><span class="co">#&gt; "#ca3c3c" "#33a02c" "#ff7f00" "#bf2ac4"</span></span></code></pre></div>
-<p>For QGIS itself, <code><a href="reference/gq_style_qml.html">gq_style_qml()</a></code> returns the path to the style file QGIS wrote, with nothing lost in translation.</p>
+<p>For QGIS itself, <code><a href="reference/gq_style_qml.html">gq_style_qml()</a></code> returns the path to the style file QGIS wrote, with nothing lost in translation. A layer defined in your own registry CSV gets a QML from <code><a href="reference/gq_qgis_style.html">gq_qgis_style()</a></code>, which <code><a href="reference/gq_gpkg_style_write.html">gq_gpkg_style_write()</a></code> stores in a GeoPackage so the layer opens in QGIS already styled.</p>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
