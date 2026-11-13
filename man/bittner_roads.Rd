@@ -12,7 +12,7 @@ An \code{sf} data frame with columns:
 }
 }
 \source{
-BC Digital Road Atlas via newgraph database
+BC Digital Road Atlas, from bcfishpass's public GeoParquet copy
 }
 \usage{
 bittner_roads

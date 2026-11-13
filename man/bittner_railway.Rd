@@ -12,7 +12,7 @@ An \code{sf} data frame with columns:
 }
 }
 \source{
-BC GBA Railway Tracks via newgraph database
+BC GBA Railway Tracks, from the BC Data Catalogue
 }
 \usage{
 bittner_railway

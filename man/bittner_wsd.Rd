@@ -12,7 +12,7 @@ An \code{sf} data frame with 1 row and columns:
 }
 }
 \source{
-BC Freshwater Atlas via newgraph database
+BC Freshwater Atlas, watershed delineated with fwapg
 }
 \usage{
 bittner_wsd
