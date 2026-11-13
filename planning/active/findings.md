@@ -1,0 +1,56 @@
+# Findings — Move 4: extractor fidelity and labels (batches 9, 10) (#103)
+
+## Issue context
+
+**If we do it:** the registry carries each label's field and weight, overlays and layer opacity as QGIS draws them, and a map can take its labels from the registry. **If we never do:** 0 of 25 labelled layers carry a label field, the railway keeps drawing as a plain black line, and every map hard-codes its `tm_text()` settings.
+
+Move 4 of `planning/backlog.md`, which holds the order, the measurements and each batch's section. Run `/planning-init` on this issue: one plan, one phase per batch, one PR. `/gh-pr-merge` ticks the move when it merges.
+
+## Batch 9: Extractor fidelity
+
+**Why here:** one file, `R/gq_qgs_extract.R`, one re-extract and one registry rebuild.
+
+**Touches:** `R/gq_qgs_extract.R`, `data-raw/reg_extract_restoration.R`, `inst/registry/reg_qgis_restoration.json`, `reg_main.json`.
+
+**Decided at the gate:** how far the registry goes, given it models what tmap and mapgl can render and the QML corpus is the lossless copy; whether #23 still has a source worth extracting.
+
+| issue | title |
+|---|---|
+| #6 | Fix label fieldName extraction from QGIS projects |
+| #24 | Extract multi-layer symbols (overlay/casing) in gq_qgs_extract() |
+| #38 | Rendering detail not captured: layerOpacity, cap/join style, symbol pass order, and a data-defined-colour miss on streams_co |
+| #23 | Add QLR file support to gq_qgs_extract() |
+
+## Batch 10: Label translators
+
+**Why here:** needs the label field batch 9 extracts.
+
+**Touches:** new `R/gq_tmap_labels.R` and `R/gq_mapgl_labels.R`, with tests and examples.
+
+**Decided at the gate:** whether `merge_lines` and `min_feature_size` are carried in the registry as hints for the consumer's data prep.
+
+| issue | title |
+|---|---|
+| #7 | Add label translators: gq_tmap_labels() and gq_mapgl_labels() |
+
+## Plan-mode measurements (2026-11-12)
+
+Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical to v0.93.0.
+
+- `fontWeight` in the template: 50 ×21, 75 ×3, 87 ×1 (Qt5 scale). `fontBold`: 0.
+- Rule-based labelling: `Crossings - PSCIS, modelled, dams` (3 rules), `MoTi major structures` (1), `Roads - FTEN` (2).
+- `labelsEnabled="1"` with no settings: PSCIS confirmation / Design / Remediation, Pipeline application.
+- mergeLines on: Roads - FTEN (minFeatureSize 5), Roads - DRA (11), Trails (11), Stream labels (0).
+- `<layerOpacity>` ≠ 1: Roads - FTEN 0.7, Pipeline permit 0.993.
+- Railway: SimpleLine black 0.4 + MarkerLine (interval 3, rotate, sub SimpleMarker `line` size 2.4, outline black 0.2).
+- MoTi major structures: SimpleLine black 2.06 (locked) under orange 1.46.
+- Roads - DRA casing: pass 0 / pass 1 in categorized symbols.
+- streams_salmon/_st/_bt: active data-defined fillColor/outlineColor `CASE WHEN "model_access_st" IN () THEN ...` — every IN list empty.
+- `bcfishpass_30k.qlr`: upstream last commit 01f8d1c9 2024-03-05; current extractor reads 49 layers, 5 rule-based; 14 keys overlap reg_main.
+- tmap 4.x `opt_tm_lines()` has no lineend/linejoin; `opt_tm_text()` has `along_lines`, `shadow`, `remove_overlap`.
+- `gq_reg_custom()` CSV has no `label_field` column.
+
+## Errors Encountered
+
+| Error | Resolution |
+|-------|------------|
