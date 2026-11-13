@@ -39,6 +39,7 @@ Measured 2026-11-12 against rfp `origin/main` (v0.94.0+3). The template is byte-
 
    `gq_style()` surfaces `casing` and the per-class `casing_colors`/`casing_widths`. Drawing them in tmap and mapgl goes to a new issue. Ticks can draw only in mapgl: a tmap/grid dash cannot be thinner than its line.
 3. **#23 closes with a test.** A small `.qlr` fixture pins that the format parses, and the roxygen mentions `.qlr`. No `reg_qgis_bcfishpass.json`.
+5. **Label units are QGIS's** (owner, 2026-11-13, asked mid-run): size in points, halo in mm, offsets in ems. The 3 CSV rows written in MapLibre px are converted (12 px → 9 pt, 11 → 8.25, halo 1.5 px → 0.4 mm); the translators convert back, so web maps keep their look.
 4. **The label hints are carried.** `label.placement`, `label.merge_lines` and `label.min_feature_size` (mm). The translators use `placement`. The other two are documented as the caller's data prep.
 
 Recommended, and taken unless you object at approval:
@@ -78,25 +79,26 @@ Recommended, and taken unless you object at approval:
 
 ## Phase 2: Label translators (batch 10: #7)
 
-- [ ] `R/gq_tmap_labels.R`: `gq_tmap_labels(layer_or_reg, name = NULL, field = NULL)`. It returns `do.call(tm_text, ...)` args:
+- [x] `R/gq_tmap_labels.R`: `gq_tmap_labels(layer_or_reg, name = NULL, field = NULL, ...)`. Corrected during the run: it returns tmap `tm_text()` layers, not `do.call()` args, because the cartography convention's halo is eight offset copies under the text (tmap's `shadow` is an offset copy, `bgcol` a box). Measured: tmap text `size = 1` is 12 pt (36 px rows each at 300 dpi). Args:
   - `text`, `size`, `col`, `fontface` (plain/bold/italic/bold.italic);
   - `options = opt_tm_text(along_lines = placement == "line", shadow = <halo present>, remove_overlap = TRUE)`.
 
   CSV `offset_x`/`offset_y` → `xmod`/`ymod`; `label.opacity` → `col_alpha`. It errors on an expression with no `field`, on a label with neither `field` nor `expression` (the CSV labels: pass `field =`), and on a layer with no label. Measure the pt-to-tmap `size` constant against a rendered PNG rather than guessing it.
-- [ ] `R/gq_mapgl_labels.R`: `gq_mapgl_labels(layer, field = NULL)`. It returns `list(layout, paint)` for `add_symbol_layer()`:
+- [x] `R/gq_mapgl_labels.R`: `gq_mapgl_labels(layer, field = NULL)`. Corrected during the run: it returns `add_symbol_layer()`'s snake_case arguments for `do.call()`, which is how mapgl takes them, not `list(layout, paint)`:
   - `text-field` as a `get` expression;
   - `text-size` in px (pt × 96/72);
   - `symbol-placement = "line"` for line placement;
   - `text-color`, `text-halo-color` and `text-halo-width`, converted from mm to px after checking QGIS's `bufferSizeUnits`.
 
   Font family and italics are left to the basemap's glyphs, and the roxygen says so.
-- [ ] Tests for both, with runnable `@examples` on `reg_main` layers:
+- [x] Convert the 3 CSV label rows to points and mm; document the units in `gq_reg_custom()` (decision 5).
+- [x] Tests for both, with runnable `@examples` on `reg_main` layers:
   - a plain field (`lake`);
   - a line placement (`stream_labels`);
   - an expression refused and then accepted with `field =` (`crossings_pscis_assessment`);
   - a custom-CSV label (no `field` key);
   - `merge_lines`/`min_feature_size` documented as the caller's job.
-- [ ] `_pkgdown.yml` reference entries; `pkgdown::check_pkgdown()`.
+- [ ] `pkgdown::check_pkgdown()` (`_pkgdown.yml` has no reference index, so exports list automatically).
 - [ ] Vignettes: replace the hard-coded `tm_text()` settings in `gq-intro.Rmd` and `gq-tmap-composition.Rmd` with `gq_tmap_labels()`, and correct the composition vignette's railway prose (a black line with ticks, now in the registry as `overlay`) (review #15). Render both and read the PNGs: labels are along the lines, the halo shows, and the size matches the old maps.
 - [ ] NEWS entry; CLAUDE.md lists both exports.
 
@@ -104,6 +106,7 @@ Recommended, and taken unless you object at approval:
 
 - [ ] File a gq issue: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
 - [ ] File a gq issue: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
+- [ ] File a soul issue: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
 - [ ] Close #23 with the measurements (done by the merge's `Fixes`, with the comment in the PR body).
 - [x] rfp issue on the streams `IN ()` expression: rfp#430
 

@@ -86,7 +86,9 @@ gq_reg_read <- function(path) {
 #'   `stroke_width`, `stroke_opacity`, `dash`, `mark_color`, `mark_shape`,
 #'   `mark_radius`, `mark_stroke_color`, `mark_stroke_width`, `label_color`,
 #'   `label_size`, `label_font`, `label_halo_color`, `label_halo_width`,
-#'   `label_offset_x`, `label_offset_y`, `note`. `dash` takes a QGIS line style
+#'   `label_offset_x`, `label_offset_y`, `note`. Label units are QGIS's, as
+#'   the extractor writes them: `label_size` in points, `label_halo_width` in
+#'   millimetres, and the offsets in ems (#103). `dash` takes a QGIS line style
 #'   name as the extractor writes it (`solid`, `no`, `dash`, `dot`,
 #'   `dash dot`, `dash dot dot`) or a dash pattern of two or more lengths
 #'   separated by `;` or a space (`"4;2"`, `"0.66;2"`); anything else is an

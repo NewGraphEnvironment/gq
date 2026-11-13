@@ -277,3 +277,21 @@ test_that("the shipped registry carries the railway ticks, MoTi casing and FTEN 
   expect_true(all(op == 0.7))
   expect_match(L$streams_salmon$note, "data-defined")
 })
+
+test_that("the halo is read from the nested <text-buffer>", {
+  halo <- excerpt()$layers$lake$label$halo
+  expect_equal(halo$color, "#ffffff")
+  expect_equal(halo$width, 0.3)
+})
+
+test_that("every template label with bufferDraw=1 keeps its halo", {
+  doc <- xml2::read_xml(test_path("fixtures", "template_excerpt.qgs"))
+  n_buf <- 0
+  for (m in xml2::xml_find_all(doc, ".//maplayer[@labelsEnabled='1']")) {
+    b <- xml2::xml_find_first(m, "./labeling//settings//text-buffer")
+    if (identical(xml2::xml_attr(b, "bufferDraw"), "1")) n_buf <- n_buf + 1
+  }
+  n_halo <- sum(vapply(excerpt()$layers, function(x) !is.null(x$label$halo), TRUE))
+  expect_gt(n_buf, 0)
+  expect_equal(n_halo, n_buf)
+})

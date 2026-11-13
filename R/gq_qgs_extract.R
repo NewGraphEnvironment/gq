@@ -599,7 +599,8 @@ parse_labels <- function(layer_node, geom_type = "unknown") {
   if (!is.na(text_opacity) && text_opacity < 1) out$opacity <- round(text_opacity, 3)
 
   # buffer/halo
-  buffer_node <- xml2::xml_find_first(first, "./text-buffer")
+  # <text-buffer> sits inside <text-style>, not beside it
+  buffer_node <- xml2::xml_find_first(first, ".//text-buffer")
   if (!is.na(buffer_node)) {
     buf_draw <- xml2::xml_attr(buffer_node, "bufferDraw")
     if (identical(buf_draw, "1")) {

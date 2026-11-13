@@ -14,7 +14,9 @@ for every row: \code{source_layer}, \code{class_field}, \code{class_value},
 \code{stroke_width}, \code{stroke_opacity}, \code{dash}, \code{mark_color}, \code{mark_shape},
 \code{mark_radius}, \code{mark_stroke_color}, \code{mark_stroke_width}, \code{label_color},
 \code{label_size}, \code{label_font}, \code{label_halo_color}, \code{label_halo_width},
-\code{label_offset_x}, \code{label_offset_y}, \code{note}. \code{dash} takes a QGIS line style
+\code{label_offset_x}, \code{label_offset_y}, \code{note}. Label units are QGIS's, as
+the extractor writes them: \code{label_size} in points, \code{label_halo_width} in
+millimetres, and the offsets in ems (#103). \code{dash} takes a QGIS line style
 name as the extractor writes it (\code{solid}, \code{no}, \code{dash}, \code{dot},
 \verb{dash dot}, \verb{dash dot dot}) or a dash pattern of two or more lengths
 separated by \verb{;} or a space (\code{"4;2"}, \code{"0.66;2"}); anything else is an

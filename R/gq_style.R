@@ -172,6 +172,42 @@ resolve_layer <- function(layer_or_reg, name = NULL) {
   stop("Layer '", name, "' (key: '", key, "') not found in registry", hint)
 }
 
+#' A layer's registry label, or an error naming the layer's lack of one
+#' @noRd
+label_get <- function(layer_or_reg, name = NULL) {
+  layer <- resolve_layer(layer_or_reg, name)
+  if (is.null(layer$label)) {
+    stop("Layer ", if (is.null(name)) "" else paste0("'", name, "' "),
+         "has no label in the registry", call. = FALSE)
+  }
+  layer$label
+}
+
+#' The column a label draws, refusing a QGIS expression without a `field`
+#'
+#' The registry keeps a computed label as `expression` and never as `field`
+#' (#6), so a renderer is never handed `concat(...)` as a column name.
+#' @noRd
+label_source <- function(lab, field, backend) {
+  if (!is.null(field)) return(field)
+  if (!is.null(lab$field)) return(lab$field)
+  if (!is.null(lab$expression)) {
+    stop("This layer is labelled with the QGIS expression `", lab$expression,
+         "`, which ", backend, " cannot evaluate. Compute it as a column and ",
+         "pass `field =`.", call. = FALSE)
+  }
+  stop("This label names no column (the custom CSV carries none): pass `field =`.",
+       call. = FALSE)
+}
+
+#' tmap fontface from a label's weight and style
+#' @noRd
+label_fontface <- function(lab) {
+  bold <- identical(lab$weight, "bold")
+  italic <- identical(lab$style, "italic")
+  if (bold && italic) "bold.italic" else if (bold) "bold" else if (italic) "italic" else "plain"
+}
+
 #' @noRd
 to_title <- function(x) {
   paste0(toupper(substring(x, 1, 1)), tolower(substring(x, 2)))

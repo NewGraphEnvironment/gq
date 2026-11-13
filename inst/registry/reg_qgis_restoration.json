@@ -45,6 +45,10 @@
         "size": 18,
         "weight": "bold",
         "color": "#8d8989",
+        "halo": {
+          "color": "#e8e8e8",
+          "width": 0.8
+        },
         "placement": "around_point"
       }
     },
@@ -65,6 +69,10 @@
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        },
         "placement": "around_point"
       }
     },
@@ -235,6 +243,10 @@
         "font": "Helvetica",
         "size": 10,
         "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        },
         "placement": "free"
       }
     },
@@ -290,6 +302,10 @@
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        },
         "placement": "around_point"
       }
     },
@@ -310,6 +326,10 @@
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        },
         "placement": "around_point"
       }
     },
@@ -439,6 +459,10 @@
         "font": ".AppleSystemUIFont",
         "size": 8,
         "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.25
+        },
         "placement": "ordered"
       }
     },
@@ -456,6 +480,10 @@
         "font": "Arial",
         "size": 8.5,
         "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.5
+        },
         "placement": "ordered"
       }
     },
@@ -499,6 +527,10 @@
         "weight": "bold",
         "color": "#323232",
         "opacity": 0.997,
+        "halo": {
+          "color": "#fafafa",
+          "width": 0.75
+        },
         "placement": "ordered"
       }
     },
@@ -590,6 +622,10 @@
         "font": "Tahoma",
         "size": 10,
         "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        },
         "placement": "ordered"
       }
     },
@@ -607,6 +643,10 @@
         "font": "Tahoma",
         "size": 10,
         "color": "#323232",
+        "halo": {
+          "color": "#fafafa",
+          "width": 1
+        },
         "placement": "ordered"
       }
     },
@@ -1529,6 +1569,10 @@
         "size": 11,
         "style": "italic",
         "color": "#1f78b4",
+        "halo": {
+          "color": "#ffffff",
+          "width": 0.3
+        },
         "placement": "line",
         "merge_lines": true
       }

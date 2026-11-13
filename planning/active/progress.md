@@ -14,3 +14,5 @@
 - Fixtures cut from real XML by `data-raw/fixture_extract_template.R`; mutation checks: field read, `./layer` count and opacity fold each turn their test red
 - Re-extract: 22 labels (14 field, 8 expression, 3 bold), `source_layer` unchanged on all 48 layers, 14 layers' symbology changed
 - QGIS 4.1.0-Master (`qgis/qgis:latest`) cannot parse the streams' data-defined colour expression (`IN ()`), so QGIS draws the category colours; note reworded to hold in every case; filed rfp#430
+- Full suite after Phase 1: 397 blocks, 1608 expectations, 0 failed, 1 expected skip (R CMD check gate); currency tests ran against the rfp checkout
+- Fixed the halo regression from 799c7da; asked the owner about label units (QGIS units, CSV converted); added `gq_tmap_labels()` and `gq_mapgl_labels()` with tests; vignettes moved to `gq_tmap_labels()`

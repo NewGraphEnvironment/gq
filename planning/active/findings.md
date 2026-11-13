@@ -63,3 +63,13 @@ Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical
 - `source_layer` identical on all 48 layers; 14 layers' non-label symbology changed (8 notes reworded, railway overlay, MoTi casing, FTEN opacity, 3 streams notes).
 - QGIS 4.1.0-Master, `qgis/qgis@sha256:4eb5cd07…`: the streams expression `hasParserError() == True`, `evaluate()` → None. A failed data-defined property falls back to the symbol colour, so the registry's category colours are what QGIS draws for this template. rfp#430.
 - reg_main's 25 labels = 22 template + 3 CSV (dam, town, planting_site); the CSV has no label field column.
+
+## Phase 2 measurements (2026-11-13)
+
+- tmap 4.2.0.9000: `tm_text(size = 1)` draws a capital H 36 px tall at 300 dpi, the same as `grid.text(fontsize = 12)`, so `size = pt / 12`.
+- The CSV labels (dam, town, planting_site) were authored for MapLibre (size 11/12 px, halo 1.5 px, offsets in ems; the cartography skill passes them straight to `add_symbol_layer()`). Owner chose QGIS units throughout; the CSV rows were converted.
+- The first re-extract (commit 799c7da) dropped all 11 halos: `<text-buffer>` sits inside `<text-style>`, and the new code looked for it beside it. No test caught it; two now do, and the fixed re-extract matches v0.93.0's halos on every layer.
+
+| Error | Resolution |
+|-------|------------|
+| Re-extract dropped every label halo | `.//text-buffer` (it nests under `<text-style>`); tests pin the halo and the bufferDraw count |
