@@ -29,8 +29,19 @@
   : Get layers in a group
 - [`gq_groups()`](https://newgraphenvironment.github.io/gq/reference/gq_groups.md)
   : List all layer groups
+- [`gq_mapgl_basemap()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_basemap.md)
+  : Start a MapLibre GL map on a named basemap, fitted to the data
 - [`gq_mapgl_classes()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_classes.md)
   : Get a MapLibre match expression for a classified layer
+- [`gq_mapgl_controls()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_controls.md)
+  : Add navigation, a scale bar and a layer switch to a MapLibre GL map
+- [`gq_mapgl_layer()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_layer.md)
+  : Add a styled layer and its legend to a MapLibre GL map
+- [`gq_mapgl_network()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_network.md)
+  : Add water and a stream network to a MapLibre GL map, styled from the
+  registry
+- [`gq_mapgl_popup()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_popup.md)
+  : Build a popup for a MapLibre GL layer from column names
 - [`gq_mapgl_style()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_style.md)
   : Translate a registry layer style to mapgl arguments
 - [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md)

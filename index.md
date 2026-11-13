@@ -88,6 +88,10 @@ translation.
   tmap](https://www.newgraphenvironment.com/gq/articles/gq-tmap-composition.html):
   a full report map with basemap, legend, scale bar, logo and keymap,
   for a Neexdzii Kwa subbasin.
+- [Web maps with gq and
+  mapgl](https://www.newgraphenvironment.com/gq/articles/gq-mapgl-composition.html):
+  interactive maps with a layer switch, legends and popups, for the same
+  subbasin.
 - [Function
   reference](https://www.newgraphenvironment.com/gq/reference/)
 
