@@ -1,4 +1,4 @@
-# gq (development version)
+# gq 0.22.0
 
 - **A registry layer's style can go to QGIS as a QML, and into a GeoPackage (#115).**
   `gq_qgis_style()` builds a QGIS QML from any line or polygon layer in a registry,
