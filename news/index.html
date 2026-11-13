@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.20.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.21.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,9 +34,14 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.21.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.21.0" id="gq-0210">gq 0.21.0<a class="anchor" aria-label="anchor" href="#gq-0210"></a></h2>
+<ul><li>
+<strong>The Bittner Creek data regenerates without a database (<a href="https://github.com/NewGraphEnvironment/gq/issues/110" class="external-link">#110</a>).</strong> <code>data-raw/bittner_creek.R</code> reads the watershed polygon from <code>data-raw/bittner_wsd.gpkg</code> and fetches streams, lakes, railway and PSCIS from the BC Data Catalogue and roads from bcfishpass’s public copy of the Digital Road Atlas. Only <code>data-raw/bittner_wsd.R</code>, which moves the pour point, still needs fwapg. <strong>Changed data:</strong> the regenerated <code>bittner_*</code> datasets match the shipped ones row for row; <code>bittner_wsd</code>’s outline moves by up to 26 m (now simplified preserving topology), and <code>bittner_streams</code> drops Z values nothing read.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.20.0" id="gq-0200">gq 0.20.0<a class="anchor" aria-label="anchor" href="#gq-0200"></a></h2>
 <ul><li>
