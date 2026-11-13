@@ -116,16 +116,18 @@ Most registry styles are extracted from New Graph’s QGIS field project
 templates by
 [`gq_qgs_extract()`](https://newgraphenvironment.github.io/gq/reference/gq_qgs_extract.md),
 which reads the project’s XML; the rest are curated by hand. The bundled
-example data was queried from a database built with
-[fwapg](https://smnorris.github.io/fwapg/) and
-[bcfishpass](https://smnorris.github.io/bcfishpass/): streams, lakes and
-watersheds from the [BC Freshwater
-Atlas](https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/freshwater),
-modelled habitat and crossings from bcfishpass, and PSCIS assessments,
-roads and railway from the [BC Data
-Catalogue](https://catalogue.data.gov.bc.ca/). Basemap tiles are fetched
-with [maptiles](https://CRAN.R-project.org/package=maptiles), and each
-tile layer carries its provider’s credit for the map.
+example data comes from the [BC Freshwater
+Atlas](https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/freshwater)
+(streams, lakes and watersheds), the Digital Road Atlas (roads) and the
+[BC Data Catalogue](https://catalogue.data.gov.bc.ca/) (railway and
+PSCIS assessments), and the Neexdzii Kwa set adds modelled habitat and
+crossings from [bcfishpass](https://smnorris.github.io/bcfishpass/).
+Watersheds are delineated with
+[fwapg](https://smnorris.github.io/fwapg/). The rest of the Bittner
+Creek set is fetched over the web, and the Neexdzii Kwa set was queried
+from a database built with fwapg and bcfishpass. Basemap tiles are
+fetched with [maptiles](https://CRAN.R-project.org/package=maptiles),
+and each tile layer carries its provider’s credit for the map.
 
 ## Citation
 

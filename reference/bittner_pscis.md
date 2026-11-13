@@ -35,4 +35,4 @@ An `sf` data frame with columns:
 
 ## Source
 
-PSCIS via newgraph database
+PSCIS assessments, from the BC Data Catalogue

@@ -24,4 +24,4 @@ An `sf` data frame with columns:
 
 ## Source
 
-BC GBA Railway Tracks via newgraph database
+BC GBA Railway Tracks, from the BC Data Catalogue

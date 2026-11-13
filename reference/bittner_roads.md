@@ -23,4 +23,4 @@ An `sf` data frame with columns:
 
 ## Source
 
-BC Digital Road Atlas via newgraph database
+BC Digital Road Atlas, from bcfishpass's public GeoParquet copy

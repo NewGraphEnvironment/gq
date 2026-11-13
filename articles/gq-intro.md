@@ -49,8 +49,8 @@ gq_style(reg, "lake")
 
 gq ships real data for Bittner Creek near Prince George, a ~40 km²
 watershed: the boundary, streams and lakes from the BC Freshwater Atlas,
-and roads, railway and PSCIS fish passage assessments from the BC Data
-Catalogue.
+roads from the Digital Road Atlas, and railway and PSCIS fish passage
+assessments from the BC Data Catalogue.
 
 ``` r
 

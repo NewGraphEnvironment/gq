@@ -26,4 +26,4 @@ An `sf` data frame with columns:
 
 ## Source
 
-BC Freshwater Atlas via newgraph database
+BC Freshwater Atlas, from the BC Data Catalogue
