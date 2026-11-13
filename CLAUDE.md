@@ -550,17 +550,13 @@ waiting when it is not. Pick the instrument by how many answers you need:
 A repeated `sleep N; grep` is right in none of them. **Tell: if you are about to
 spawn a second waiter for the same thing, the first one was the wrong shape.**
 
-**An `until` waiter is only as good as the exit status its probe reads, and `ssh` to
-a Mac on the tailnet does not carry one:** it exits 0 whatever the remote command returned.
-Put the loop on the remote side and gate on what it prints, or test a probe's output, never
-its status (`code-check-shell.md`, "Over Tailscale SSH to a Mac, `ssh` exits 0").
+**An `until` waiter over `ssh` to a Mac exits 0 whatever the remote command did:** gate on
+what it prints (`code-check-shell.md`, "Over Tailscale SSH to a Mac, `ssh` exits 0").
 
 **And a waiter's notification is a wrapper's exit too.** Re-read the condition and the job's
 own state in a foreground call before reporting it done, against a marker only this run's end
 can produce: clear it at launch, or check it is newer than a stamp touched at launch
-(`code-check.md`, "A wrapper's exit is not the work"). A string grepped out of a log is weaker
-than either: a traced script writes it when it reads the line, and an `EXIT` trap prints it
-on failure.
+(`code-check.md`, "A wrapper's exit is not the work"), never a string grepped out of a log.
 
 A `Monitor` filter must also match the failure states, not just the success
 one — silence looks identical to "still running", so a watcher that greps only
@@ -630,9 +626,6 @@ inline.
 - **Report after, not before.** Say what you spawned, and relay what it found — a subagent's
   report never reaches the user on its own.
 
-**What is genuinely the user's call is budget, not mechanism.** Two or three reviewers is
-not that — it is just doing the work.
-
 *10 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 ### Don't block
@@ -644,6 +637,15 @@ must precede the next step, run it synchronously (`run_in_background: false`) so
 blocking is explicit and visible.
 
 *8 lines of evidence for this rule are in `conventions/agent-operations.md`.*
+
+### When your own queue is empty, offer backlog work for the wait
+
+With nothing of the task left while a review or a long run is in flight, offer 2 or 3 queued
+pieces (`planning/backlog.md`, `umbrella.sh next`) sized to the wait, in one phone-answerable
+question, safest first: read-only, issue work in our repos, a park in its own worktree. None
+edits the checkout the run reads. Each class is asked until the answer ledger promotes it (§4).
+
+*3 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 ### Don't trust status
 
@@ -657,8 +659,7 @@ against a clock:
   file waiter. Until it arrives, the report is "spawned at T, no notification yet", never
   "stalled". Keep working, outside the diff.
 - **Deadline:** 60 minutes from the spawn for a `/code-check` round; none for a background
-  Plan review. Check expiry by subtracting the spawn time from `date -u` at each wake; with
-  nothing else to do, one backgrounded `sleep <remaining>; echo DEADLINE` is the timer.
+  Plan review, checked against `date -u` at each wake.
 - A replacement gets its own findings path, and is a spawn, so it counts toward the bound. The
   original may still deliver: read whichever arrives, both if both do.
 
@@ -730,7 +731,7 @@ answers differently, and a rule written from one is wrong about the other. Name 
 each was taken from, and which one the claim is about, before calling either wrong.
 
 **A host that times out from one machine is not blocked until the local link is ruled out**:
-ping the gateway (`ping -c 30 -i 0.2 <gateway>`) and try a second machine.
+ping the gateway and try a second machine.
 
 *23 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
@@ -860,13 +861,13 @@ S3 tool lists only its own provider's buckets; the backup script names the rest.
 an extractor reading its output, automation keyed to its layout), **search the peer repo's
 open issues and PRs for work that changes it**, and read the body of each adjacent hit, not
 only its title. Unquoted words match anywhere; a quoted phrase must match exactly and misses
-rewordings. A full 100 rows means the list was cut: narrow the words.
+rewordings. A full 100 rows of either type means the list was cut: narrow the words.
 
 ```bash
-gh search issues --include-prs --repo NewGraphEnvironment/<peer> --state open --limit 100 <artifact words>
+for t in issue pr; do gh api -X GET search/issues -f q="repo:NewGraphEnvironment/<peer> is:$t is:open <artifact words>" -f per_page=100 --jq '.items[] | "\(.number) \(.title)"'; done
 ```
 
-*12 lines of evidence for this rule are in `conventions/agent-operations.md`.*
+*15 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 ## 4. Decisions Up Front, Then Run
 
@@ -902,14 +903,18 @@ one-line offer of the work — not the first commit toward it. When the ask is t
 something, keep it short and concrete; a worked example beats a taxonomy. **The mandate
 starts at plan approval.**
 
-*4 lines of evidence for this rule are in `conventions/agent-operations.md`.*
+**When an answer settles a plan or moves an issue's scope, end with one offer** to write it into
+#N's body as `## Plan` / `## Decisions` (a fold names both issues), and edit the body once
+agreed: the next session reads the body, not this conversation.
+
+*6 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 ### What still interrupts, and where it goes
 
 A decision that permanently shapes stored data — a key, an identifier, a schema
 choice, a deprecation shim versus a hard rename — is the user's, and it goes to the
 **plan gate**, batched, as two or three concrete options with the recommended one
-first and the consequence stated. Found mid-run, it is still not the agent's to decide:
+first and the consequence stated, including a word or field an upstream contract lacks. Found mid-run, it is still not the agent's to decide:
 ask it the same way — options, recommendation first, phone-answerable — commit, and
 continue on the phases that do not depend on it while the answer is outstanding
 (`planning.md`, "When Something Keeps Failing" — escalating is not stopping).
@@ -919,6 +924,16 @@ In plan mode, collect the "this changes what I build" forks and ask them togethe
 default: pick it, say so, move on.
 
 *4 lines of evidence for this rule are in `conventions/agent-operations.md`.*
+
+### Record the owner's answers; promote a class only on the record
+
+A hook (`settings/hooks/answers_log.py`) records each `AskUserQuestion`; record a question
+asked in prose with its `--manual` form. `/backlog-sweep` in soul proposes a class with a run
+of approvals and no refusal as a standing authorization. The classes this section reserves
+(stored data, posting outside our repos, machine changes, merges) are never proposed, and work
+under a promoted class is still reported.
+
+*2 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 ### Never post outside our own repos without approval
 
@@ -984,9 +999,8 @@ a deploy, a publish. When it does, approval given in chat does not reach it. On 
 the user leaves auto mode for that step (Shift+Tab) and approves the prompt, or runs the
 bare command themselves (below). Do not retry, and do not suggest a restart.
 
-It is not the secret-read clamp (`newgraph.md`, "Reading a secret clamps the rest of the
-session"), which names *earlier conversation content* and needs a restart. This refusal
-names a **category** of action, such as "Production Deploy", and the category need not describe the command.
+It names a **category** ("Production Deploy"), not *earlier conversation content*, so it is
+not the secret-read clamp (`newgraph.md`), which needs a restart.
 
 **It classifies the command text, so it also fires on a write the file tools can make
 safely.** Where what was refused is an edit to a tracked file rather than the publish
@@ -1004,8 +1018,7 @@ sudo-needs-TTY operation, anything the Bash tool is blocked from running — giv
 not run, or runs from `$HOME`.
 
 - **Anchor every path**: absolute, or after `cd <repo-root> &&` on the same line.
-- Keep it paste-safe (`grep`/`awk` over a nested `python3 -c` in remote quotes), **short
-  enough not to wrap**, and say what the first output line must read (`PUBLISH run`), so a
+- Keep it paste-safe, **short enough not to wrap**, and say what the first output line must read (`PUBLISH run`), so a
   dropped flag shows before anything is written.
 - **Several commands go on one line.** A multi-line paste can run only its first line, with no
   error: join them with `&&` or a `for` loop over the list, still short enough not to wrap;
@@ -1034,7 +1047,6 @@ click: `[repo#12](https://github.com/<owner>/<repo>/issues/12)`,
 - **Say what each one is** in a few words, unless its sentence already does: a list of bare
   links fails this. A `Stop` hook, `settings/hooks/reply_links-check.py`, holds a reply that
   breaks either half; its no-context check is a heuristic, so a reply it misjudges may stand.
-- Issues under `/issues/N`, pull requests under `/pull/N`; when unsure, ask `gh` for the URL.
 - **Cross-repo references carry the repo** (`other#12`): a bare `#N` is a working link to the
   wrong repo, and naming the collision in prose afterwards does not fix it; re-qualify the link.
 - Before sending a report with many numbers, spot-check two or three through `gh`: the ones
@@ -1044,19 +1056,25 @@ click: `[repo#12](https://github.com/<owner>/<repo>/issues/12)`,
 
 *11 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
-### Surface upstream defects; do not work around them
+### Surface upstream defects and gaps; do not work around them
 
-When a dependency or an external API misbehaves, surface it and ask rather than
+When a dependency or an external API misbehaves, or its contract lacks a concept you need,
+surface it and ask rather than
 coding around it: a workaround hides the defect from whoever could fix it, and most of the
 dependencies in question are **first-party**, so a local patch leaves the bug in place for
 every other consumer. Same instinct as `newgraph.md`'s "install missing packages, don't
 workaround", applied to a *broken* dependency.
 
-**How to apply:** reproduce it minimally, file an issue in the owning repo with the
+**How to apply:** first check an installed package is current (`check_pkg_stale.sh`, then our
+package's tag and `main`, a CRAN package's CRAN) and state the versions beside the diagnosis.
+Then reproduce it minimally, file an issue in the owning repo with the
 repro and the exact lines (a third party's: a fork issue first, above), report it, and carry on if it is not blocking. The rule is
 *do not hide it*, not *do not continue*.
 
-*10 lines of evidence for this rule are in `conventions/agent-operations.md`.*
+**A gap is a change request:** file it with the contract's owner before coining a name, and
+bring the choice to the plan gate. Tell: you are explaining why your names are not the contract's.
+
+*16 lines of evidence for this rule are in `conventions/agent-operations.md`.*
 
 
 # Cartography
@@ -1103,23 +1121,23 @@ Install: `pak::pak("NewGraphEnvironment/gq")`
 - **Compute area BEFORE simplify** in SQL
 - **No map title** — title belongs in the report caption
 - **Legend over least-important terrain** — swap legend and logo sides when it reduces AOI occlusion. No fixed convention for which side.
-- **Four-corner rule** — legend, logo, scale bar, keymap each get their own corner. Never stack two in the same quadrant.
-- **Bbox must match canvas aspect ratio** — compute the ratio from geographic extents and page dimensions. Mismatch causes white space bands.
-- **Consistent element-to-frame spacing** — all inset elements should have visually equal margins from the frame edge
+- **Four-corner rule** — legend, logo (our north arrow), scale bar, keymap each get their own corner. Never stack two in the same quadrant.
+- **Bbox must match canvas aspect ratio** — compute the ratio from geographic extents and page dimensions. Mismatch causes white space bands, and tmap pads the panel so its scale bar reads short: draw each panel on a canvas of its own box's shape (`tmap_save(width, height = width * dy / dx)`) and stack the PNGs.
+- **Consistent element-to-frame spacing** — equal margins from the frame edge
 - **Map fills to frame** — basemap extends edge-to-edge, no dead bands. Use near-zero `inner.margins` and `outer.margins`.
 - **Suppress auto-legends** — build manual ones from registry values
 - **ALL CAPS labels appear larger** — use title case for legend labels (gq `gq_tmap_classes()` handles this automatically via `to_title()` fallback)
-- **Google imagery is a link, never an embed beside our map** — Google Maps Platform terms §3.2.3(e) bar using its services "with or near a non-Google Map", so no Google panel beside an Esri or Sentinel one, key or not. Link per feature instead (template in the `cartography` skill), as an undated look: Google Maps does not date its imagery
-- **A maptiles custom provider URL ends in `.jpg`** — in maptiles 0.11.0, `create_provider()` with an extensionless tile URL fails at `get_tiles()` with `cannot coerce type 'closure' to vector of type 'character'`; `.../MapServer/tile/{z}/{y}/{x}.jpg`, the form its built-in Esri providers use, works and Esri serves the same tiles
+- **Google imagery is a link, never an embed beside our map** — its terms bar its services "with or near a non-Google Map", key or not. Link per feature (template in the `cartography` skill), as an undated look
+- **A maptiles custom provider URL ends in `.jpg`** (`.../MapServer/tile/{z}/{y}/{x}.jpg`) — an extensionless one fails at `get_tiles()` in maptiles 0.11.0 and is read as PNG from 0.12
 - **Ask Wayback, not the map, for newer Esri imagery** — call `dft_wayback_captures(zoom = z)` once per zoom, 10 to 22, and compare: one call keeps one zoom per feature
-- **Give a web map hex colours, never R colour names** — `grey80` draws in tmap and ggplot2, but MapLibre (mapgl) cannot parse it and drops the whole layer: the console's first error is `Could not parse color from value 'grey80'`, then `Cannot style non-existing layer` when a control touches it. Convert with `m <- grDevices::col2rgb(x, alpha = TRUE); grDevices::rgb(t(m[1:3, ]), alpha = m[4, ], maxColorValue = 255)` or hard-code hex, and check for `NA` before converting: it comes back `#FFFFFF00`, a layer drawn transparent rather than an error
+- **Give a web map hex colours, never R colour names** — MapLibre (mapgl) cannot parse `grey80` and drops the whole layer. Convert with `m <- grDevices::col2rgb(x, alpha = TRUE); grDevices::rgb(t(m[1:3, ]), alpha = m[4, ], maxColorValue = 255)`, refusing `NA` first: it converts to transparent
 - **Choose the window by measuring** — grid the area and draw the part where the story separates; the first window tried rarely shows it
-- **Every map places its reader** — town labels on every map, from `gns_geographical_names_sp` (the source gq's `town` style names), and the river named on the map and in the caption
+- **Every map places its reader** — town labels on every map, from `gns_geographical_names_sp` (the source gq's `town` style names), and the river named on the map and in the caption. An article's static map also gets Esri World Topographic Map blended with World Shaded Relief (`gq_basemap_tiles()`, `gq_basemap_blend()`), Freshwater Atlas stream names, and data colours that stand off its blue water
 - **Labels follow the registry, with a halo, never a box**
 - **Compare two rules side by side** — a pair across the page, each map showing what that rule alone holds
 - **Draw in BC Albers with tiles warped to it** (`crs = 3005`), and rasterize a large polygon onto the window rather than `st_crop()` it: both failures cut the layer silently
 
-*17 lines of evidence for this rule are in `conventions/cartography.md`.*
+*26 lines of evidence for this rule are in `conventions/cartography.md`.*
 
 ## Self-Review (after every render)
 
@@ -1137,15 +1155,12 @@ Read the PNG and check before showing anyone.
 
 ### Does it communicate?
 
-Every check above is about **where elements sit**. A map can satisfy all seven
-and still fail to say what it is about — so these are not optional extras, they
-are the half of the review that the placement list structurally cannot reach.
+Every check above is about **where elements sit**; a map can pass all seven and
+still not say what it is about. These are the half placement cannot reach.
 
-8. **Is every prominent feature in the legend?** Work the other direction from
-   the usual one: rank what draws the eye *in the rendered image*, then confirm
-   each of the top few appears in the legend. Building the legend from the layer
-   list instead answers "did I list my layers", which is a different question and
-   always says yes.
+8. **Is every prominent feature in the legend?** Rank what draws the eye *in the
+   rendered image*, then confirm each of the top few is in the legend. A legend
+   checked against the layer list always says yes.
 9. **Is the subject obvious to someone who has never seen this area?** An AOI
    that renders identically to its surroundings is not delineated by a thin
    boundary line — the reader has to be told where to look. Containment (a fill,
@@ -1156,24 +1171,23 @@ are the half of the review that the placement list structurally cannot reach.
     accordingly — and say in the caption or prose that you did.
 11. **Does the basemap earn its contrast cost?** A basemap that adds no readable
     terrain is not neutral: it lowers the contrast of everything drawn over it.
-    Blend parameters that mute it into a flat field are worse than no basemap.
+    Blend parameters that mute it into a flat field are worse than no basemap; fade
+    it only as far as the data reads and the terrain and names still do.
 12. **Is the type sized for the width it is published at, not rendered at?** A
-    7 in figure squeezed into a ~700 px column loses roughly 40% — text set at
-    `size = 0.5` for the render lands at a few pixels on the page. Check the
-    figure at its delivered width.
+    7 in figure in a ~700 px column shrinks about 40%, so `size = 0.5` text lands
+    at a few pixels. Check it at its delivered width.
 13. **Does every layer's data cover the whole window?** Dim the part of the
     window a layer's data does not reach, in every map that shares the window: a
     layer read for some watershed groups, catalogue items or one model run leaves
-    the rest blank, and blank reads as none: no access, no floodplain. Two Bulkley
-    maps on newgraphenvironment.github.io#65 took in a group that the link query's
-    group list and the floodplain catalogue both left out, and the fix reached the
-    second map only in the next review round.
+    the rest blank, and blank reads as none: no access, no floodplain.
+14. **Does it look finished?** Thin bars, white separators between classes, no
+    boxes or shadows.
 
 ### Why this half exists
 
 Placement checks can all pass on a map nobody can read; these ask whether it communicates.
 
-*8 lines of evidence for this rule are in `conventions/cartography.md`.*
+*12 lines of evidence for this rule are in `conventions/cartography.md`.*
 
 See the `cartography` skill for full reference: basemap blending, BC spatial data queries, label hierarchy, mapgl gotchas, and worked examples.
 
@@ -1441,7 +1455,7 @@ A script that reads a file, transforms it, and writes it **back to the same path
 - Tools that scan an R Markdown document for prose — citation detection, cross-references, spell-check, word counts — skip code chunks.
 
 ### `fs::dir_ls(glob = )` matches the FULL path, so a bare filename pattern matches nothing
-- `fs::dir_ls(dir, glob = "form_*.gpkg")` returns **zero** for a directory full of `form_*.gpkg` files.
+Give `fs::dir_ls()` an anchored `regexp =`, never a `glob =`: a glob is matched against the whole path, and its `[...]` classes are escaped.
 
 ### `glue()` trims common leading whitespace
 - `glue::glue()` strips the common indentation of its input, so a template whose output must preserve exact indentation (XML, YAML, Makefiles, Python) comes out subtly wrong — valid-looking, wrongly indented.
@@ -1468,7 +1482,7 @@ Download a large remote file to a `tempfile()` with httr2 or curl and read the c
 - `requireNamespace("pkg")` succeeds whenever **any** version is installed, so a guard shaped like `if (!requireNamespace("pkg")) pkgload::load_all()` silently runs against the installed one.
 
 ### `lintr` also resolves against the installed package, not the source tree
-A lint warning of `no visible binding` for a constant added on this branch is usually the installed package being stale; check `exists(name, asNamespace(pkg))` and reinstall before changing any code.
+For a `no visible binding` lint on a constant added on this branch, check `exists(name, asNamespace(pkg))` and reinstall before changing code.
 
 ### Regenerated binaries churn git even when nothing changed
 - Formats that embed a creation timestamp or other run-varying metadata produce a different file on every rebuild.
@@ -1483,7 +1497,7 @@ Count `r$failed > 0 | r$error` over `r <- as.data.frame(testthat::test_file(f))`
 Before blaming a failure, or its absence, on a skip, find the `test_that()` block the skip sits in.
 
 ### `expect_gt()` and friends take no `info` argument
-`expect_true()`, `expect_false()` and `expect_equal()` accept `info =`; the comparison expectations — `expect_gt`, `expect_lt`, `expect_gte`, `expect_lte` — do not, and passing one is an **error**, not a warning:
+Passing `info =` to `expect_gt`, `expect_lt`, `expect_gte` or `expect_lte` is an **error**, not a warning.
 
 ### pak Behavior
 - pak stops on first unresolvable package — all subsequent packages are skipped
@@ -1660,7 +1674,7 @@ Leave `<` and `>` unescaped when you build a pattern from data.
 R removes its session `tempdir()` on exit, including after `stop()`.
 
 ### R's `yaml` returns a mixed int/float sequence as a list, not a numeric vector
-`yaml::read_yaml()` simplifies a sequence to a vector only when every element has the same type, so `[0.164, 9999]` comes back as `list(0.164, 9999L)` while `[0.0, 9999.0]` is `c(0, 9999)`.
+Normalise a numeric YAML sequence at load.
 
 ### testthat's failure snapshots land in `tests/` and ride in on `git add -A`
 testthat 3e writes `tests/testthat/_problems/*.R` and `tests/testthat/testthat-problems.rds` when tests fail.
@@ -1758,6 +1772,9 @@ Record the condition in the handler (`hit <<- TRUE`) and raise after `tryCatch()
 ### `fs::file_move()` onto an existing directory nests the source inside it
 Move a directory into place with `base::file.rename()` and check its return value, which is FALSE where the target is a non-empty directory, a symlink or a file.
 
+### `normalizePath()` renames through a symlink and returns a missing path as it was
+Make a path absolute with `file.path(normalizePath(dirname(x), mustWork = TRUE), basename(x))`, which keeps its name.
+
 ### Base `file.info()` has no inode column, so `file.info(x)$ino` is NULL and any comparison of it passes
 Read an inode with `fs::file_info(x)$inode`.
 
@@ -1784,6 +1801,15 @@ Paste a per-element suffix on instead (`paste0(sub("]$", "", x), suffix)`): a `r
 
 ### `officer::body_replace_all_text()` misses a phrase that spans Word runs
 Replace whole paragraphs, not phrases inside them: officer matches within one text run, and Word splits a paragraph into runs wherever formatting or editing history changes.
+
+### Fill an xlsx template through its sheet XML, not openxlsx's `saveWorkbook()`
+Write the input cells into the sheet XML with xml2 and re-zip, so only the parts you edit change.
+
+### Copy a live SQLite database with its `-wal`
+Keep the pair only if both files' mtime and size held across the copy.
+
+### jsonlite writes an empty name as the element's position
+Write a JSON object with an empty key as text, not through `toJSON()`.
 
 # Code Check — Shell
 Tool-level traps in bash, sed, git and `gh`, and in the host toolchain those commands depend on.
@@ -1839,7 +1865,7 @@ Give an outer heredoc a delimiter its body cannot contain, or run the script fro
 - macOS ships BSD `sed`/`grep`.
 
 ### On this Mac `stat` and `date` are GNU, so the same flag letter means something else
-Here Homebrew puts GNU coreutils ahead of `/usr/bin`, so BSD-style `stat -f` and `date -r <epoch>` mean something else; prefer a flavour-free form (`find -newermt`, `python3`), or call the binary by absolute path.
+Prefer a flavour-free form (`find -newermt`, `python3`), or call the binary by absolute path.
 
 ### `&` binds to the whole `&&` list, so assignments never reach the parent
 - `cmd1 && VAR=$(...) && nohup prog > "$VAR.log" & disown` backgrounds the **entire list**, not just `nohup`.
@@ -1851,7 +1877,7 @@ Here Homebrew puts GNU coreutils ahead of `/usr/bin`, so BSD-style `stat -f` and
 `gh api repos/ORG/REPO/compare/upstream:main...ORG:main` returning `ahead: 0, behind: 0, status: identical` reads as *"this fork has no local work"*.
 
 ### A destructive setup and its undo must not share one timeout-able command
-Never chain a destructive setup and its undo (`git stash && slow && git stash pop`) in one timeout-able command; compare with `git show HEAD:path`, or restore from one `trap … EXIT` handler guarded by a flag set once the setup happened.
+Never chain a destructive setup and its undo (`git stash && slow && git stash pop`) in one timeout-able command.
 
 ### `git checkout <path>` restores from the index, not from HEAD
 After a `git add`, `git checkout <path>` reinstates the broken *staged* copy — so the "fix" reproduces the failure and reads as though the edit was wrong.
@@ -1868,17 +1894,17 @@ Wait on the PIDs you started (`wait "$pid"`), because a bare `wait` also blocks 
 ### `if ! cmd; then rc=$?` captures the negation, not the command
 Inside the branch, `$?` is the status of the `!` compound — which is **0 by construction**, because the negation succeeded.
 
-### A `pgrep -f` waiter matches its own command line, so it never exits
-Wait on a PID with `while kill -0 "$PID"; do sleep 30; done`, never on `pgrep -f "job"`, whose pattern matches the waiting loop's own command line so it never exits.
+### A `pgrep -f` waiter matches a waiter's command line, so it never exits
+Wait on a PID with `while kill -0 "$PID"; do sleep 30; done`, never on `pgrep -f "job"`, whose pattern matches a waiting loop's command line so it never exits.
 
 ### `timeout` is GNU coreutils — a portable deadline
 An assertion around something that might hang can only pass or hang, never fail (`code-check.md`, "Restore the bug and prove the guard fires").
 
 ### `aws s3 cp` cannot tell a missing key from a missing bucket
-`aws s3 cp` gives one exit 1 and 404 text for a missing key and a missing bucket, so probe `s3api head-bucket` then `head-object`: only a 404 from a reachable bucket means absent; a 403 is permissions.
+Probe `s3api head-bucket` then `head-object`: only a 404 from a reachable bucket means absent, and a 403 is permissions.
 
 ### An S3 multipart ETag depends on the uploader's part size, so try every size that gives its part count
-Verify an upload by comparing each object's ETag with its file, trying for a multipart ETag every part size that gives its part count: the size is the uploader's `multipart_chunksize`, which differs between machines.
+Verify an upload by comparing each object's ETag with its file, trying for a multipart ETag every part size that gives its part count.
 
 ### A verification command can be shadowed by a shell function or alias
 - The shell is initialized from the user's profile, so `diff`, `grep`, `ls`, `cat` and friends may resolve to a wrapper rather than the binary you assume.
@@ -1911,7 +1937,7 @@ Two traps from seeding one repo out of another's history (2026-09-02), both sile
 A tool upgrade across the fleet can remove a capability without reporting failure.
 
 ### An amd64-only image needs `--platform`, and it works on your machine because it is cached
-`docker run` resolves from the local image store before it reaches a registry, so on an arm64 Mac an amd64-only image runs fine once pulled — **and the command that pulled it is not necessarily the one in the code.**
+Pass `--platform` to `docker run` for an amd64-only image.
 
 ### Headless Qt in a container needs `QT_QPA_PLATFORM=offscreen`, and without it the run hangs or crashes
 Pass `-e QT_QPA_PLATFORM=offscreen` to any `docker run` that starts QGIS or another Qt program with no display.
@@ -1920,7 +1946,7 @@ Pass `-e QT_QPA_PLATFORM=offscreen` to any `docker run` that starts QGIS or anot
 Query one path per `s3cmd ls` call, or `--recursive` on the prefix and `grep`: given several paths it lists only the first, with exit 0.
 
 ### `grep -c` prints the count AND exits 1 when it is zero
-Write `n=$(grep -c …) || n=0`, never `|| echo 0` inside the substitution: `grep -c` already prints `0` and exits 1, so that fallback appends a second line, while the bare assignment aborts a `set -e` script.
+Write `n=$(grep -c …) || n=0`, never `|| echo 0` inside the substitution.
 
 ### A failed `git fetch` leaves the comparison you make next reading stale refs
 `git fetch` and the check that follows it are two commands, and nothing links them.
@@ -1950,10 +1976,10 @@ Supply a default ssh command only when `GIT_SSH_COMMAND`, `core.sshCommand` and 
 Count instead: `while :; do left=0; for i in $ids; do done_yet "$i" || left=$((left+1)); done; [ "$left" -eq 0 ] && break; sleep 90; done`.
 
 ### A failed `cd` lets every later command run in the directory you were already in
-Write `cd "$D" || exit 1` (or `cd "$D" && …`), never `cd "$D"; …`: without the guard, a missing directory prints one error and the rest of the line runs wherever the shell stood, including its file writes.
+Write `cd "$D" || exit 1` (or `cd "$D" && …`), never `cd "$D"; …`.
 
 ### macOS `/bin/bash` 3.2 quote-matches a heredoc inside `$( )`, so an apostrophe in the body is a syntax error
-Pass multi-line text through a file (`--body-file`, `-F`), never `"$(cat <<'EOF' … EOF)"`.
+Pass multi-line text through a file (`--body-file`, `-F`), never a heredoc inside `$( )`, and open each `case` pattern inside `$( )` with `(`.
 
 ### A skill's bash blocks run as separate calls, and its `$` + digits are replaced by its arguments
 Open every block after the first with guards on what it inherits: re-set its variables, confirm the path is the expected tree, and refuse edits or commits the previous block did not check.
@@ -1961,14 +1987,17 @@ Open every block after the first with guards on what it inherits: re-set its var
 ### An apostrophe in a `${VAR:?message}` inside double quotes is an unterminated quote
 Keep apostrophes out of the message of a `"${VAR:?…}"` guard.
 
+### An apostrophe in a comment inside a single-quoted program closes the program
+Keep apostrophes out of comments inside an `awk '…'`, `sed '…'` or `python3 -c '…'` program in a script: the shell ends the quote at the `'`, whatever the program reads as a comment.
+
 ### A `git push` can land and still report failure, so confirm the ref rather than the exit code
 After a rejected push, read the remote ref before concluding anything: `git fetch -q origin && git merge-base --is-ancestor HEAD origin/<branch>`.
 
 ### Over Tailscale SSH to a Mac, `ssh` exits 0 whatever the remote command returned
-Never branch on the exit status of `ssh <mac-host> cmd` when the host serves Tailscale SSH: test what the command prints (`ssh host 'test -e f && echo YES'` compared to `YES`), or move the loop to the remote side and gate on its output.
+Never branch on the exit status of `ssh <mac-host> cmd` when the host serves Tailscale SSH: test what the command prints, or move the loop to the remote side and gate on its output.
 
 ### awk `==` compares version strings as numbers, so `1.1` matches `1.10`
-Compare a field to a version as strings, `($i "") == (v "")`: awk gives `split()` fields, `$i` and `-v` values string-or-number status, so when both sides look numeric `==` compares numbers, and `1.1 == 1.10` and `2.0 == 2` are true.
+Compare a field to a version as strings, `($i "") == (v "")`.
 
 ### `gh api` prints an HTTP error's body on stdout and exits 1, ignoring `--jq`
 Branch on `gh api`'s exit status before reading its output.
@@ -1977,7 +2006,7 @@ Branch on `gh api`'s exit status before reading its output.
 Clean up temp files and worktrees in one EXIT handler that reads globals.
 
 ### `git worktree prune` deregisters every missing worktree in the repo, not only yours
-Remove only your own registration: `git worktree remove --force "$wt"`, and on failure delete only its admin dir (`git -C "$wt" rev-parse --absolute-git-dir`, captured right after `worktree add`).
+Remove only your own registration: `git worktree remove --force "$wt"`, and on failure delete only its admin dir.
 
 ### `git push --porcelain` ends with `Done` on a rejection, so `tail -1` names no reason
 Take the reason from the `!` row's third tab field, falling back to the last line that is not `Done`: `awk -F'\t' '$1 == "!" { print $3; exit }'`.
@@ -1992,13 +2021,13 @@ Assign the command on its own line under `set -e` (`out=$(cmd)`), then filter `o
 Never pipe a `sed`/`awk` range extract into an interpreter.
 
 ### A Python CLI redirected to a log writes nothing until it exits, so the log cannot show progress
-Run a long Python command with `PYTHONUNBUFFERED=1` (or `python -u`) when its output goes to a file: stdout to a file is block-buffered, so the log stays at 0 bytes for the whole run and an empty log reads as a stalled job.
+Run a long Python command with `PYTHONUNBUFFERED=1` (or `python -u`) when its output goes to a file.
 
 ### `aws s3` progress lines end in `\r`, so a line-based count of a saved log reads zero
 Translate before counting: `tr '\r' '\n' < log | grep -c '^upload:'`.
 
 ### `a && b || c` runs `c` when any step before the `||` fails
-Give each setup step its own `|| exit 1` and branch with `if`: in `a && b || c`, `c` runs when `a` fails as well as when `b` does, so a failed setup reaches the fallback with its variable unset.
+Give each setup step its own `|| exit 1` and branch with `if`.
 
 # Code Check — Spatial
 terra, sf, bcdata, GDAL/OGR CLIs.
@@ -2081,7 +2110,7 @@ A spatial layer that also carries `LATITUDE` / `LONGITUDE` columns has the same 
 `sf::st_write()` and `ogr2ogr` will write GeoJSON from a projected object and emit a `crs` member naming it:
 
 ### `sf::st_perimeter()` needs lwgeom on projected data, and lwgeom is not a dependency of sf
-An exported sf function whose body branches on `requireNamespace("lwgeom")` is an undeclared dependency: `R CMD check` does not report it, and a test suite cannot see it on a machine that happens to have lwgeom installed.
+An exported sf function whose body branches on `requireNamespace("lwgeom")` is an undeclared dependency.
 
 ### terra keeps a result in memory whenever it fits, so a per-class loop over a large grid accumulates full-grid rasters
 `ifel()`, `focal()`, arithmetic and `rasterize()` return in-memory SpatRasters whenever the result fits under `memfrac` (60% of RAM by default).
@@ -2093,7 +2122,7 @@ A `NULL` `data` argument does not error and does not warn — the layer inherits
 Two contracts inside `terra::app()` that read as the opposite of what they are, both measured on terra 1.9.34 (drift#9, 2026-09-05):
 
 ### terra: `levels<-` and `coltab<-` copy first; `set.cats()` mutates in place, setting or stripping
-`terra::set.cats()` mutates the raster it is given whether it strips (`value = NULL`) or sets levels; `levels<-` and `coltab<-` deep-copy first, so on a caller's raster call `set.cats()` only on the copy one of them returned, or on a `deepcopy()` you own.
+`terra::set.cats()` mutates the raster it is given whether it strips (`value = NULL`) or sets levels.
 
 ### terra `metags()`: the empty case is `NULL`, and the sidecar is half the artefact
 Three measured facts about raster **container** metadata, all of which fail quietly (floodplains#83, 2026-09-05, terra 1.9.34 / GDAL 3.8.5).
@@ -2141,7 +2170,7 @@ GDAL's curl handles do not survive a fork.
 Two independent reasons a parallel raster job uses far more memory than its data, both measured 2026-09-20 on a 64 GB machine (fly#58) while a sweep was killed four times.
 
 ### `terra::distance(x, target = NA)` measures FROM the NA cells, so every data cell reads 0
-Reaching for it to answer "how far is each data cell from the nearest nodata" gives the opposite: `distance()` fills the **target** cells with their distance to the nearest non-target, so data cells come back `0` and any `dist < threshold` test is true everywhere.
+Reaching for it to answer "how far is each data cell from the nearest nodata" gives the opposite.
 
 ### `summarise()` on a grouped `sf` returns an `sf`, and the geometry rides into your CSV
 `dplyr::summarise()` dispatches to `summarise.sf` on an `sf` object.
@@ -2219,7 +2248,7 @@ Hold any raw WFS read to the server's own count.
 To tell a throttle from any other bcdata failure, record the status off the request itself (wrap `crul:::crul_fetch`), not from the message.
 
 ### sf and terra can link different GDALs, so a probe through one says nothing about the other
-Check `sf::sf_extSoftVersion()[["GDAL"]]` and `terra::gdal()` before concluding that "GDAL" cannot read something: one R session can hold two GDALs, and a driver or codec missing from one may be present in the other.
+Check `sf::sf_extSoftVersion()[["GDAL"]]` and `terra::gdal()` before concluding that "GDAL" cannot read something.
 
 ### `arrow::write_parquet()` of a geoarrow table is not GeoParquet
 Write GeoParquet with GDAL's Parquet driver (`ogr2ogr -f Parquet`), and check the file's schema metadata carries a `geo` key.
@@ -2344,13 +2373,13 @@ General, and not an instance of a mechanism above.
 - `devtools::test()` (and most runners) load each test file **when they reach it**, not at launch.
 
 ### Test a persistent change through its per-process override first
-A setting that is changed once and persists — `xcode-select -s`, a git config key, a registered default, an installed symlink — usually has an environment variable or flag that overrides it **for one process**.
+Try a persistent setting's per-process override before changing the setting.
 
 ### Adopting Existing Config
 When importing config from one location into a canonical one (legacy `~/.bash_profile` → dotfiles repo, old script's env → repo, another project's `settings.json` → soul):
 
 ### Test the cold/create path of idempotent code, not just the warm no-op
-- Idempotent provisioning code (a resolver-file writer, a config installer, a "create unless present" block) has two paths: the **cold** path that actually creates/writes, and the **warm** path that detects "already present" and skips.
+- Idempotent provisioning code has a **cold** path that creates and a **warm** path that finds the artifact present and skips.
 
 ### Fetch an expiring credential just before its first use, not at job start
 Put the step that fetches short-lived credentials immediately before the first step that uses them.
@@ -2412,6 +2441,9 @@ Before reporting that a spreadsheet value is off by a factor, check the cell's *
 
 ### Extracted PDF text carries corrupted glyphs, and a tolerant parser turns them into wrong numbers
 Never strip non-digits to clean a number extracted from PDF text.
+
+### Merge PDFs with `qpdf`, and check the merged file
+Merge with `qpdf --empty --pages a.pdf b.pdf -- out.pdf`, not `pdfunite`, and run `qpdf --check` on the result.
 
 
 # NGE Feature Workflow
@@ -2643,7 +2675,8 @@ organisation, and it names internal work as it does so.
   issue body is drafted at plan time and the code later, so scrubbing the tree and the PR
   body leaves the body untouched. `/gh-pr-merge` step 3b is the moment to grep it, then
   read it for the bare names a grep misses. It also refuses a branch whose diff adds a
-  private repo's URL or `name#N` to tracked files (`private_refs.sh`).
+  private repo's URL, `name#N` or, for the names on its bare list, the bare name to tracked
+  files (`private_refs.sh`).
 - **A leaked body is recreated, not edited: GitHub shows its edit history to anyone.** A fresh
   issue with no discussion is deleted (`gh issue delete`, admin) and refiled clean, the private
   side in a private-repo issue. Where the number must stay, edit it, then delete each older
@@ -2847,6 +2880,14 @@ Use `clean-exclude` for anything that must survive.
 gh api "repos/OWNER/REPO/contents?ref=gh-pages" --jq '.[] | "\(.type) \(.name)"'
 ```
 
+## A local render writes `pkgdown/favicon/` into the source tree
+
+In a repo with a logo and no committed `pkgdown/favicon/`, a local `build_home()` or
+`build_site()` builds favicons into the source tree, whatever `destination` says. Commit them
+once (`pkgdown::build_favicons()`), or delete the directory before any `git add`.
+
+*3 lines of evidence for this rule are in `conventions/pkgdown-publishing.md`.*
+
 ## Removing something already published
 
 1. **Stop generating it** — the pre-build removal above.
@@ -2924,7 +2965,9 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
    - `progress.md` — Session log with timestamps and commit refs
 3. **Plan-review with the Plan agent — concurrently, not as a gate** — Once `task_plan.md` is scaffolded, spawn the Plan subagent (`Agent({subagent_type: "Plan", prompt: "..."}`) and ask it to critically review the task_plan against the issue body + actual codebase. Categorize findings as Blocker / Gap / Ordering / Assumption / Scope / Acceptance. The agent reads files fresh — it catches what you miss when you've been thinking about the design too long.
 
-   **Do not wait for it.** Spawn, then start the lowest-risk phase. Background agents have repeatedly returned late — in one case after the entire issue had shipped — so treating the review as a precondition stalls the work for as long as the agent takes (see `agent-operations.md` §2). Fold findings in whenever they land: pre-baseline they edit the plan; mid-implementation they become follow-up commits — unless the finding is a stored-data fork of the kind `agent-operations.md` §4 reserves for the user. A review that arrives after the code is written is not wasted — the reviewer reads real code instead of a plan, which is how one late review still contributed three fixes that no earlier reading had found. If you genuinely cannot proceed without the result, run it with `run_in_background: false` so the blocking is explicit.
+   **Do not wait for it.** Spawn, then start the lowest-risk phase. Background agents have repeatedly returned late — in one case after the entire issue had shipped — so treating the review as a precondition stalls the work for as long as the agent takes (see `agent-operations.md` §2). Fold findings in whenever they land: pre-baseline they edit the plan; mid-implementation they become follow-up commits — unless the finding is a stored-data fork of the kind `agent-operations.md` §4 reserves for the user. If you genuinely cannot proceed without the result, run it with `run_in_background: false` so the blocking is explicit.
+
+   **On a park the review runs before the baseline, so keep it a review of the plan:** read it against the issue, its comments and the code it names. One cheap probe (a grep, a listing) may settle a design fork; a question needing more becomes a checkbox in the phase that measures it.
 
    Verify before acting, in both directions. Findings have been confidently wrong (a "BLOCKER" disproved by a 30-second probe) and confidently right about things nobody suspected. Reproduce the claim first.
 
@@ -2936,13 +2979,7 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
    definitional"* as a claim with an author, exactly like an issue asserting a
    question can only be answered by testing.
 
-   Corollary on when to stop: **convergence is not a reviewer saying you have
-   converged.** End on an enumeration of the complete candidate set showing nothing
-   sits above its source, not on another round.
-
-   **Spawn review agents UNNAMED.** Passing `name` to the `Agent` tool changes what you get: a named spawn becomes a persistent *teammate* that goes **idle** rather than completing, so there is no final report to auto-deliver and its output must be pulled with `SendMessage`. An unnamed spawn is a fire-and-return subagent whose report arrives on its own in the completion notification. Pass `name` only for a collaborator you intend to keep messaging, and shut it down when done — it pings indefinitely otherwise.
-
-   That mis-spawn produced one of the silent-delivery failures below, so check `name` before suspecting settings. Teammate mode (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` + `teammateMode`, merged globally from `soul/settings/defaults.json`) shapes what a *named* spawn becomes; it is not by itself why findings go missing, and an unnamed spawn delivers fine with it enabled.
+   **Spawn review agents UNNAMED.** A named spawn becomes a *teammate* that goes **idle** rather than completing, so its report never arrives on its own; pass `name` only for a collaborator you will keep messaging, and shut it down when done.
 
    **Get the findings into a file — but check who is doing the writing.** Message delivery can fail silently, by idle pings with no content or by routing to another session. From this side an idle ping is indistinguishable from an agent that had nothing to say, so the loss is invisible. A file (`planning/active/review-<N>.md`) survives routing, survives the agent exiting, and is greppable later. One path per **spawn**: a replacement gets its own, because the original may still deliver into the one it was given, and a missing file reads as a lost review only after the completion notification or the deadline in `agent-operations.md` §2, "Don't trust status".
 
@@ -2950,8 +2987,6 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
 
    - **Read-only agent** (`Plan`, `Explore`): ask for the findings **in the reply**, then write them to `planning/active/review-<N>.md` yourself. The file is still the deliverable; you are just the one creating it.
    - **Agent type that can write**: put the file-path instruction in the first prompt, not as a follow-up.
-
-   Asking for a file the agent cannot produce costs a round-trip, and — worse — sets you up to read an absent file as an absent review. Check the agent type's tools before writing the instruction.
 
    **A reviewer asked to prove a guard fires will patch your working tree, and that races
    your own test runs.** "Restore the defect and watch it go red" is the right instruction
@@ -2974,21 +3009,17 @@ Skip planning for single-file edits, quick fixes, or tasks with obvious next ste
    **Review the fixes, not just the code.** The second pass is where the value concentrates, because a fix written under a wrong assumption reproduces the same defect. **Convergence is the signal to stop, not a fixed number of rounds.**
 
    Convergence is measured, not felt — a quiet round and an exhausted reviewer look
-   identical. What terminates a review is to **enumerate the
-   candidate set mechanically and show nothing sits above its source of truth**: parse
-   the files and walk every `cli_abort`/`warning`/`stop` rather than recalling them, so
-   "all of them are pinned" is a count. For the guards a fix introduced, the equivalent
-   instrument is a mutation table (`code-check.md`, "Restore the bug and prove the guard
-   fires"). `code-check.md` states the enumeration rule under "A guard's
-   scope, escape hatches, and remedies" — terminate by enumeration, not by a reviewer
-   saying you have converged. `/code-check` treats three rounds as the floor and keeps
+   identical, and a reviewer saying you have converged is a claim. End on a **mechanical
+   enumeration of the candidate set showing nothing sits above its source of truth**
+   (`code-check.md`, "A guard's scope, escape hatches, and remedies"), a mutation table for
+   the guards a fix introduced. `/code-check` treats three rounds as the floor and keeps
    going while a round finds a defect inside the previous fix.
 
    Ask for the **mechanism**, not more instances, such as an invariant enforced by two lists happening to agree.
 
    The thing reviewers catch that self-probing does not is **interop**. Ask the consumer.
 
-*31 lines of evidence for this rule are in `conventions/planning.md`.*
+*35 lines of evidence for this rule are in `conventions/planning.md`.*
 
 4. **Lock naming before the baseline** — If naming feedback surfaces during planning (legacy filename, inconsistency with an existing file family), fold the rename into the convention + task_plan BEFORE the baseline commit, not as a follow-up. Pre-baseline it's free; retrofitting after implementation cascades (measured: `build_exec_pdf.R` → `run_pagedown_exec_summary.R` locked in pre-baseline meant zero downstream rework).
 5. **Commit the plan** — After Plan-agent review + fixes. This is the baseline.
@@ -3678,7 +3709,7 @@ A README tells a stranger what a package is, why it is worth their time, and how
 *Index only: each rule's heading and first sentence. The full text is soul's `conventions/readme.md`; read it before writing or reviewing code in its area.*
 
 ### Open with what the package is and why it is valuable, not with a list of features
-Open with one to three sentences on what the package is, what data it works on, and why that is valuable, naming the restoration decision it informs where there is one.
+Open with one to three sentences on what the package is, what data it works on, and why that is valuable, naming the conservation or restoration decision it informs where there is one.
 
 ### Write the tagline, the description field, the GitHub About and the opening together
 Change the README tagline, the DESCRIPTION `Title` (or pyproject `description`) and the GitHub About text together so they say the same thing, and keep the `Description` field and the README opening in step.
@@ -3768,6 +3799,9 @@ Open every public piece with what the product does for the reader and why it mat
 
 ### Let visuals carry the story where they land better
 Put the story in a map, figure or table whenever the reader takes it in faster there than from prose, and keep the prose to what the visual cannot say.
+
+### Show one case before the statistic that counts cases
+Show what an effect does in one case, a figure or a worked example, before the table that counts how often it happens, and say in the table's lead-in why the count matters.
 
 ### Review a rendered article where the reader will read it
 Offer the rendered page in a form that opens on a phone, before the merge, without being asked.
