@@ -243,11 +243,12 @@ test_that("gq_style omits casing vectors when no class is cased (#24)", {
 })
 
 test_that("gq_style surfaces per-class polygon outlines and the label (#24, #31)", {
+  classes <- list(
+    a = list(color = "#ff0000", outline_color = "#000000", outline_width = 0.5, outline_opacity = 0.4),
+    b = list(color = "#00ff00")
+  )
   layer <- list(type = "polygon", label = list(field = "name", size = 10),
-    classification = list(field = "code", classes = list(
-      a = list(color = "#ff0000", outline_color = "#000000", outline_width = 0.5, outline_opacity = 0.4),
-      b = list(color = "#00ff00")
-    )))
+                classification = list(field = "code", classes = classes))
   sty <- gq_style(layer)
   expect_equal(sty$classification$outline_colors, c(a = "#000000", b = NA))
   expect_equal(sty$classification$outline_widths, c(a = 0.5, b = NA))

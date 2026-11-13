@@ -98,9 +98,9 @@ Recommended, and taken unless you object at approval:
   - an expression refused and then accepted with `field =` (`crossings_pscis_assessment`);
   - a custom-CSV label (no `field` key);
   - `merge_lines`/`min_feature_size` documented as the caller's job.
-- [ ] `pkgdown::check_pkgdown()` (`_pkgdown.yml` has no reference index, so exports list automatically).
-- [ ] Vignettes: replace the hard-coded `tm_text()` settings in `gq-intro.Rmd` and `gq-tmap-composition.Rmd` with `gq_tmap_labels()`, and correct the composition vignette's railway prose (a black line with ticks, now in the registry as `overlay`) (review #15). Render both and read the PNGs: labels are along the lines, the halo shows, and the size matches the old maps.
-- [ ] NEWS entry; CLAUDE.md lists both exports.
+- [x] `pkgdown::check_pkgdown()` (`_pkgdown.yml` has no reference index, so exports list automatically): no problems.
+- [x] Vignettes: replace the hard-coded `tm_text()` settings in `gq-intro.Rmd` and `gq-tmap-composition.Rmd` with `gq_tmap_labels()`, and correct the composition vignette's railway prose (a black line with ticks, now in the registry as `overlay`) (review #15). Render both and read the PNGs: labels are along the lines, the halo shows, and the size matches the old maps.
+- [x] CLAUDE.md lists both exports. NEWS is written at release by `/gh-pr-merge` (every recent entry is in a Release commit), so the PR body carries what it needs.
 
 ## Owed at the end (reported, done after merge)
 
@@ -114,7 +114,7 @@ Recommended, and taken unless you object at approval:
 
 - [ ] Tests pass (`devtools::test()`; the gated currency tests with `RFP_TEMPLATE_DIR`/`RFP_LOOKUPS_DIR` set to the rfp checkout)
 - [ ] `/code-check` clean (once over the branch with `/code-check branch`)
-- [ ] `lintr::lint_package()` with no new lints compared with `origin/main`; `devtools::check()` clean
+- [x] `lintr::lint_package()` with no new lints compared with `origin/main` (4 found, fixed); `devtools::check()` clean
 - [ ] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 

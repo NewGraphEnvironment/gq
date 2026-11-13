@@ -245,6 +245,14 @@ is the *evidence* for a schema decision, check it is a decision.
 - `gq_tmap_classes(reg, name, field)` — translate classified layer → field, values, labels
 - `gq_mapgl_style(layer)` — translate layer → MapLibre GL paint properties
 - `gq_mapgl_classes(layer)` — translate classified layer → MapLibre match expression
+- `gq_tmap_labels(reg, name, field)` — a registry label as tmap text layers, halo included
+- `gq_mapgl_labels(layer, field)` — a registry label as `add_symbol_layer()` arguments
+
+Both label translators read QGIS units (points, mm) and refuse a label the
+registry keeps as a QGIS `expression` until `field =` names a column; the custom
+CSV's labels name no column, so they always take `field =`. tmap's halo is eight
+offset copies under the text, because `shadow` and `bgcol` are a drop shadow and
+a box, which is why `gq_tmap_labels()` returns layers, not `do.call()` arguments.
 
 The `field` parameter overrides the classification field name when data comes
 from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
@@ -420,6 +428,7 @@ The registry maps **layer names** to styles, not data sources to styles. The con
 
 ### Future
 
+- **Casing and overlay drawn** — the registry carries both (#103); no translator draws them yet
 - **leaflet translator** — `gq_leaflet_style()` for interactive bookdown maps
 - **ggplot2 translator** — `gq_ggplot_style()` for statistical plots
 - **QWC2 integration** — browser-based map viewer serving same `.qgs` projects via QGIS Server (sred#19). No style translation needed — QGIS Server renders natively. Complements Mergin Maps (field) and gq (reports).

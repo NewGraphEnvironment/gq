@@ -151,11 +151,11 @@ if (!is.null(railway)) {
   tm_shape(railway) +
     tm_lines(col = "white", lwd = railway_sty$stroke$width * 1.5, lty = "42")
 }
+# Stream names from the registry: column, size, colour, italic and halo, set
+# along the stream. One feature per name, as QGIS's merge_lines asks.
 m <- m +
 tm_shape(pscis_aoi) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment")) +
-# Stream names from the registry: column, size, colour, italic and halo, set
-# along the stream. One feature per name, as QGIS's merge_lines asks.
 tm_shape(stream_labels) +
   gq_tmap_labels(reg, "stream_labels")
 

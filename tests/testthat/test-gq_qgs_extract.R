@@ -128,7 +128,7 @@ test_that("gq_qgs_extract errors on missing file", {
 # data-raw/fixture_extract_template.R, so these read the shapes QGIS writes.
 
 excerpt <- function() {
-  gq_qgs_extract(test_path("fixtures", "template_excerpt.qgs"))
+  gq_qgs_extract(testthat::test_path("fixtures", "template_excerpt.qgs"))
 }
 
 test_that("a plain label field is read from <text-style fieldName> (#6)", {
@@ -270,12 +270,12 @@ test_that("every template label names its source: 14 columns, 8 expressions", {
 })
 
 test_that("the shipped registry carries the railway ticks, MoTi casing and FTEN opacity", {
-  L <- shipped()
-  expect_equal(L$railway$overlay, list(color = "#000000", width = 2.4, dash = "0.2;2.8"))
-  expect_equal(L$moti_major_structures$casing, list(color = "#000000", width = 2.06))
-  op <- vapply(L$roads_ften$classification$classes, function(x) x$opacity %||% NA_real_, 1)
+  layers <- shipped()
+  expect_equal(layers$railway$overlay, list(color = "#000000", width = 2.4, dash = "0.2;2.8"))
+  expect_equal(layers$moti_major_structures$casing, list(color = "#000000", width = 2.06))
+  op <- vapply(layers$roads_ften$classification$classes, function(x) x$opacity %||% NA_real_, 1)
   expect_true(all(op == 0.7))
-  expect_match(L$streams_salmon$note, "data-defined")
+  expect_match(layers$streams_salmon$note, "data-defined")
 })
 
 test_that("the halo is read from the nested <text-buffer>", {

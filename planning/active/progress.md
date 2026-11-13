@@ -16,3 +16,5 @@
 - QGIS 4.1.0-Master (`qgis/qgis:latest`) cannot parse the streams' data-defined colour expression (`IN ()`), so QGIS draws the category colours; note reworded to hold in every case; filed rfp#430
 - Full suite after Phase 1: 397 blocks, 1608 expectations, 0 failed, 1 expected skip (R CMD check gate); currency tests ran against the rfp checkout
 - Fixed the halo regression from 799c7da; asked the owner about label units (QGIS units, CSV converted); added `gq_tmap_labels()` and `gq_mapgl_labels()` with tests; vignettes moved to `gq_tmap_labels()`
+- Rendered both vignettes against the installed branch and read the PNGs: stream and lake labels draw once, in the registry's blue italic with a white halo, no stray halo copies; Bulkley River sits over two crossing symbols at the confluence (remove_overlap keeps text off text only), as before at a smaller size
+- Lints compared per file/linter/line with an origin/main worktree: 4 new, all fixed; `check_pkgdown()` clean
