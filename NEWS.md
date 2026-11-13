@@ -1,3 +1,13 @@
+# gq 0.21.0
+
+- **The Bittner Creek data regenerates without a database (#110).** `data-raw/bittner_creek.R`
+  reads the watershed polygon from `data-raw/bittner_wsd.gpkg` and fetches streams, lakes,
+  railway and PSCIS from the BC Data Catalogue and roads from bcfishpass's public copy of the
+  Digital Road Atlas. Only `data-raw/bittner_wsd.R`, which moves the pour point, still needs
+  fwapg. **Changed data:** the regenerated `bittner_*` datasets match the shipped ones row for
+  row; `bittner_wsd`'s outline moves by up to 26 m (now simplified preserving topology), and
+  `bittner_streams` drops Z values nothing read.
+
 # gq 0.20.0
 
 - **Web maps compose from the registry (#18).** `gq_mapgl_basemap()`, `gq_mapgl_network()`,
