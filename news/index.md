@@ -1,6 +1,6 @@
 # Changelog
 
-## gq (development version)
+## gq 0.22.0
 
 - **A registry layer’s style can go to QGIS as a QML, and into a
   GeoPackage

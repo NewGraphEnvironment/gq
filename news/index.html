@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.21.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.22.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,11 +34,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.22.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="gq-development-version">gq (development version)<a class="anchor" aria-label="anchor" href="#gq-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.22.0" id="gq-0220">gq 0.22.0<a class="anchor" aria-label="anchor" href="#gq-0220"></a></h2>
 <ul><li>
 <strong>A registry layer’s style can go to QGIS as a QML, and into a GeoPackage (<a href="https://github.com/NewGraphEnvironment/gq/issues/115" class="external-link">#115</a>).</strong> <code><a href="../reference/gq_qgis_style.html">gq_qgis_style()</a></code> builds a QGIS QML from any line or polygon layer in a registry, including one only a <code><a href="../reference/gq_reg_custom.html">gq_reg_custom()</a></code> CSV defines: a categorized renderer with each class’s value, label, colour, width, dash and opacity, or a single symbol for an unclassified layer. <code><a href="../reference/gq_gpkg_style_write.html">gq_gpkg_style_write()</a></code> stores one or more QMLs in a GeoPackage’s <code>layer_styles</code> table through GDAL, one of them the default, so the layer opens in QGIS styled as the tmap and mapgl maps draw it. For layers gq ships a QML for, <code><a href="../reference/gq_style_qml.html">gq_style_qml()</a></code> is still the lossless choice.</li>
 </ul></div>

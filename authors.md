@@ -11,20 +11,20 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/NewGraphEnvironment/gq/blob/v0.22.0/inst/CITATION)
 
 Irvine A (2026). *gq: One Set of Map Styles for QGIS, Report Figures and
 Web Maps*. New Graph Environment Ltd.
 [doi:10.5281/zenodo.23524719](https://doi.org/10.5281/zenodo.23524719).
-Version 0.21.0, <https://github.com/NewGraphEnvironment/gq>.
+Version 0.22.0, <https://github.com/NewGraphEnvironment/gq>.
 
     @Manual{gq,
       title = {gq: One Set of Map Styles for QGIS, Report Figures and Web Maps},
       author = {Allan Irvine},
       organization = {New Graph Environment Ltd.},
       year = {2026},
-      version = {0.21.0},
-      note = {Version 0.21.0},
+      version = {0.22.0},
+      note = {Version 0.22.0},
       url = {https://github.com/NewGraphEnvironment/gq},
       doi = {10.5281/zenodo.23524719},
     }
