@@ -1,3 +1,17 @@
+# gq 0.20.0
+
+- **Web maps compose from the registry (#18).** `gq_mapgl_basemap()`, `gq_mapgl_network()`,
+  `gq_mapgl_layer()`, `gq_mapgl_popup()` and `gq_mapgl_controls()` build a MapLibre GL map in a
+  few piped calls: a keyless basemap fitted to the data, water and streams styled from the
+  registry with streams wider by stream order, one layer per call with its legend, popups
+  assembled in the browser, and a layer switch. Each layer is checked against the data it draws,
+  and its legend stacks with the others and hides with its layer. A new article, *Web maps with
+  gq and mapgl*, draws the Neexdzii Kwa fish observations one switchable layer per species.
+- **MapLibre gets the registry's per-class opacity (#107).** `gq_mapgl_classes(layer,
+  "fill-opacity")` and its line and circle siblings give one number when every class shares it
+  and a match expression otherwise, reading a class with no opacity as opaque. **Visible
+  change:** `bec_zone` now draws at 0.25 in a web map.
+
 # gq 0.19.0
 
 - **Breaking: the demo datasets `crossing`, `lake`, `road`, `stream` and `watershed`
