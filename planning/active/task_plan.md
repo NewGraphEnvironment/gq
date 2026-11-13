@@ -104,9 +104,9 @@ Recommended, and taken unless you object at approval:
 
 ## Owed at the end (reported, done after merge)
 
-- [ ] File a gq issue: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
-- [ ] File a gq issue: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
-- [ ] File a soul issue: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
+- [x] Filed gq#116: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
+- [x] Filed gq#117: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
+- [x] Filed soul#847: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
 - [ ] Close #23 with the measurements (done by the merge's `Fixes`, with the comment in the PR body).
 - [x] rfp issue on the streams `IN ()` expression: rfp#430
 

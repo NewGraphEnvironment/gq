@@ -553,14 +553,16 @@ label_weight <- function(x) {
 
 #' Parse label settings from a maplayer node
 #'
-#' Rule-based labelling keeps one `<settings>` per rule; the first rule's is
-#' taken, and `note` says how many there were.
+#' Rule-based labelling keeps one `<settings>` per rule; the first active
+#' rule's is taken, and `note` says how many active rules there were.
 #' @noRd
 parse_labels <- function(layer_node, geom_type = "unknown") {
   labeling <- xml2::xml_find_first(layer_node, "./labeling")
   if (is.na(labeling)) return(list())
 
-  settings <- xml2::xml_find_all(labeling, ".//settings")
+  # A rule switched off (`active="0"`) is not drawn, so it is neither taken nor
+  # counted, as a disabled symbol layer is skipped.
+  settings <- xml2::xml_find_all(labeling, ".//settings[not(ancestor::rule[@active='0'])]")
   if (length(settings) == 0) return(list())
   first <- settings[[1]]
 

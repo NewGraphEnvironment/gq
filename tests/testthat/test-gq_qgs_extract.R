@@ -295,3 +295,19 @@ test_that("every template label with bufferDraw=1 keeps its halo", {
   expect_gt(n_buf, 0)
   expect_equal(n_halo, n_buf)
 })
+
+test_that("a rule switched off is neither taken nor counted", {
+  rules <- function(first_active) xml2::read_xml(paste0(
+    '<maplayer type="vector" geometry="Point" labelsEnabled="1"><labeling type="rule-based"><rules>',
+    '<rule active="', first_active, '"><settings><text-style fieldName="off" isExpression="0"/></settings></rule>',
+    '<rule><settings><text-style fieldName="a" isExpression="0"/></settings></rule>',
+    '<rule><settings><text-style fieldName="b" isExpression="0"/></settings></rule>',
+    '</rules></labeling></maplayer>'
+  ))
+  off <- parse_labels(rules("0"), "point")
+  expect_equal(off$field, "a")
+  expect_match(off$note, "2 rules")
+  on <- parse_labels(rules("1"), "point")
+  expect_equal(on$field, "off")
+  expect_match(on$note, "3 rules")
+})

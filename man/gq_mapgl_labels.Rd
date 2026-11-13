@@ -28,7 +28,8 @@ it in with \code{do.call()}, as \code{\link[=gq_tmap_style]{gq_tmap_style()}} is
 \details{
 Sizes follow QGIS: the registry holds the font size in points and the halo
 width in millimetres, converted here to MapLibre's pixels at 96 dpi. A line
-label (\code{placement} \code{"line"}, \code{"curved"} or \code{"perimeter"}) follows its line.
+label (\code{placement} \code{"line"}, \code{"curved"}, \code{"perimeter"} or
+\code{"perimeter_curved"}) follows its line.
 QGIS's \code{merge_lines} and \code{min_feature_size} are not applied, and MapLibre
 does not merge labels across features: dissolve by the label column and drop
 short features first. The font family and slant are left to the basemap's

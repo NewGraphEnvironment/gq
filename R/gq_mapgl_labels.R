@@ -6,7 +6,8 @@
 #'
 #' Sizes follow QGIS: the registry holds the font size in points and the halo
 #' width in millimetres, converted here to MapLibre's pixels at 96 dpi. A line
-#' label (`placement` `"line"`, `"curved"` or `"perimeter"`) follows its line.
+#' label (`placement` `"line"`, `"curved"`, `"perimeter"` or
+#' `"perimeter_curved"`) follows its line.
 #' QGIS's `merge_lines` and `min_feature_size` are not applied, and MapLibre
 #' does not merge labels across features: dissolve by the label column and drop
 #' short features first. The font family and slant are left to the basemap's
@@ -47,7 +48,8 @@ gq_mapgl_labels <- function(layer, field = NULL) {
   src <- label_source(lab, field, "MapLibre")
 
   args <- list(text_field = list("get", src))
-  args$symbol_placement <- if (isTRUE(lab$placement %in% c("line", "curved", "perimeter"))) {
+  line_modes <- c("line", "curved", "perimeter", "perimeter_curved")
+  args$symbol_placement <- if (isTRUE(lab$placement %in% line_modes)) {
     "line"
   } else {
     "point"

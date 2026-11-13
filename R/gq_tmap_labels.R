@@ -67,10 +67,11 @@ gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL, ...) {
   if (!is.null(lab$color)) args$col <- lab$color
   if (!is.null(lab$opacity)) args$col_alpha <- lab$opacity
   args$fontface <- label_fontface(lab)
-  # CSV offsets are in ems, the height of the text, which is what tmap's
-  # xmod/ymod measure in lines; the two differ by tmap's line spacing.
+  # Offsets are ems, as MapLibre's text-offset reads them: positive y is DOWN.
+  # tmap's ymod is positive UP, so y flips; both are near enough one text
+  # height that the magnitude carries over.
   if (!is.null(lab$offset_x)) args$xmod <- lab$offset_x
-  if (!is.null(lab$offset_y)) args$ymod <- lab$offset_y
+  if (!is.null(lab$offset_y)) args$ymod <- -lab$offset_y
 
   opts <- list(remove_overlap = TRUE)
   if (isTRUE(lab$placement %in% c("line", "curved"))) opts$along_lines <- TRUE
@@ -81,6 +82,17 @@ gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL, ...) {
   main <- do.call(tmap::tm_text, args)
 
   if (is.null(lab$halo$width) || lab$halo$width <= 0) return(main)
+
+  # The halo's offset is arithmetic on size and position, so it needs them as
+  # numbers; one mapped to a column (`size = "area"`) varies by feature.
+  mapped <- vapply(args[intersect(c("size", "xmod", "ymod"), names(args))],
+                   function(v) !is.numeric(v), logical(1))
+  if (any(mapped)) {
+    warning("gq_tmap_labels(): ", paste(names(mapped)[mapped], collapse = ", "),
+            " mapped to a column, so the label is drawn without its halo",
+            call. = FALSE)
+    return(main)
+  }
 
   # Offset in tmap's lines: a line is 1.2 times the text height, and the text
   # is `size` x 12 points (0.3528 mm each).

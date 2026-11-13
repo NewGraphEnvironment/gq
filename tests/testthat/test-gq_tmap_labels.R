@@ -55,3 +55,19 @@ test_that("line labels follow their line, and overrides reach every layer (#7)",
   expect_true(all(vapply(ly, function(l) isTRUE(l$trans.args$along_lines), TRUE)))
   expect_true(all(vapply(ly, aes_value, 0, aes = "size") == 0.5))
 })
+
+test_that("an offset reads as MapLibre does: positive y is below the point", {
+  skip_if_not_installed("tmap")
+  # The town label sits 1.2 ems below its dot in gq_mapgl_labels(); tmap's ymod
+  # is positive up, so the same label must get a negative ymod.
+  ly <- text_layers(gq_tmap_labels(reg, "town", field = "name"))
+  expect_equal(gq_mapgl_labels(reg$layers$town, field = "name")$text_offset[2], 1.2)
+  expect_equal(aes_value(ly[[length(ly)]], "ymod"), -1.2)
+  expect_true(all(vapply(ly, aes_value, 0, aes = "ymod") < 0))
+})
+
+test_that("a size mapped to a column draws the label without a halo, and says so", {
+  skip_if_not_installed("tmap")
+  expect_warning(x <- gq_tmap_labels(reg, "lake", size = "area"), "without its halo")
+  expect_length(text_layers(x), 1)
+})

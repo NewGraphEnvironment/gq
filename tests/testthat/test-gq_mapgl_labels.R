@@ -44,3 +44,14 @@ test_that("every registry label with a column translates", {
     expect_false(any(vapply(a, function(v) any(is.na(unlist(v))), TRUE)), info = k)
   }
 })
+
+test_that("every line-following placement the extractor writes follows the line", {
+  for (p in c("line", "curved", "perimeter", "perimeter_curved")) {
+    layer <- list(type = "polygon", label = list(field = "n", placement = p))
+    expect_equal(gq_mapgl_labels(layer)$symbol_placement, "line", info = p)
+  }
+  for (p in c("around_point", "over_point", "horizontal", "free", "ordered", "outside_polygons")) {
+    layer <- list(type = "point", label = list(field = "n", placement = p))
+    expect_equal(gq_mapgl_labels(layer)$symbol_placement, "point", info = p)
+  }
+})

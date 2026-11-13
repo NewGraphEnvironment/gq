@@ -18,3 +18,7 @@
 - Fixed the halo regression from 799c7da; asked the owner about label units (QGIS units, CSV converted); added `gq_tmap_labels()` and `gq_mapgl_labels()` with tests; vignettes moved to `gq_tmap_labels()`
 - Rendered both vignettes against the installed branch and read the PNGs: stream and lake labels draw once, in the registry's blue italic with a white halo, no stray halo copies; Bulkley River sits over two crossing symbols at the confluence (remove_overlap keeps text off text only), as before at a smaller size
 - Lints compared per file/linter/line with an origin/main worktree: 4 new, all fixed; `check_pkgdown()` clean
+- R CMD check: 1 failure, `test-gq_reg.R:66` pinned the town label at 12 (px); now 9 pt (bcd8bde)
+- Filed gq#116 (draw casing/overlay), gq#117 (CSV label_field), soul#847 (cartography recipe reads label units raw)
+- /code-check branch round 1 spawned 05:52Z
+- Round 1 (`review-round1.md`, ran the suite against CRAN tmap 4.4.1: 0 failed): 5 findings. Fixed 4: tmap read the CSV's `offset_y` up where MapLibre reads it down (now negated; mutation-checked); `perimeter_curved` now follows the line in mapgl; a `...` size mapped to a column skips the halo with a warning; inactive label rules are skipped and not counted (dams note now "2 rules"). Finding 2 (skill recipe reads units raw) is soul#847.
