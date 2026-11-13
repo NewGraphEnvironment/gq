@@ -42,36 +42,39 @@ Measured 2026-11-12 against rfp `origin/main` (v0.94.0+3). The template is byte-
 4. **The label hints are carried.** `label.placement`, `label.merge_lines` and `label.min_feature_size` (mm). The translators use `placement`. The other two are documented as the caller's data prep.
 
 Recommended, and taken unless you object at approval:
-- **#38 cap/join and pass order are declined.** tmap cannot draw cap or join, and nothing consumes pass order. The QML corpus carries all three losslessly. The registry instead documents that casing draws as its own layer beneath every core, which is what the template's pass 0/1 does.
+- **#38 cap/join and pass order are declined.** tmap cannot draw cap or join, and nothing consumes pass order. The QML corpus carries all three losslessly. The registry instead documents that casing draws beneath its core, and beneath every core where QGIS uses symbol levels (Roads - DRA's pass 0/1; MoTi's two layers are both pass 0) (review #13).
 - **Layer opacity is folded into the emitted opacities** rather than stored as a separate key, so every consumer gets it with no change.
 
 ## Phase 1: Extractor fidelity (batch 9: #6, #24, #38, #23)
 
-- [ ] Replace `tests/testthat/fixtures/mini_project.qgs` (and its `inst/examples` twin) label block with QGIS's real shape: `fieldName` on `<text-style>`, `fontWeight`, an expression layer, rule-based labelling with 2 rules, and `<layerOpacity>`. Add a casing line, a railway-shaped MarkerLine, and a data-defined colour, each cut from the template's own XML. Write failing tests first.
-- [ ] `parse_labels()`:
+- [x] Move `mini_project.qgs`'s label (both copies) to QGIS's real shape (`fieldName` on `<text-style>`, `fontWeight`). Cut `tests/testthat/fixtures/template_excerpt.qgs` (11 layers) and `bcfishpass_excerpt.qlr` (2 layers) from the real files with `data-raw/fixture_extract_template.R`. Write failing tests first. (Plan review #9.)
+- [x] `parse_labels()`:
   - `field` or `expression`, chosen by `isExpression`, trimmed;
   - `weight = "bold"` when `fontWeight` ≥ 63 on Qt5's scale (≤ 99) or ≥ 600 on Qt6's, keeping the `fontBold` fallback;
-  - `placement` as a word (`around_point`, `over_point`, `line`, `curved`, `horizontal`, `free`, `ordered`);
+  - `placement` as a word (codes 0-8; `line` on a polygon is `perimeter`; an unknown code is omitted) (review #6);
+  - `opacity` from `textOpacity` when below 1 (review #8);
   - `merge_lines` and `min_feature_size` only when set;
   - rule-based labelling takes the first rule's settings and records `label$note` naming the rule count when there is more than one.
-- [ ] Layer opacity: read `<layerOpacity>` and multiply it into `fill`/`stroke`/per-class `opacity` in the single, categorized and graduated parsers. Opacity is still recorded only below 1.
-- [ ] `parse_single_symbol()`:
+- [x] Layer opacity: read `<layerOpacity>` and multiply it into `fill`/`stroke`/per-class `opacity` in the single, categorized and graduated parsers. Opacity is still recorded only below 1.
+- [x] `parse_single_symbol()`:
   - count top-level symbol layers only (`./layer`);
   - two SimpleLines with the lower one wider become `casing` + `stroke` = core;
   - a SimpleLine plus a MarkerLine of `line` markers becomes `overlay` `{color, width = marker size, dash = "<outline width>;<interval − outline width>"}`;
   - anything else keeps a `note` that names what is not modelled (pattern fill, stacked markers, outline-only fill) and points at `gq_style_qml()`.
-- [ ] Data-defined colour: when a symbol layer has an active `fillColor`/`outlineColor` expression, set the layer `note` to say the renderer's colours may not be what QGIS draws.
-- [ ] Measure what QGIS draws for `streams_salmon` with its `IN ()` expression, using rfp's QGIS container. File an rfp issue with the result.
-- [ ] `gq_style()` passes `casing` through, plus per-class `casing_colors`/`casing_widths` named by class key (as #55 requires). Add tests.
-- [ ] `.qlr`: add a 2-layer fixture cut from `bcfishpass_30k.qlr` and a test, and update the roxygen.
-- [ ] Re-extract `reg_qgis_restoration.json` from the rfp checkout (`RFP_TEMPLATE`), rebuild `reg_main.json`, and update the provenance comment in `data-raw/reg_extract_restoration.R`.
-- [ ] Assert on the rebuilt registry:
-  - 25 labelled layers;
-  - every label has `field` or `expression`;
+- [x] Data-defined colour: when a symbol layer has an active `fillColor`/`outlineColor` expression, set the layer `note` to say the renderer's colours may not be what QGIS draws.
+- [x] Measure what QGIS draws for `streams_salmon` with its `IN ()` expression, using rfp's QGIS container. File an rfp issue with the result.
+- [x] `gq_style()` passes `casing` and `label` through, plus per-class `casing_colors`/`casing_widths` and `outline_colors`/`outline_widths`/`outline_opacities` (#31's remainder), named by class key (as #55 requires). `radii`/`shapes` in `gq_tmap_classes()` declined: no consumer. Add tests. (Review #3, #4.)
+- [x] Categorized casing: top-level layers only, and only when the lower line is wider (review #7).
+- [x] `.qlr`: add a 2-layer fixture cut from `bcfishpass_30k.qlr` and a test; read a PostgreSQL `table="s"."t"` datasource as `source_layer`; update the roxygen. (Review #2.)
+- [x] Re-extract `reg_qgis_restoration.json` from the rfp checkout (`RFP_TEMPLATE`), rebuild `reg_main.json`, and update the provenance comment in `data-raw/reg_extract_restoration.R`.
+- [x] Assert on the rebuilt registry:
+  - 22 labelled layers in `reg_qgis_restoration.json` (reg_main's other 3 are CSV: dam, town, planting_site);
+  - every template label has `field` or `expression`: 14 field, 8 expression (review #1, #14);
+  - `source_layer` unchanged for every template layer (review #2);
   - `railway` has an `overlay`;
   - `moti_major_structures` has a `casing`;
   - `roads_ften` classes have opacity 0.7.
-- [ ] Update CLAUDE.md's schema example: railway's real overlay, `casing`, the label keys, and the declined #38 items.
+- [x] Update CLAUDE.md's schema example: railway's real overlay, `casing`, the label keys, and the declined #38 items.
 
 ## Phase 2: Label translators (batch 10: #7)
 
@@ -79,7 +82,7 @@ Recommended, and taken unless you object at approval:
   - `text`, `size`, `col`, `fontface` (plain/bold/italic/bold.italic);
   - `options = opt_tm_text(along_lines = placement == "line", shadow = <halo present>, remove_overlap = TRUE)`.
 
-  It errors on an expression with no `field`, and on a layer with no label. Measure the pt-to-tmap `size` constant against a rendered PNG rather than guessing it.
+  CSV `offset_x`/`offset_y` → `xmod`/`ymod`; `label.opacity` → `col_alpha`. It errors on an expression with no `field`, on a label with neither `field` nor `expression` (the CSV labels: pass `field =`), and on a layer with no label. Measure the pt-to-tmap `size` constant against a rendered PNG rather than guessing it.
 - [ ] `R/gq_mapgl_labels.R`: `gq_mapgl_labels(layer, field = NULL)`. It returns `list(layout, paint)` for `add_symbol_layer()`:
   - `text-field` as a `get` expression;
   - `text-size` in px (pt × 96/72);
@@ -94,14 +97,15 @@ Recommended, and taken unless you object at approval:
   - a custom-CSV label (no `field` key);
   - `merge_lines`/`min_feature_size` documented as the caller's job.
 - [ ] `_pkgdown.yml` reference entries; `pkgdown::check_pkgdown()`.
-- [ ] Vignettes: replace the hard-coded `tm_text()` settings in `gq-intro.Rmd` and `gq-tmap-composition.Rmd` with `gq_tmap_labels()`. Render both and read the PNGs: labels are along the lines, the halo shows, and the size matches the old maps.
+- [ ] Vignettes: replace the hard-coded `tm_text()` settings in `gq-intro.Rmd` and `gq-tmap-composition.Rmd` with `gq_tmap_labels()`, and correct the composition vignette's railway prose (a black line with ticks, now in the registry as `overlay`) (review #15). Render both and read the PNGs: labels are along the lines, the halo shows, and the size matches the old maps.
 - [ ] NEWS entry; CLAUDE.md lists both exports.
 
 ## Owed at the end (reported, done after merge)
 
-- [ ] File a gq issue: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit).
+- [ ] File a gq issue: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
+- [ ] File a gq issue: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
 - [ ] Close #23 with the measurements (done by the merge's `Fixes`, with the comment in the PR body).
-- [ ] rfp issue on the streams `IN ()` expression (Phase 1 files it; listed here in case the measurement is blocked).
+- [x] rfp issue on the streams `IN ()` expression: rfp#430
 
 ## Validation
 

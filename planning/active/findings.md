@@ -54,3 +54,12 @@ Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical
 
 | Error | Resolution |
 |-------|------------|
+| `Rscript -e '...' OLD=path` read no env var | env assignment goes before the command: `OLD=path Rscript -e` |
+| `D=...; ...; Rscript -e 'Sys.getenv("D")'` empty | `export D` before the R call |
+
+## Measurements after Phase 1 (2026-11-13)
+
+- Re-extracted `reg_qgis_restoration.json`: 22 labelled (14 `field`, 8 `expression`); bold 3 (`municipalities` 87, `crossings_pscis_assessment` 75, `crossings_pscis_modelled_dams` first rule 75). The review's "4 bold" counted rules, not layers.
+- `source_layer` identical on all 48 layers; 14 layers' non-label symbology changed (8 notes reworded, railway overlay, MoTi casing, FTEN opacity, 3 streams notes).
+- QGIS 4.1.0-Master, `qgis/qgis@sha256:4eb5cd07…`: the streams expression `hasParserError() == True`, `evaluate()` → None. A failed data-defined property falls back to the symbol colour, so the registry's category colours are what QGIS draws for this template. rfp#430.
+- reg_main's 25 labels = 22 template + 3 CSV (dam, town, planting_site); the CSV has no label field column.

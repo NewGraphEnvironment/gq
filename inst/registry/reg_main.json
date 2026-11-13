@@ -38,15 +38,14 @@
         "color": "#232323",
         "width": 0.26
       },
-      "note": "3 symbol layers - overlay/casing may apply",
+      "note": "symbol layers not modelled: SimpleFill, SimpleFill (the QML from gq_style_qml() carries them)",
       "label": {
+        "field": "admin_area_abbreviation",
         "font": "Arial Black",
         "size": 18,
+        "weight": "bold",
         "color": "#8d8989",
-        "halo": {
-          "color": "#e8e8e8",
-          "width": 0.8
-        }
+        "placement": "around_point"
       }
     },
     "glaciers": {
@@ -61,14 +60,12 @@
         "width": 0.2
       },
       "label": {
+        "field": "gnis_name_1",
         "font": "Helvetica",
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
-        "halo": {
-          "color": "#ffffff",
-          "width": 0.3
-        }
+        "placement": "around_point"
       }
     },
     "fire_historical_burn": {
@@ -83,7 +80,7 @@
         "width": 0.26,
         "style": "none"
       },
-      "note": "4 symbol layers - overlay/casing may apply"
+      "note": "symbol layers not modelled: PointPatternFill, SimpleLine (the QML from gq_style_qml() carries them)"
     },
     "fire_severity": {
       "type": "polygon",
@@ -196,9 +193,11 @@
         "width": 0.66
       },
       "label": {
+        "field": "protected_lands_name",
         "font": "Courier",
         "size": 8,
-        "color": "#639b5f"
+        "color": "#639b5f",
+        "placement": "horizontal"
       }
     },
     "conservancy": {
@@ -213,9 +212,11 @@
         "width": 0.66
       },
       "label": {
+        "field": "protected_lands_name",
         "font": "Courier",
         "size": 8,
-        "color": "#639b5f"
+        "color": "#639b5f",
+        "placement": "horizontal"
       }
     },
     "orthophoto_tiles": {
@@ -230,13 +231,11 @@
         "width": 0.5
       },
       "label": {
+        "field": "year_operational",
         "font": "Helvetica",
         "size": 10,
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 1
-        }
+        "placement": "free"
       }
     },
     "terrestrial_ecosystem_information_scanned_map_boundary": {
@@ -286,14 +285,12 @@
         "width": 0.2
       },
       "label": {
+        "field": "gnis_name_1",
         "font": "Helvetica",
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
-        "halo": {
-          "color": "#ffffff",
-          "width": 0.3
-        }
+        "placement": "around_point"
       }
     },
     "lake": {
@@ -308,14 +305,12 @@
         "width": 0.2
       },
       "label": {
+        "field": "gnis_name_1",
         "font": "Helvetica",
         "size": 10,
         "style": "italic",
         "color": "#1f78b4",
-        "halo": {
-          "color": "#ffffff",
-          "width": 0.3
-        }
+        "placement": "around_point"
       }
     },
     "wetland": {
@@ -330,7 +325,7 @@
         "width": 0.26,
         "style": "none"
       },
-      "note": "5 symbol layers - overlay/casing may apply"
+      "note": "symbol layers not modelled: PointPatternFill (the QML from gq_style_qml() carries them)"
     },
     "streams_all": {
       "type": "line",
@@ -440,13 +435,11 @@
         "radius": 2
       },
       "label": {
+        "expression": "concat( 'MoTi' ,' ', \"chris_culvert_id\" )",
         "font": ".AppleSystemUIFont",
         "size": 8,
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 0.25
-        }
+        "placement": "ordered"
       }
     },
     "crossings_modelled": {
@@ -457,15 +450,13 @@
         "shape": "circle",
         "radius": 2.5
       },
-      "note": "2 symbol layers - overlay/casing may apply",
+      "note": "symbol layers not modelled: SimpleMarker (the QML from gq_style_qml() carries them)",
       "label": {
+        "expression": "concat( 'Model', ' ', \"modelled_crossing_id\")",
         "font": "Arial",
         "size": 8.5,
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 0.5
-        }
+        "placement": "ordered"
       }
     },
     "crossings_pscis_assessment": {
@@ -502,13 +493,13 @@
         }
       },
       "label": {
+        "expression": "concat( 'PSCIS', ' ', \"stream_crossing_id\" )",
         "font": ".AppleSystemUIFont",
         "size": 9,
+        "weight": "bold",
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 0.75
-        }
+        "opacity": 0.997,
+        "placement": "ordered"
       }
     },
     "crossings_pscis_confirmation": {
@@ -544,23 +535,32 @@
       "renderer": "rule_based",
       "note": "Rule-based renderer - manual review needed",
       "label": {
+        "field": "stream_crossing_id",
         "font": "Arial",
         "size": 10,
-        "color": "#000000"
+        "weight": "bold",
+        "color": "#000000",
+        "placement": "ordered",
+        "note": "rule-based labelling: 3 rules, the first taken"
       }
     },
     "moti_major_structures": {
       "type": "line",
       "source_layer": "whse_imagery_and_base_maps.mot_road_structure_sp",
       "stroke": {
+        "color": "#ff6011",
+        "width": 1.46
+      },
+      "casing": {
         "color": "#000000",
         "width": 2.06
       },
-      "note": "2 symbol layers - overlay/casing may apply",
       "label": {
+        "expression": "concat( 'MoTi hwy - ' ,  \"chris_hwy_structure_road_id\" )",
         "font": "Helvetica",
         "size": 10,
-        "color": "#323232"
+        "color": "#323232",
+        "placement": "line"
       }
     },
     "floodplains": {
@@ -584,15 +584,13 @@
         "shape": "star",
         "radius": 6.6
       },
-      "note": "2 symbol layers - overlay/casing may apply",
+      "note": "symbol layers not modelled: SimpleMarker (the QML from gq_style_qml() carries them)",
       "label": {
+        "expression": "concat(  \"pscis_crossing_id\" , '_',  \"my_crossing_reference\" , '_risk - ',   \"overall_rank\" )",
         "font": "Tahoma",
         "size": 10,
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 1
-        }
+        "placement": "ordered"
       }
     },
     "form_fiss_site": {
@@ -603,15 +601,13 @@
         "shape": "circle",
         "radius": 5.2
       },
-      "note": "2 symbol layers - overlay/casing may apply",
+      "note": "symbol layers not modelled: SimpleMarker (the QML from gq_style_qml() carries them)",
       "label": {
+        "expression": "concat( \"local_name\" + ' - ' +  \"gazetted_names\" )",
         "font": "Tahoma",
         "size": 10,
         "color": "#323232",
-        "halo": {
-          "color": "#fafafa",
-          "width": 1
-        }
+        "placement": "ordered"
       }
     },
     "fiss_stream_sample_sites": {
@@ -622,11 +618,13 @@
         "shape": "circle",
         "radius": 1.8
       },
-      "note": "2 symbol layers - overlay/casing may apply",
+      "note": "symbol layers not modelled: SimpleMarker (the QML from gq_style_qml() carries them)",
       "label": {
+        "field": "stream_sample_site_id",
         "font": "Courier",
         "size": 6,
-        "color": "#000000"
+        "color": "#000000",
+        "placement": "around_point"
       }
     },
     "bcfishobs_fiss_fish_observations": {
@@ -638,9 +636,11 @@
         "radius": 2.4
       },
       "label": {
+        "field": "species_code",
         "font": "Courier",
         "size": 5,
-        "color": "#000000"
+        "color": "#000000",
+        "placement": "around_point"
       }
     },
     "fiss_obstacles": {
@@ -652,9 +652,11 @@
         "radius": 2
       },
       "label": {
+        "expression": "CASE \n  WHEN \"obstacle_name\" = 'Falls' \n  AND \"height\" IS NOT NULL \n  AND \"height\" NOT IN (0,9999,999,-1000)\n  THEN \"obstacle_name\"||','||\"height\"||'m'\n  ELSE \"obstacle_name\"\n  END",
         "font": "Courier",
         "size": 6,
-        "color": "#000000"
+        "color": "#000000",
+        "placement": "around_point"
       }
     },
     "hydrometric_stations_environment_canada": {
@@ -666,15 +668,17 @@
         "radius": 4
       },
       "label": {
+        "field": "station_number",
         "font": "Courier",
         "size": 8,
-        "color": "#363636"
+        "color": "#363636",
+        "placement": "around_point"
       }
     },
     "pipeline_permit": {
       "type": "polygon",
       "source_layer": "whse_mineral_tenure.og_pipeline_area_permit_sp",
-      "note": "3 symbol layers - overlay/casing may apply"
+      "note": "symbol layers not modelled: SimpleLine (the QML from gq_style_qml() carries them)"
     },
     "pipeline_installed": {
       "type": "line",
@@ -712,7 +716,11 @@
         "color": "#000000",
         "width": 0.4
       },
-      "note": "3 symbol layers - overlay/casing may apply"
+      "overlay": {
+        "color": "#000000",
+        "width": 2.4,
+        "dash": "0.2;2.8"
+      }
     },
     "roads_ften": {
       "type": "line",
@@ -722,29 +730,38 @@
         "classes": {
           "Forest Service Road": {
             "color": "#404040",
-            "width": 0.86
+            "width": 0.86,
+            "opacity": 0.7
           },
           "Road Permit": {
             "color": "#404040",
             "width": 0.46,
+            "opacity": 0.7,
             "label": "Road Permit / Special Use Permit"
           },
           "Special Use Permit, Forest": {
             "color": "#404040",
             "width": 0.46,
+            "opacity": 0.7,
             "label": "Road Permit / Special Use Permit"
           },
           "Special Use Permit, Non-Forest": {
             "color": "#404040",
             "width": 0.46,
+            "opacity": 0.7,
             "label": "Road Permit / Special Use Permit"
           }
         }
       },
       "label": {
+        "expression": "title(\"road_section_name\")",
         "font": "Arial",
         "size": 8,
-        "color": "#3d3d3d"
+        "color": "#3d3d3d",
+        "placement": "line",
+        "merge_lines": true,
+        "min_feature_size": 5,
+        "note": "rule-based labelling: 2 rules, the first taken"
       }
     },
     "roads_dra": {
@@ -922,9 +939,13 @@
         }
       },
       "label": {
+        "field": "structured_name_1",
         "font": "Arial",
         "size": 6,
-        "color": "#4a4a4a"
+        "color": "#4a4a4a",
+        "placement": "line",
+        "merge_lines": true,
+        "min_feature_size": 11
       }
     },
     "trails": {
@@ -960,9 +981,13 @@
         }
       },
       "label": {
+        "field": "name",
         "font": "Arial",
         "size": 6,
-        "color": "#4a4a4a"
+        "color": "#4a4a4a",
+        "placement": "line",
+        "merge_lines": true,
+        "min_feature_size": 11
       }
     },
     "streams_salmon": {
@@ -1137,7 +1162,8 @@
             "label": "Accessible; remediated; intermittent"
           }
         }
-      }
+      },
+      "note": "colour has an active data-defined expression (fillColor/outlineColor): QGIS draws its colour instead of these wherever it evaluates"
     },
     "streams_st": {
       "type": "line",
@@ -1311,7 +1337,8 @@
             "label": "Accessible; remediated; intermittent"
           }
         }
-      }
+      },
+      "note": "colour has an active data-defined expression (fillColor/outlineColor): QGIS draws its colour instead of these wherever it evaluates"
     },
     "streams_bt": {
       "type": "line",
@@ -1485,7 +1512,8 @@
             "label": "Accessible; remediated; intermittent"
           }
         }
-      }
+      },
+      "note": "colour has an active data-defined expression (fillColor/outlineColor): QGIS draws its colour instead of these wherever it evaluates"
     },
     "stream_labels": {
       "type": "line",
@@ -1496,14 +1524,13 @@
         "dash": "no"
       },
       "label": {
+        "field": "gnis_name",
         "font": "Helvetica",
         "size": 11,
         "style": "italic",
         "color": "#1f78b4",
-        "halo": {
-          "color": "#ffffff",
-          "width": 0.3
-        }
+        "placement": "line",
+        "merge_lines": true
       }
     },
     "frep_rip2021_mar2022": {

@@ -33,7 +33,15 @@ is, so \code{cls$labels[codes]} and \code{cls$values[codes]} index the same clas
 \code{dashes} holds the raw QGIS dash value (named style like "dash dot", or
 custom pattern like "0.66;2") for classes that are dashed. \code{opacities} is
 \code{NA} for a class the registry gives no opacity, which means opaque: the
-extractor records opacity only when it is below 1.
+extractor records opacity only when it is below 1. \code{casing_colors} and
+\code{casing_widths} are present when any class is cased (a wider line drawn
+beneath it), \code{NA} for a class that is not; \code{outline_colors},
+\code{outline_widths} and \code{outline_opacities} likewise for a polygon class's
+outline. A simple layer passes \code{casing} and \code{overlay} through as the
+registry holds them, and any layer its \code{label}. No translator draws casing
+or overlay yet: draw each as its own layer, the casing beneath its core,
+and beneath every core where the layer's casings should not cross
+(QGIS's symbol levels, as on \code{roads_dra}).
 }
 \description{
 Resolves a layer by name and returns a plain list of style properties.

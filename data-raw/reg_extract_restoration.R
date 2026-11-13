@@ -7,7 +7,9 @@
 # consumers (tmap, mapgl, link) never need rfp or the `.qgs`. That decoupling is
 # the point: gq owns the canonical styles; rfp owns the upstream project.
 #
-# Last extracted from rfp's tag v0.93.0 (#102). The version lives here and in the
+# Last extracted from rfp's main at v0.94.0+3 (9b73405d), whose template is
+# byte-identical to v0.93.0's, after the extractor learned label fields, casing,
+# overlay and layer opacity (#103). The version lives here and in the
 # commit message, never in the JSON: the extractor writes only name, version and
 # the template's basename, and the gated currency test re-extracts and compares
 # the file, so a provenance field would make the two unequal forever.

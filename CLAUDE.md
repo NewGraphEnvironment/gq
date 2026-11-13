@@ -126,8 +126,23 @@ Each layer style in the registry maps a **layer name** to rendering properties:
         "size": 8,
         "font": "sans-serif",
         "style": "italic",
-        "color": "#1a5276"
+        "color": "#1a5276",
+        "placement": "line",
+        "merge_lines": true
       }
+    },
+    "crossings_pscis_assessment": {
+      "type": "point",
+      "label": {
+        "expression": "concat( 'PSCIS', ' ', \"stream_crossing_id\" )",
+        "weight": "bold",
+        "placement": "ordered"
+      }
+    },
+    "moti_major_structures": {
+      "type": "line",
+      "stroke": {"color": "#ff6011", "width": 1.46},
+      "casing": {"color": "#000000", "width": 2.06}
     },
     "roads": {
       "type": "line",
@@ -144,17 +159,38 @@ Each layer style in the registry maps a **layer name** to rendering properties:
       "type": "line",
       "stroke": {
         "color": "#000000",
-        "width": 1.2
+        "width": 0.4
       },
       "overlay": {
-        "color": "#ffffff",
-        "width": 0.6,
-        "dash": "4 2"
+        "color": "#000000",
+        "width": 2.4,
+        "dash": "0.2;2.8"
       }
     }
   }
 }
 ```
+
+A label names its source as `field`, a plain column, or `expression`, the raw
+QGIS expression, never both (#6): a consumer reading `field` as a column cannot
+be handed `concat(...)`. `placement` is QGIS's mode as a word. `merge_lines` and
+`min_feature_size` (mm) are data-prep hints, because QGIS joins a label's
+connected lines and skips short features, and tmap and MapLibre do neither.
+
+`casing` is a wider line drawn beneath the `stroke`, the per-class
+`casing_color`/`casing_width` of a classified layer. `overlay` draws above it:
+the railway's ticks (a QGIS MarkerLine of perpendicular `line` markers) are
+recorded as a line as wide as a tick is long, dashed tick-thick on and the rest
+of the interval off, in QGIS's millimetres. No translator draws either yet. A
+layer's own opacity (`<layerOpacity>`) is folded into every opacity it emits.
+
+Declined from #38, for the QML corpus to carry: cap and join style (tmap cannot
+draw them) and symbol-layer pass order (nothing consumes it; casing draws beneath
+its core, and beneath every core only where QGIS uses symbol levels, as on
+`roads_dra`). A layer whose colour has an active data-defined expression carries
+a `note`; QGIS draws the expression wherever it evaluates. What the registry
+does not model of a multi-layer symbol (pattern fills, stacked markers) is named
+in the layer's `note`.
 
 ### Components
 

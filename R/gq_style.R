@@ -26,7 +26,15 @@
 #'   `dashes` holds the raw QGIS dash value (named style like "dash dot", or
 #'   custom pattern like "0.66;2") for classes that are dashed. `opacities` is
 #'   `NA` for a class the registry gives no opacity, which means opaque: the
-#'   extractor records opacity only when it is below 1.
+#'   extractor records opacity only when it is below 1. `casing_colors` and
+#'   `casing_widths` are present when any class is cased (a wider line drawn
+#'   beneath it), `NA` for a class that is not; `outline_colors`,
+#'   `outline_widths` and `outline_opacities` likewise for a polygon class's
+#'   outline. A simple layer passes `casing` and `overlay` through as the
+#'   registry holds them, and any layer its `label`. No translator draws casing
+#'   or overlay yet: draw each as its own layer, the casing beneath its core,
+#'   and beneath every core where the layer's casings should not cross
+#'   (QGIS's symbol levels, as on `roads_dra`).
 #'
 #' @examples
 #' path <- system.file("examples", "mini_registry.json", package = "gq")
@@ -69,6 +77,11 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     shapes <- vapply(cls$classes, function(x) x$shape %||% NA_character_, character(1))
     dashes <- vapply(cls$classes, function(x) x$dash %||% NA_character_, character(1))
     opacities <- vapply(cls$classes, function(x) x$opacity %||% NA_real_, numeric(1))
+    casing_colors <- vapply(cls$classes, function(x) x$casing_color %||% NA_character_, character(1))
+    casing_widths <- vapply(cls$classes, function(x) x$casing_width %||% NA_real_, numeric(1))
+    outline_colors <- vapply(cls$classes, function(x) x$outline_color %||% NA_character_, character(1))
+    outline_widths <- vapply(cls$classes, function(x) x$outline_width %||% NA_real_, numeric(1))
+    outline_opacities <- vapply(cls$classes, function(x) x$outline_opacity %||% NA_real_, numeric(1))
 
     # Remove __empty__ class
     keep <- keys != "__empty__"
@@ -79,6 +92,11 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     shapes <- shapes[keep]
     dashes <- dashes[keep]
     opacities <- opacities[keep]
+    casing_colors <- casing_colors[keep]
+    casing_widths <- casing_widths[keep]
+    outline_colors <- outline_colors[keep]
+    outline_widths <- outline_widths[keep]
+    outline_opacities <- outline_opacities[keep]
     keys <- keys[keep]
     names(values) <- keys
 
@@ -95,6 +113,12 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
     if (!all(is.na(shapes))) result$classification$shapes <- shapes
     if (!all(is.na(dashes))) result$classification$dashes <- dashes
     if (!all(is.na(opacities))) result$classification$opacities <- opacities
+    if (!all(is.na(casing_colors))) result$classification$casing_colors <- casing_colors
+    if (!all(is.na(casing_widths))) result$classification$casing_widths <- casing_widths
+    if (!all(is.na(outline_colors))) result$classification$outline_colors <- outline_colors
+    if (!all(is.na(outline_widths))) result$classification$outline_widths <- outline_widths
+    if (!all(is.na(outline_opacities))) result$classification$outline_opacities <- outline_opacities
+    if (!is.null(layer$label)) result$label <- layer$label
 
     return(result)
   }
@@ -103,7 +127,9 @@ gq_style <- function(layer_or_reg, name = NULL, field = NULL) {
   if (!is.null(layer$fill)) result$fill <- layer$fill
   if (!is.null(layer$stroke)) result$stroke <- layer$stroke
   if (!is.null(layer$mark)) result$mark <- layer$mark
+  if (!is.null(layer$casing)) result$casing <- layer$casing
   if (!is.null(layer$overlay)) result$overlay <- layer$overlay
+  if (!is.null(layer$label)) result$label <- layer$label
 
   result
 }

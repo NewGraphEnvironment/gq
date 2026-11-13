@@ -7,15 +7,37 @@
 gq_qgs_extract(path)
 }
 \arguments{
-\item{path}{Path to a .qgs file.}
+\item{path}{Path to a .qgs or .qlr file.}
 }
 \value{
 A list with \code{name}, \code{version}, \code{source}, and \code{layers} elements.
-Each layer contains type, source_layer, fill/stroke/classification/label as applicable.
+Each layer contains type, source_layer, fill/stroke/casing/overlay/
+classification/label as applicable, and a \code{note} where QGIS draws
+something the registry does not model.
 }
 \description{
-Parses a .qgs XML file and extracts symbology (fill, stroke, classification,
-labels) for all vector layers into a list suitable for writing to registry.json.
+Parses a \code{.qgs} project, or a \code{.qlr} layer definition file, and extracts
+symbology (fill, stroke, casing, overlay, classification, labels) for all
+vector layers into a list suitable for writing to registry.json. Both
+formats keep their layers as \verb{<maplayer>} nodes, so one reader serves both.
+}
+\details{
+The registry models what tmap and mapgl can render, not every property QGIS
+stores. What it cannot express (pattern fills, stacked markers, symbol-layer
+pass order) is named in the layer's \code{note}; the QML from \code{\link[=gq_style_qml]{gq_style_qml()}}
+carries it losslessly.
+
+Labels carry the label column as \code{field}, or the raw QGIS expression as
+\code{expression} when the label is computed (\code{concat(...)}, \verb{CASE ...}), never
+both, so a consumer reading \code{field} as a column cannot be handed an
+expression. \code{placement} is QGIS's placement mode as a word (\code{"line"},
+\code{"around_point"}, ...). \code{merge_lines} and \code{min_feature_size} (mm) are hints
+for the consumer's data prep: QGIS joins connected lines that share a label
+and skips short features, which tmap and MapLibre cannot do, so dissolve by
+the label field and drop short features before drawing.
+
+A layer's own opacity (\verb{<layerOpacity>}) is folded into every opacity it
+emits, as QGIS composes them.
 }
 \examples{
 path <- system.file("examples", "mini_project.qgs", package = "gq")
@@ -30,7 +52,7 @@ reg$layers$lakes
 # Categorized layer — classification field and per-class colors
 reg$layers$roads$classification
 
-# Labels — font, size, weight, halo all captured
+# Labels — field, font, size, weight, halo all captured
 reg$layers$roads$label
 
 }
