@@ -63,7 +63,9 @@ test_that("gq_reg_custom reads point layer (town)", {
   town <- reg$layers$town
   expect_equal(town$type, "point")
   expect_equal(town$mark$color, "#2c3e50")
-  expect_equal(town$label$size, 12)
+  # Points, as the extractor writes labels (#103): 9 pt is the 12 px the row was
+  # first written in for MapLibre
+  expect_equal(town$label$size, 9)
 })
 
 test_that("gq_reg_custom returns standard registry structure", {
