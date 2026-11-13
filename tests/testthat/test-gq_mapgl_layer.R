@@ -136,14 +136,15 @@ test_that("legends get CSS-safe ids, one stacking stylesheet, and a one-colour r
     gq_mapgl_layer("coho", pts(), color = "#FF7F00")
   expect_match(m$x$legend_html, 'id="legend_rainbow_trout"')
   expect_match(m$x$legend_html, 'data-layer-id="rainbow trout"')   # still tied to the layer id
-  expect_match(m$x$legend_html, "<h2></h2>")                        # untitled
+  # mapgl 0.5 gives the heading a class (`<h2 class="mapgl-legend-title">`), 0.4 none
+  expect_match(m$x$legend_html, "<h2[^>]*></h2>")                   # untitled
   stack <- vapply(m$prepend, function(x) identical(attr(x, "gq"), "legend_stack"), logical(1))
   expect_identical(sum(stack), 1L)                                  # once, not per legend
   expect_match(as.character(m$prepend[[which(stack)]]), "position: static")
   # classes keep their title
   cls <- list(field = "sp", values = c("CO", "RB"), colors = c("#111111", "#222222"))
   m2 <- base() |> gq_mapgl_layer("k", pts(), classes = cls, legend_title = "Species")
-  expect_match(m2$x$legend_html, "<h2>Species</h2>")
+  expect_match(m2$x$legend_html, "<h2[^>]*>Species</h2>")
   # no legend, no stylesheet
   expect_null(gq_mapgl_layer(base(), "a", pts(), color = "#000000", legend = FALSE)$prepend)
 })
