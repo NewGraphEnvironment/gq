@@ -1,4 +1,4 @@
-# gq (development version)
+# gq 0.23.0
 
 - **Layers draw in the templates' order within each group (#105).** `groups.csv`'s
   `order` disagreed with both QGIS templates in seven groups, and none of gq's orders had
