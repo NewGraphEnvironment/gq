@@ -29,7 +29,7 @@
 ## Checked and clean
 
 - **Round-1 fixes.** The offset sign now agrees between tmap (positive `ymod` is up) and MapLibre (positive y is down). `perimeter_curved` is drawn as a line label. Non-numeric `size`/`xmod`/`ymod` is detected by exact indexing. The inactive-rule XPath covers nested rules. In the template, the one `active="0"` rule (crossings_pscis_modelled_dams) is now skipped, and the shipped note reads "2 rules".
-- **Committed registry.** `reg_qgis_restoration.json` equals a fresh extract of rfp's template, apart from writer rounding of roads_dra widths. reg_main carries the CSV label units (town 9 pt, halo 0.4 mm).
+- **Committed registry.** `reg_qgis_restoration.json` equals a fresh extract of the template repo's template, apart from writer rounding of roads_dra widths. reg_main carries the CSV label units (town 9 pt, halo 0.4 mm).
 - **QML writer.** `gq_qgis_style()` over every reg_main line and polygon layer: MoTi writes its orange core and warns about casing, roads_dra warns about casing, railway warns about overlay, and pipeline_permit errors as the test expects. roads_ften's 0.7 opacity is written as symbol alpha. `gq_gpkg_style_write()` takes QML strings and does not touch the registry.
 - **Template units.** All 25 template labels are `fontSizeUnit="Point"` and `bufferSizeUnits="MM"`, matching the registry's unit contract. The active data-defined colours are on enabled category-symbol layers, not on `source-symbol`.
 - **Fixture provenance.** The fixtures carry no hosts or credentials: only `./background_layers.gpkg` paths and the public bcfishpass `service=`.

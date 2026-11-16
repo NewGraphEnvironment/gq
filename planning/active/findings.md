@@ -35,7 +35,7 @@ Move 4 of `planning/backlog.md`, which holds the order, the measurements and eac
 
 ## Plan-mode measurements (2026-11-12)
 
-Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical to v0.93.0.
+Source: the template repo `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical to v0.93.0.
 
 - `fontWeight` in the template: 50 ×21, 75 ×3, 87 ×1 (Qt5 scale). `fontBold`: 0.
 - Rule-based labelling: `Crossings - PSCIS, modelled, dams` (3 rules), `MoTi major structures` (1), `Roads - FTEN` (2).
@@ -61,7 +61,7 @@ Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical
 
 - Re-extracted `reg_qgis_restoration.json`: 22 labelled (14 `field`, 8 `expression`); bold 3 (`municipalities` 87, `crossings_pscis_assessment` 75, `crossings_pscis_modelled_dams` first rule 75). The review's "4 bold" counted rules, not layers.
 - `source_layer` identical on all 48 layers; 14 layers' non-label symbology changed (8 notes reworded, railway overlay, MoTi casing, FTEN opacity, 3 streams notes).
-- QGIS 4.1.0-Master, `qgis/qgis@sha256:4eb5cd07…`: the streams expression `hasParserError() == True`, `evaluate()` → None. A failed data-defined property falls back to the symbol colour, so the registry's category colours are what QGIS draws for this template. rfp#430.
+- QGIS 4.1.0-Master, `qgis/qgis@sha256:4eb5cd07…`: the streams expression `hasParserError() == True`, `evaluate()` → None. A failed data-defined property falls back to the symbol colour, so the registry's category colours are what QGIS draws for this template. an issue filed with the template repo.
 - reg_main's 25 labels = 22 template + 3 CSV (dam, town, planting_site); the CSV has no label field column.
 
 ## Phase 2 measurements (2026-11-13)
@@ -81,7 +81,7 @@ Rounds 1-4 found the same mechanism each time: one reading rule (which symbol la
 
 | round | findings | fixed | accepted | inside previous fix? |
 |---|---|---|---|---|
-| 1 | 5 | 4 | 1 (soul#847) | — |
+| 1 | 5 | 4 | 1 (an issue in the conventions repo) | — |
 | 2 | 4 | 3 | 1 (QML writer silent on pattern fills, documented) | no |
 | 3 | 5 | 5 | 0 | yes (graduated got only half of round 2's fix) |
 | 4 | 4 (+1 outside the diff, gq#120) | 4 | 0 | yes (tick filter, data-defined set, untested guards) |

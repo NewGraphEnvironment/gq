@@ -105,9 +105,9 @@ Every parallel set this diff touches. "No live instance" means the measured temp
 | Artifact | Agrees? | Evidence |
 |---|---|---|
 | `template_excerpt.qgs` and `bcfishpass_excerpt.qlr` | agree | Regenerated with `data-raw/fixture_extract_template.R` in a worktree: byte-identical (clean `git status`) |
-| `reg_qgis_restoration.json` | agree | Fresh `gq_qgs_extract()` of rfp's template written with `reg_json_write()`: md5 identical |
+| `reg_qgis_restoration.json` | agree | Fresh `gq_qgs_extract()` of the template repo's template written with `reg_json_write()`: md5 identical |
 | `reg_main.json` | agree | `test-reg_build_currency.R` passes |
-| `test-vendored_currency.R` with rfp dirs set | agree | 13 pass |
+| `test-vendored_currency.R` with the template repo dirs set | agree | 13 pass |
 | `mini_project.qgs` in `inst/examples` vs `tests/testthat/fixtures` | agree | Label blocks identical |
 | `reg_custom.csv` conversions vs tests | agree | 9 pt = 12 px; 0.4 mm = 1.51 px; offset 1.2 |
 
@@ -154,7 +154,7 @@ None failed or errored:
   - The graduated parser has no multi-layer handling. A cased graduated line therefore takes the **casing's** colour and width as the class style. It gets no `casing_color` and no note.
   - This is exactly the defect the categorized parser was fixed for. Probe: the same two-SimpleLine symbol gives `#9c9c9c / 2` under graduated and `#ffc485 / 1` plus a casing under categorized.
   - Any other multi-layer graduated symbol is silently partial, which breaks the contract that the `note` names what is not modelled.
-  - No graduated renderer in rfp's template, so no shipped data is affected. `gq_qgs_extract()` reads any `.qgs` or `.qlr`.
+  - No graduated renderer in the template repo's template, so no shipped data is affected. `gq_qgs_extract()` reads any `.qgs` or `.qlr`.
   - Fix: call `symbol_layers_extra()` as the categorized parser does.
   - **Rule:** code-check.md "A fix lands in one of two callers that share a harness"
 

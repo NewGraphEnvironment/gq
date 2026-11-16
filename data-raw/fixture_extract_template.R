@@ -1,6 +1,6 @@
 # Cut the extractor's test fixtures from real QGIS files.
 #
-# tests/testthat/fixtures/template_excerpt.qgs: layers from rfp's
+# tests/testthat/fixtures/template_excerpt.qgs: layers from the template repo's
 #   bcrestoration_mobile.qgs, each chosen for one thing the extractor reads
 #   (#103): label field, expression and weight (#6), multi-layer symbols (#24),
 #   layer opacity and a data-defined colour (#38), rule-based labelling.
@@ -14,7 +14,7 @@
 # keeps only the children the extractor reads, and a categorized renderer keeps
 # its first few categories and the symbols they name.
 #
-#   RFP_TEMPLATE=<rfp>/inst/templates/bcrestoration_mobile.qgs \
+#   RFP_TEMPLATE=<template-repo>/inst/templates/bcrestoration_mobile.qgs \
 #   BCFISHPASS_QLR=<bcfishpass>/qgis/bcfishpass_30k.qlr \
 #   Rscript data-raw/fixture_extract_template.R
 

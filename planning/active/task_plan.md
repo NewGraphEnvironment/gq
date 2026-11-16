@@ -14,7 +14,7 @@ Move 4 of `planning/backlog.md`. `gq_qgs_extract()` drops or misreads what the t
 
 Batch 10 adds the label translators, which need batch 9's label field.
 
-Measured 2026-11-12 against rfp `origin/main` (v0.94.0+3). The template is byte-identical to v0.93.0, the last extract, so every change to `reg_qgis_restoration.json` comes from the extractor.
+Measured 2026-11-12 against the template repo `origin/main` (v0.94.0+3). The template is byte-identical to v0.93.0, the last extract, so every change to `reg_qgis_restoration.json` comes from the extractor.
 
 - 53 vector layers; 48 registry keys.
 - 26 layers with `labelsEnabled="1"`. 4 of them have no settings, 19 use simple labelling, 3 use rule-based labelling.
@@ -63,11 +63,11 @@ Recommended, and taken unless you object at approval:
   - a SimpleLine plus a MarkerLine of `line` markers becomes `overlay` `{color, width = marker size, dash = "<outline width>;<interval − outline width>"}`;
   - anything else keeps a `note` that names what is not modelled (pattern fill, stacked markers, outline-only fill) and points at `gq_style_qml()`.
 - [x] Data-defined colour: when a symbol layer has an active `fillColor`/`outlineColor` expression, set the layer `note` to say the renderer's colours may not be what QGIS draws.
-- [x] Measure what QGIS draws for `streams_salmon` with its `IN ()` expression, using rfp's QGIS container. File an rfp issue with the result.
+- [x] Measure what QGIS draws for `streams_salmon` with its `IN ()` expression, using the template repo's QGIS container. File an the template repo issue with the result.
 - [x] `gq_style()` passes `casing` and `label` through, plus per-class `casing_colors`/`casing_widths` and `outline_colors`/`outline_widths`/`outline_opacities` (#31's remainder), named by class key (as #55 requires). `radii`/`shapes` in `gq_tmap_classes()` declined: no consumer. Add tests. (Review #3, #4.)
 - [x] Categorized casing: top-level layers only, and only when the lower line is wider (review #7). Round 3: all three renderer parsers now read symbols through one `symbol_read()`.
 - [x] `.qlr`: add a 2-layer fixture cut from `bcfishpass_30k.qlr` and a test; read a PostgreSQL `table="s"."t"` datasource as `source_layer`; update the roxygen. (Review #2.)
-- [x] Re-extract `reg_qgis_restoration.json` from the rfp checkout (`RFP_TEMPLATE`), rebuild `reg_main.json`, and update the provenance comment in `data-raw/reg_extract_restoration.R`.
+- [x] Re-extract `reg_qgis_restoration.json` from the the template repo checkout (`RFP_TEMPLATE`), rebuild `reg_main.json`, and update the provenance comment in `data-raw/reg_extract_restoration.R`.
 - [x] Assert on the rebuilt registry:
   - 22 labelled layers in `reg_qgis_restoration.json` (reg_main's other 3 are CSV: dam, town, planting_site);
   - every template label has `field` or `expression`: 14 field, 8 expression (review #1, #14);
@@ -106,13 +106,13 @@ Recommended, and taken unless you object at approval:
 
 - [x] Filed gq#116: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
 - [x] Filed gq#117: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
-- [x] Filed soul#847: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
+- [x] Filed an issue in the conventions repo: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
 - [ ] Close #23 with the measurements (done by the merge's `Fixes`, with the comment in the PR body).
-- [x] rfp issue on the streams `IN ()` expression: rfp#430
+- [x] the template repo issue on the streams `IN ()` expression: an issue filed with the template repo
 
 ## Validation
 
-- [ ] Tests pass (`devtools::test()`; the gated currency tests with `RFP_TEMPLATE_DIR`/`RFP_LOOKUPS_DIR` set to the rfp checkout)
+- [ ] Tests pass (`devtools::test()`; the gated currency tests with `RFP_TEMPLATE_DIR`/`RFP_LOOKUPS_DIR` set to the the template repo checkout)
 - [ ] `/code-check` clean (once over the branch with `/code-check branch`)
 - [x] `lintr::lint_package()` with no new lints compared with `origin/main` (4 found, fixed); `devtools::check()` clean
 - [ ] PWF checkboxes match landed work

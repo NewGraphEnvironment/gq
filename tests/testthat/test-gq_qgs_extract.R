@@ -124,7 +124,7 @@ test_that("gq_qgs_extract errors on missing file", {
 
 
 # --- real template XML (#103) -------------------------------------------------
-# template_excerpt.qgs is cut from rfp's bcrestoration_mobile.qgs by
+# template_excerpt.qgs is cut from the template repo's bcrestoration_mobile.qgs by
 # data-raw/fixture_extract_template.R, so these read the shapes QGIS writes.
 
 excerpt <- function() {
@@ -249,7 +249,7 @@ test_that("Line placement on a polygon reads as perimeter", {
 
 
 # --- the shipped restoration registry (#103) ----------------------------------
-# Counts measured against rfp's template (v0.93.0 to v0.94.0, unchanged): they
+# Counts measured against the template repo's (v0.93.0 to v0.94.0, unchanged): they
 # hold the re-extract to what the template carries, not to what a test expects.
 
 shipped <- function() {
