@@ -21,6 +21,21 @@ not found.
 Returns all layers belonging to a group, including any nested subgroups.
 Layers are ordered by z-order within the group.
 }
+\section{Ordering}{
+
+\code{order} is z-order within a group or subgroup: \code{1} draws on top, as the first
+child does in the QGIS layer panel. It agrees with the shipped templates on
+every layer both carry, and \code{tests/testthat/test-template_drift.R} holds it
+there (gq#105).
+
+Two things \code{order} cannot say. A group's own layers sort before its
+subgroups, where the templates interleave them: \code{Waterbodies} is the fourth
+child of \code{Basemap}, so the templates draw it above most of \code{Basemap}'s own
+layers. And subgroups sort by name, so \verb{Habitat models} lists before
+\verb{Stream labels}, which both templates draw on top. Expressing either needs an
+order key shared by layers and subgroups (gq#104).
+}
+
 \examples{
 gq_group_layers("Basemap")
 gq_group_layers("Streams")

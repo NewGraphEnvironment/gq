@@ -1,3 +1,14 @@
+# gq 0.23.0
+
+- **Layers draw in the templates' order within each group (#105).** `groups.csv`'s
+  `order` disagreed with both QGIS templates in seven groups, and none of gq's orders had
+  been measured, so the templates' order is adopted. The change you can see is
+  `Base - misc`: Esri Satellite now heads the basemaps, with ESRI World Topo last. Layers
+  only gq carries keep the neighbour above them, so `town` moves up to sit after
+  `glaciers`. Membership and `source_type` are unchanged. Where a subgroup sits among its
+  parent's layers, and the order of sibling subgroups, still differ from the templates
+  (#104).
+
 # gq 0.22.0
 
 - **A registry layer's style can go to QGIS as a QML, and into a GeoPackage (#115).**
