@@ -85,6 +85,19 @@ gq_groups <- function(registry = NULL) {
 #' Returns all layers belonging to a group, including any nested subgroups.
 #' Layers are ordered by z-order within the group.
 #'
+#' @section Ordering:
+#' `order` is z-order within a group or subgroup: `1` draws on top, as the first
+#' child does in the QGIS layer panel. It agrees with the shipped templates on
+#' every layer both carry, and `tests/testthat/test-template_drift.R` holds it
+#' there (gq#105).
+#'
+#' Two things `order` cannot say. A group's own layers sort before its
+#' subgroups, where the templates interleave them: `Waterbodies` is the fourth
+#' child of `Basemap`, so the templates draw it above most of `Basemap`'s own
+#' layers. And subgroups sort by name, so `Habitat models` lists before
+#' `Stream labels`, which both templates draw on top. Expressing either needs an
+#' order key shared by layers and subgroups (gq#104).
+#'
 #' @param group Character. Group name (e.g., `"Basemap"`, `"Crossings"`).
 #' @param registry Optional registry list (from [gq_reg_main()]). If provided,
 #'   `source_layer` and `type` columns are joined from the style registry.
@@ -182,6 +195,11 @@ gq_template_groups <- function(template) {
 #' Expands a template through its groups to produce a flat data.frame of
 #' every layer needed for that project type. Joins with the style registry
 #' to include `source_layer` and `type`.
+#'
+#' Rows sort by `group_order`, then by `order` within each group, with a group's
+#' own layers before its subgroups and subgroups by name. See the Ordering
+#' section of [gq_group_layers()] for what that does and does not match in the
+#' templates.
 #'
 #' @param template Character. Template name (e.g., `"bcfishpass_mobile"`).
 #' @param registry Optional registry list (from [gq_reg_main()]). If `NULL`,

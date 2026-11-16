@@ -71,15 +71,15 @@ template repo is unaffected.
 
 ## Phase 3: Document the order and its limit
 
-- [ ] Roxygen for `gq_group_layers()` and `gq_template_layers()`:
+- [x] Roxygen for `gq_group_layers()` and `gq_template_layers()`:
   - `order` 1 draws on top, matching the QGIS layer panel.
   - It agrees with the templates within a group.
   - A group's own layers sort before its subgroups, and subgroups sort by name, whereas the
     templates interleave them (#104).
   - Then run `devtools::document()`.
-- [ ] `CLAUDE.md`: in the `groups.csv` line, say that `order` agrees with the templates within
+- [x] `CLAUDE.md`: in the `groups.csv` line, say that `order` agrees with the templates within
       a group and that `test-template_drift.R` holds it there.
-- [ ] `NEWS.md` entry: which layers moved and why.
+- [x] `NEWS.md` entry: which layers moved and why.
 
 ## Phase 4: Hand the interleave to #104
 

@@ -327,7 +327,9 @@ too many.
   `source_layer` is the **filename** `habitat_lateral.tif`, the only row in the
   registry that is not a `schema.table`
 - `groups.csv` — layer group membership, nesting and z-order (62 rows, 10 groups),
-  quoted: the correct group name is `Roads,Railways,Pipelines`. This is the only
+  `order` 1 on top and agreeing with the templates within a group, held by
+  `test-template_drift.R` (gq#105); subgroup placement among layers is not expressible
+  (gq#104). Quoted: the correct group name is `Roads,Railways,Pipelines`. This is the only
   file carrying `source_type`, and that column is what decides whether rfp
   downloads a layer at all — `rfp_project_create()` intersects it against
   `rfp_manifest_types()` minus `frozen` — membership in that vector is not on its

@@ -15,3 +15,4 @@
   Full list in review-plan.md.
 - Phase 2: `groups.csv` renumbered in the 7 groups. Membership and source_type unchanged;
   drift tests 19/19; full suite FAIL 0 (1696 pass).
+- Phase 3: Ordering section in `gq_group_layers()` (linked from `gq_template_layers()`), CLAUDE.md groups.csv line, NEWS entry naming the Base - misc change.

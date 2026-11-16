@@ -21,6 +21,12 @@ Expands a template through its groups to produce a flat data.frame of
 every layer needed for that project type. Joins with the style registry
 to include \code{source_layer} and \code{type}.
 }
+\details{
+Rows sort by \code{group_order}, then by \code{order} within each group, with a group's
+own layers before its subgroups and subgroups by name. See the Ordering
+section of \code{\link[=gq_group_layers]{gq_group_layers()}} for what that does and does not match in the
+templates.
+}
 \examples{
 gq_template_layers("bcfishpass_mobile")
 
