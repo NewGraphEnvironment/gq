@@ -8,7 +8,7 @@ message: If you use gq, please cite it by its DOI, 10.5281/zenodo.23524719.
 type: software
 license: MIT
 title: 'gq: One Set of Map Styles for QGIS, Report Figures and Web Maps'
-version: 0.21.0
+version: 0.22.0
 doi: 10.5281/zenodo.23524719
 abstract: Keeps the map styles of QGIS field projects in one registry, extracted from
   the projects themselves, and translates them into 'tmap' arguments for figures in
@@ -29,7 +29,7 @@ preferred-citation:
     email: al@newgraphenvironment.com
     orcid: https://orcid.org/0000-0002-3495-2128
     affiliation: New Graph Environment Ltd.
-  version: 0.21.0
+  version: 0.22.0
   date-released: '2026-11-13'
   url: https://newgraphenvironment.github.io/gq/
   repository-code: https://github.com/NewGraphEnvironment/gq

@@ -1,6 +1,6 @@
 Package: gq
 Title: One Set of Map Styles for QGIS, Report Figures and Web Maps
-Version: 0.21.0
+Version: 0.22.0
 Date: 2026-11-13
 Authors@R: c(
     person("Allan", "Irvine", , "al@newgraphenvironment.com", role = c("aut", "cre"),
