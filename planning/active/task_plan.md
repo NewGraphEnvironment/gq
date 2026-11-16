@@ -63,10 +63,10 @@ template repo is unaffected.
 
 ## Phase 2: Renumber `groups.csv`
 
-- [ ] Renumber `order` in the 7 groups from `inst/registry/template_layers.csv`, inserting
+- [x] Renumber `order` in the 7 groups from `inst/registry/template_layers.csv`, inserting
       gq-only layers by the predecessor rule above. Leave `source_type` and membership alone.
-- [ ] Phase 1 tests green; `test-composition_integrity.R` "draw order is unambiguous" green.
-- [ ] Confirm `reg_main.json` doesn't need rebuilding: `test-reg_build_currency.R` green, since
+- [x] Phase 1 tests green; `test-composition_integrity.R` "draw order is unambiguous" green.
+- [x] Confirm `reg_main.json` doesn't need rebuilding: `test-reg_build_currency.R` green, since
       the build doesn't read `groups.csv`.
 
 ## Phase 3: Document the order and its limit

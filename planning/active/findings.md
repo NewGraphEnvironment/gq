@@ -48,6 +48,39 @@ The same gap covers **order between sibling subgroups**, which gq derives by sor
 - Consumers of `order`: `gq_group_layers()`, `gq_template_layers()` sort by it; rfp's
   `rfp_project_layers()` passes it through; no `$order` read in rfp `R/` for layers.
 
+## Red before the renumber (2026-11-15, commit 75c1e3e)
+
+`order_drift(read_template_layers_csv(), tpl)` on the old `groups.csv`:
+
+```
+bcfishpass_mobile    | Base - misc | Basemap | Basemap/Waterbodies | Crossings | Roads,Railways,Pipelines | Streams/Habitat models | Web Mapping Services
+bcrestoration_mobile | Base - misc | Basemap | Basemap/Waterbodies | Crossings | Roads,Railways,Pipelines | Streams/Habitat models | Web Mapping Services
+```
+
+Test file: 17 of 19 pass; the two failing are the agreement test and the swap alarm's
+clean-table line, as designed. Premise holds: shared layers per group are Basemap 12,
+Waterbodies 5, Crossings 8, Habitat models 3, Roads 8, Web Mapping Services 2, Base - misc 6.
+
+## Target order (order 1 draws on top; gq-only layers in brackets)
+
+| group path | new order |
+|---|---|
+| Basemap | watershed_group_boundary, municipalities, glaciers, [town], fire_historical_burn, fire_severity, old_growth_management_areas, national_park, land_ownership, range_tenure, fisheries_sensitive_watersheds, provincial_park, conservancy |
+| Basemap/Waterbodies | manmade_waterbodies, lake, wetland, streams_all, first_nation_reserve, [rivers_poly] |
+| Crossings | moti_culverts, crossings_modelled, crossings_pscis_assessment, crossings_pscis_confirmation, crossings_pscis_design, crossings_pscis_remedation, crossings_pscis_modelled_dams, moti_major_structures, [dam] |
+| Streams/Habitat models | streams_salmon, streams_st, streams_bt |
+| Roads,Railways,Pipelines | pipeline_permit, pipeline_installed, pipeline_application, transmission_line, railway, roads_ften, roads_dra, trails |
+| Web Mapping Services | frep_rip2021_mar2022, fire_perimeters_current |
+| Base - misc | habitat_lateral, utm_zones, esri_satellite, bing_aerial, google_satellite, esri_world_topo |
+
+## After the renumber
+
+- `gq_groups()` membership and `source_type`, sorted by key: identical before and after.
+- `gq_template_layers()` per group path, both templates: sequence changed in exactly the 7
+  paths above.
+- `devtools::test()`: FAIL 0 | WARN 1 | SKIP 6 | PASS 1696. The warning is the existing
+  `test-gq_registry_read.R:25` "cannot open file 'nonexistent.json'".
+
 ## Errors Encountered
 
 | Error | Resolution |

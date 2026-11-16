@@ -10,3 +10,8 @@
   `groups.csv`, naming exactly the 7 group paths in both templates; the premise test passes
   (each of the 7 compared on 2+ layers in both). The swap alarm is red until Phase 2,
   because the real table still drifts.
+- Plan review (Plan agent) returned: no blockers. Folded in: `info=` on the premise test,
+  red output and target table recorded in findings.md, NEWS to name the basemap change.
+  Full list in review-plan.md.
+- Phase 2: `groups.csv` renumbered in the 7 groups. Membership and source_type unchanged;
+  drift tests 19/19; full suite FAIL 0 (1696 pass).

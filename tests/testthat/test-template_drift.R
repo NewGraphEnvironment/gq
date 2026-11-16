@@ -516,7 +516,7 @@ test_that("each reordered group is compared on more than one layer", {
     t <- layers[layers$template == tpl, , drop = FALSE]
     for (p in order_groups_105) {
       shared <- intersect(g$layer_key[g_path == p], t$layer_key[t$group_path == p])
-      expect_gt(length(shared), 1)
+      expect_true(length(shared) > 1, info = paste(tpl, p))
     }
   }
 })
