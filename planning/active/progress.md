@@ -22,3 +22,8 @@
 - Filed gq#116 (draw casing/overlay), gq#117 (CSV label_field), soul#847 (cartography recipe reads label units raw)
 - /code-check branch round 1 spawned 05:52Z
 - Round 1 (`review-round1.md`, ran the suite against CRAN tmap 4.4.1: 0 failed): 5 findings. Fixed 4: tmap read the CSV's `offset_y` up where MapLibre reads it down (now negated; mutation-checked); `perimeter_curved` now follows the line in mapgl; a `...` size mapped to a column skips the halo with a warning; inactive label rules are skipped and not counted (dams note now "2 rules"). Finding 2 (skill recipe reads units raw) is soul#847.
+
+## Session 2026-11-16 (UTC)
+
+- The session restarted; round 2 of the branch review never delivered (no findings file), so it re-runs to `review-round2b.md`
+- `main` had moved to v0.22.0 (#115, the QML writer). Merged origin/main (no conflicts). The writer warns on `overlay` but dropped `casing` silently, which after this branch drops MoTi's black casing; it now warns on a layer's or a class's casing, with a test. Writer tests pass on the branch's registry.

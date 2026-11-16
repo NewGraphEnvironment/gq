@@ -40,9 +40,9 @@ per class; an unclassified one becomes a single-symbol renderer.
 }
 \details{
 For a layer gq ships a QML for, prefer \code{\link[=gq_style_qml]{gq_style_qml()}}: that file is what
-QGIS itself wrote, and carries what the registry does not model (labels,
+QGIS itself wrote, and carries what this function does not write (labels,
 multi-layer symbols, casing, scale-dependent rendering). This function writes
-only what the registry holds.
+only what the registry holds, less those.
 
 What each registry property becomes:
 \itemize{
@@ -59,8 +59,8 @@ registry allows;
 when the registry has them, else the layer's \code{stroke}, else no outline.
 }
 
-Not written: labels, a line's \code{overlay} (a warning says so), and point and
-raster layers, which error. An unclassified layer the registry gives no fill
+Not written: labels, a line's \code{overlay} and \code{casing} (a warning names each),
+and point and raster layers, which error. An unclassified layer the registry gives no fill
 or stroke colour (one whose QGIS symbol it could not model) errors too.
 }
 \examples{

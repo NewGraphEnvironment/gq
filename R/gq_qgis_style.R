@@ -7,9 +7,9 @@
 #' per class; an unclassified one becomes a single-symbol renderer.
 #'
 #' For a layer gq ships a QML for, prefer [gq_style_qml()]: that file is what
-#' QGIS itself wrote, and carries what the registry does not model (labels,
+#' QGIS itself wrote, and carries what this function does not write (labels,
 #' multi-layer symbols, casing, scale-dependent rendering). This function writes
-#' only what the registry holds.
+#' only what the registry holds, less those.
 #'
 #' What each registry property becomes:
 #'
@@ -25,8 +25,8 @@
 #' * a polygon class's outline: its own `outline_color` and `outline_width`
 #'   when the registry has them, else the layer's `stroke`, else no outline.
 #'
-#' Not written: labels, a line's `overlay` (a warning says so), and point and
-#' raster layers, which error. An unclassified layer the registry gives no fill
+#' Not written: labels, a line's `overlay` and `casing` (a warning names each),
+#' and point and raster layers, which error. An unclassified layer the registry gives no fill
 #' or stroke colour (one whose QGIS symbol it could not model) errors too.
 #'
 #' @inheritParams gq_style
@@ -83,6 +83,16 @@ gq_qgis_style <- function(layer_or_reg, name = NULL, field = NULL, path = NULL) 
   if (!is.null(layer$overlay)) {
     warning("'", what, "': the registry's overlay is not written to the QML; ",
             "only the base line is", call. = FALSE)
+  }
+  # Casing sits beneath the line: the layer's own, or a class's (#103).
+  # (gq's %||% tests is.na(), so it cannot take a list.)
+  classes <- layer$classification$classes
+  if (is.null(classes)) classes <- list()
+  cased <- !is.null(layer$casing) ||
+    any(vapply(classes, function(x) !is.null(x$casing_color), logical(1)))
+  if (cased) {
+    warning("'", what, "': the registry's casing is not written to the QML; ",
+            "only the line it sits beneath is", call. = FALSE)
   }
 
   doc <- xml2::xml_new_root("qgis", styleCategories = "Symbology",

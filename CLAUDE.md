@@ -354,7 +354,7 @@ too many.
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers) by
   `data-raw/reg_extract_restoration.R`. A transcript of the template, so a name the
   template carries wrong is corrected in the build, never here. Last extracted from the
-  template repo's v0.93.0 (#102); a gated test in `test-vendored_currency.R` re-extracts
+  template repo's v0.94.0+3 (#103; its template is unchanged since v0.93.0); a gated test in `test-vendored_currency.R` re-extracts
   and compares. The fish passage registry was deleted in #102: nothing read it and
   nothing could regenerate it (#85).
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source.

@@ -177,3 +177,17 @@ test_that("every main-registry line and polygon layer builds a parseable QML", {
     }
   }
 })
+
+test_that("a casing, the layer's or a class's, is flagged as not written (#103)", {
+  moti <- list(type = "line", stroke = list(color = "#ff6011", width = 1.46),
+               casing = list(color = "#000000", width = 2.06))
+  expect_warning(out <- gq_qgis_style(moti), "casing")
+  expect_match(out, "255,96,17")   # the core is what is written
+  classes <- list(a = list(color = "#ffc485", width = 1.3, casing_color = "#9c9c9c",
+                           casing_width = 1.86),
+                  b = list(color = "#ffffff", width = 0.5))
+  dra <- list(type = "line", classification = list(field = "f", classes = classes))
+  expect_warning(gq_qgis_style(dra), "casing")
+  plain <- list(type = "line", stroke = list(color = "#000000", width = 1))
+  expect_no_warning(gq_qgis_style(plain))
+})
