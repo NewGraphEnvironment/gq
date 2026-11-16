@@ -93,7 +93,7 @@ template repo is unaffected.
 - [x] `lintr::lint_package()`: no new lints in the touched files
 - [x] `/code-check branch` clean (three-round floor)
 - [x] PWF checkboxes match landed work
-- [ ] `/planning-archive` on completion
+- [x] `/planning-archive` on completion
 
 **How each change is proved:**
 - **The test:** red on the old `groups.csv` naming the 7 groups, green after the renumber,
