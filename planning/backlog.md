@@ -15,7 +15,7 @@ ticked and not **waiting**; `/planning-init <umbrella>` plans it, one phase per 
 | - [x] 1 | #100 | 1, 2: template agreement, vendored-artifact guards (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/106 |
 | - [x] 2 | #101 | 3, 4, 5: translator opacity and labels, custom CSV reader, register styles (7 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/108 |
 | - [x] 3 | #102 | 6, 7, 8: check gate, README and vignette, registry build inputs (8 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/109 |
-| - [ ] 4 | #103 | 9, 10: extractor fidelity, label translators (5 issues) | open |
+| - [x] 4 | #103 | 9, 10: extractor fidelity, label translators (5 issues) | done: https://github.com/NewGraphEnvironment/gq/pull/121 |
 | - [ ] 5 | #104 | 11: registry schema decisions (4 issues) | open: last, after moves 2 and 4 |
 
 Tracks are separate efforts, not moves: gq has none.
@@ -171,7 +171,7 @@ the rebuild differs.
 
 ### 9. Extractor fidelity
 
-- [ ] Carried by move 4, #103
+- [x] Carried by move 4, #103 (merged in https://github.com/NewGraphEnvironment/gq/pull/121)
 
 `R/gq_qgs_extract.R` reads the label field and weight from where QGIS writes them (#6),
 extracts overlay and casing from single-symbol renderers (#24), reads layer opacity, cap and
@@ -186,7 +186,7 @@ corpus is the lossless copy; whether #23 still has a source worth extracting.
 
 ### 10. Label translators
 
-- [ ] Carried by move 4, #103
+- [x] Carried by move 4, #103 (merged in https://github.com/NewGraphEnvironment/gq/pull/121)
 
 `gq_tmap_labels()` and `gq_mapgl_labels()` (#7), for plain-field labels first. Needs batch 9's
 label field. The audit in #7's comment lists what maps cleanly, what approximately, and the
