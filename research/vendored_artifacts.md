@@ -1,6 +1,6 @@
 # What gq copies from rfp, who owns it, and how staleness is caught
 
-**Verified:** 2026-11-05 against rfp v0.93.0; "Known gaps" re-verified 2026-11-15 · **Issues:** gq#100 (gq#70, #78, #86, #92), gq#105 · **Produced by:** in-memory re-extraction with gq's own walkers from a detached rfp worktree at the tag; the corpus sweep in `tests/testthat/test-qml_consistency.R`; a column query against the newgraph database. The story is in `planning/archive/2026-11-issue-100-vendored-artifacts/`.
+**Verified:** 2026-11-05 against the template repo's v0.93.0; "Known gaps" re-verified 2026-11-15 · **Issues:** gq#100 (gq#70, #78, #86, #92), gq#105 · **Produced by:** in-memory re-extraction with gq's own walkers from a detached worktree of the template repo at the tag; the corpus sweep in `tests/testthat/test-qml_consistency.R`; a column query against the newgraph database. The story is in `planning/archive/2026-11-issue-100-vendored-artifacts/`.
 
 ## The five copies, and who owns each
 

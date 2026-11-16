@@ -7,7 +7,7 @@
 - Red before the renumber: `order_drift()` named exactly the 7 group paths in each template. Shared layers compared per group: Basemap 12, Waterbodies 5, Crossings 8, Habitat models 3, Roads 8, Web Mapping Services 2, Base - misc 6.
 - After: 0 paths drift. `gq_groups()` membership and `source_type` are identical (62 rows), and `gq_template_layers()`'s sequence changed in exactly the 7 paths in both templates.
 - Code-check round 2 ran 13 mutations of the guard. Every one that should be caught turned the suite red. The exception is a tie in `order`, which `order_drift()` misses because `order()` is stable, and which the existing duplicate-order test in `test-composition_integrity.R` catches instead. Moving a gq-only layer on its own goes undetected, by design.
-- Code-check round 3 found that the renumber changes no rfp behaviour. rfp reaches `order` only through `rfp_project_layers()` and never reads it.
+- Code-check round 3 found that the renumber changes nothing the template repo does. The template repo reaches `order` only through `rfp_project_layers()` and never reads it.
 - `devtools::test()`: FAIL 0 | WARN 1 | SKIP 6 | PASS 1696.
 
 Closed by: PR (opened next by `/gh-pr-push`), branch `105-layer-order-within-a-group-disagrees-wit`

@@ -20,5 +20,5 @@
 - Validation: lintr 0 on touched files (branch and main). `/code-check branch`: three rounds,
   all Clean, none inside a fix. Round 1 re-derived the seven paths independently, round 2
   ran 13 mutations of the guard (all caught or covered; a tie is caught by the existing
-  duplicate-order test), round 3 checked consumers in gq and rfp (no behaviour change).
+  duplicate-order test), round 3 checked consumers in gq and the template repo (no behaviour change).
   Full suite FAIL 0 | WARN 1 | SKIP 6 | PASS 1696.

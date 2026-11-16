@@ -20,8 +20,8 @@ in the #66 archive's findings: the `Base - misc` basemap order was recorded as "
 argue for gq's order. By the CLAUDE.md reconciliation rule, the templates' order is adopted
 in all 7 groups.
 
-**Who reads `order`:** only `gq_group_layers()` and `gq_template_layers()` sort by it. rfp
-passes it through `rfp_project_layers()` and never reads it (checked in rfp's `R/`), so the
+**Who reads `order`:** only `gq_group_layers()` and `gq_template_layers()` sort by it. The template repo
+passes it through `rfp_project_layers()` and never reads it (checked in the template repo's `R/`), so the
 template repo is unaffected.
 
 ## Decided at the gate
@@ -100,5 +100,5 @@ template repo is unaffected.
   and the perturbation alarm reports the swapped group.
 - **The renumber:** a diff of `gq_template_layers()` row order before and after, for both
   templates, showing only the 7 groups moved (plus `town`).
-- **rfp is unaffected:** it reads `order` nowhere, which a grep of rfp's `R/` already shows.
+- **The template repo is unaffected:** it reads `order` nowhere, which a grep of the template repo's `R/` already shows.
 

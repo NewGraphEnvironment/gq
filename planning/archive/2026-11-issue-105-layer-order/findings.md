@@ -6,7 +6,7 @@
 
 ## Measured
 
-Found while doing #68 (gq#100), against rfp v0.93.0's templates via the new `inst/registry/template_layers.csv`. #68 settled which **group** each layer sits in; it left **order within a group** alone. On the layers both sides carry, the relative order differs in 7 groups, identically in both templates:
+Found while doing #68 (gq#100), against the template repo's v0.93.0 templates via the new `inst/registry/template_layers.csv`. #68 settled which **group** each layer sits in; it left **order within a group** alone. On the layers both sides carry, the relative order differs in 7 groups, identically in both templates:
 
 | group | gq (`groups.csv` order) | template (tree order, first draws on top) |
 |---|---|---|
@@ -45,8 +45,8 @@ The same gap covers **order between sibling subgroups**, which gq derives by sor
   `a579752` (#41 added the four xyz basemaps; its message measures the *group*, not the
   order) and `b7be0df` (#100 placement insertions). The #66 archive findings note the
   `Base - misc` basemap disagreement as "not a defect" and hand it on; no measurement.
-- Consumers of `order`: `gq_group_layers()`, `gq_template_layers()` sort by it; rfp's
-  `rfp_project_layers()` passes it through; no `$order` read in rfp `R/` for layers.
+- Consumers of `order`: `gq_group_layers()`, `gq_template_layers()` sort by it; the template repo's
+  `rfp_project_layers()` passes it through; no `$order` read in the template repo's `R/` for layers.
 
 ## Red before the renumber (2026-11-15, commit 75c1e3e)
 

@@ -1,6 +1,6 @@
 # Review round 3 — consumers and interop (gq#105)
 
-Reviewed at gq HEAD c004f56; rfp at origin/main 122b8a7a (fetched 2026-11-15, working tree on main).
+Reviewed at gq HEAD c004f56; the template repo at origin/main 122b8a7a (fetched 2026-11-15, working tree on main).
 
 ## Checklist read
 
@@ -17,13 +17,13 @@ gq:
 - No vignette, README or R/ prose depends on the old within-group order (searched for World Topo / top basemap / town position). `test-template_drift.R:227` "beneath ESRI World Topo" is a historical sentence about group order, still true.
 - test-template_drift.R (68 pass), test-gq_groups.R (80 pass), test-composition_integrity.R (58 pass), all under NOT_CRAN=true, 0 failed / 0 error / 0 skipped.
 
-rfp (the only consumer outside gq):
-- rfp never reads groups.csv itself; its sole route is `rfp_project_layers()` -> `gq::gq_template_layers()`, keeping `order` as a column.
+The template repo (the only consumer outside gq):
+- The template repo never reads groups.csv itself; its sole route is `rfp_project_layers()` -> `gq::gq_template_layers()`, keeping `order` as a column.
 - `rfp_project_create()`: download pass order comes from `rfp_manifest_types()`, not from row order; within a type, row order only changes the sequence of `layers =` handed to `rfp_source()`, with nothing indexing `layers[1]`. The QGIS layer tree comes from the copied template, not from gq order. `.qgs_trim_absent()`, forms, themes and services don't read gq order.
 - Manifest (`.manifest_config_types()`/`.manifest_finalize()`) dedups and then sorts by type and name, so it doesn't depend on order.
 - `rfp_project_audit()` / `rfp_project_update()` use set operations on `source_layer`, so order doesn't matter to them.
 - `rfp_source_test()` dedups with `!duplicated(source_layer)` and reports the first row's `group`. The duplicated source_layers (crossings_vw x2 in Crossings, streams_vw x3 in Streams plus streams_all in Basemap, bec poly x2 in Basemap/Terrestrial Ecology) still have their first occurrence in the same group as before, so the reported `group` is unchanged.
-- rfp tests calling `rfp_project_layers()` (test-manifest_from_layer_config.R, test-rfp_project_identity.R) assert set membership and manifest validity only.
+- The template repo's tests calling `rfp_project_layers()` (test-manifest_from_layer_config.R, test-rfp_project_identity.R) assert set membership and manifest validity only.
 
 ## Prose claims executed
 
