@@ -65,7 +65,7 @@ Recommended, and taken unless you object at approval:
 - [x] Data-defined colour: when a symbol layer has an active `fillColor`/`outlineColor` expression, set the layer `note` to say the renderer's colours may not be what QGIS draws.
 - [x] Measure what QGIS draws for `streams_salmon` with its `IN ()` expression, using rfp's QGIS container. File an rfp issue with the result.
 - [x] `gq_style()` passes `casing` and `label` through, plus per-class `casing_colors`/`casing_widths` and `outline_colors`/`outline_widths`/`outline_opacities` (#31's remainder), named by class key (as #55 requires). `radii`/`shapes` in `gq_tmap_classes()` declined: no consumer. Add tests. (Review #3, #4.)
-- [x] Categorized casing: top-level layers only, and only when the lower line is wider (review #7).
+- [x] Categorized casing: top-level layers only, and only when the lower line is wider (review #7). Round 3: all three renderer parsers now read symbols through one `symbol_read()`.
 - [x] `.qlr`: add a 2-layer fixture cut from `bcfishpass_30k.qlr` and a test; read a PostgreSQL `table="s"."t"` datasource as `source_layer`; update the roxygen. (Review #2.)
 - [x] Re-extract `reg_qgis_restoration.json` from the rfp checkout (`RFP_TEMPLATE`), rebuild `reg_main.json`, and update the provenance comment in `data-raw/reg_extract_restoration.R`.
 - [x] Assert on the rebuilt registry:

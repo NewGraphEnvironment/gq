@@ -182,7 +182,10 @@ connected lines and skips short features, and tmap and MapLibre do neither.
 the railway's ticks (a QGIS MarkerLine of perpendicular `line` markers) are
 recorded as a line as wide as a tick is long, dashed tick-thick on and the rest
 of the interval off, in QGIS's millimetres. No translator draws either yet. A
-layer's own opacity (`<layerOpacity>`) is folded into every opacity it emits.
+symbol's opacity and the layer's own (`<layerOpacity>`) are folded into every
+opacity it emits, a polygon outline's and an overlay's included, because QGIS
+draws the whole symbol at that opacity. One reader, `symbol_read()`, decides for
+all three renderer parsers which symbol layers count and what goes unmodelled.
 
 Declined from #38, for the QML corpus to carry: cap and join style (tmap cannot
 draw them) and symbol-layer pass order (nothing consumes it; casing draws beneath

@@ -12,7 +12,8 @@
       },
       "stroke": {
         "color": "#000000",
-        "width": 0.25
+        "width": 0.25,
+        "opacity": 0.999
       }
     },
     "watershed_group_boundary": {
@@ -24,7 +25,8 @@
       },
       "stroke": {
         "color": "#5d5d5d",
-        "width": 1.86
+        "width": 1.86,
+        "opacity": 0.5
       }
     },
     "municipalities": {
@@ -36,7 +38,8 @@
       },
       "stroke": {
         "color": "#232323",
-        "width": 0.26
+        "width": 0.26,
+        "opacity": 0.347
       },
       "note": "symbol layers not modelled: SimpleFill, SimpleFill (the QML from gq_style_qml() carries them)",
       "label": {
@@ -61,7 +64,8 @@
       },
       "stroke": {
         "color": "#1f78b4",
-        "width": 0.2
+        "width": 0.2,
+        "opacity": 0.7
       },
       "label": {
         "field": "gnis_name_1",
@@ -174,7 +178,8 @@
       },
       "stroke": {
         "color": "#232323",
-        "width": 0.26
+        "width": 0.26,
+        "opacity": 0.3
       }
     },
     "fisheries_sensitive_watersheds": {
@@ -186,7 +191,8 @@
       },
       "stroke": {
         "color": "#525252",
-        "width": 0.26
+        "width": 0.26,
+        "opacity": 0.25
       }
     },
     "provincial_park": {
@@ -198,7 +204,8 @@
       },
       "stroke": {
         "color": "#33a02c",
-        "width": 0.66
+        "width": 0.66,
+        "opacity": 0.161
       },
       "label": {
         "field": "protected_lands_name",
@@ -217,7 +224,8 @@
       },
       "stroke": {
         "color": "#33a02c",
-        "width": 0.66
+        "width": 0.66,
+        "opacity": 0.161
       },
       "label": {
         "field": "protected_lands_name",
@@ -282,7 +290,8 @@
       },
       "stroke": {
         "color": "#232323",
-        "width": 0.26
+        "width": 0.26,
+        "opacity": 0.7
       }
     },
     "manmade_waterbodies": {
@@ -294,7 +303,8 @@
       },
       "stroke": {
         "color": "#1f78b4",
-        "width": 0.2
+        "width": 0.2,
+        "opacity": 0.7
       },
       "label": {
         "field": "gnis_name_1",
@@ -318,7 +328,8 @@
       },
       "stroke": {
         "color": "#1f78b4",
-        "width": 0.2
+        "width": 0.2,
+        "opacity": 0.7
       },
       "label": {
         "field": "gnis_name_1",
@@ -443,7 +454,8 @@
       },
       "stroke": {
         "color": "#232323",
-        "width": 0.26
+        "width": 0.26,
+        "opacity": 0.394
       }
     },
     "moti_culverts": {
@@ -718,7 +730,7 @@
     "pipeline_permit": {
       "type": "polygon",
       "source_layer": "whse_mineral_tenure.og_pipeline_area_permit_sp",
-      "note": "symbol layers not modelled: SimpleLine (the QML from gq_style_qml() carries them)"
+      "note": "symbol layers not modelled: LinePatternFill, SimpleLine (the QML from gq_style_qml() carries them)"
     },
     "pipeline_installed": {
       "type": "line",

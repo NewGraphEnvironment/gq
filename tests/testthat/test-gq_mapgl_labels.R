@@ -55,3 +55,8 @@ test_that("every line-following placement the extractor writes follows the line"
     expect_equal(gq_mapgl_labels(layer)$symbol_placement, "point", info = p)
   }
 })
+
+test_that("a halo with no colour is white, as gq_tmap_labels() draws it", {
+  layer <- list(type = "point", label = list(field = "n", halo = list(width = 0.3)))
+  expect_equal(gq_mapgl_labels(layer)$text_halo_color, "#ffffff")
+})

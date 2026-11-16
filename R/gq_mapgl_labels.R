@@ -57,8 +57,14 @@ gq_mapgl_labels <- function(layer, field = NULL) {
   if (!is.null(lab$size)) args$text_size <- round(lab$size * 96 / 72, 2)
   if (!is.null(lab$color)) args$text_color <- lab$color
   if (!is.null(lab$opacity)) args$text_opacity <- lab$opacity
-  if (!is.null(lab$halo$color)) args$text_halo_color <- lab$halo$color
-  if (!is.null(lab$halo$width)) args$text_halo_width <- round(lab$halo$width * 96 / 25.4, 2)
+  if (!is.null(lab$halo$width)) {
+    # White where the registry names no colour, as gq_tmap_labels() draws it;
+    # MapLibre's own default halo colour is transparent.
+    args$text_halo_color <- lab$halo$color %||% "#ffffff"
+    args$text_halo_width <- round(lab$halo$width * 96 / 25.4, 2)
+  } else if (!is.null(lab$halo$color)) {
+    args$text_halo_color <- lab$halo$color
+  }
   if (!is.null(lab$offset_x) || !is.null(lab$offset_y)) {
     args$text_offset <- c(lab$offset_x %||% 0, lab$offset_y %||% 0)
   }

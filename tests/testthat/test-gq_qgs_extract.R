@@ -354,3 +354,76 @@ test_that("a categorized class reads symbol layers as a single symbol does (#103
   expect_null(cls$stacked$casing_color)
   expect_match(out$note, "class symbol layers not modelled: SimpleLine")
 })
+
+# --- one symbol reader for every renderer (#103, review round 3) ---------------
+
+symbol_str <- function(body, alpha = "1") {
+  paste0('<symbol name="0" alpha="', alpha, '" type="line">', body, "</symbol>")
+}
+symbol_xml <- function(body, alpha = "1") xml2::read_xml(symbol_str(body, alpha))
+simple_line <- function(color, width) {
+  paste0(
+    '<layer class="SimpleLine"><Option type="Map">',
+    '<Option name="line_color" value="', color, '"/>',
+    '<Option name="line_width" value="', width, '"/></Option></layer>'
+  )
+}
+
+test_that("a graduated class reads a casing as a categorized class does", {
+  sym <- paste0(simple_line("156,156,156,255", "2"), simple_line("255,196,133,255", "1"))
+  renderer <- xml2::read_xml(paste0(
+    '<renderer-v2 type="graduatedSymbol" attr="v"><ranges>',
+    '<range lower="0" upper="1" label="low" symbol="0"/></ranges>',
+    "<symbols>", symbol_str(sym), "</symbols></renderer-v2>"
+  ))
+  cls <- parse_graduated(renderer, "line")$classification$classes[[1]]
+  expect_equal(cls$color, "#ffc485")
+  expect_equal(cls$width, 1)
+  expect_equal(cls$casing_color, "#9c9c9c")
+  expect_equal(cls$casing_width, 2)
+})
+
+test_that("a first symbol layer the registry cannot model is named too", {
+  # pipeline_permit's shape: a hatch fill with an outline line over it
+  layers <- xml2::xml_find_all(
+    xml2::read_xml(test_path("fixtures", "template_excerpt.qgs")),
+    ".//maplayer[layername='Wetland']/renderer-v2/symbols/symbol"
+  )
+  sr <- symbol_read(layers[[1]])
+  expect_equal(sr$unmodelled, "PointPatternFill")       # SimpleFill first: modelled
+  hatch <- symbol_xml(paste0('<layer class="LinePatternFill"/>', simple_line("0,0,0,255", "0.6")))
+  expect_equal(symbol_read(hatch)$unmodelled, c("LinePatternFill", "SimpleLine"))
+  lone <- symbol_xml('<layer class="LinePatternFill"/>')
+  expect_equal(symbol_read(lone)$unmodelled, "LinePatternFill")
+})
+
+test_that("layer and symbol opacity reach the outline and the overlay too", {
+  doc <- xml2::read_xml(test_path("fixtures", "template_excerpt.qgs"))
+  rail <- xml2::xml_find_first(doc, ".//maplayer[layername='Railway']/renderer-v2")
+  half <- parse_single_symbol(rail, "line", layer_opacity = 0.5)
+  expect_equal(half$stroke$opacity, 0.5)
+  expect_equal(half$overlay$opacity, 0.5)
+  expect_null(parse_single_symbol(rail, "line")$overlay$opacity)
+
+  muni <- xml2::xml_find_first(doc, ".//maplayer[layername='Municipalities']/renderer-v2")
+  m <- parse_single_symbol(muni, "polygon")
+  expect_equal(m$stroke$opacity, m$fill$opacity)        # symbol alpha 0.347, both opaque colours
+})
+
+test_that("a data-defined colour on a disabled layer is not flagged", {
+  dd <- paste0(
+    '<data_defined_properties><Option type="Map"><Option name="properties" type="Map">',
+    '<Option name="outlineColor" type="Map"><Option name="active" value="true"/>',
+    '<Option name="expression" value="\'#ff0000\'"/></Option></Option></Option>',
+    "</data_defined_properties>"
+  )
+  renderer <- function(enabled) {
+    xml2::read_xml(paste0(
+      '<renderer-v2 type="singleSymbol"><symbols><symbol name="0" alpha="1" type="line">',
+      '<layer class="SimpleLine" enabled="', enabled, '">', dd, "</layer>",
+      "</symbol></symbols></renderer-v2>"
+    ))
+  }
+  expect_true(color_data_defined(renderer("1")))
+  expect_false(color_data_defined(renderer("0")))
+})
