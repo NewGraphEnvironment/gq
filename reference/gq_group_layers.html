@@ -36,7 +36,7 @@ Layers are ordered by z-order within the group."><meta property="og:image" conte
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Get layers in a group</h1>
-      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.22.0/R/gq_groups.R" class="external-link"><code>R/gq_groups.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/R/gq_groups.R" class="external-link"><code>R/gq_groups.R</code></a></small>
       <div class="d-none name"><code>gq_group_layers.Rd</code></div>
     </div>
 
@@ -68,6 +68,21 @@ Layers are ordered by z-order within the group.</p>
     <p>A data.frame with columns: group, subgroup, layer_key, order,
 and optionally source_layer and type. Returns empty data.frame if group
 not found.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="ordering">Ordering<a class="anchor" aria-label="anchor" href="#ordering"></a></h2>
+
+
+<p><code>order</code> is z-order within a group or subgroup: <code>1</code> draws on top, as the first
+child does in the QGIS layer panel. It agrees with the shipped templates on
+every layer both carry, and <code>tests/testthat/test-template_drift.R</code> holds it
+there (gq#105).</p>
+<p>Two things <code>order</code> cannot say. A group's own layers sort before its
+subgroups, where the templates interleave them: <code>Waterbodies</code> is the fourth
+child of <code>Basemap</code>, so the templates draw it above most of <code>Basemap</code>'s own
+layers. And subgroups sort by name, so <code>Habitat models</code> lists before
+<code>Stream labels</code>, which both templates draw on top. Expressing either needs an
+order key shared by layers and subgroups (gq#104).</p>
     </div>
 
     <div class="section level2">
@@ -101,56 +116,56 @@ not found.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                 layer_key order source_type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                watershed_group_boundary     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          municipalities     2      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                         provincial_park     3      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           national_park     4      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                             conservancy     5      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                             old_growth_management_areas     6      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                            range_tenure     7         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                          fisheries_sensitive_watersheds     8      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                glaciers     3      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    town     4      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                    fire_historical_burn     5      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                           fire_severity     6      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                             old_growth_management_areas     7      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                           national_park     8      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9                                          land_ownership     9         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                   fire_historical_burn    10      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                          fire_severity    11      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                               glaciers    12      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                   town    13      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                           range_tenure    10         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                         fisheries_sensitive_watersheds    11      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                        provincial_park    12      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                            conservancy    13      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 14                                       orthophoto_tiles     1      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 15 terrestrial_ecosystem_information_scanned_map_boundary     2      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 16                     terrain_mapping_project_boundaries     3      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17                                               bec_zone     4      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18                biogeoclimatic_ecosystem_classification     5      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19                                                   lake     1      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                                wetland     2      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21                                            streams_all     3         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                   first_nation_reserve     4      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23                                            rivers_poly     5      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24                                    manmade_waterbodies     6      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                                    manmade_waterbodies     1      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                                   lake     2      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                                                wetland     3      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                            streams_all     4         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23                                   first_nation_reserve     5      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24                                            rivers_poly     6      bcdata</span>
 <span class="r-in"><span><span class="fu">gq_group_layers</span><span class="op">(</span><span class="st">"Streams"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     group       subgroup      layer_key order source_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Streams Habitat models     streams_bt     1         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Streams Habitat models streams_salmon     2         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Streams Habitat models     streams_st     3         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Streams Habitat models streams_salmon     1         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Streams Habitat models     streams_st     2         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Streams Habitat models     streams_bt     3         aws</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 Streams  Stream labels  stream_labels     1         fwa</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With source_layer info</span></span></span>
 <span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="gq_reg_main.html">gq_reg_main</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">gq_group_layers</span><span class="op">(</span><span class="st">"Crossings"</span>, registry <span class="op">=</span> <span class="va">reg</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       group subgroup                     layer_key order source_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Crossings     &lt;NA&gt;    crossings_pscis_assessment     1      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Crossings     &lt;NA&gt;  crossings_pscis_confirmation     2      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Crossings     &lt;NA&gt;        crossings_pscis_design     3      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Crossings     &lt;NA&gt;    crossings_pscis_remedation     4      bcdata</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Crossings     &lt;NA&gt;            crossings_modelled     5         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Crossings     &lt;NA&gt; crossings_pscis_modelled_dams     6         aws</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7 Crossings     &lt;NA&gt;                 moti_culverts     7      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Crossings     &lt;NA&gt;                 moti_culverts     1      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Crossings     &lt;NA&gt;            crossings_modelled     2         aws</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Crossings     &lt;NA&gt;    crossings_pscis_assessment     3      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Crossings     &lt;NA&gt;  crossings_pscis_confirmation     4      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Crossings     &lt;NA&gt;        crossings_pscis_design     5      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Crossings     &lt;NA&gt;    crossings_pscis_remedation     6      bcdata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 Crossings     &lt;NA&gt; crossings_pscis_modelled_dams     7         aws</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8 Crossings     &lt;NA&gt;         moti_major_structures     8      bcdata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9 Crossings     &lt;NA&gt;                           dam     9         aws</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                       source_layer  type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   whse_fish.pscis_assessment_svw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         whse_fish.pscis_habitat_confirmation_svw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3              whse_fish.pscis_design_proposal_svw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  whse_fish.pscis_remediation_svw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                          bcfishpass.crossings_vw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                          bcfishpass.crossings_vw point</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       whse_imagery_and_base_maps.mot_culverts_sp point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       whse_imagery_and_base_maps.mot_culverts_sp point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                          bcfishpass.crossings_vw point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   whse_fish.pscis_assessment_svw point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         whse_fish.pscis_habitat_confirmation_svw point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5              whse_fish.pscis_design_proposal_svw point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                  whse_fish.pscis_remediation_svw point</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                          bcfishpass.crossings_vw point</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8 whse_imagery_and_base_maps.mot_road_structure_sp  line</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9                                  bcfishpass.dams point</span>
 <span class="r-in"><span></span></span>
