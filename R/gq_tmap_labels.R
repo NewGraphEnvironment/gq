@@ -60,8 +60,9 @@
 #' @export
 gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL) {
   # The halo is opt_tm_text(halo = ), which tmap added in 4.3
-  if (!requireNamespace("tmap", quietly = TRUE) ||
-      utils::packageVersion("tmap") < "4.3") {
+  has_halo <- requireNamespace("tmap", quietly = TRUE) &&
+    utils::packageVersion("tmap") >= "4.3"
+  if (!has_halo) {
     stop("gq_tmap_labels() needs tmap 4.3 or later", call. = FALSE)
   }
   lab <- label_get(layer_or_reg, name)
