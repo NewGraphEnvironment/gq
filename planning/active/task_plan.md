@@ -47,16 +47,16 @@ template repo is unaffected.
 
 ## Phase 1: Failing relative-order test
 
-- [ ] In `tests/testthat/test-template_drift.R`, add `order_drift(layers, template)` beside
+- [x] In `tests/testthat/test-template_drift.R`, add `order_drift(layers, template)` beside
       `placement_drift()`. For each group path it compares gq's order with the template's,
       on the shared layers only (as the group-order check does). It returns one row per
       group path that disagrees, with both sequences.
-- [ ] Premise test: each of the 7 groups has at least 2 shared layers in each template.
+- [x] Premise test: each of the 7 groups has at least 2 shared layers in each template.
       Otherwise the comparison would pass with nothing compared.
-- [ ] Test "layer order within each group agrees with the template", run per template.
-- [ ] Run it and confirm it is red on the current `groups.csv`, naming exactly the 7 group
+- [x] Test "layer order within each group agrees with the template", run per template.
+- [x] Run it and confirm it is red on the current `groups.csv`, naming exactly the 7 group
       paths in both templates (the guard seen to fire against the real defect).
-- [ ] Alarm test: swap two `Base - misc` rows' `order` in an in-memory copy of
+- [x] Alarm test: swap two `Base - misc` rows' `order` in an in-memory copy of
       `read_template_layers_csv()` and check `order_drift()` reports `Base - misc`. Against
       the real table, after Phase 2, it reports nothing, which shows the test can tell the
       two apart.
