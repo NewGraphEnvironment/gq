@@ -1,6 +1,6 @@
 # What gq copies from rfp, who owns it, and how staleness is caught
 
-**Verified:** 2026-11-05 against rfp v0.93.0 · **Issues:** gq#100 (gq#70, #78, #86, #92) · **Produced by:** in-memory re-extraction with gq's own walkers from a detached rfp worktree at the tag; the corpus sweep in `tests/testthat/test-qml_consistency.R`; a column query against the newgraph database. The story is in `planning/archive/2026-11-issue-100-vendored-artifacts/`.
+**Verified:** 2026-11-05 against rfp v0.93.0; "Known gaps" re-verified 2026-11-15 · **Issues:** gq#100 (gq#70, #78, #86, #92), gq#105 · **Produced by:** in-memory re-extraction with gq's own walkers from a detached rfp worktree at the tag; the corpus sweep in `tests/testthat/test-qml_consistency.R`; a column query against the newgraph database. The story is in `planning/archive/2026-11-issue-100-vendored-artifacts/`.
 
 ## The five copies, and who owns each
 
@@ -36,5 +36,5 @@ Measured over all 60 files at v0.93.0:
 
 ## Known gaps
 
-- Order within a group, and order between sibling subgroups, disagree with the templates. gq cannot express a subgroup's position among its parent's layers, or among its siblings, without a shared order key (gq#105, with the schema questions in gq#104).
+- Order between sibling subgroups, and a subgroup's position among its parent's layers, disagree with the templates: gq cannot express either without an order key shared by layers and subgroups (gq#104). Order *within* a group agrees since gq#105 (2026-11-15), held by `order_drift()` in `tests/testthat/test-template_drift.R`. The witness for the shared key is already vendored: `template_layers.csv`'s `order` and `template_groups.csv`'s depth-2 `order` are one sibling index over a parent's layers and subgroups together, so they have gaps where the other kind sits.
 - `reg_qgis_restoration.json` is also extracted from rfp's template, and no currency check covers it (batch 8, gq#102). At v0.93.0 it matches on 48 of 48 layers except bcfishobs `source_layer`.
