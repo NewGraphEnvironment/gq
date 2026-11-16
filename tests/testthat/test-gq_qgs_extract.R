@@ -297,13 +297,15 @@ test_that("every template label with bufferDraw=1 keeps its halo", {
 })
 
 test_that("a rule switched off is neither taken nor counted", {
-  rules <- function(first_active) xml2::read_xml(paste0(
-    '<maplayer type="vector" geometry="Point" labelsEnabled="1"><labeling type="rule-based"><rules>',
-    '<rule active="', first_active, '"><settings><text-style fieldName="off" isExpression="0"/></settings></rule>',
-    '<rule><settings><text-style fieldName="a" isExpression="0"/></settings></rule>',
-    '<rule><settings><text-style fieldName="b" isExpression="0"/></settings></rule>',
-    '</rules></labeling></maplayer>'
-  ))
+  rules <- function(first_active) {
+    xml2::read_xml(paste0(
+      '<maplayer type="vector" geometry="Point" labelsEnabled="1"><labeling type="rule-based"><rules>',
+      '<rule active="', first_active, '"><settings><text-style fieldName="off" isExpression="0"/></settings></rule>',
+      '<rule><settings><text-style fieldName="a" isExpression="0"/></settings></rule>',
+      '<rule><settings><text-style fieldName="b" isExpression="0"/></settings></rule>',
+      "</rules></labeling></maplayer>"
+    ))
+  }
   off <- parse_labels(rules("0"), "point")
   expect_equal(off$field, "a")
   expect_match(off$note, "2 rules")
@@ -313,29 +315,32 @@ test_that("a rule switched off is neither taken nor counted", {
 })
 
 test_that("a categorized class reads symbol layers as a single symbol does (#103)", {
-  line <- function(color, width, extra = "") paste0(
-    '<layer class="SimpleLine"', extra, '><Option type="Map">',
-    '<Option name="line_color" value="', color, '"/>',
-    '<Option name="line_width" value="', width, '"/></Option></layer>')
+  line <- function(color, width, extra = "") {
+    paste0(
+      '<layer class="SimpleLine"', extra, '><Option type="Map">',
+      '<Option name="line_color" value="', color, '"/>',
+      '<Option name="line_width" value="', width, '"/></Option></layer>'
+    )
+  }
   renderer <- xml2::read_xml(paste0(
     '<renderer-v2 type="categorizedSymbol" attr="code"><categories>',
     '<category value="cased" label="cased" symbol="0"/>',
     '<category value="off" label="off" symbol="1"/>',
     '<category value="stacked" label="stacked" symbol="2"/>',
-    '</categories><symbols>',
+    "</categories><symbols>",
     # casing: a wide grey line under a dashed, half-transparent core
     '<symbol name="0" alpha="1" type="line">', line("156,156,156,255", "2"),
     '<layer class="SimpleLine"><Option type="Map">',
     '<Option name="line_color" value="255,196,133,128"/><Option name="line_width" value="1"/>',
     '<Option name="use_custom_dash" value="1"/><Option name="customdash" value="2;1"/>',
-    '</Option></layer></symbol>',
+    "</Option></layer></symbol>",
     # a disabled first layer is not the class's style
     '<symbol name="1" alpha="1" type="line">', line("255,0,0,255", "3", ' enabled="0"'),
-    line("0,0,255,255", "1"), '</symbol>',
+    line("0,0,255,255", "1"), "</symbol>",
     # a narrow line under a wider one is not a casing
     '<symbol name="2" alpha="1" type="line">', line("0,0,0,255", "1"),
-    line("0,255,0,255", "2"), '</symbol>',
-    '</symbols></renderer-v2>'
+    line("0,255,0,255", "2"), "</symbol>",
+    "</symbols></renderer-v2>"
   ))
   out <- parse_categorized(renderer, "line")
   cls <- out$classification$classes
