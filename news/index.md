@@ -1,6 +1,6 @@
 # Changelog
 
-## gq (development version)
+## gq 0.23.0
 
 - **Layers draw in the templates’ order within each group
   ([\#105](https://github.com/NewGraphEnvironment/gq/issues/105)).**
