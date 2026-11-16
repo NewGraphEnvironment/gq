@@ -105,6 +105,7 @@ Recommended, and taken unless you object at approval:
 ## Owed at the end (reported, done after merge)
 
 - [x] Filed gq#116: draw `casing` and `overlay` in tmap and mapgl (#24's remainder, with the tmap dash limit; MapLibre dasharray is in line-width units and needs butt caps).
+- [x] Filed gq#120: mapgl draws no outline for a polygon with a transparent fill (predates this branch; measured by review round 4).
 - [x] Filed gq#117: a `label_field` column in `reg_custom.csv` for dam, town and planting_site, with source columns measured (review #1).
 - [x] Filed an issue in the conventions repo: the cartography skill's mapgl label recipe passes the registry's raw label size and halo to `add_symbol_layer()`; since decision 5 those are points and mm, so move it to `gq_mapgl_labels()`.
 - [ ] Close #23 with the measurements (done by the merge's `Fixes`, with the comment in the PR body).
@@ -112,10 +113,10 @@ Recommended, and taken unless you object at approval:
 
 ## Validation
 
-- [ ] Tests pass (`devtools::test()`; the gated currency tests with `RFP_TEMPLATE_DIR`/`RFP_LOOKUPS_DIR` set to the the template repo checkout)
-- [ ] `/code-check` clean (once over the branch with `/code-check branch`)
-- [x] `lintr::lint_package()` with no new lints compared with `origin/main` (4 found, fixed); `devtools::check()` clean
-- [ ] PWF checkboxes match landed work
+- [x] Tests pass (`devtools::test()`; the gated currency tests with `RFP_TEMPLATE_DIR`/`RFP_LOOKUPS_DIR` set to the the template repo checkout)
+- [x] `/code-check` clean (once over the branch with `/code-check branch`)
+- [x] `lintr::lint_package()` with no new lints compared with `origin/main` (4 found, fixed); `devtools::check()` clean: Status OK, 0/0/0
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 
 How each change is proved:
