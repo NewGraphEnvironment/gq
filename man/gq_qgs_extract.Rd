@@ -12,8 +12,8 @@ gq_qgs_extract(path)
 \value{
 A list with \code{name}, \code{version}, \code{source}, and \code{layers} elements.
 Each layer contains type, source_layer, fill/stroke/casing/overlay/
-classification/label as applicable, and a \code{note} where QGIS draws
-something the registry does not model.
+classification/label as applicable, and a \code{note} naming any symbol layer
+or renderer it does not model.
 }
 \description{
 Parses a \code{.qgs} project, or a \code{.qlr} layer definition file, and extracts
@@ -23,9 +23,10 @@ formats keep their layers as \verb{<maplayer>} nodes, so one reader serves both.
 }
 \details{
 The registry models what tmap and mapgl can render, not every property QGIS
-stores. What it cannot express (pattern fills, stacked markers, symbol-layer
-pass order) is named in the layer's \code{note}; the QML from \code{\link[=gq_style_qml]{gq_style_qml()}}
-carries it losslessly.
+stores. A symbol layer it cannot express (a pattern fill, a stacked marker)
+and a renderer it does not read are named in the layer's \code{note}. Cap and
+join style and symbol-layer pass order are not read and not noted. The QML
+from \code{\link[=gq_style_qml]{gq_style_qml()}} carries all of it losslessly.
 
 Labels carry the label column as \code{field}, or the raw QGIS expression as
 \code{expression} when the label is computed (\code{concat(...)}, \verb{CASE ...}), never
@@ -36,8 +37,13 @@ for the consumer's data prep: QGIS joins connected lines that share a label
 and skips short features, which tmap and MapLibre cannot do, so dissolve by
 the label field and drop short features before drawing.
 
-A layer's own opacity (\verb{<layerOpacity>}) is folded into every opacity it
-emits, as QGIS composes them.
+A symbol's opacity and the layer's own (\verb{<layerOpacity>}) are folded into
+every opacity the layer emits, as QGIS composes them.
+
+A label's size is recorded in points and its halo width in millimetres,
+converted from QGIS's millimetres or inches where the project uses them. A
+size in pixels, map units or a percentage has no fixed print size, so it is
+left out and the label's \code{note} says so.
 }
 \examples{
 path <- system.file("examples", "mini_project.qgs", package = "gq")

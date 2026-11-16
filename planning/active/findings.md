@@ -74,3 +74,14 @@ Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical
 |-------|------------|
 | Re-extract dropped every label halo | `.//text-buffer` (it nests under `<text-style>`); tests pin the halo and the bufferDraw count |
 | Designed tmap's halo against the installed tmap 4.2.0.9000, which has none | CRAN tmap 4.4-1 (CI's) has `opt_tm_text(halo = TRUE)`; check an installed package against CRAN before designing around a missing feature |
+
+## Branch review: mechanism and closing measurement (2026-11-16)
+
+Rounds 1-4 found the same mechanism each time: one reading rule (which symbol layers count, how opacity composes, what a note names, how the two label translators read the registry) implemented in parallel paths, with each fix reaching only the paths in view. It closed by making the extractor's paths call one `symbol_read()`, then measuring rather than re-reviewing: a 29-row mutation table, all red, and a grep of every layer selection and opacity write.
+
+| round | findings | fixed | accepted | inside previous fix? |
+|---|---|---|---|---|
+| 1 | 5 | 4 | 1 (soul#847) | — |
+| 2 | 4 | 3 | 1 (QML writer silent on pattern fills, documented) | no |
+| 3 | 5 | 5 | 0 | yes (graduated got only half of round 2's fix) |
+| 4 | 4 (+1 outside the diff, gq#120) | 4 | 0 | yes (tick filter, data-defined set, untested guards) |

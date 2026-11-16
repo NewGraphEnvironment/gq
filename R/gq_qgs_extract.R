@@ -6,9 +6,10 @@
 #' formats keep their layers as `<maplayer>` nodes, so one reader serves both.
 #'
 #' The registry models what tmap and mapgl can render, not every property QGIS
-#' stores. What it cannot express (pattern fills, stacked markers, symbol-layer
-#' pass order) is named in the layer's `note`; the QML from [gq_style_qml()]
-#' carries it losslessly.
+#' stores. A symbol layer it cannot express (a pattern fill, a stacked marker)
+#' and a renderer it does not read are named in the layer's `note`. Cap and
+#' join style and symbol-layer pass order are not read and not noted. The QML
+#' from [gq_style_qml()] carries all of it losslessly.
 #'
 #' Labels carry the label column as `field`, or the raw QGIS expression as
 #' `expression` when the label is computed (`concat(...)`, `CASE ...`), never
@@ -19,14 +20,19 @@
 #' and skips short features, which tmap and MapLibre cannot do, so dissolve by
 #' the label field and drop short features before drawing.
 #'
-#' A layer's own opacity (`<layerOpacity>`) is folded into every opacity it
-#' emits, as QGIS composes them.
+#' A symbol's opacity and the layer's own (`<layerOpacity>`) are folded into
+#' every opacity the layer emits, as QGIS composes them.
+#'
+#' A label's size is recorded in points and its halo width in millimetres,
+#' converted from QGIS's millimetres or inches where the project uses them. A
+#' size in pixels, map units or a percentage has no fixed print size, so it is
+#' left out and the label's `note` says so.
 #'
 #' @param path Path to a .qgs or .qlr file.
 #' @return A list with `name`, `version`, `source`, and `layers` elements.
 #'   Each layer contains type, source_layer, fill/stroke/casing/overlay/
-#'   classification/label as applicable, and a `note` where QGIS draws
-#'   something the registry does not model.
+#'   classification/label as applicable, and a `note` naming any symbol layer
+#'   or renderer it does not model.
 #'
 #' @examples
 #' path <- system.file("examples", "mini_project.qgs", package = "gq")
@@ -93,6 +99,11 @@ gq_qgs_extract <- function(path) {
     } else if (renderer_type == "RuleRenderer") {
       entry$renderer <- "rule_based"
       entry$note <- "Rule-based renderer - manual review needed"
+    } else {
+      entry <- note_add(entry, paste0(
+        "renderer ", renderer_type, " not modelled ",
+        "(the QML from gq_style_qml() carries it)"
+      ))
     }
 
     if (color_data_defined(renderer)) {
@@ -154,30 +165,37 @@ note_add <- function(x, msg) {
   x
 }
 
-#' Does any symbol layer take its colour from an active data-defined property?
+#' Does a colour the registry carries come from an active data-defined property?
 #'
 #' A colour driven by an expression overrides the renderer's own, so the
 #' renderer no longer describes what QGIS draws (#38). Only an active property
 #' with an expression or a field counts: QGIS also writes inactive stubs. Only
-#' the drawn symbols' enabled top-level layers are read, as [symbol_read()]
-#' reads them: a categorized renderer's `<source-symbol>` is a template, not
-#' drawn.
+#' the layers [symbol_read()] modelled are read, the overlay's tick marker
+#' included: an expression on a layer the registry does not model overrides
+#' nothing it carries, and a categorized renderer's `<source-symbol>` is a
+#' template, not drawn.
 #' @noRd
 color_data_defined <- function(renderer) {
-  props <- xml2::xml_find_all(
-    renderer,
-    paste0("./symbols/symbol/layer[not(@enabled='0')]/data_defined_properties",
-           "//Option[@name='properties']",
-           "/Option[@name='fillColor' or @name='outlineColor']")
-  )
   dd_val <- function(p, k) {
     v <- xml2::xml_attr(xml2::xml_find_first(p, paste0("./Option[@name='", k, "']")), "value")
     if (is.na(v)) "" else v
   }
-  any(vapply(props, function(p) {
-    identical(dd_val(p, "active"), "true") &&
-      (nzchar(trimws(dd_val(p, "expression"))) || nzchar(trimws(dd_val(p, "field"))))
-  }, logical(1)))
+  node_dd <- function(node) {
+    props <- xml2::xml_find_all(
+      node,
+      paste0("./data_defined_properties//Option[@name='properties']",
+             "/Option[@name='fillColor' or @name='outlineColor']")
+    )
+    any(vapply(props, function(p) {
+      identical(dd_val(p, "active"), "true") &&
+        (nzchar(trimws(dd_val(p, "expression"))) || nzchar(trimws(dd_val(p, "field"))))
+    }, logical(1)))
+  }
+  for (sym in xml2::xml_find_all(renderer, "./symbols/symbol")) {
+    sr <- symbol_read(sym)
+    if (!is.null(sr) && any(vapply(sr$modelled, node_dd, logical(1)))) return(TRUE)
+  }
+  FALSE
 }
 
 #' Convert QGIS RGBA string "r,g,b,a" to hex color
@@ -273,7 +291,7 @@ tick_overlay <- function(marker_line, alpha = 1) {
   if (!identical(own("interval_unit"), "MM")) return(NULL)
   interval <- suppressWarnings(as.numeric(own("interval")))
 
-  marks <- xml2::xml_find_all(marker_line, "./symbol/layer")
+  marks <- xml2::xml_find_all(marker_line, "./symbol/layer[not(@enabled='0')]")
   if (length(marks) != 1) return(NULL)
   mark <- marks[[1]]
   if (!identical(xml2::xml_attr(mark, "class"), "SimpleMarker")) return(NULL)
@@ -316,7 +334,9 @@ tick_overlay <- function(marker_line, alpha = 1) {
 #' `unmodelled` for the caller's note.
 #' @return `NULL` for a symbol with no enabled layer, else a list: `class`,
 #'   `layer` (the first), `core` (the line that carries a line style, the core
-#'   when cased), `alpha`, `casing`, `overlay` and `unmodelled`.
+#'   when cased), `alpha`, `casing`, `overlay`, `unmodelled`, and `modelled`,
+#'   the layer nodes whose colours the registry carries (a tick marker
+#'   included).
 #' @noRd
 symbol_read <- function(sym, layer_opacity = 1) {
   alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1") * layer_opacity
@@ -326,6 +346,7 @@ symbol_read <- function(sym, layer_opacity = 1) {
 
   out <- list(class = classes[1], layer = layers[[1]], core = layers[[1]], alpha = alpha)
   used <- if (classes[1] %in% c("SimpleFill", "SimpleLine", "SimpleMarker")) 1L else integer()
+  tick <- list()
 
   if (length(layers) == 2 && all(classes == "SimpleLine")) {
     under <- opt_num(layers[[1]], "line_width")
@@ -342,11 +363,15 @@ symbol_read <- function(sym, layer_opacity = 1) {
     if (!is.null(overlay)) {
       out$overlay <- overlay
       used <- 1:2
+      # the overlay's colour is the tick marker's, inside the MarkerLine
+      tick <- list(xml2::xml_find_first(layers[[2]], "./symbol/layer[not(@enabled='0')]"))
     }
   }
 
   # Indices, not classes[-used]: a negative empty index selects nothing.
   out$unmodelled <- classes[setdiff(seq_along(classes), used)]
+  # The nodes whose colours the registry carries, for color_data_defined()
+  out$modelled <- c(lapply(used, function(i) layers[[i]]), tick)
   out
 }
 
@@ -601,7 +626,13 @@ parse_labels <- function(layer_node, geom_type = "unknown") {
   text_color <- xml2::xml_attr(font_node, "textColor")
 
   if (!is.na(font_family)) out$font <- font_family
-  if (!is.na(font_size)) out$size <- as.numeric(font_size)
+  unit_notes <- character()
+  size_pt <- print_size(font_size, xml2::xml_attr(font_node, "fontSizeUnit"), "Point", "pt")
+  if (!is.null(size_pt)) {
+    out$size <- size_pt
+  } else if (!is.na(font_size)) {
+    unit_notes <- c(unit_notes, paste0("size in ", xml2::xml_attr(font_node, "fontSizeUnit")))
+  }
   if (identical(font_italic, "1")) out$style <- "italic"
   weight <- label_weight(xml2::xml_attr(font_node, "fontWeight"))
   if (is.null(weight) && identical(xml2::xml_attr(font_node, "fontBold"), "1")) weight <- "bold"
@@ -620,7 +651,13 @@ parse_labels <- function(layer_node, geom_type = "unknown") {
       buf_color <- xml2::xml_attr(buffer_node, "bufferColor")
       halo <- list()
       if (!is.na(buf_color)) halo$color <- rgba_to_hex(buf_color)
-      if (!is.na(buf_size)) halo$width <- as.numeric(buf_size)
+      width_mm <- print_size(buf_size, xml2::xml_attr(buffer_node, "bufferSizeUnits"), "MM", "mm")
+      if (!is.null(width_mm)) {
+        halo$width <- width_mm
+      } else if (!is.na(buf_size)) {
+        unit_notes <- c(unit_notes, paste0("halo width in ",
+                                           xml2::xml_attr(buffer_node, "bufferSizeUnits")))
+      }
       if (length(halo) > 0) out$halo <- halo
     }
   }
@@ -638,11 +675,35 @@ parse_labels <- function(layer_node, geom_type = "unknown") {
   if (!is.na(min_size) && min_size > 0) out$min_feature_size <- min_size
 
   if (length(settings) > 1) {
-    out$note <- paste0("rule-based labelling: ", length(settings),
-                       " rules, the first taken")
+    out <- note_add(out, paste0("rule-based labelling: ", length(settings),
+                                " rules, the first taken"))
+  }
+  if (length(unit_notes)) {
+    out <- note_add(out, paste0(paste(unit_notes, collapse = " and "),
+                                ", which has no print size, left out"))
   }
 
   out
+}
+
+#' A QGIS size in a print unit, as points or millimetres
+#'
+#' QGIS writes each size with a unit, and the translators read the registry's
+#' label size as points and its halo width as millimetres. Millimetres, points
+#' and inches convert; pixels, map units and percentages have no print size,
+#' so they return `NULL`. An absent unit is QGIS's default for that size.
+#' @noRd
+print_size <- function(value, unit, default_unit, to = c("pt", "mm")) {
+  to <- match.arg(to)
+  v <- suppressWarnings(as.numeric(value))
+  if (length(v) != 1 || is.na(v)) return(NULL)
+  if (is.na(unit) || !nzchar(unit)) unit <- default_unit
+  mm_per <- c(MM = 1, Point = 25.4 / 72, Inch = 25.4)
+  if (!unit %in% names(mm_per)) return(NULL)
+  # Already in the unit asked for: no round trip through millimetres
+  if ((to == "pt" && unit == "Point") || (to == "mm" && unit == "MM")) return(v)
+  mm <- v * mm_per[[unit]]
+  if (to == "mm") mm else mm * 72 / 25.4
 }
 
 # base R null coalesce

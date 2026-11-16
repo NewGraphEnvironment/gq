@@ -427,3 +427,121 @@ test_that("a data-defined colour on a disabled layer is not flagged", {
   expect_true(color_data_defined(renderer("1")))
   expect_false(color_data_defined(renderer("0")))
 })
+
+# --- round 4: what the round-3 guards did not yet pin ------------------------
+
+test_that("a label size or halo in a print unit converts, and one without is left out", {
+  expect_equal(print_size("10", "Point", "Point", "pt"), 10)
+  expect_equal(print_size("0.3", NA, "MM", "mm"), 0.3)
+  expect_equal(print_size("1", "Inch", "Point", "pt"), 72)
+  expect_equal(print_size("3.5277777", "MM", "Point", "pt"), 10, tolerance = 1e-6)
+  expect_null(print_size("3", "Pixel", "MM", "mm"))
+  expect_null(print_size("3", "MapUnit", "Point", "pt"))
+
+  layer <- xml2::read_xml(paste0(
+    '<maplayer type="vector" geometry="Point" labelsEnabled="1"><labeling type="simple">',
+    '<settings><text-style fieldName="n" isExpression="0" fontSize="12" fontSizeUnit="Pixel">',
+    '<text-buffer bufferDraw="1" bufferSize="1" bufferSizeUnits="MM" bufferColor="255,255,255,255"/>',
+    "</text-style></settings></labeling></maplayer>"
+  ))
+  lab <- parse_labels(layer, "point")
+  expect_null(lab$size)
+  expect_equal(lab$halo$width, 1)
+  expect_match(lab$note, "size in Pixel")
+})
+
+tick_symbol <- function(sub_alpha = "1", tick_alpha = "255", enabled = "1", dd = "") {
+  paste0(
+    '<symbol name="0" alpha="1" type="line">',
+    '<layer class="SimpleLine"><Option type="Map"><Option name="line_color" value="0,0,0,255"/>',
+    '<Option name="line_width" value="0.4"/></Option></layer>',
+    '<layer class="MarkerLine"><Option type="Map"><Option name="placements" value="Interval"/>',
+    '<Option name="rotate" value="1"/><Option name="interval" value="3"/>',
+    '<Option name="interval_unit" value="MM"/></Option>',
+    '<symbol name="@0@1" alpha="', sub_alpha, '" type="marker">',
+    '<layer class="SimpleMarker" enabled="', enabled, '"><Option type="Map">',
+    '<Option name="name" value="line"/><Option name="angle" value="0"/>',
+    '<Option name="size" value="2.4"/><Option name="size_unit" value="MM"/>',
+    '<Option name="outline_color" value="0,0,0,', tick_alpha, '"/>',
+    '<Option name="outline_width" value="0.2"/><Option name="outline_width_unit" value="MM"/>',
+    "</Option>", dd, "</layer></symbol></layer></symbol>"
+  )
+}
+single_renderer <- function(sym) {
+  xml2::read_xml(paste0('<renderer-v2 type="singleSymbol"><symbols>', sym, "</symbols></renderer-v2>"))
+}
+
+test_that("the tick overlay takes the ticks' own and their colour's opacity", {
+  expect_null(parse_single_symbol(single_renderer(tick_symbol()), "line")$overlay$opacity)
+  expect_equal(parse_single_symbol(single_renderer(tick_symbol(sub_alpha = "0.5")), "line")$overlay$opacity, 0.5)
+  expect_equal(parse_single_symbol(single_renderer(tick_symbol(tick_alpha = "51")), "line")$overlay$opacity, 0.2)
+})
+
+test_that("a disabled tick marker makes no overlay", {
+  out <- parse_single_symbol(single_renderer(tick_symbol(enabled = "0")), "line")
+  expect_null(out$overlay)
+  expect_match(out$note, "MarkerLine")
+})
+
+test_that("a polygon outline takes its own colour's opacity", {
+  fill <- function(outline_alpha) {
+    single_renderer(paste0(
+      '<symbol name="0" alpha="1" type="fill"><layer class="SimpleFill"><Option type="Map">',
+      '<Option name="color" value="200,200,200,255"/>',
+      '<Option name="outline_color" value="0,0,0,', outline_alpha, '"/>',
+      '<Option name="outline_width" value="0.26"/></Option></layer></symbol>'
+    ))
+  }
+  expect_null(parse_single_symbol(fill("255"), "polygon")$stroke$opacity)
+  expect_equal(parse_single_symbol(fill("51"), "polygon")$stroke$opacity, 0.2)
+})
+
+dd_colour <- paste0(
+  '<data_defined_properties><Option type="Map"><Option name="properties" type="Map">',
+  '<Option name="outlineColor" type="Map"><Option name="active" value="true"/>',
+  '<Option name="expression" value="\'#ff0000\'"/></Option></Option></Option>',
+  "</data_defined_properties>"
+)
+
+test_that("the data-defined scan reads the layers the registry models, and only those", {
+  # on the tick marker, whose colour is the overlay's: flagged
+  expect_true(color_data_defined(single_renderer(tick_symbol(dd = dd_colour))))
+  # on a layer the registry does not model (a hatch): not flagged
+  hatch <- paste0(
+    '<symbol name="0" alpha="1" type="fill"><layer class="SimpleFill"><Option type="Map">',
+    '<Option name="color" value="200,200,200,255"/></Option></layer>',
+    '<layer class="LinePatternFill">', dd_colour, "</layer></symbol>"
+  )
+  expect_false(color_data_defined(single_renderer(hatch)))
+  # on a categorized renderer's source-symbol, which is not drawn: not flagged
+  src <- xml2::read_xml(paste0(
+    '<renderer-v2 type="categorizedSymbol" attr="a"><symbols>',
+    '<symbol name="0" alpha="1" type="line">', simple_line("0,0,0,255", "1"), "</symbol>",
+    '</symbols><source-symbol><symbol name="0" alpha="1" type="line">',
+    '<layer class="SimpleLine">', dd_colour, "</layer></symbol></source-symbol></renderer-v2>"
+  ))
+  expect_false(color_data_defined(src))
+})
+
+test_that("a class overlay is named, since a class has no overlay field", {
+  renderer <- xml2::read_xml(paste0(
+    '<renderer-v2 type="categorizedSymbol" attr="a"><categories>',
+    '<category value="x" label="x" symbol="0"/></categories><symbols>',
+    tick_symbol(), "</symbols></renderer-v2>"
+  ))
+  out <- parse_categorized(renderer, "line")
+  expect_match(out$note, "class symbol layers not modelled: MarkerLine")
+})
+
+test_that("a renderer the extractor does not read is named in the note", {
+  doc <- xml2::read_xml(paste0(
+    "<qgis><projectlayers>",
+    '<maplayer type="vector" geometry="Point"><layername>Heat</layername>',
+    "<datasource>x.gpkg|layername=s.t</datasource>",
+    '<renderer-v2 type="heatmapRenderer"/></maplayer>',
+    "</projectlayers></qgis>"
+  ))
+  f <- tempfile(fileext = ".qgs")
+  xml2::write_xml(doc, f)
+  expect_match(gq_qgs_extract(f)$layers$heat$note, "renderer heatmapRenderer not modelled")
+})
