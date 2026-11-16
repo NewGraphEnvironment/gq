@@ -1,3 +1,16 @@
+# gq 0.24.0
+
+- **The registry carries labels, casing, the railway's ticks and layer opacity as QGIS
+  draws them, and maps can take their labels from it (#103).** `gq_qgs_extract()` reads
+  each label's column, or keeps a computed label as `label.expression`, with its weight,
+  placement and halo (#6). It reads a casing beneath a line and the railway's ticks as an
+  `overlay` (#24), and folds `<layerOpacity>` into every opacity (#38). `.qlr` files are
+  pinned by a test (#23). `gq_tmap_labels()` and `gq_mapgl_labels()` turn a registry label
+  into `tm_text()` and `add_symbol_layer()` arguments (#7), and both vignettes now take
+  their labels from the registry. Registry label sizes are now points and halos
+  millimetres, so the town label reads 9 rather than 12. `gq_mapgl_labels()` converts
+  them back to the same pixels. Suggests now asks for tmap 4.3 or later, for its halo.
+
 # gq 0.23.0
 
 - **Layers draw in the templates' order within each group (#105).** `groups.csv`'s
