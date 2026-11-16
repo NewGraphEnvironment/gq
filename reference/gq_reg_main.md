@@ -97,4 +97,7 @@ gq_tmap_style(gq_reg_main()$layers$lake)
 #> $lwd
 #> [1] 0.2
 #> 
+#> $col_alpha
+#> [1] 0.7
+#> 
 ```

@@ -67,7 +67,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Getting started with gq</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.23.0/vignettes/gq-intro.Rmd" class="external-link"><code>vignettes/gq-intro.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/vignettes/gq-intro.Rmd" class="external-link"><code>vignettes/gq-intro.Rmd</code></a></small>
       <div class="d-none name"><code>gq-intro.Rmd</code></div>
     </div>
 
@@ -112,7 +112,38 @@ with the package:</p>
 <span><span class="co">#&gt; [1] "#1f78b4"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stroke$width</span></span>
-<span><span class="co">#&gt; [1] 0.2</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $stroke$opacity</span></span>
+<span><span class="co">#&gt; [1] 0.7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label</span></span>
+<span><span class="co">#&gt; $label$field</span></span>
+<span><span class="co">#&gt; [1] "gnis_name_1"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$font</span></span>
+<span><span class="co">#&gt; [1] "Helvetica"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$size</span></span>
+<span><span class="co">#&gt; [1] 10</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$style</span></span>
+<span><span class="co">#&gt; [1] "italic"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$color</span></span>
+<span><span class="co">#&gt; [1] "#1f78b4"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$halo</span></span>
+<span><span class="co">#&gt; $label$halo$color</span></span>
+<span><span class="co">#&gt; [1] "#ffffff"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$halo$width</span></span>
+<span><span class="co">#&gt; [1] 0.3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $label$placement</span></span>
+<span><span class="co">#&gt; [1] "around_point"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="real-data-bittner-creek">Real data: Bittner Creek<a class="anchor" aria-label="anchor" href="#real-data-bittner-creek"></a>
@@ -206,7 +237,6 @@ does.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stream_sty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_style.html">gq_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"streams_all"</span><span class="op">)</span></span>
 <span><span class="va">railway_sty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_style.html">gq_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"railway"</span><span class="op">)</span></span>
-<span><span class="va">label_sty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_style.html">gq_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"stream_labels"</span><span class="op">)</span><span class="op">$</span><span class="va">label</span></span>
 <span><span class="co"># The stream class every bundled segment is drawn as: the data carries no</span></span>
 <span><span class="co"># feature code, so one class stands for them all, and the legend says so.</span></span>
 <span><span class="va">stream_key</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">stream_sty</span><span class="op">$</span><span class="va">classification</span><span class="op">$</span><span class="va">values</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -237,8 +267,9 @@ does.</p>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">roads</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_lines</span>, <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"roads_dra"</span>, field <span class="op">=</span> <span class="st">"road_type"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co"># Railway: the registry carries the black line; the white dashed overlay QGIS</span></span>
-<span><span class="co"># draws on it is a second symbol layer the registry does not model yet.</span></span>
+<span><span class="co"># Railway: the registry carries the black line, and QGIS's ticks across it as</span></span>
+<span><span class="co"># `overlay`, a wide line dashed tick-thick. tmap cannot dash a line thinner than</span></span>
+<span><span class="co"># it is wide, so this map marks the railway with white dashes instead.</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">railway</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">railway</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_lines.html" class="external-link">tm_lines</a></span><span class="op">(</span>col <span class="op">=</span> <span class="va">railway_sty</span><span class="op">$</span><span class="va">stroke</span><span class="op">$</span><span class="va">color</span>,</span>
@@ -246,12 +277,13 @@ does.</p>
 <span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">railway</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_lines.html" class="external-link">tm_lines</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"white"</span>, lwd <span class="op">=</span> <span class="va">railway_sty</span><span class="op">$</span><span class="va">stroke</span><span class="op">$</span><span class="va">width</span> <span class="op">*</span> <span class="fl">1.5</span>, lty <span class="op">=</span> <span class="st">"42"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co"># Stream names from the registry: column, size, colour, italic and halo, set</span></span>
+<span><span class="co"># along the stream. One feature per name, as QGIS's merge_lines asks.</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="va">m</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">pscis_aoi</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_dots</span>, <span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"crossings_pscis_assessment"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">stream_labels</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text</a></span><span class="op">(</span><span class="st">"gnis_name"</span>, size <span class="op">=</span> <span class="fl">0.6</span>, col <span class="op">=</span> <span class="va">label_sty</span><span class="op">$</span><span class="va">color</span>, fontface <span class="op">=</span> <span class="st">"italic"</span>,</span>
-<span>          options <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">opt_tm_text</a></span><span class="op">(</span>shadow <span class="op">=</span> <span class="cn">TRUE</span>, remove_overlap <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">tm_text</span>, <span class="fu"><a href="../reference/gq_tmap_labels.html">gq_tmap_labels</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"stream_labels"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The legend is built from the registry, cut to the classes the frame shows.</span></span>
 <span><span class="va">leg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gq_tmap_legend.html">gq_tmap_legend</a></span><span class="op">(</span></span>
@@ -312,14 +344,14 @@ straight from the gq registry, and the streams and railway take their
 colours from it.
 </p>
 </div>
-<p>The crossings, roads and lakes on that map are drawn straight from
-the registry, and the streams and railway take their colours from it, so
-they match the QGIS project the field crews use: red for a barrier,
-green for passable, orange for a potential barrier and purple for
-unknown are the values QGIS draws. The watershed outline, the shading
-outside it and the railway’s white dashes are set by hand, because the
-registry has no entry for the first two and does not model the dashes
-yet.</p>
+<p>The crossings, roads, lakes and stream names on that map are drawn
+straight from the registry, and the streams and railway take their
+colours from it, so they match the QGIS project the field crews use: red
+for a barrier, green for passable, orange for a potential barrier and
+purple for unknown are the values QGIS draws. The watershed outline, the
+shading outside it and the railway’s white dashes are set by hand: the
+registry has no entry for the first two, and QGIS’s ticks across the
+railway, which the registry carries, are thinner than tmap can dash.</p>
 </div>
 <div class="section level2">
 <h2 id="how-the-translation-works">How the translation works<a class="anchor" aria-label="anchor" href="#how-the-translation-works"></a>
@@ -339,6 +371,9 @@ argument names:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $lwd</span></span>
 <span><span class="co">#&gt; [1] 0.2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $col_alpha</span></span>
+<span><span class="co">#&gt; [1] 0.7</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/gq_tmap_style.html">gq_tmap_style</a></span><span class="op">(</span><span class="va">reg</span>, <span class="st">"railway"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $col</span></span>

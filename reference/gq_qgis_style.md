@@ -56,9 +56,10 @@ with
 
 For a layer gq ships a QML for, prefer
 [`gq_style_qml()`](https://newgraphenvironment.github.io/gq/reference/gq_style_qml.md):
-that file is what QGIS itself wrote, and carries what the registry does
-not model (labels, multi-layer symbols, casing, scale-dependent
-rendering). This function writes only what the registry holds.
+that file is what QGIS itself wrote, and carries what this function does
+not write (labels, multi-layer symbols, casing, scale-dependent
+rendering). This function writes only what the registry holds, less
+those.
 
 What each registry property becomes:
 
@@ -80,10 +81,10 @@ What each registry property becomes:
   when the registry has them, else the layer's `stroke`, else no
   outline.
 
-Not written: labels, a line's `overlay` (a warning says so), and point
-and raster layers, which error. An unclassified layer the registry gives
-no fill or stroke colour (one whose QGIS symbol it could not model)
-errors too.
+Not written: labels, a line's `overlay` and `casing` (a warning names
+each), and point and raster layers, which error. An unclassified layer
+the registry gives no fill or stroke colour (one whose QGIS symbol it
+could not model) errors too.
 
 ## See also
 

@@ -42,7 +42,7 @@ per class; an unclassified one becomes a single-symbol renderer."><meta property
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Translate a registry layer style to a QGIS QML document</h1>
-      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.23.0/R/gq_qgis_style.R" class="external-link"><code>R/gq_qgis_style.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/R/gq_qgis_style.R" class="external-link"><code>R/gq_qgis_style.R</code></a></small>
       <div class="d-none name"><code>gq_qgis_style.Rd</code></div>
     </div>
 
@@ -99,9 +99,9 @@ with <code><a href="gq_gpkg_style_write.html">gq_gpkg_style_write()</a></code>.<
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>For a layer gq ships a QML for, prefer <code><a href="gq_style_qml.html">gq_style_qml()</a></code>: that file is what
-QGIS itself wrote, and carries what the registry does not model (labels,
+QGIS itself wrote, and carries what this function does not write (labels,
 multi-layer symbols, casing, scale-dependent rendering). This function writes
-only what the registry holds.</p>
+only what the registry holds, less those.</p>
 <p>What each registry property becomes:</p><ul><li><p>class value and label: a <code>&lt;category&gt;</code>'s <code>value</code> and <code>label</code>;</p></li>
 <li><p>colour: QGIS's <code>r,g,b,a</code> form, from hex or an R colour name;</p></li>
 <li><p>line width and polygon outline width: millimetres, as the registry holds
@@ -113,8 +113,8 @@ alpha of each colour (to the nearest 1/255), so the two can differ as the
 registry allows;</p></li>
 <li><p>a polygon class's outline: its own <code>outline_color</code> and <code>outline_width</code>
 when the registry has them, else the layer's <code>stroke</code>, else no outline.</p></li>
-</ul><p>Not written: labels, a line's <code>overlay</code> (a warning says so), and point and
-raster layers, which error. An unclassified layer the registry gives no fill
+</ul><p>Not written: labels, a line's <code>overlay</code> and <code>casing</code> (a warning names each),
+and point and raster layers, which error. An unclassified layer the registry gives no fill
 or stroke colour (one whose QGIS symbol it could not model) errors too.</p>
     </div>
     <div class="section level2">

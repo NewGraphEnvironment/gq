@@ -184,6 +184,8 @@ MIT (see
   : Get a MapLibre match expression for a classified layer
 - [`gq_mapgl_controls()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_controls.md)
   : Add navigation, a scale bar and a layer switch to a MapLibre GL map
+- [`gq_mapgl_labels()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_labels.md)
+  : Translate a registry label to mapgl symbol-layer arguments
 - [`gq_mapgl_layer()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_layer.md)
   : Add a styled layer and its legend to a MapLibre GL map
 - [`gq_mapgl_network()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_network.md)
@@ -233,6 +235,8 @@ MIT (see
   : Get classification info for tmap scale functions
 - [`gq_tmap_keymap()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_keymap.md)
   : Build an overview keymap and the viewport to place it in
+- [`gq_tmap_labels()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_labels.md)
+  : Translate a registry label to tmap text arguments
 - [`gq_tmap_legend()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_legend.md)
   : Build tmap legend arguments from registry layers
 - [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)

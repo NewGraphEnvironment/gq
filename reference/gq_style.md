@@ -45,6 +45,14 @@ classes. `dashes` holds the raw QGIS dash value (named style like "dash
 dot", or custom pattern like "0.66;2") for classes that are dashed.
 `opacities` is `NA` for a class the registry gives no opacity, which
 means opaque: the extractor records opacity only when it is below 1.
+`casing_colors` and `casing_widths` are present when any class is cased
+(a wider line drawn beneath it), `NA` for a class that is not;
+`outline_colors`, `outline_widths` and `outline_opacities` likewise for
+a polygon class's outline. A simple layer passes `casing` and `overlay`
+through as the registry holds them, and any layer its `label`. No
+translator draws casing or overlay yet: draw each as its own layer, the
+casing beneath its core, and beneath every core where the layer's
+casings should not cross (QGIS's symbol levels, as on `roads_dra`).
 
 ## Examples
 

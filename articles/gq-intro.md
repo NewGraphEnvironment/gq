@@ -43,6 +43,37 @@ gq_style(reg, "lake")
 #> 
 #> $stroke$width
 #> [1] 0.2
+#> 
+#> $stroke$opacity
+#> [1] 0.7
+#> 
+#> 
+#> $label
+#> $label$field
+#> [1] "gnis_name_1"
+#> 
+#> $label$font
+#> [1] "Helvetica"
+#> 
+#> $label$size
+#> [1] 10
+#> 
+#> $label$style
+#> [1] "italic"
+#> 
+#> $label$color
+#> [1] "#1f78b4"
+#> 
+#> $label$halo
+#> $label$halo$color
+#> [1] "#ffffff"
+#> 
+#> $label$halo$width
+#> [1] 0.3
+#> 
+#> 
+#> $label$placement
+#> [1] "around_point"
 ```
 
 ## Real data: Bittner Creek
@@ -143,7 +174,6 @@ stream_labels <- do.call(rbind, lapply(split(named, named$gnis_name), function(x
 
 stream_sty <- gq_style(reg, "streams_all")
 railway_sty <- gq_style(reg, "railway")
-label_sty <- gq_style(reg, "stream_labels")$label
 # The stream class every bundled segment is drawn as: the data carries no
 # feature code, so one class stands for them all, and the legend says so.
 stream_key <- names(stream_sty$classification$values)[[1]]
@@ -174,8 +204,9 @@ if (!is.null(roads)) {
   m <- m + tm_shape(roads) +
     do.call(tm_lines, gq_tmap_style(reg, "roads_dra", field = "road_type"))
 }
-# Railway: the registry carries the black line; the white dashed overlay QGIS
-# draws on it is a second symbol layer the registry does not model yet.
+# Railway: the registry carries the black line, and QGIS's ticks across it as
+# `overlay`, a wide line dashed tick-thick. tmap cannot dash a line thinner than
+# it is wide, so this map marks the railway with white dashes instead.
 if (!is.null(railway)) {
   m <- m + tm_shape(railway) +
     tm_lines(col = railway_sty$stroke$color,
@@ -183,12 +214,13 @@ if (!is.null(railway)) {
   tm_shape(railway) +
     tm_lines(col = "white", lwd = railway_sty$stroke$width * 1.5, lty = "42")
 }
+# Stream names from the registry: column, size, colour, italic and halo, set
+# along the stream. One feature per name, as QGIS's merge_lines asks.
 m <- m +
 tm_shape(pscis_aoi) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment")) +
 tm_shape(stream_labels) +
-  tm_text("gnis_name", size = 0.6, col = label_sty$color, fontface = "italic",
-          options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
+  do.call(tm_text, gq_tmap_labels(reg, "stream_labels"))
 
 # The legend is built from the registry, cut to the classes the frame shows.
 leg <- gq_tmap_legend(
@@ -254,14 +286,14 @@ classified by barrier status. The crossings, roads and lakes are drawn
 straight from the gq registry, and the streams and railway take their
 colours from it.
 
-The crossings, roads and lakes on that map are drawn straight from the
-registry, and the streams and railway take their colours from it, so
-they match the QGIS project the field crews use: red for a barrier,
-green for passable, orange for a potential barrier and purple for
-unknown are the values QGIS draws. The watershed outline, the shading
-outside it and the railway’s white dashes are set by hand, because the
-registry has no entry for the first two and does not model the dashes
-yet.
+The crossings, roads, lakes and stream names on that map are drawn
+straight from the registry, and the streams and railway take their
+colours from it, so they match the QGIS project the field crews use: red
+for a barrier, green for passable, orange for a potential barrier and
+purple for unknown are the values QGIS draws. The watershed outline, the
+shading outside it and the railway’s white dashes are set by hand: the
+registry has no entry for the first two, and QGIS’s ticks across the
+railway, which the registry carries, are thinner than tmap can dash.
 
 ## How the translation works
 
@@ -282,6 +314,9 @@ gq_tmap_style(reg, "lake")
 #> 
 #> $lwd
 #> [1] 0.2
+#> 
+#> $col_alpha
+#> [1] 0.7
 
 gq_tmap_style(reg, "railway")
 #> $col

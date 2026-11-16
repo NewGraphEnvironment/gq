@@ -75,6 +75,37 @@ gq_style(reg, "lake")
 #> 
 #> $stroke$width
 #> [1] 0.2
+#> 
+#> $stroke$opacity
+#> [1] 0.7
+#> 
+#> 
+#> $label
+#> $label$field
+#> [1] "gnis_name_1"
+#> 
+#> $label$font
+#> [1] "Helvetica"
+#> 
+#> $label$size
+#> [1] 10
+#> 
+#> $label$style
+#> [1] "italic"
+#> 
+#> $label$color
+#> [1] "#1f78b4"
+#> 
+#> $label$halo
+#> $label$halo$color
+#> [1] "#ffffff"
+#> 
+#> $label$halo$width
+#> [1] 0.3
+#> 
+#> 
+#> $label$placement
+#> [1] "around_point"
 gq_style(reg, "railway")
 #> $type
 #> [1] "line"
@@ -85,6 +116,17 @@ gq_style(reg, "railway")
 #> 
 #> $stroke$width
 #> [1] 0.4
+#> 
+#> 
+#> $overlay
+#> $overlay$color
+#> [1] "#000000"
+#> 
+#> $overlay$width
+#> [1] 2.4
+#> 
+#> $overlay$dash
+#> [1] "0.2;2.8"
 
 # gq_tmap_style() wraps gq_style() with tmap-specific args
 # For classified layers it wires up tm_scale_categorical() automatically
@@ -402,7 +444,6 @@ stream_sty <- gq_style(reg, "streams_all")
 railway_sty <- gq_style(reg, "railway")
 fish_sty <- gq_style(reg, "bcfishobs_fiss_fish_observations")
 falls_sty <- gq_style(reg, "fiss_obstacles")
-lake_sty <- gq_style(reg, "lake")
 
 # Polygon layers — do.call() with gq_tmap_style() directly
 # Contain the AOI. Without this, inside and outside the watershed render
@@ -449,12 +490,9 @@ m <- m +
 tm_shape(neexdzii_lakes) +
   do.call(tm_polygons, gq_tmap_style(reg, "lake"))
 
-# Lake labels — color from registry
+# Lake labels — column, size, colour, italic and halo from the registry
 if (nrow(lakes_named) > 0) {
-  m <- m + tm_shape(lakes_named) +
-    tm_text("gnis_name_1", size = 0.7, col = lake_sty$stroke$color,
-            fontface = "italic",
-            options = opt_tm_text(shadow = TRUE))
+  m <- m + tm_shape(lakes_named) + do.call(tm_text, gq_tmap_labels(reg, "lake"))
 }
 
 # Roads — classified by transport_line_type_code, bundled data column is
@@ -463,7 +501,8 @@ m <- m +
 tm_shape(neexdzii_roads) +
   do.call(tm_lines, gq_tmap_style(reg, "roads_dra", field = "road_type"))
 
-# Railway — base + white dashed overlay, colors from registry
+# Railway — the registry's black line. QGIS draws ticks across it (the
+# registry's `overlay`), thinner than tmap can dash, so white dashes stand in.
 if (nrow(neexdzii_railway) > 0) {
   m <- m + tm_shape(neexdzii_railway) +
     tm_lines(col = railway_sty$stroke$color,
@@ -512,11 +551,11 @@ if (nrow(neexdzii_falls) > 0) {
     do.call(tm_symbols, c(falls_args, list(col = falls_sty$mark$color)))
 }
 
-# Stream labels
+# Stream labels — one feature per name, as QGIS's merge_lines asks, then the
+# registry's label along the stream
 if (nrow(stream_labels) > 0) {
   m <- m + tm_shape(stream_labels) +
-    tm_text("gnis_name", size = 0.65, fontface = "italic", col = "#1a5276",
-            options = opt_tm_text(shadow = TRUE, remove_overlap = TRUE))
+    do.call(tm_text, gq_tmap_labels(reg, "stream_labels"))
 }
 
 # Legends from the registry. gq_tmap_legend() partitions by geometry type,
@@ -646,13 +685,16 @@ gq registry.
 
 Every registry layer on this map traces back to
 [`gq_reg_main()`](https://newgraphenvironment.github.io/gq/reference/gq_reg_main.md);
-the watershed outline, the shading outside it and the label colour are
-set by hand:
+the watershed outline and the shading outside it are set by hand:
 
 - **Simple layers** (lake, wetland) use `gq_tmap_style(reg, "name")`
-  directly. Streams and railway are drawn by hand because each needs
-  something the registry does not model — one class pulled out of a
-  classified layer, and a white casing over a black line
+  directly. Streams and railway are drawn by hand: one class pulled out
+  of a classified layer, and white dashes standing in for the ticks QGIS
+  draws across the railway, which the registry carries as `overlay` but
+  tmap cannot dash that thin
+- **Labels** (lakes, streams) use
+  `do.call(tm_text, gq_tmap_labels(reg, "name"))`, the registry’s
+  column, size, colour and slant with tmap’s halo
 - **Classified layers** (crossings, roads, habitat) use
   [`do.call()`](https://rdrr.io/r/base/do.call.html) with
   [`gq_tmap_style()`](https://newgraphenvironment.github.io/gq/reference/gq_tmap_style.md)
