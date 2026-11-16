@@ -1,11 +1,38 @@
 #' Extract layer styles from a QGIS project file
 #'
-#' Parses a .qgs XML file and extracts symbology (fill, stroke, classification,
-#' labels) for all vector layers into a list suitable for writing to registry.json.
+#' Parses a `.qgs` project, or a `.qlr` layer definition file, and extracts
+#' symbology (fill, stroke, casing, overlay, classification, labels) for all
+#' vector layers into a list suitable for writing to registry.json. Both
+#' formats keep their layers as `<maplayer>` nodes, so one reader serves both.
 #'
-#' @param path Path to a .qgs file.
+#' The registry models what tmap and mapgl can render, not every property QGIS
+#' stores. A symbol layer it cannot express (a pattern fill, a stacked marker)
+#' and a renderer it does not read are named in the layer's `note`. Cap and
+#' join style and symbol-layer pass order are not read and not noted. The QML
+#' from [gq_style_qml()] carries all of it losslessly.
+#'
+#' Labels carry the label column as `field`, or the raw QGIS expression as
+#' `expression` when the label is computed (`concat(...)`, `CASE ...`), never
+#' both, so a consumer reading `field` as a column cannot be handed an
+#' expression. `placement` is QGIS's placement mode as a word (`"line"`,
+#' `"around_point"`, ...). `merge_lines` and `min_feature_size` (mm) are hints
+#' for the consumer's data prep: QGIS joins connected lines that share a label
+#' and skips short features, which tmap and MapLibre cannot do, so dissolve by
+#' the label field and drop short features before drawing.
+#'
+#' A symbol's opacity and the layer's own (`<layerOpacity>`) are folded into
+#' every opacity the layer emits, as QGIS composes them.
+#'
+#' A label's size is recorded in points and its halo width in millimetres,
+#' converted from QGIS's millimetres or inches where the project uses them. A
+#' size in pixels, map units or a percentage has no fixed print size, so it is
+#' left out and the label's `note` says so.
+#'
+#' @param path Path to a .qgs or .qlr file.
 #' @return A list with `name`, `version`, `source`, and `layers` elements.
-#'   Each layer contains type, source_layer, fill/stroke/classification/label as applicable.
+#'   Each layer contains type, source_layer, fill/stroke/casing/overlay/
+#'   classification/label as applicable, and a `note` naming any symbol layer
+#'   or renderer it does not model.
 #'
 #' @examples
 #' path <- system.file("examples", "mini_project.qgs", package = "gq")
@@ -20,7 +47,7 @@
 #' # Categorized layer — classification field and per-class colors
 #' reg$layers$roads$classification
 #'
-#' # Labels — font, size, weight, halo all captured
+#' # Labels — field, font, size, weight, halo all captured
 #' reg$layers$roads$label
 #'
 #' @export
@@ -42,9 +69,7 @@ gq_qgs_extract <- function(path) {
     datasource <- xml2::xml_text(xml2::xml_find_first(layer_node, ".//datasource"))
     geom <- xml2::xml_attr(layer_node, "geometry")
 
-    # extract source layer name from datasource string
-    source_layer <- sub(".*layername=([^|]+).*", "\\1", datasource)
-    if (source_layer == datasource) source_layer <- NA_character_
+    source_layer <- datasource_layer(datasource)
 
     geom_type <- switch(tolower(geom %||% ""),
       polygon = "polygon",
@@ -60,25 +85,42 @@ gq_qgs_extract <- function(path) {
     if (is.na(renderer)) next
 
     renderer_type <- xml2::xml_attr(renderer, "type")
+    layer_opacity <- layer_opacity_read(layer_node)
 
     entry <- list(type = geom_type)
     if (!is.na(source_layer)) entry$source_layer <- source_layer
 
     if (renderer_type == "singleSymbol") {
-      entry <- c(entry, parse_single_symbol(renderer, geom_type))
+      entry <- c(entry, parse_single_symbol(renderer, geom_type, layer_opacity))
     } else if (renderer_type == "categorizedSymbol") {
-      entry <- c(entry, parse_categorized(renderer, geom_type))
+      entry <- c(entry, parse_categorized(renderer, geom_type, layer_opacity))
     } else if (renderer_type == "graduatedSymbol") {
-      entry <- c(entry, parse_graduated(renderer, geom_type))
+      entry <- c(entry, parse_graduated(renderer, geom_type, layer_opacity))
     } else if (renderer_type == "RuleRenderer") {
       entry$renderer <- "rule_based"
       entry$note <- "Rule-based renderer - manual review needed"
+    } else {
+      entry <- note_add(entry, paste0(
+        "renderer ", renderer_type, " not modelled ",
+        "(the QML from gq_style_qml() carries it)"
+      ))
+    }
+
+    if (color_data_defined(renderer)) {
+      # Worded for every case: QGIS draws the expression's colour wherever it
+      # evaluates and the symbol's own where it does not, which includes an
+      # expression that fails to parse, as the restoration template's streams
+      # layers' does (every `IN ()` list is empty).
+      entry <- note_add(entry, paste(
+        "colour has an active data-defined expression (fillColor/outlineColor):",
+        "QGIS draws its colour instead of these wherever it evaluates"
+      ))
     }
 
     # labels
     labels_enabled <- xml2::xml_attr(layer_node, "labelsEnabled")
     if (identical(labels_enabled, "1")) {
-      label_info <- parse_labels(layer_node)
+      label_info <- parse_labels(layer_node, geom_type)
       if (length(label_info) > 0) entry$label <- label_info
     }
 
@@ -90,6 +132,71 @@ gq_qgs_extract <- function(path) {
 
 
 # --- internal helpers --------------------------------------------------------
+
+#' The source table a datasource names
+#'
+#' A file source names it after `layername=` (`x.gpkg|layername=schema.table`);
+#' a PostgreSQL source as `table="schema"."table"`, which is what a `.qlr`
+#' written against a database carries (#23).
+#' @noRd
+datasource_layer <- function(datasource) {
+  if (is.na(datasource)) return(NA_character_)
+  if (grepl("layername=", datasource, fixed = TRUE)) {
+    return(sub(".*layername=([^|]+).*", "\\1", datasource))
+  }
+  pg <- regmatches(datasource, regexec('table="([^"]+)"\\."([^"]+)"', datasource))[[1]]
+  if (length(pg) == 3) return(paste0(pg[2], ".", pg[3]))
+  NA_character_
+}
+
+#' A layer's own opacity, `<layerOpacity>`, 1 when absent
+#' @noRd
+layer_opacity_read <- function(layer_node) {
+  node <- xml2::xml_find_first(layer_node, "./layerOpacity")
+  if (is.na(node)) return(1)
+  op <- suppressWarnings(as.numeric(xml2::xml_text(node)))
+  if (length(op) != 1 || is.na(op)) 1 else op
+}
+
+#' Append a sentence to an entry's `note`
+#' @noRd
+note_add <- function(x, msg) {
+  x$note <- if (is.null(x$note)) msg else paste0(x$note, "; ", msg)
+  x
+}
+
+#' Does a colour the registry carries come from an active data-defined property?
+#'
+#' A colour driven by an expression overrides the renderer's own, so the
+#' renderer no longer describes what QGIS draws (#38). Only an active property
+#' with an expression or a field counts: QGIS also writes inactive stubs. Only
+#' the layers [symbol_read()] modelled are read, the overlay's tick marker
+#' included: an expression on a layer the registry does not model overrides
+#' nothing it carries, and a categorized renderer's `<source-symbol>` is a
+#' template, not drawn.
+#' @noRd
+color_data_defined <- function(renderer) {
+  dd_val <- function(p, k) {
+    v <- xml2::xml_attr(xml2::xml_find_first(p, paste0("./Option[@name='", k, "']")), "value")
+    if (is.na(v)) "" else v
+  }
+  node_dd <- function(node) {
+    props <- xml2::xml_find_all(
+      node,
+      paste0("./data_defined_properties//Option[@name='properties']",
+             "/Option[@name='fillColor' or @name='outlineColor']")
+    )
+    any(vapply(props, function(p) {
+      identical(dd_val(p, "active"), "true") &&
+        (nzchar(trimws(dd_val(p, "expression"))) || nzchar(trimws(dd_val(p, "field"))))
+    }, logical(1)))
+  }
+  for (sym in xml2::xml_find_all(renderer, "./symbols/symbol")) {
+    sr <- symbol_read(sym)
+    if (!is.null(sr) && any(vapply(sr$modelled, node_dd, logical(1)))) return(TRUE)
+  }
+  FALSE
+}
 
 #' Convert QGIS RGBA string "r,g,b,a" to hex color
 #' @noRd
@@ -118,6 +225,12 @@ opt_val <- function(layer_node, name) {
   xml2::xml_attr(node, "value")
 }
 
+#' A numeric Option value, `NA` when absent or not a number
+#' @noRd
+opt_num <- function(layer_node, name) {
+  suppressWarnings(as.numeric(opt_val(layer_node, name)))
+}
+
 #' Extract a dash pattern from a SimpleLine symbol layer
 #'
 #' QGIS encodes dashes two ways: a named `line_style` (e.g. "dash dot"), or a
@@ -138,52 +251,176 @@ parse_dash <- function(layer_node) {
   NA_character_
 }
 
+#' The stroke a SimpleLine symbol layer draws, `alpha` being the symbol's and
+#' the layer's opacity already multiplied together
+#' @noRd
+line_stroke <- function(sym_layer, alpha = 1) {
+  color <- opt_val(sym_layer, "line_color")
+  width <- opt_val(sym_layer, "line_width")
+  dash <- parse_dash(sym_layer)
+
+  stroke <- list(color = rgba_to_hex(color))
+  if (!is.na(width)) stroke$width <- as.numeric(width)
+  if (!is.na(dash)) stroke$dash <- dash
+
+  stroke_alpha <- alpha * rgba_alpha(color)
+  if (stroke_alpha < 1) stroke$opacity <- round(stroke_alpha, 3)
+  stroke
+}
+
+#' Railway-style ticks as a wide dashed line
+#'
+#' A MarkerLine that places a `line` marker at a fixed interval, rotated to the
+#' line, draws a tick across it every `interval` mm. The same picture is a line
+#' as wide as the tick is long, dashed with the tick's thickness on and the rest
+#' of the interval off. Returns that overlay, or `NULL` when the MarkerLine is
+#' anything else (other markers, other placements, units other than mm).
+#' @noRd
+tick_overlay <- function(marker_line, alpha = 1) {
+  own <- function(k) {
+    v <- xml2::xml_attr(
+      xml2::xml_find_first(marker_line, paste0("./Option/Option[@name='", k, "']")),
+      "value"
+    )
+    if (is.na(v)) NA_character_ else v
+  }
+  placement <- own("placements")
+  if (is.na(placement)) placement <- own("placement")
+  if (!identical(placement, "Interval") && !identical(placement, "interval")) return(NULL)
+  if (!identical(own("rotate"), "1")) return(NULL)
+  if (!identical(own("interval_unit"), "MM")) return(NULL)
+  interval <- suppressWarnings(as.numeric(own("interval")))
+
+  marks <- xml2::xml_find_all(marker_line, "./symbol/layer[not(@enabled='0')]")
+  if (length(marks) != 1) return(NULL)
+  mark <- marks[[1]]
+  if (!identical(xml2::xml_attr(mark, "class"), "SimpleMarker")) return(NULL)
+  if (!identical(opt_val(mark, "name"), "line")) return(NULL)
+  angle <- opt_num(mark, "angle")
+  if (is.na(angle) || !angle %in% c(0, 180)) return(NULL)
+  if (!identical(opt_val(mark, "size_unit"), "MM")) return(NULL)
+  if (!identical(opt_val(mark, "outline_width_unit"), "MM")) return(NULL)
+  size <- opt_num(mark, "size")
+  tick <- opt_num(mark, "outline_width")
+  if (anyNA(c(interval, size, tick)) || tick <= 0 || interval <= tick) return(NULL)
+
+  fmt <- function(x) as.character(round(x, 6))
+  color <- opt_val(mark, "outline_color")
+  out <- list(
+    color = rgba_to_hex(color),
+    width = size,
+    dash = paste0(fmt(tick), ";", fmt(interval - tick))
+  )
+  # The ticks' own sub-symbol alpha, the parent symbol's and the layer's
+  mark_alpha <- as.numeric(xml2::xml_attr(xml2::xml_find_first(marker_line, "./symbol"), "alpha") %||% "1")
+  tick_alpha <- alpha * mark_alpha * rgba_alpha(color)
+  if (tick_alpha < 1) out$opacity <- round(tick_alpha, 3)
+  out
+}
+
+#' Read one QGIS symbol: which of its layers the registry models, and how
+#'
+#' The one reader every renderer parser calls, so they cannot disagree about
+#' which layers count or how opacity composes (#103's review found each rule
+#' fixed in one parser and missing from its siblings). It takes the symbol's
+#' enabled top-level layers (`.//layer` would also reach a MarkerLine's marker
+#' or a pattern fill's line), and multiplies the symbol's `alpha` by the
+#' layer's `<layerOpacity>`.
+#'
+#' The first layer carries the style when it is one the registry models
+#' (SimpleFill, SimpleLine, SimpleMarker). Two SimpleLines with the lower one
+#' wider are a casing under a core; a SimpleLine under railway-style ticks has
+#' an overlay. Every other layer, the first one included, is returned in
+#' `unmodelled` for the caller's note.
+#' @return `NULL` for a symbol with no enabled layer, else a list: `class`,
+#'   `layer` (the first), `core` (the line that carries a line style, the core
+#'   when cased), `alpha`, `casing`, `overlay`, `unmodelled`, and `modelled`,
+#'   the layer nodes whose colours the registry carries (a tick marker
+#'   included).
+#' @noRd
+symbol_read <- function(sym, layer_opacity = 1) {
+  alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1") * layer_opacity
+  layers <- xml2::xml_find_all(sym, "./layer[not(@enabled='0')]")
+  if (length(layers) == 0) return(NULL)
+  classes <- xml2::xml_attr(layers, "class")
+
+  out <- list(class = classes[1], layer = layers[[1]], core = layers[[1]], alpha = alpha)
+  used <- if (classes[1] %in% c("SimpleFill", "SimpleLine", "SimpleMarker")) 1L else integer()
+  tick <- list()
+
+  if (length(layers) == 2 && all(classes == "SimpleLine")) {
+    under <- opt_num(layers[[1]], "line_width")
+    over <- opt_num(layers[[2]], "line_width")
+    if (!anyNA(c(under, over)) && under > over) {
+      casing <- line_stroke(layers[[1]], alpha)
+      casing$dash <- NULL
+      out$casing <- casing
+      out$core <- layers[[2]]
+      used <- 1:2
+    }
+  } else if (length(layers) == 2 && identical(classes, c("SimpleLine", "MarkerLine"))) {
+    overlay <- tick_overlay(layers[[2]], alpha)
+    if (!is.null(overlay)) {
+      out$overlay <- overlay
+      used <- 1:2
+      # the overlay's colour is the tick marker's, inside the MarkerLine
+      tick <- list(xml2::xml_find_first(layers[[2]], "./symbol/layer[not(@enabled='0')]"))
+    }
+  }
+
+  # Indices, not classes[-used]: a negative empty index selects nothing.
+  out$unmodelled <- classes[setdiff(seq_along(classes), used)]
+  # The nodes whose colours the registry carries, for color_data_defined()
+  out$modelled <- c(lapply(used, function(i) layers[[i]]), tick)
+  out
+}
+
+#' The note naming symbol layers the registry does not model
+#' @noRd
+unmodelled_note <- function(classes, what = "symbol layers") {
+  if (length(classes) == 0) return(NULL)
+  paste0(what, " not modelled: ", paste(classes, collapse = ", "),
+         " (the QML from gq_style_qml() carries them)")
+}
+
 #' Parse a singleSymbol renderer
 #' @noRd
-parse_single_symbol <- function(renderer, geom_type) {
+parse_single_symbol <- function(renderer, geom_type, layer_opacity = 1) {
   sym <- xml2::xml_find_first(renderer, ".//symbol")
   if (is.na(sym)) return(list())
+  sr <- symbol_read(sym, layer_opacity)
+  if (is.null(sr)) return(list())
 
-  sym_alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1")
-  sym_layer <- xml2::xml_find_first(sym, ".//layer")
-  if (is.na(sym_layer)) return(list())
-
-  sym_class <- xml2::xml_attr(sym_layer, "class")
   out <- list()
-
-  if (sym_class == "SimpleFill") {
-    color <- opt_val(sym_layer, "color")
-    outline_color <- opt_val(sym_layer, "outline_color")
-    outline_width <- opt_val(sym_layer, "outline_width")
-    outline_style <- opt_val(sym_layer, "outline_style")
+  if (sr$class == "SimpleFill") {
+    color <- opt_val(sr$layer, "color")
+    outline_color <- opt_val(sr$layer, "outline_color")
+    outline_width <- opt_val(sr$layer, "outline_width")
+    outline_style <- opt_val(sr$layer, "outline_style")
 
     fill <- list(color = rgba_to_hex(color))
-    fill_alpha <- sym_alpha * rgba_alpha(color)
+    fill_alpha <- sr$alpha * rgba_alpha(color)
     if (fill_alpha < 1) fill$opacity <- round(fill_alpha, 3)
     out$fill <- fill
 
+    # The symbol's and the layer's opacity reach the outline as well as the fill
     stroke <- list(color = rgba_to_hex(outline_color))
     if (!is.na(outline_width)) stroke$width <- as.numeric(outline_width)
-    if (!is.na(outline_style) && outline_style == "no") stroke$style <- "none"
+    if (!is.na(outline_style) && outline_style == "no") {
+      stroke$style <- "none"
+    } else if (!is.na(outline_color)) {
+      outline_alpha <- sr$alpha * rgba_alpha(outline_color)
+      if (outline_alpha < 1) stroke$opacity <- round(outline_alpha, 3)
+    }
     out$stroke <- stroke
 
-  } else if (sym_class == "SimpleLine") {
-    color <- opt_val(sym_layer, "line_color")
-    width <- opt_val(sym_layer, "line_width")
-    dash <- parse_dash(sym_layer)
+  } else if (sr$class == "SimpleLine") {
+    out$stroke <- line_stroke(sr$core, sr$alpha)
 
-    stroke <- list(color = rgba_to_hex(color))
-    if (!is.na(width)) stroke$width <- as.numeric(width)
-    if (!is.na(dash)) stroke$dash <- dash
-
-    stroke_alpha <- sym_alpha * rgba_alpha(color)
-    if (stroke_alpha < 1) stroke$opacity <- round(stroke_alpha, 3)
-    out$stroke <- stroke
-
-  } else if (sym_class == "SimpleMarker") {
-    color <- opt_val(sym_layer, "color")
-    size <- opt_val(sym_layer, "size")
-    shape <- opt_val(sym_layer, "name")
+  } else if (sr$class == "SimpleMarker") {
+    color <- opt_val(sr$layer, "color")
+    size <- opt_val(sr$layer, "size")
+    shape <- opt_val(sr$layer, "name")
 
     mark <- list(color = rgba_to_hex(color))
     if (!is.na(shape)) mark$shape <- shape
@@ -191,87 +428,89 @@ parse_single_symbol <- function(renderer, geom_type) {
     out$mark <- mark
   }
 
-  # check for additional symbol layers (overlay / casing)
-  all_sym_layers <- xml2::xml_find_all(sym, ".//layer")
-  if (length(all_sym_layers) > 1) {
-    out$note <- paste0(length(all_sym_layers), " symbol layers - overlay/casing may apply")
+  if (!is.null(sr$casing)) out$casing <- sr$casing
+  if (!is.null(sr$overlay)) out$overlay <- sr$overlay
+  out$note <- unmodelled_note(sr$unmodelled)
+  out
+}
+
+#' A class's style from its symbol, for the categorized and graduated parsers
+#'
+#' Returns the class fields and, as attribute `unmodelled`, the symbol layers it
+#' could not model. A class has no `overlay` field, so a class's overlay is one
+#' of those.
+#' @noRd
+class_style <- function(sym, layer_opacity) {
+  sr <- symbol_read(sym, layer_opacity)
+  if (is.null(sr)) return(NULL)
+  cls <- list()
+
+  if (sr$class == "SimpleFill") {
+    color <- opt_val(sr$layer, "color")
+    cls$color <- rgba_to_hex(color)
+    fill_alpha <- sr$alpha * rgba_alpha(color)
+    if (fill_alpha < 1) cls$opacity <- round(fill_alpha, 3)
+    outline_w <- opt_val(sr$layer, "outline_width")
+    if (!is.na(outline_w)) cls$outline_width <- as.numeric(outline_w)
+  } else if (sr$class == "SimpleLine") {
+    s <- line_stroke(sr$core, sr$alpha)
+    cls$color <- s$color
+    cls$width <- s$width
+    cls$dash <- s$dash
+    cls$opacity <- s$opacity
+    if (!is.null(sr$casing)) {
+      cls$casing_color <- sr$casing$color
+      cls$casing_width <- sr$casing$width
+    }
+  } else if (sr$class == "SimpleMarker") {
+    color <- opt_val(sr$layer, "color")
+    size <- opt_val(sr$layer, "size")
+    shape <- opt_val(sr$layer, "name")
+    cls$color <- rgba_to_hex(color)
+    if (!is.na(shape)) cls$shape <- shape
+    if (!is.na(size)) cls$radius <- as.numeric(size)
   }
 
-  out
+  unmodelled <- sr$unmodelled
+  if (!is.null(sr$overlay)) unmodelled <- c(unmodelled, "MarkerLine")
+  attr(cls, "unmodelled") <- unmodelled
+  cls
+}
+
+#' The layer note for class symbol layers no class could model
+#' @noRd
+class_note <- function(unmodelled) {
+  if (length(unmodelled) == 0) return(list())
+  list(note = unmodelled_note(sort(unique(unmodelled), method = "radix"),
+                              "class symbol layers"))
+}
+
+#' Find a renderer's symbol by name
+#' @noRd
+symbol_named <- function(symbols, name) {
+  for (s in symbols) if (identical(xml2::xml_attr(s, "name"), name)) return(s)
+  NULL
 }
 
 #' Parse a categorizedSymbol renderer
 #' @noRd
-parse_categorized <- function(renderer, geom_type) {
+parse_categorized <- function(renderer, geom_type, layer_opacity = 1) {
   attr_field <- xml2::xml_attr(renderer, "attr")
   categories <- xml2::xml_find_all(renderer, ".//categories/category")
   symbols <- xml2::xml_find_all(renderer, ".//symbols/symbol")
 
   classes <- list()
+  unmodelled <- character()
   for (cat in categories) {
     cat_value <- xml2::xml_attr(cat, "value")
     cat_label <- xml2::xml_attr(cat, "label")
-    cat_symbol_name <- xml2::xml_attr(cat, "symbol")
 
-    # find the matching symbol
-    sym <- NULL
-    for (s in symbols) {
-      if (xml2::xml_attr(s, "name") == cat_symbol_name) {
-        sym <- s
-        break
-      }
-    }
+    sym <- symbol_named(symbols, xml2::xml_attr(cat, "symbol"))
     if (is.null(sym)) next
-
-    sym_alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1")
-    sym_layer <- xml2::xml_find_first(sym, ".//layer")
-    if (is.na(sym_layer)) next
-
-    sym_class <- xml2::xml_attr(sym_layer, "class")
-    cls <- list()
-
-    if (sym_class == "SimpleFill") {
-      color <- opt_val(sym_layer, "color")
-      cls$color <- rgba_to_hex(color)
-      fill_alpha <- sym_alpha * rgba_alpha(color)
-      if (fill_alpha < 1) cls$opacity <- round(fill_alpha, 3)
-      outline_w <- opt_val(sym_layer, "outline_width")
-      if (!is.na(outline_w)) cls$outline_width <- as.numeric(outline_w)
-    } else if (sym_class == "SimpleLine") {
-      color <- opt_val(sym_layer, "line_color")
-      width <- opt_val(sym_layer, "line_width")
-      cls$color <- rgba_to_hex(color)
-      if (!is.na(width)) cls$width <- as.numeric(width)
-      dash <- parse_dash(sym_layer)
-      if (!is.na(dash)) cls$dash <- dash
-      line_alpha <- sym_alpha * rgba_alpha(color)
-      if (line_alpha < 1) cls$opacity <- round(line_alpha, 3)
-    } else if (sym_class == "SimpleMarker") {
-      color <- opt_val(sym_layer, "color")
-      size <- opt_val(sym_layer, "size")
-      shape <- opt_val(sym_layer, "name")
-      cls$color <- rgba_to_hex(color)
-      if (!is.na(shape)) cls$shape <- shape
-      if (!is.na(size)) cls$radius <- as.numeric(size)
-    }
-
-    # check for multi-layer symbols (casing)
-    all_sym_layers <- xml2::xml_find_all(sym, ".//layer")
-    if (length(all_sym_layers) > 1) {
-      # try to get casing from first layer, core from second
-      casing_layer <- all_sym_layers[[1]]
-      core_layer <- all_sym_layers[[2]]
-      casing_color <- opt_val(casing_layer, "line_color")
-      casing_width <- opt_val(casing_layer, "line_width")
-      core_color <- opt_val(core_layer, "line_color")
-      core_width <- opt_val(core_layer, "line_width")
-      if (!is.na(casing_color) && !is.na(core_color)) {
-        cls$casing_color <- rgba_to_hex(casing_color)
-        if (!is.na(casing_width)) cls$casing_width <- as.numeric(casing_width)
-        cls$color <- rgba_to_hex(core_color)
-        if (!is.na(core_width)) cls$width <- as.numeric(core_width)
-      }
-    }
+    cls <- class_style(sym, layer_opacity)
+    if (is.null(cls)) next
+    unmodelled <- c(unmodelled, attr(cls, "unmodelled"))
+    attr(cls, "unmodelled") <- NULL
 
     # Grouped categories: QGIS groups multiple values under one symbol using
     # <val> children instead of a single value attribute (#25)
@@ -291,89 +530,120 @@ parse_categorized <- function(renderer, geom_type) {
     }
   }
 
-  list(classification = list(field = attr_field, classes = classes))
+  c(list(classification = list(field = attr_field, classes = classes)),
+    class_note(unmodelled))
 }
 
 #' Parse a graduatedSymbol renderer
 #' @noRd
-parse_graduated <- function(renderer, geom_type) {
+parse_graduated <- function(renderer, geom_type, layer_opacity = 1) {
   attr_field <- xml2::xml_attr(renderer, "attr")
   ranges <- xml2::xml_find_all(renderer, ".//ranges/range")
   symbols <- xml2::xml_find_all(renderer, ".//symbols/symbol")
 
   classes <- list()
+  unmodelled <- character()
   for (r in ranges) {
     lower <- xml2::xml_attr(r, "lower")
     upper <- xml2::xml_attr(r, "upper")
     label <- xml2::xml_attr(r, "label")
-    sym_name <- xml2::xml_attr(r, "symbol")
 
-    sym <- NULL
-    for (s in symbols) {
-      if (xml2::xml_attr(s, "name") == sym_name) {
-        sym <- s
-        break
-      }
-    }
+    sym <- symbol_named(symbols, xml2::xml_attr(r, "symbol"))
     if (is.null(sym)) next
+    style <- class_style(sym, layer_opacity)
+    if (is.null(style)) next
+    unmodelled <- c(unmodelled, attr(style, "unmodelled"))
+    attr(style, "unmodelled") <- NULL
 
-    sym_layer <- xml2::xml_find_first(sym, ".//layer")
-    if (is.na(sym_layer)) next
-
-    sym_class <- xml2::xml_attr(sym_layer, "class")
-    cls <- list(lower = as.numeric(lower), upper = as.numeric(upper))
-
-    if (sym_class == "SimpleFill") {
-      cls$color <- rgba_to_hex(opt_val(sym_layer, "color"))
-    } else if (sym_class == "SimpleLine") {
-      cls$color <- rgba_to_hex(opt_val(sym_layer, "line_color"))
-      w <- opt_val(sym_layer, "line_width")
-      if (!is.na(w)) cls$width <- as.numeric(w)
-    } else if (sym_class == "SimpleMarker") {
-      cls$color <- rgba_to_hex(opt_val(sym_layer, "color"))
-    }
-
+    cls <- c(list(lower = as.numeric(lower), upper = as.numeric(upper)), style)
     if (!is.na(label)) cls$label <- label
     classes[[paste0(lower, "_", upper)]] <- cls
   }
 
-  list(classification = list(field = attr_field, type = "graduated", classes = classes))
+  c(list(classification = list(field = attr_field, type = "graduated", classes = classes)),
+    class_note(unmodelled))
+}
+
+#' QGIS label placement modes, by the integer QGIS writes
+#' @noRd
+label_placements <- c(
+  "0" = "around_point", "1" = "over_point", "2" = "line", "3" = "curved",
+  "4" = "horizontal", "5" = "free", "6" = "ordered", "7" = "perimeter_curved",
+  "8" = "outside_polygons"
+)
+
+#' `"bold"` for a heavy enough `fontWeight`, else `NULL`
+#'
+#' QGIS writes Qt's weight, and Qt changed scales: Qt5 runs 0-99 (50 normal,
+#' 63 demibold, 75 bold, 87 black), Qt6 1-1000 (400, 600, 700, 900). Demibold
+#' and heavier read as bold on either. The old `fontBold` attribute is never
+#' written by current QGIS (#7).
+#' @noRd
+label_weight <- function(x) {
+  w <- suppressWarnings(as.numeric(x))
+  if (length(w) != 1 || is.na(w)) return(NULL)
+  bold <- if (w <= 99) w >= 63 else w >= 600
+  if (bold) "bold" else NULL
 }
 
 #' Parse label settings from a maplayer node
+#'
+#' Rule-based labelling keeps one `<settings>` per rule; the first active
+#' rule's is taken, and `note` says how many active rules there were.
 #' @noRd
-parse_labels <- function(layer_node) {
-  labeling <- xml2::xml_find_first(layer_node, ".//labeling")
+parse_labels <- function(layer_node, geom_type = "unknown") {
+  labeling <- xml2::xml_find_first(layer_node, "./labeling")
   if (is.na(labeling)) return(list())
 
-  settings <- xml2::xml_find_first(labeling, ".//settings")
-  if (is.na(settings)) return(list())
+  # A rule switched off (`active="0"`) is not drawn, so it is neither taken nor
+  # counted, as a disabled symbol layer is skipped.
+  settings <- xml2::xml_find_all(labeling, ".//settings[not(ancestor::rule[@active='0'])]")
+  if (length(settings) == 0) return(list())
+  first <- settings[[1]]
 
-  # field name
-  field_node <- xml2::xml_find_first(settings, ".//text-format/Option[@name='fieldName']")
-  field <- if (!is.na(field_node)) xml2::xml_attr(field_node, "value") else NA_character_
-
-  # font
-  font_node <- xml2::xml_find_first(settings, ".//text-style")
+  font_node <- xml2::xml_find_first(first, "./text-style")
   if (is.na(font_node)) return(list())
 
   out <- list()
-  if (!is.na(field)) out$field <- field
+
+  # QGIS writes the label source on <text-style>, flagged by isExpression (#6).
+  # A bare or double-quoted column name marked as an expression is a column.
+  source <- trimws(xml2::xml_attr(font_node, "fieldName"))
+  if (!is.na(source) && nzchar(source)) {
+    bare <- "^\"?([A-Za-z_][A-Za-z0-9_]*)\"?$"
+    if (!identical(xml2::xml_attr(font_node, "isExpression"), "1")) {
+      out$field <- source
+    } else if (grepl(bare, source)) {
+      out$field <- sub(bare, "\\1", source)
+    } else {
+      out$expression <- source
+    }
+  }
 
   font_family <- xml2::xml_attr(font_node, "fontFamily")
   font_size <- xml2::xml_attr(font_node, "fontSize")
   font_italic <- xml2::xml_attr(font_node, "fontItalic")
-  font_bold <- xml2::xml_attr(font_node, "fontBold")
   text_color <- xml2::xml_attr(font_node, "textColor")
 
   if (!is.na(font_family)) out$font <- font_family
-  if (!is.na(font_size)) out$size <- as.numeric(font_size)
+  unit_notes <- character()
+  size_pt <- print_size(font_size, xml2::xml_attr(font_node, "fontSizeUnit"), "Point", "pt")
+  if (!is.null(size_pt)) {
+    out$size <- size_pt
+  } else if (!is.na(font_size)) {
+    unit_notes <- c(unit_notes, paste0("size in ", xml2::xml_attr(font_node, "fontSizeUnit")))
+  }
   if (identical(font_italic, "1")) out$style <- "italic"
-  if (identical(font_bold, "1")) out$weight <- "bold"
+  weight <- label_weight(xml2::xml_attr(font_node, "fontWeight"))
+  if (is.null(weight) && identical(xml2::xml_attr(font_node, "fontBold"), "1")) weight <- "bold"
+  if (!is.null(weight)) out$weight <- weight
   if (!is.na(text_color)) out$color <- rgba_to_hex(text_color)
+  text_opacity <- suppressWarnings(as.numeric(xml2::xml_attr(font_node, "textOpacity")))
+  if (!is.na(text_opacity) && text_opacity < 1) out$opacity <- round(text_opacity, 3)
 
   # buffer/halo
-  buffer_node <- xml2::xml_find_first(settings, ".//text-buffer")
+  # <text-buffer> sits inside <text-style>, not beside it
+  buffer_node <- xml2::xml_find_first(first, ".//text-buffer")
   if (!is.na(buffer_node)) {
     buf_draw <- xml2::xml_attr(buffer_node, "bufferDraw")
     if (identical(buf_draw, "1")) {
@@ -381,12 +651,59 @@ parse_labels <- function(layer_node) {
       buf_color <- xml2::xml_attr(buffer_node, "bufferColor")
       halo <- list()
       if (!is.na(buf_color)) halo$color <- rgba_to_hex(buf_color)
-      if (!is.na(buf_size)) halo$width <- as.numeric(buf_size)
+      width_mm <- print_size(buf_size, xml2::xml_attr(buffer_node, "bufferSizeUnits"), "MM", "mm")
+      if (!is.null(width_mm)) {
+        halo$width <- width_mm
+      } else if (!is.na(buf_size)) {
+        unit_notes <- c(unit_notes, paste0("halo width in ",
+                                           xml2::xml_attr(buffer_node, "bufferSizeUnits")))
+      }
       if (length(halo) > 0) out$halo <- halo
     }
   }
 
+  # placement, and the data-prep hints tmap and MapLibre cannot act on (#7)
+  placement <- xml2::xml_attr(xml2::xml_find_first(first, "./placement"), "placement")
+  if (!is.na(placement) && placement %in% names(label_placements)) {
+    out$placement <- unname(label_placements[placement])
+    # QGIS's Line mode on a polygon follows its perimeter
+    if (out$placement == "line" && geom_type == "polygon") out$placement <- "perimeter"
+  }
+  rendering <- xml2::xml_find_first(first, "./rendering")
+  if (identical(xml2::xml_attr(rendering, "mergeLines"), "1")) out$merge_lines <- TRUE
+  min_size <- suppressWarnings(as.numeric(xml2::xml_attr(rendering, "minFeatureSize")))
+  if (!is.na(min_size) && min_size > 0) out$min_feature_size <- min_size
+
+  if (length(settings) > 1) {
+    out <- note_add(out, paste0("rule-based labelling: ", length(settings),
+                                " rules, the first taken"))
+  }
+  if (length(unit_notes)) {
+    out <- note_add(out, paste0(paste(unit_notes, collapse = " and "),
+                                ", which has no print size, left out"))
+  }
+
   out
+}
+
+#' A QGIS size in a print unit, as points or millimetres
+#'
+#' QGIS writes each size with a unit, and the translators read the registry's
+#' label size as points and its halo width as millimetres. Millimetres, points
+#' and inches convert; pixels, map units and percentages have no print size,
+#' so they return `NULL`. An absent unit is QGIS's default for that size.
+#' @noRd
+print_size <- function(value, unit, default_unit, to = c("pt", "mm")) {
+  to <- match.arg(to)
+  v <- suppressWarnings(as.numeric(value))
+  if (length(v) != 1 || is.na(v)) return(NULL)
+  if (is.na(unit) || !nzchar(unit)) unit <- default_unit
+  mm_per <- c(MM = 1, Point = 25.4 / 72, Inch = 25.4)
+  if (!unit %in% names(mm_per)) return(NULL)
+  # Already in the unit asked for: no round trip through millimetres
+  if ((to == "pt" && unit == "Point") || (to == "mm" && unit == "MM")) return(v)
+  mm <- v * mm_per[[unit]]
+  if (to == "mm") mm else mm * 72 / 25.4
 }
 
 # base R null coalesce

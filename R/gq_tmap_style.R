@@ -269,6 +269,8 @@ tmap_polygon_args <- function(sty) {
     if (!identical(sty$stroke$style, "none")) {
       args$col <- sty$stroke$color
       if (!is.null(sty$stroke$width)) args$lwd <- sty$stroke$width
+      # QGIS draws a symbol's opacity over its outline as well as its fill (#103)
+      if (!is.null(sty$stroke$opacity)) args$col_alpha <- sty$stroke$opacity
     } else {
       args$col <- NA
     }

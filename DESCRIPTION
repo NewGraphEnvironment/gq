@@ -36,7 +36,7 @@ Suggests:
     svglite,
     terra,
     testthat (>= 3.2.0),
-    tmap,
+    tmap (>= 4.3),
     withr
 Config/DOI: 10.5281/zenodo.23524719
 Config/testthat/edition: 3

@@ -126,8 +126,23 @@ Each layer style in the registry maps a **layer name** to rendering properties:
         "size": 8,
         "font": "sans-serif",
         "style": "italic",
-        "color": "#1a5276"
+        "color": "#1a5276",
+        "placement": "line",
+        "merge_lines": true
       }
+    },
+    "crossings_pscis_assessment": {
+      "type": "point",
+      "label": {
+        "expression": "concat( 'PSCIS', ' ', \"stream_crossing_id\" )",
+        "weight": "bold",
+        "placement": "ordered"
+      }
+    },
+    "moti_major_structures": {
+      "type": "line",
+      "stroke": {"color": "#ff6011", "width": 1.46},
+      "casing": {"color": "#000000", "width": 2.06}
     },
     "roads": {
       "type": "line",
@@ -144,17 +159,41 @@ Each layer style in the registry maps a **layer name** to rendering properties:
       "type": "line",
       "stroke": {
         "color": "#000000",
-        "width": 1.2
+        "width": 0.4
       },
       "overlay": {
-        "color": "#ffffff",
-        "width": 0.6,
-        "dash": "4 2"
+        "color": "#000000",
+        "width": 2.4,
+        "dash": "0.2;2.8"
       }
     }
   }
 }
 ```
+
+A label names its source as `field`, a plain column, or `expression`, the raw
+QGIS expression, never both (#6): a consumer reading `field` as a column cannot
+be handed `concat(...)`. `placement` is QGIS's mode as a word. `merge_lines` and
+`min_feature_size` (mm) are data-prep hints, because QGIS joins a label's
+connected lines and skips short features, and tmap and MapLibre do neither.
+
+`casing` is a wider line drawn beneath the `stroke`, the per-class
+`casing_color`/`casing_width` of a classified layer. `overlay` draws above it:
+the railway's ticks (a QGIS MarkerLine of perpendicular `line` markers) are
+recorded as a line as wide as a tick is long, dashed tick-thick on and the rest
+of the interval off, in QGIS's millimetres. No translator draws either yet. A
+symbol's opacity and the layer's own (`<layerOpacity>`) are folded into every
+opacity it emits, a polygon outline's and an overlay's included, because QGIS
+draws the whole symbol at that opacity. One reader, `symbol_read()`, decides for
+all three renderer parsers which symbol layers count and what goes unmodelled.
+
+Declined from #38, for the QML corpus to carry: cap and join style (tmap cannot
+draw them) and symbol-layer pass order (nothing consumes it; casing draws beneath
+its core, and beneath every core only where QGIS uses symbol levels, as on
+`roads_dra`). A layer whose colour has an active data-defined expression carries
+a `note`; QGIS draws the expression wherever it evaluates. What the registry
+does not model of a multi-layer symbol (pattern fills, stacked markers) is named
+in the layer's `note`.
 
 ### Components
 
@@ -209,6 +248,15 @@ is the *evidence* for a schema decision, check it is a decision.
 - `gq_tmap_classes(reg, name, field)` — translate classified layer → field, values, labels
 - `gq_mapgl_style(layer)` — translate layer → MapLibre GL paint properties
 - `gq_mapgl_classes(layer)` — translate classified layer → MapLibre match expression
+- `gq_tmap_labels(reg, name, field)` — a registry label as `tm_text()` arguments, halo included
+- `gq_mapgl_labels(layer, field)` — a registry label as `add_symbol_layer()` arguments
+
+Both label translators read QGIS units (points, mm) and refuse a label the
+registry keeps as a QGIS `expression` until `field =` names a column; the custom
+CSV's labels name no column, so they always take `field =`. The tmap halo is
+tmap's own (`opt_tm_text(halo = TRUE)`, from tmap 4.3), not `shadow` or `bgcol`,
+which draw a drop shadow and a box; tmap below 4.3 has no halo, which is why
+`Suggests` asks for 4.3.
 
 The `field` parameter overrides the classification field name when data comes
 from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE
@@ -310,7 +358,7 @@ too many.
 - `reg_qgis_restoration.json` — extracted from restoration QGIS project (48 layers) by
   `data-raw/reg_extract_restoration.R`. A transcript of the template, so a name the
   template carries wrong is corrected in the build, never here. Last extracted from the
-  template repo's v0.93.0 (#102); a gated test in `test-vendored_currency.R` re-extracts
+  template repo's v0.94.0+3 (#103; its template is unchanged since v0.93.0); a gated test in `test-vendored_currency.R` re-extracts
   and compares. The fish passage registry was deleted in #102: nothing read it and
   nothing could regenerate it (#85).
 - `reg_custom.csv` — hand-curated styles for layers without QGIS source.
@@ -396,6 +444,7 @@ The registry maps **layer names** to styles, not data sources to styles. The con
 
 ### Future
 
+- **Casing and overlay drawn** — the registry carries both (#103); no translator draws them yet
 - **leaflet translator** — `gq_leaflet_style()` for interactive bookdown maps
 - **ggplot2 translator** — `gq_ggplot_style()` for statistical plots
 - **QWC2 integration** — browser-based map viewer serving same `.qgs` projects via QGIS Server (sred#19). No style translation needed — QGIS Server renders natively. Complements Mergin Maps (field) and gq (reports).

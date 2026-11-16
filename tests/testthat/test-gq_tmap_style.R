@@ -619,3 +619,13 @@ test_that("a part-filled width draws one value, and map and legend agree on it",
     expect_equal(gq_tmap_legend(reg, "x")$lines$lwd, c(want, want), info = info)
   }
 })
+
+test_that("a polygon's outline opacity reaches tmap as col_alpha (#103)", {
+  layer <- list(type = "polygon", fill = list(color = "#a6cee3", opacity = 0.7),
+                stroke = list(color = "#1f78b4", width = 0.2, opacity = 0.7))
+  a <- gq_tmap_style(layer)
+  expect_equal(a$fill_alpha, 0.7)
+  expect_equal(a$col_alpha, 0.7)
+  layer$stroke$opacity <- NULL
+  expect_null(gq_tmap_style(layer)$col_alpha)
+})

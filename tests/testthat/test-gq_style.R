@@ -210,3 +210,50 @@ test_that("labels index by class key the way values do (#55)", {
   expect_identical(names(cls$labels), names(cls$values))
   expect_equal(unname(cls$labels[codes]), c("Highway", "Freeway"))
 })
+
+test_that("gq_style surfaces a simple layer's casing and overlay (#24)", {
+  layer <- list(
+    type = "line",
+    stroke = list(color = "#ff6011", width = 1.46),
+    casing = list(color = "#000000", width = 2.06),
+    overlay = list(color = "#000000", width = 2.4, dash = "0.2;2.8")
+  )
+  sty <- gq_style(layer)
+  expect_equal(sty$casing, layer$casing)
+  expect_equal(sty$overlay, layer$overlay)
+})
+
+test_that("gq_style surfaces per-class casing named by class key (#24)", {
+  layer <- list(type = "line", classification = list(field = "code", classes = list(
+    RH1 = list(color = "#ffc485", width = 1.3, casing_color = "#9c9c9c", casing_width = 1.86),
+    RLO = list(color = "#ffffff", width = 0.5),
+    `__empty__` = list(color = "#000000", casing_color = "#111111")
+  )))
+  cls <- gq_style(layer)$classification
+  expect_equal(cls$casing_colors, c(RH1 = "#9c9c9c", RLO = NA))
+  expect_equal(cls$casing_widths, c(RH1 = 1.86, RLO = NA))
+})
+
+test_that("gq_style omits casing vectors when no class is cased (#24)", {
+  layer <- list(type = "line", classification = list(field = "code", classes = list(
+    a = list(color = "#ff0000"), b = list(color = "#00ff00")
+  )))
+  expect_null(gq_style(layer)$classification$casing_colors)
+  expect_null(gq_style(layer)$classification$casing_widths)
+})
+
+test_that("gq_style surfaces per-class polygon outlines and the label (#24, #31)", {
+  classes <- list(
+    a = list(color = "#ff0000", outline_color = "#000000", outline_width = 0.5, outline_opacity = 0.4),
+    b = list(color = "#00ff00")
+  )
+  layer <- list(type = "polygon", label = list(field = "name", size = 10),
+                classification = list(field = "code", classes = classes))
+  sty <- gq_style(layer)
+  expect_equal(sty$classification$outline_colors, c(a = "#000000", b = NA))
+  expect_equal(sty$classification$outline_widths, c(a = 0.5, b = NA))
+  expect_equal(sty$classification$outline_opacities, c(a = 0.4, b = NA))
+  expect_equal(sty$label, layer$label)
+  expect_equal(gq_style(list(type = "line", stroke = list(color = "#000000"),
+                             label = list(field = "n")))$label, list(field = "n"))
+})
