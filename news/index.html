@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.23.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.24.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,11 @@
       <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.24.0" id="gq-0240">gq 0.24.0<a class="anchor" aria-label="anchor" href="#gq-0240"></a></h2>
+<ul><li>
+<strong>The registry carries labels, casing, the railway’s ticks and layer opacity as QGIS draws them, and maps can take their labels from it (<a href="https://github.com/NewGraphEnvironment/gq/issues/103" class="external-link">#103</a>).</strong> <code><a href="../reference/gq_qgs_extract.html">gq_qgs_extract()</a></code> reads each label’s column, or keeps a computed label as <code>label.expression</code>, with its weight, placement and halo (<a href="https://github.com/NewGraphEnvironment/gq/issues/6" class="external-link">#6</a>). It reads a casing beneath a line and the railway’s ticks as an <code>overlay</code> (<a href="https://github.com/NewGraphEnvironment/gq/issues/24" class="external-link">#24</a>), and folds <code>&lt;layerOpacity&gt;</code> into every opacity (<a href="https://github.com/NewGraphEnvironment/gq/issues/38" class="external-link">#38</a>). <code>.qlr</code> files are pinned by a test (<a href="https://github.com/NewGraphEnvironment/gq/issues/23" class="external-link">#23</a>). <code><a href="../reference/gq_tmap_labels.html">gq_tmap_labels()</a></code> and <code><a href="../reference/gq_mapgl_labels.html">gq_mapgl_labels()</a></code> turn a registry label into <code><a href="https://r-tmap.github.io/tmap/reference/tm_text.html" class="external-link">tm_text()</a></code> and <code><a href="https://walker-data.com/mapgl/reference/add_symbol_layer.html" class="external-link">add_symbol_layer()</a></code> arguments (<a href="https://github.com/NewGraphEnvironment/gq/issues/7" class="external-link">#7</a>), and both vignettes now take their labels from the registry. Registry label sizes are now points and halos millimetres, so the town label reads 9 rather than 12. <code><a href="../reference/gq_mapgl_labels.html">gq_mapgl_labels()</a></code> converts them back to the same pixels. Suggests now asks for tmap 4.3 or later, for its halo.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.23.0" id="gq-0230">gq 0.23.0<a class="anchor" aria-label="anchor" href="#gq-0230"></a></h2>
 <ul><li>
