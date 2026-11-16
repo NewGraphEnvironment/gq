@@ -452,6 +452,107 @@ test_that("a layer filed under the wrong group is reported", {
 })
 
 
+# --- layer order within a group (gq#105) ---------------------------------------
+#
+# Placement says which group a layer sits in; `order` says which layer draws over
+# which inside it. Seven groups disagreed with both templates until gq#105, every
+# one of them from the registry's first commit or a later insertion, none
+# measured, so the templates' order was adopted.
+#
+# Compared per group path, on the layers both sides carry there, as the group
+# order check above compares the intersection: a layer only gq carries (`town`,
+# `dam`, `rivers_poly`) has no template position to agree with, and a layer
+# filed in another group is placement_drift()'s business.
+#
+# What this cannot see: where a subgroup sits AMONG its parent's layers, and the
+# order of sibling subgroups. groups.csv has no key for either -- a group's own
+# layers sort before its subgroups, and subgroups sort by name -- so that is a
+# schema change, carried by gq#104, not a drift this test could hold.
+
+#' Each group path where gq and the template order their shared layers differently
+order_drift <- function(layers, template) {
+  g <- gq_groups()
+  g$path <- ifelse(is.na(g$subgroup) | !nzchar(g$subgroup), g$group,
+                   paste(g$group, g$subgroup, sep = "/"))
+  t <- layers[layers$template == template, , drop = FALSE]
+  paths <- sort(intersect(unique(t$group_path), g$path), method = "radix")
+  rows <- lapply(paths, function(p) {
+    gp <- g[g$path == p, , drop = FALSE]
+    tp <- t[t$group_path == p, , drop = FALSE]
+    shared <- intersect(gp$layer_key, tp$layer_key)
+    gq_seq <- gp$layer_key[order(gp$order)]
+    tpl_seq <- tp$layer_key[order(tp$order)]
+    gq_seq <- gq_seq[gq_seq %in% shared]
+    tpl_seq <- tpl_seq[tpl_seq %in% shared]
+    if (identical(gq_seq, tpl_seq)) return(NULL)
+    data.frame(group_path = p,
+               gq = paste(gq_seq, collapse = ", "),
+               template = paste(tpl_seq, collapse = ", "),
+               stringsAsFactors = FALSE)
+  })
+  out <- do.call(rbind, rows)
+  if (is.null(out)) {
+    out <- data.frame(group_path = character(), gq = character(),
+                      template = character(), stringsAsFactors = FALSE)
+  }
+  rownames(out) <- NULL
+  out
+}
+
+# The seven groups gq#105 reordered. Named so the premise below can say each is
+# still compared on more than one layer: an order over one layer always agrees.
+order_groups_105 <- c(
+  "Basemap", "Basemap/Waterbodies", "Crossings", "Streams/Habitat models",
+  "Roads,Railways,Pipelines", "Web Mapping Services", "Base - misc"
+)
+
+
+test_that("each reordered group is compared on more than one layer", {
+  layers <- read_template_layers_csv()
+  g <- gq_groups()
+  g_path <- ifelse(is.na(g$subgroup) | !nzchar(g$subgroup), g$group,
+                   paste(g$group, g$subgroup, sep = "/"))
+  for (tpl in templates) {
+    t <- layers[layers$template == tpl, , drop = FALSE]
+    for (p in order_groups_105) {
+      shared <- intersect(g$layer_key[g_path == p], t$layer_key[t$group_path == p])
+      expect_true(length(shared) > 1, info = paste(tpl, p))
+    }
+  }
+})
+
+
+test_that("layer order within each group agrees with the template", {
+  layers <- read_template_layers_csv()
+  for (tpl in templates) {
+    d <- order_drift(layers, tpl)
+    expect_equal(d, d[0, , drop = FALSE], info = tpl)
+  }
+})
+
+
+test_that("a swapped pair inside a group is reported", {
+  # Perturb the vendored table rather than a .qgs: the extractor's sibling
+  # index is already held by the placement fixture above, and what this test
+  # owes is that order_drift() sees a swap. ESRI World Topo and Esri Satellite
+  # trade places in bcrestoration's `Base - misc`, the group where the top
+  # basemap is visible on every device.
+  layers <- read_template_layers_csv()
+  i <- which(layers$template == "bcrestoration_mobile" &
+               layers$layer_key %in% c("esri_world_topo", "esri_satellite"))
+  expect_length(i, 2)
+  swapped <- layers
+  swapped$order[i] <- rev(layers$order[i])
+
+  d <- order_drift(swapped, "bcrestoration_mobile")
+  expect_equal(d$group_path, "Base - misc")
+
+  # Against the real table the same call reports nothing, so the assertion
+  # above is discriminating rather than always-true.
+  expect_equal(nrow(order_drift(layers, "bcrestoration_mobile")), 0L)
+})
+
+
 # --- drift against the live templates -----------------------------------------
 #
 # Moved to test-vendored_currency.R (gq#78), which rebuilds template_groups.csv
