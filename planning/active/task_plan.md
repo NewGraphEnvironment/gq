@@ -89,10 +89,10 @@ template repo is unaffected.
 
 ## Validation
 
-- [ ] Tests pass (`devtools::test()`, grep for FAIL/ERROR)
-- [ ] `lintr::lint_package()`: no new lints in the touched files
-- [ ] `/code-check branch` clean (three-round floor)
-- [ ] PWF checkboxes match landed work
+- [x] Tests pass (`devtools::test()`, grep for FAIL/ERROR)
+- [x] `lintr::lint_package()`: no new lints in the touched files
+- [x] `/code-check branch` clean (three-round floor)
+- [x] PWF checkboxes match landed work
 - [ ] `/planning-archive` on completion
 
 **How each change is proved:**
