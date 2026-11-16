@@ -83,7 +83,7 @@ template repo is unaffected.
 
 ## Phase 4: Hand the interleave to #104
 
-- [ ] Edit #104's body (Batch 11): add an order key that layers and subgroups share. It would
+- [x] Edit #104's body (Batch 11): add an order key that layers and subgroups share. It would
       cover subgroup-among-layers and sibling-subgroup order, citing #105. Make the same
       addition to batch 11 in `planning/backlog.md`.
 

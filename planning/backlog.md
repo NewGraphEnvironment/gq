@@ -202,7 +202,9 @@ the consumer's data prep.
 Reconcile the documented format with what ships and formalize it as json-schema (#2); a
 convention for project-specific overrides, which needs a filter (#20); `name_qgis` and a
 legend-name cross-reference (#21); a `source_type` for project rasters and a key that survives
-two layers sharing a name (#72).
+two layers sharing a name (#72); an order key shared by a group's layers and its subgroups, so
+`groups.csv` can place `Waterbodies` among `Basemap`'s layers and `Stream labels` above
+`Habitat models` as the templates do (from #105).
 
 Gate: GeoStyler vocabulary, a breaking rename of registry keys; a filter column; a layer key
 that is not derived from the name alone. The raster `source_type` needs the template repo to
