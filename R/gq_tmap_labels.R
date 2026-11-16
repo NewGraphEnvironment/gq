@@ -1,37 +1,38 @@
-#' Translate a registry label to tmap text layers
+#' Translate a registry label to tmap text arguments
 #'
-#' Returns the `tm_text()` layers that draw a layer's registry label: the
-#' column, size, colour, weight and slant, and a halo. Add it after the layer's
-#' `tm_shape()`.
+#' Returns `tm_text()` arguments that draw a layer's registry label: the
+#' column, size, colour, weight and slant, along the line for a line label, and
+#' a halo. Splice them in with `do.call()`, as [gq_tmap_style()] is used.
 #'
-#' tmap has no halo, and its `shadow` and `bgcol` draw an offset copy and a box,
-#' so the halo is eight copies of the text in the halo colour, offset by the
-#' halo width around it, under the coloured one. That is why this returns
-#' layers rather than `do.call()` arguments, unlike [gq_tmap_style()].
+#' The halo is tmap's own (`opt_tm_text(halo = TRUE)`, tmap 4.3 and later):
+#' copies of the text in the halo colour drawn around it, which is a halo rather
+#' than the offset copy of `shadow` or the box of `bgcol`.
 #'
 #' Sizes follow QGIS: the registry holds the font size in points and the halo
-#' width in millimetres, and tmap's text `size = 1` is 12 points. Line labels
-#' (`placement` `"line"` or `"curved"`) follow their line. QGIS's
-#' `merge_lines` and `min_feature_size` are not applied here, because tmap
-#' places one label per feature: dissolve by the label column and drop short
-#' features first, or a river cut into segments is labelled once per segment.
-#' The registry's font family is not passed, since QGIS's fonts are rarely
-#' installed where R renders.
+#' width in millimetres, and tmap's text `size = 1` is 12 points. tmap sets the
+#' halo width in lines of text, so it is computed for the registry's size; a
+#' size changed afterwards scales the halo with it. Line labels (`placement`
+#' `"line"` or `"curved"`) follow their line. QGIS's `merge_lines` and
+#' `min_feature_size` are not applied here, because tmap places one label per
+#' feature: dissolve by the label column and drop short features first, or a
+#' river cut into segments is labelled once per segment. The registry's font
+#' family is not passed, since QGIS's fonts are rarely installed where R
+#' renders.
 #'
 #' @inheritParams gq_style
 #' @param field Optional column to label with. Required when the registry
 #'   labels the layer with a QGIS expression (`label$expression`), which tmap
 #'   cannot evaluate: compute it as a column first. Also required for a label
 #'   from the custom CSV, which names no column.
-#' @param ... Arguments passed to every `tm_text()` call, overriding the
-#'   registry's (e.g. `size = 0.6`). The halo copies keep the halo colour.
-#' @return A tmap object of `tm_text()` layers.
+#' @return A named list of `tm_text()` arguments: `text`, `fontface` and
+#'   `options`, and `size`, `col`, `col_alpha`, `xmod`, `ymod` where the
+#'   registry gives them.
 #'
 #' @examples
 #' reg <- gq_reg_main()
 #'
-#' # A plain column: lakes are labelled with gnis_name_1, in italic
-#' reg$layers$lake$label$field
+#' # Lake names: the gnis_name_1 column, 10 pt italic, with a halo
+#' str(gq_tmap_labels(reg, "lake")[c("text", "size", "col", "fontface")])
 #'
 #' # The registry labels PSCIS crossings with a QGIS expression, so tmap needs
 #' # the label as a column
@@ -43,7 +44,8 @@
 #'     gnis_name_1 = "Tachick Lake",
 #'     geometry = sf::st_sfc(sf::st_point(c(1200000, 1000000)), crs = 3005)
 #'   )
-#'   tmap::tm_shape(lakes) + gq_tmap_labels(reg, "lake")
+#'   tmap::tm_shape(lakes) +
+#'     do.call(tmap::tm_text, gq_tmap_labels(reg, "lake"))
 #'
 #'   crossings <- sf::st_sf(
 #'     stream_crossing_id = 123456,
@@ -51,11 +53,12 @@
 #'   )
 #'   crossings$label <- paste("PSCIS", crossings$stream_crossing_id)
 #'   tmap::tm_shape(crossings) +
-#'     gq_tmap_labels(reg, "crossings_pscis_assessment", field = "label")
+#'     do.call(tmap::tm_text,
+#'             gq_tmap_labels(reg, "crossings_pscis_assessment", field = "label"))
 #' }
 #'
 #' @export
-gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL, ...) {
+gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL) {
   if (!requireNamespace("tmap", quietly = TRUE)) {
     stop("tmap is required for gq_tmap_labels()", call. = FALSE)
   }
@@ -75,38 +78,16 @@ gq_tmap_labels <- function(layer_or_reg, name = NULL, field = NULL, ...) {
 
   opts <- list(remove_overlap = TRUE)
   if (isTRUE(lab$placement %in% c("line", "curved"))) opts$along_lines <- TRUE
-  args$options <- do.call(tmap::opt_tm_text, opts)
-
-  over <- list(...)
-  args[names(over)] <- over
-  main <- do.call(tmap::tm_text, args)
-
-  if (is.null(lab$halo$width) || lab$halo$width <= 0) return(main)
-
-  # The halo's offset is arithmetic on size and position, so it needs them as
-  # numbers; one mapped to a column (`size = "area"`) varies by feature.
-  mapped <- vapply(args[intersect(c("size", "xmod", "ymod"), names(args))],
-                   function(v) !is.numeric(v), logical(1))
-  if (any(mapped)) {
-    warning("gq_tmap_labels(): ", paste(names(mapped)[mapped], collapse = ", "),
-            " mapped to a column, so the label is drawn without its halo",
-            call. = FALSE)
-    return(main)
+  if (!is.null(lab$halo$width) && lab$halo$width > 0) {
+    # tmap offsets each halo copy by halo.width lines of text at the text's
+    # size: a line is 1.2 times the text height, which is size x 12 points of
+    # 0.3528 mm.
+    size <- args[["size"]] %||% 1
+    opts$halo <- TRUE
+    opts$halo.col <- lab$halo$color %||% "#ffffff"
+    opts$halo.width <- lab$halo$width / (size * 12 * 1.2 * 0.3528)
+    opts$halo.alpha <- 1
   }
-
-  # Offset in tmap's lines: a line is 1.2 times the text height, and the text
-  # is `size` x 12 points (0.3528 mm each).
-  size <- args$size %||% 1
-  step <- lab$halo$width / (size * 12 * 1.2 * 0.3528)
-  dirs <- list(c(1, 0), c(-1, 0), c(0, 1), c(0, -1),
-               c(.7, .7), c(-.7, .7), c(.7, -.7), c(-.7, -.7))
-  halo <- lapply(dirs, function(d) {
-    a <- args
-    a$col <- lab$halo$color %||% "#ffffff"
-    a$col_alpha <- NULL
-    a$xmod <- (args$xmod %||% 0) + d[1] * step
-    a$ymod <- (args$ymod %||% 0) + d[2] * step
-    do.call(tmap::tm_text, a)
-  })
-  Reduce(`+`, c(halo, list(main)))
+  args$options <- do.call(tmap::opt_tm_text, opts)
+  args
 }

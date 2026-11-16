@@ -79,7 +79,7 @@ Recommended, and taken unless you object at approval:
 
 ## Phase 2: Label translators (batch 10: #7)
 
-- [x] `R/gq_tmap_labels.R`: `gq_tmap_labels(layer_or_reg, name = NULL, field = NULL, ...)`. Corrected during the run: it returns tmap `tm_text()` layers, not `do.call()` args, because the cartography convention's halo is eight offset copies under the text (tmap's `shadow` is an offset copy, `bgcol` a box). Measured: tmap text `size = 1` is 12 pt (36 px rows each at 300 dpi). Args:
+- [x] `R/gq_tmap_labels.R`: `gq_tmap_labels(layer_or_reg, name = NULL, field = NULL)` returns `do.call(tm_text, ...)` args, as planned. (A mid-run detour returned eight-copy halo layers, believing tmap had no halo; that was the installed tmap 4.2 dev build. CRAN's 4.3+ draws `opt_tm_text(halo = TRUE)` the same way, so review round 2 reverted it to the planned shape, with `tmap (>= 4.3)` in Suggests.) Measured: tmap text `size = 1` is 12 pt (36 px rows each at 300 dpi). Args:
   - `text`, `size`, `col`, `fontface` (plain/bold/italic/bold.italic);
   - `options = opt_tm_text(along_lines = placement == "line", shadow = <halo present>, remove_overlap = TRUE)`.
 

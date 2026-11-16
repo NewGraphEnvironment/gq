@@ -2,9 +2,9 @@
 % Please edit documentation in R/gq_tmap_labels.R
 \name{gq_tmap_labels}
 \alias{gq_tmap_labels}
-\title{Translate a registry label to tmap text layers}
+\title{Translate a registry label to tmap text arguments}
 \usage{
-gq_tmap_labels(layer_or_reg, name = NULL, field = NULL, ...)
+gq_tmap_labels(layer_or_reg, name = NULL, field = NULL)
 }
 \arguments{
 \item{layer_or_reg}{Either a layer entry from the registry
@@ -19,38 +19,38 @@ lookup.}
 labels the layer with a QGIS expression (\code{label$expression}), which tmap
 cannot evaluate: compute it as a column first. Also required for a label
 from the custom CSV, which names no column.}
-
-\item{...}{Arguments passed to every \code{tm_text()} call, overriding the
-registry's (e.g. \code{size = 0.6}). The halo copies keep the halo colour.}
 }
 \value{
-A tmap object of \code{tm_text()} layers.
+A named list of \code{tm_text()} arguments: \code{text}, \code{fontface} and
+\code{options}, and \code{size}, \code{col}, \code{col_alpha}, \code{xmod}, \code{ymod} where the
+registry gives them.
 }
 \description{
-Returns the \code{tm_text()} layers that draw a layer's registry label: the
-column, size, colour, weight and slant, and a halo. Add it after the layer's
-\code{tm_shape()}.
+Returns \code{tm_text()} arguments that draw a layer's registry label: the
+column, size, colour, weight and slant, along the line for a line label, and
+a halo. Splice them in with \code{do.call()}, as \code{\link[=gq_tmap_style]{gq_tmap_style()}} is used.
 }
 \details{
-tmap has no halo, and its \code{shadow} and \code{bgcol} draw an offset copy and a box,
-so the halo is eight copies of the text in the halo colour, offset by the
-halo width around it, under the coloured one. That is why this returns
-layers rather than \code{do.call()} arguments, unlike \code{\link[=gq_tmap_style]{gq_tmap_style()}}.
+The halo is tmap's own (\code{opt_tm_text(halo = TRUE)}, tmap 4.3 and later):
+copies of the text in the halo colour drawn around it, which is a halo rather
+than the offset copy of \code{shadow} or the box of \code{bgcol}.
 
 Sizes follow QGIS: the registry holds the font size in points and the halo
-width in millimetres, and tmap's text \code{size = 1} is 12 points. Line labels
-(\code{placement} \code{"line"} or \code{"curved"}) follow their line. QGIS's
-\code{merge_lines} and \code{min_feature_size} are not applied here, because tmap
-places one label per feature: dissolve by the label column and drop short
-features first, or a river cut into segments is labelled once per segment.
-The registry's font family is not passed, since QGIS's fonts are rarely
-installed where R renders.
+width in millimetres, and tmap's text \code{size = 1} is 12 points. tmap sets the
+halo width in lines of text, so it is computed for the registry's size; a
+size changed afterwards scales the halo with it. Line labels (\code{placement}
+\code{"line"} or \code{"curved"}) follow their line. QGIS's \code{merge_lines} and
+\code{min_feature_size} are not applied here, because tmap places one label per
+feature: dissolve by the label column and drop short features first, or a
+river cut into segments is labelled once per segment. The registry's font
+family is not passed, since QGIS's fonts are rarely installed where R
+renders.
 }
 \examples{
 reg <- gq_reg_main()
 
-# A plain column: lakes are labelled with gnis_name_1, in italic
-reg$layers$lake$label$field
+# Lake names: the gnis_name_1 column, 10 pt italic, with a halo
+str(gq_tmap_labels(reg, "lake")[c("text", "size", "col", "fontface")])
 
 # The registry labels PSCIS crossings with a QGIS expression, so tmap needs
 # the label as a column
@@ -62,7 +62,8 @@ if (requireNamespace("tmap", quietly = TRUE) &&
     gnis_name_1 = "Tachick Lake",
     geometry = sf::st_sfc(sf::st_point(c(1200000, 1000000)), crs = 3005)
   )
-  tmap::tm_shape(lakes) + gq_tmap_labels(reg, "lake")
+  tmap::tm_shape(lakes) +
+    do.call(tmap::tm_text, gq_tmap_labels(reg, "lake"))
 
   crossings <- sf::st_sf(
     stream_crossing_id = 123456,
@@ -70,7 +71,8 @@ if (requireNamespace("tmap", quietly = TRUE) &&
   )
   crossings$label <- paste("PSCIS", crossings$stream_crossing_id)
   tmap::tm_shape(crossings) +
-    gq_tmap_labels(reg, "crossings_pscis_assessment", field = "label")
+    do.call(tmap::tm_text,
+            gq_tmap_labels(reg, "crossings_pscis_assessment", field = "label"))
 }
 
 }

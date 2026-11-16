@@ -73,3 +73,4 @@ Source: rfp `origin/main` 9b73405d (v0.94.0+3); `inst/templates/` byte-identical
 | Error | Resolution |
 |-------|------------|
 | Re-extract dropped every label halo | `.//text-buffer` (it nests under `<text-style>`); tests pin the halo and the bufferDraw count |
+| Designed tmap's halo against the installed tmap 4.2.0.9000, which has none | CRAN tmap 4.4-1 (CI's) has `opt_tm_text(halo = TRUE)`; check an installed package against CRAN before designing around a missing feature |

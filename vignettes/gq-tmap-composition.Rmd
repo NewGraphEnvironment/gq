@@ -242,7 +242,7 @@ tm_shape(neexdzii_lakes) +
 
 # Lake labels — column, size, colour, italic and halo from the registry
 if (nrow(lakes_named) > 0) {
-  m <- m + tm_shape(lakes_named) + gq_tmap_labels(reg, "lake")
+  m <- m + tm_shape(lakes_named) + do.call(tm_text, gq_tmap_labels(reg, "lake"))
 }
 
 # Roads — classified by transport_line_type_code, bundled data column is
@@ -304,7 +304,8 @@ if (nrow(neexdzii_falls) > 0) {
 # Stream labels — one feature per name, as QGIS's merge_lines asks, then the
 # registry's label along the stream
 if (nrow(stream_labels) > 0) {
-  m <- m + tm_shape(stream_labels) + gq_tmap_labels(reg, "stream_labels")
+  m <- m + tm_shape(stream_labels) +
+    do.call(tm_text, gq_tmap_labels(reg, "stream_labels"))
 }
 
 # Legends from the registry. gq_tmap_legend() partitions by geometry type,
@@ -430,8 +431,8 @@ outline and the shading outside it are set by hand:
   layer, and white dashes standing in for the ticks QGIS draws across the
   railway, which the registry carries as `overlay` but tmap cannot dash that
   thin
-- **Labels** (lakes, streams) use `gq_tmap_labels(reg, "name")`, which draws
-  the registry's column, size, colour and slant with a halo
+- **Labels** (lakes, streams) use `do.call(tm_text, gq_tmap_labels(reg, "name"))`,
+  the registry's column, size, colour and slant with tmap's halo
 - **Classified layers** (crossings, roads, habitat) use `do.call()` with
   `gq_tmap_style()` — classification field, colors, labels, **line widths and
   dashes** all come from the registry. Labels follow the classes the data

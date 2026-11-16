@@ -384,6 +384,7 @@ parse_categorized <- function(renderer, geom_type, layer_opacity = 1) {
   symbols <- xml2::xml_find_all(renderer, ".//symbols/symbol")
 
   classes <- list()
+  unmodelled <- character()
   for (cat in categories) {
     cat_value <- xml2::xml_attr(cat, "value")
     cat_label <- xml2::xml_attr(cat, "label")
@@ -400,8 +401,10 @@ parse_categorized <- function(renderer, geom_type, layer_opacity = 1) {
     if (is.null(sym)) next
 
     sym_alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1")
-    sym_layer <- xml2::xml_find_first(sym, ".//layer")
-    if (is.na(sym_layer)) next
+    # Enabled top-level layers only, as parse_single_symbol() reads them
+    sym_layers <- xml2::xml_find_all(sym, "./layer[not(@enabled='0')]")
+    if (length(sym_layers) == 0) next
+    sym_layer <- sym_layers[[1]]
 
     sym_class <- xml2::xml_attr(sym_layer, "class")
     cls <- list()
@@ -431,23 +434,21 @@ parse_categorized <- function(renderer, geom_type, layer_opacity = 1) {
       if (!is.na(size)) cls$radius <- as.numeric(size)
     }
 
-    # check for multi-layer symbols (casing): top-level layers only, as in
-    # parse_single_symbol(); a casing only when the lower line is wider
-    all_sym_layers <- xml2::xml_find_all(sym, "./layer")
-    if (length(all_sym_layers) > 1) {
-      # casing from the first layer, core from the second
-      casing_layer <- all_sym_layers[[1]]
-      core_layer <- all_sym_layers[[2]]
-      casing_color <- opt_val(casing_layer, "line_color")
-      casing_width <- opt_val(casing_layer, "line_width")
-      core_color <- opt_val(core_layer, "line_color")
-      core_width <- opt_val(core_layer, "line_width")
-      wider <- isTRUE(as.numeric(casing_width) > as.numeric(core_width))
-      if (!is.na(casing_color) && !is.na(core_color) && wider) {
-        cls$casing_color <- rgba_to_hex(casing_color)
-        if (!is.na(casing_width)) cls$casing_width <- as.numeric(casing_width)
-        cls$color <- rgba_to_hex(core_color)
-        if (!is.na(core_width)) cls$width <- as.numeric(core_width)
+    # More than one symbol layer: a casing, read as parse_single_symbol()
+    # reads one, takes the class's style from the core line above it; anything
+    # else is named in the layer's note.
+    if (length(sym_layers) > 1) {
+      extra <- symbol_layers_extra(sym_layers, sym_alpha * layer_opacity)
+      if (!is.null(extra$casing)) {
+        cls$casing_color <- extra$casing$color
+        if (!is.null(extra$casing$width)) cls$casing_width <- extra$casing$width
+        core <- extra$stroke
+        cls$color <- core$color
+        cls$width <- core$width
+        cls$dash <- core$dash
+        cls$opacity <- core$opacity
+      } else {
+        unmodelled <- c(unmodelled, xml2::xml_attr(sym_layers[-1], "class"))
       }
     }
 
@@ -469,7 +470,15 @@ parse_categorized <- function(renderer, geom_type, layer_opacity = 1) {
     }
   }
 
-  list(classification = list(field = attr_field, classes = classes))
+  out <- list(classification = list(field = attr_field, classes = classes))
+  if (length(unmodelled)) {
+    out$note <- paste0(
+      "class symbol layers not modelled: ",
+      paste(sort(unique(unmodelled), method = "radix"), collapse = ", "),
+      " (the QML from gq_style_qml() carries them)"
+    )
+  }
+  out
 }
 
 #' Parse a graduatedSymbol renderer
@@ -496,8 +505,9 @@ parse_graduated <- function(renderer, geom_type, layer_opacity = 1) {
     if (is.null(sym)) next
 
     sym_alpha <- as.numeric(xml2::xml_attr(sym, "alpha") %||% "1")
-    sym_layer <- xml2::xml_find_first(sym, ".//layer")
-    if (is.na(sym_layer)) next
+    sym_layers <- xml2::xml_find_all(sym, "./layer[not(@enabled='0')]")
+    if (length(sym_layers) == 0) next
+    sym_layer <- sym_layers[[1]]
 
     sym_class <- xml2::xml_attr(sym_layer, "class")
     cls <- list(lower = as.numeric(lower), upper = as.numeric(upper))

@@ -245,14 +245,15 @@ is the *evidence* for a schema decision, check it is a decision.
 - `gq_tmap_classes(reg, name, field)` — translate classified layer → field, values, labels
 - `gq_mapgl_style(layer)` — translate layer → MapLibre GL paint properties
 - `gq_mapgl_classes(layer)` — translate classified layer → MapLibre match expression
-- `gq_tmap_labels(reg, name, field)` — a registry label as tmap text layers, halo included
+- `gq_tmap_labels(reg, name, field)` — a registry label as `tm_text()` arguments, halo included
 - `gq_mapgl_labels(layer, field)` — a registry label as `add_symbol_layer()` arguments
 
 Both label translators read QGIS units (points, mm) and refuse a label the
 registry keeps as a QGIS `expression` until `field =` names a column; the custom
-CSV's labels name no column, so they always take `field =`. tmap's halo is eight
-offset copies under the text, because `shadow` and `bgcol` are a drop shadow and
-a box, which is why `gq_tmap_labels()` returns layers, not `do.call()` arguments.
+CSV's labels name no column, so they always take `field =`. The tmap halo is
+tmap's own (`opt_tm_text(halo = TRUE)`, from tmap 4.3), not `shadow` or `bgcol`,
+which draw a drop shadow and a box; tmap below 4.3 has no halo, which is why
+`Suggests` asks for 4.3.
 
 The `field` parameter overrides the classification field name when data comes
 from an alternative source (e.g., bcfishpass `barrier_status` vs WHSE

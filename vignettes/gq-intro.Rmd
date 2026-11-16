@@ -157,7 +157,7 @@ m <- m +
 tm_shape(pscis_aoi) +
   do.call(tm_dots, gq_tmap_style(reg, "crossings_pscis_assessment")) +
 tm_shape(stream_labels) +
-  gq_tmap_labels(reg, "stream_labels")
+  do.call(tm_text, gq_tmap_labels(reg, "stream_labels"))
 
 # The legend is built from the registry, cut to the classes the frame shows.
 leg <- gq_tmap_legend(

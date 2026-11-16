@@ -311,3 +311,41 @@ test_that("a rule switched off is neither taken nor counted", {
   expect_equal(on$field, "off")
   expect_match(on$note, "3 rules")
 })
+
+test_that("a categorized class reads symbol layers as a single symbol does (#103)", {
+  line <- function(color, width, extra = "") paste0(
+    '<layer class="SimpleLine"', extra, '><Option type="Map">',
+    '<Option name="line_color" value="', color, '"/>',
+    '<Option name="line_width" value="', width, '"/></Option></layer>')
+  renderer <- xml2::read_xml(paste0(
+    '<renderer-v2 type="categorizedSymbol" attr="code"><categories>',
+    '<category value="cased" label="cased" symbol="0"/>',
+    '<category value="off" label="off" symbol="1"/>',
+    '<category value="stacked" label="stacked" symbol="2"/>',
+    '</categories><symbols>',
+    # casing: a wide grey line under a dashed, half-transparent core
+    '<symbol name="0" alpha="1" type="line">', line("156,156,156,255", "2"),
+    '<layer class="SimpleLine"><Option type="Map">',
+    '<Option name="line_color" value="255,196,133,128"/><Option name="line_width" value="1"/>',
+    '<Option name="use_custom_dash" value="1"/><Option name="customdash" value="2;1"/>',
+    '</Option></layer></symbol>',
+    # a disabled first layer is not the class's style
+    '<symbol name="1" alpha="1" type="line">', line("255,0,0,255", "3", ' enabled="0"'),
+    line("0,0,255,255", "1"), '</symbol>',
+    # a narrow line under a wider one is not a casing
+    '<symbol name="2" alpha="1" type="line">', line("0,0,0,255", "1"),
+    line("0,255,0,255", "2"), '</symbol>',
+    '</symbols></renderer-v2>'
+  ))
+  out <- parse_categorized(renderer, "line")
+  cls <- out$classification$classes
+  expect_equal(cls$cased$casing_color, "#9c9c9c")
+  expect_equal(cls$cased$casing_width, 2)
+  expect_equal(cls$cased$color, "#ffc485")
+  expect_equal(cls$cased$dash, "2;1")              # the core's dash, not the casing's
+  expect_equal(cls$cased$opacity, round(128 / 255, 3))
+  expect_equal(cls$off$color, "#0000ff")            # the disabled red layer is skipped
+  expect_null(cls$off$casing_color)
+  expect_null(cls$stacked$casing_color)
+  expect_match(out$note, "class symbol layers not modelled: SimpleLine")
+})
