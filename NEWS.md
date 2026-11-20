@@ -1,3 +1,8 @@
+# gq 0.25.0
+
+- **`gq_mapgl_basemap(basemap = "esri_satellite")` draws Esri World Imagery (#123),** the service the registry already names `esri_satellite` ("Esri Satellite" in the QGIS templates), so a web map can show the ground beneath its layers. It is keyless, with the service's own credit after "Powered by Esri", as `"esri_topo"` has. Its `maxzoom` is 18: over BC's land the service has zoom 18 nearly everywhere, and where a zoom is missing it answers with a grey "Map data not yet available" tile. Zoom 18 is missing north of about 59.15 N east of about 134 W and over parts of the open sea, where a view at zoom 16.5 or more shows grey tiles.
+- The README's Ecosystem table is rendered from the shared registry of New Graph Environment's packages.
+
 # gq 0.24.0
 
 - **The registry carries labels, casing, the railway's ticks and layer opacity as QGIS
