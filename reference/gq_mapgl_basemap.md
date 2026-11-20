@@ -2,7 +2,7 @@
 
 The first call of a gq web map:
 [`mapgl::maplibre()`](https://walker-data.com/mapgl/reference/maplibre.html)
-on one of four keyless basemaps, its view fitted to `x`. The layers go
+on one of five keyless basemaps, its view fitted to `x`. The layers go
 on with
 [`gq_mapgl_network()`](https://newgraphenvironment.github.io/gq/reference/gq_mapgl_network.md)
 and
@@ -15,7 +15,7 @@ and the switches with
 ``` r
 gq_mapgl_basemap(
   x,
-  basemap = c("voyager", "positron", "openfreemap", "esri_topo"),
+  basemap = c("voyager", "positron", "openfreemap", "esri_topo", "esri_satellite"),
   digits = 5L
 )
 ```
@@ -34,8 +34,9 @@ gq_mapgl_basemap(
 - basemap:
 
   `"voyager"` (Carto Voyager), `"positron"` (Carto Positron, pale grey),
-  `"openfreemap"` (OpenFreeMap Liberty) or `"esri_topo"` (Esri World
-  Topographic Map raster tiles).
+  `"openfreemap"` (OpenFreeMap Liberty), `"esri_topo"` (Esri World
+  Topographic Map raster tiles) or `"esri_satellite"` (Esri World
+  Imagery raster tiles, the registry's `esri_satellite`).
 
 - digits:
 
@@ -47,9 +48,9 @@ A `maplibregl` htmlwidget.
 
 ## Details
 
-Esri's World Topographic Map needs no key, and Esri allows free
-noncommercial use with attribution, which the map shows: the service's
-own credit, after "Powered by Esri".
+Esri's World Topographic Map and World Imagery need no key, and Esri
+allows free noncommercial use with attribution, which the map shows: the
+service's own credit, after "Powered by Esri".
 
 ## See also
 
