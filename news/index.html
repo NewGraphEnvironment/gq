@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.24.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.25.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,9 +34,15 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/NewGraphEnvironment/gq/blob/v0.25.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.25.0" id="gq-0250">gq 0.25.0<a class="anchor" aria-label="anchor" href="#gq-0250"></a></h2>
+<ul><li>
+<strong><code>gq_mapgl_basemap(basemap = "esri_satellite")</code> draws Esri World Imagery (<a href="https://github.com/NewGraphEnvironment/gq/issues/123" class="external-link">#123</a>),</strong> the service the registry already names <code>esri_satellite</code> (“Esri Satellite” in the QGIS templates), so a web map can show the ground beneath its layers. It is keyless, with the service’s own credit after “Powered by Esri”, as <code>"esri_topo"</code> has. Its <code>maxzoom</code> is 18: over BC’s land the service has zoom 18 nearly everywhere, and where a zoom is missing it answers with a grey “Map data not yet available” tile. Zoom 18 is missing north of about 59.15 N east of about 134 W and over parts of the open sea, where a view at zoom 16.5 or more shows grey tiles.</li>
+<li>The README’s Ecosystem table is rendered from the shared registry of New Graph Environment’s packages.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.24.0" id="gq-0240">gq 0.24.0<a class="anchor" aria-label="anchor" href="#gq-0240"></a></h2>
 <ul><li>
