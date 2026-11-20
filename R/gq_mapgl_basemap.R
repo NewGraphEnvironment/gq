@@ -1,21 +1,22 @@
 #' Start a MapLibre GL map on a named basemap, fitted to the data
 #'
-#' The first call of a gq web map: [mapgl::maplibre()] on one of four keyless
+#' The first call of a gq web map: [mapgl::maplibre()] on one of five keyless
 #' basemaps, its view fitted to `x`. The layers go on with
 #' [gq_mapgl_network()] and [gq_mapgl_layer()], and the switches with
 #' [gq_mapgl_controls()].
 #'
-#' Esri's World Topographic Map needs no key, and Esri allows free
-#' noncommercial use with attribution, which the map shows: the service's own
-#' credit, after "Powered by Esri".
+#' Esri's World Topographic Map and World Imagery need no key, and Esri allows
+#' free noncommercial use with attribution, which the map shows: the service's
+#' own credit, after "Powered by Esri".
 #'
 #' @param x The extent to fit: an `sf` or `sfc` in any CRS, or an
 #'   [sf::st_bbox()]. Its coordinates are taken to EPSG:4326 and rounded to
 #'   `digits` decimal places, as [gq_mapgl_layer()] rounds the layers, so the
 #'   view fits exactly what is drawn.
 #' @param basemap `"voyager"` (Carto Voyager), `"positron"` (Carto Positron,
-#'   pale grey), `"openfreemap"` (OpenFreeMap Liberty) or `"esri_topo"` (Esri
-#'   World Topographic Map raster tiles).
+#'   pale grey), `"openfreemap"` (OpenFreeMap Liberty), `"esri_topo"` (Esri
+#'   World Topographic Map raster tiles) or `"esri_satellite"` (Esri World
+#'   Imagery raster tiles, the registry's `esri_satellite`).
 #' @param digits Decimal places kept in the coordinates; 5 is about 1 m.
 #' @return A `maplibregl` htmlwidget.
 #'
@@ -27,7 +28,8 @@
 #' m$x$additional_params$bounds
 #'
 #' @export
-gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap", "esri_topo"),
+gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap", "esri_topo",
+                                            "esri_satellite"),
                              digits = 5L) {
   mapgl_need()
   basemap <- match.arg(basemap)
@@ -44,7 +46,8 @@ gq_mapgl_basemap <- function(x, basemap = c("voyager", "positron", "openfreemap"
                   voyager = mapgl::carto_style("voyager"),
                   positron = mapgl::carto_style("positron"),
                   openfreemap = mapgl::openfreemap_style("liberty"),
-                  esri_topo = esri_topo_style())
+                  esri_topo = esri_topo_style(),
+                  esri_satellite = esri_satellite_style())
   # An sf, not an sfc: maplibre() reduces an sf to its bbox but stores an sfc
   # as given, and MapLibre cannot fit to a polygon.
   mapgl::maplibre(style = style, bounds = sf::st_sf(geometry = mapgl_geom(x, digits)))
@@ -141,14 +144,48 @@ round_sfc <- function(g, digits) {
 #' in the map's attribution control.
 #' @noRd
 esri_topo_style <- function() {
-  attribution <- paste0("Powered by <a href=\"https://www.esri.com\">Esri</a> | Sources: Esri, HERE, Garmin, ",
-                        "Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, ",
-                        "Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, ",
-                        "and the GIS User Community")
-  tiles <- "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-  src <- list(type = "raster", tiles = list(tiles), tileSize = 256, maxzoom = 19, attribution = attribution)
-  list(version = 8, sources = list(esri_topo = src),
-       layers = list(list(id = "esri_topo", type = "raster", source = "esri_topo")))
+  esri_raster_style("esri_topo", "World_Topo_Map",
+                    paste0("Sources: Esri, HERE, Garmin, ",
+                           "Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, ",
+                           "Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, ",
+                           "and the GIS User Community"))
+}
+
+#' Esri's World Imagery as a MapLibre raster style
+#'
+#' The registry's `esri_satellite` ("Esri Satellite" in the QGIS templates).
+#' Keyless, with the same terms as World Topo; the attribution is the service's
+#' own `copyrightText` (World_Imagery/MapServer, read 2026-11-20). Where the
+#' service has no imagery at a zoom it serves a grey "Map data not yet
+#' available" tile with HTTP 200. Over BC's land (its `tilemap` endpoint,
+#' 2026-11-20) it has zoom 18 nearly everywhere and zoom 19 at few places, so
+#' `maxzoom` is 18. Zoom 18 is missing north of about 59.15 N east of about
+#' 134 W, and over parts of the open sea (southern Hecate Strait, Queen
+#' Charlotte Sound, offshore); there a view at zoom 16.5 or more
+#' shows the grey tiles, since MapLibre requests a 256-pixel source one zoom
+#' deeper than the view.
+#' @noRd
+esri_satellite_style <- function() {
+  esri_raster_style("esri_satellite", "World_Imagery",
+                    "Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+                    maxzoom = 18)
+}
+
+#' One Esri MapServer tile service as a MapLibre raster style
+#'
+#' `credit` is the service's `copyrightText`, written after "Powered by Esri";
+#' `maxzoom` is the highest zoom MapLibre requests; above it, MapLibre enlarges
+#' that zoom's tiles.
+#' @noRd
+esri_raster_style <- function(id, service, credit, maxzoom = 19) {
+  attribution <- paste0("Powered by <a href=\"https://www.esri.com\">Esri</a> | ", credit)
+  tiles <- paste0("https://server.arcgisonline.com/ArcGIS/rest/services/", service,
+                  "/MapServer/tile/{z}/{y}/{x}")
+  src <- list(type = "raster", tiles = list(tiles), tileSize = 256, maxzoom = maxzoom, attribution = attribution)
+  sources <- list(src)
+  names(sources) <- id
+  list(version = 8, sources = sources,
+       layers = list(list(id = id, type = "raster", source = id)))
 }
 
 #' Line width by stream order, as a MapLibre interpolate expression

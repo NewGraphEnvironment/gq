@@ -279,7 +279,7 @@ scalar when every class shares one, a match expression otherwise (gq#107).
 - `gq_tmap_keymap(aoi, context)` — overview inset plus its viewport
 
 **Composition (mapgl):**
-- `gq_mapgl_basemap(x, basemap)` — `maplibre()` on voyager, positron, openfreemap or Esri topo, fitted to `x`
+- `gq_mapgl_basemap(x, basemap)` — `maplibre()` on voyager, positron, openfreemap, Esri topo or Esri satellite (World Imagery), fitted to `x`
 - `gq_mapgl_network(map, streams, water, reg)` — water from `lake`, streams from `streams_all`, wider by order
 - `gq_mapgl_layer(map, id, x, key | classes | color)` — one layer and its legend; layers can share a source
 - `gq_mapgl_popup(x, fields)` — popup text columns plus the browser-side `concat` expression

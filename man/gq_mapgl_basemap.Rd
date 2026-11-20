@@ -6,7 +6,7 @@
 \usage{
 gq_mapgl_basemap(
   x,
-  basemap = c("voyager", "positron", "openfreemap", "esri_topo"),
+  basemap = c("voyager", "positron", "openfreemap", "esri_topo", "esri_satellite"),
   digits = 5L
 )
 }
@@ -17,8 +17,9 @@ gq_mapgl_basemap(
 view fits exactly what is drawn.}
 
 \item{basemap}{\code{"voyager"} (Carto Voyager), \code{"positron"} (Carto Positron,
-pale grey), \code{"openfreemap"} (OpenFreeMap Liberty) or \code{"esri_topo"} (Esri
-World Topographic Map raster tiles).}
+pale grey), \code{"openfreemap"} (OpenFreeMap Liberty), \code{"esri_topo"} (Esri
+World Topographic Map raster tiles) or \code{"esri_satellite"} (Esri World
+Imagery raster tiles, the registry's \code{esri_satellite}).}
 
 \item{digits}{Decimal places kept in the coordinates; 5 is about 1 m.}
 }
@@ -26,15 +27,15 @@ World Topographic Map raster tiles).}
 A \code{maplibregl} htmlwidget.
 }
 \description{
-The first call of a gq web map: \code{\link[mapgl:maplibre]{mapgl::maplibre()}} on one of four keyless
+The first call of a gq web map: \code{\link[mapgl:maplibre]{mapgl::maplibre()}} on one of five keyless
 basemaps, its view fitted to \code{x}. The layers go on with
 \code{\link[=gq_mapgl_network]{gq_mapgl_network()}} and \code{\link[=gq_mapgl_layer]{gq_mapgl_layer()}}, and the switches with
 \code{\link[=gq_mapgl_controls]{gq_mapgl_controls()}}.
 }
 \details{
-Esri's World Topographic Map needs no key, and Esri allows free
-noncommercial use with attribution, which the map shows: the service's own
-credit, after "Powered by Esri".
+Esri's World Topographic Map and World Imagery need no key, and Esri allows
+free noncommercial use with attribution, which the map shows: the service's
+own credit, after "Powered by Esri".
 }
 \examples{
 \dontshow{if (requireNamespace("mapgl", quietly = TRUE) && requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}

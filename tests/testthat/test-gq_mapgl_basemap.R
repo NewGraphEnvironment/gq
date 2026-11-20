@@ -30,6 +30,18 @@ test_that("gq_mapgl_basemap names each basemap's style", {
   esri <- gq_mapgl_basemap(x, "esri_topo")$x$style
   expect_equal(esri$sources$esri_topo$type, "raster")
   expect_match(esri$sources$esri_topo$attribution, "Powered by .*Esri")
+  expect_match(esri$sources$esri_topo$tiles[[1]], "/World_Topo_Map/MapServer/tile/\\{z\\}/\\{y\\}/\\{x\\}$")
+  sat <- gq_mapgl_basemap(x, "esri_satellite")$x$style
+  expect_identical(names(sat$sources), "esri_satellite")
+  expect_equal(sat$sources$esri_satellite$type, "raster")
+  # zoom 19 is a grey placeholder over most of BC, so MapLibre enlarges z18
+  # (where z18 itself is missing, see esri_satellite_style())
+  expect_identical(sat$sources$esri_satellite$maxzoom, 18)
+  expect_identical(esri$sources$esri_topo$maxzoom, 19)
+  expect_match(sat$sources$esri_satellite$tiles[[1]], "/World_Imagery/MapServer/tile/\\{z\\}/\\{y\\}/\\{x\\}$")
+  expect_match(sat$sources$esri_satellite$attribution, "^Powered by .*Esri.* \\| Source: Esri, Vantor")
+  expect_identical(sat$layers[[1]][c("id", "type", "source")],
+                   list(id = "esri_satellite", type = "raster", source = "esri_satellite"))
 })
 
 test_that("gq_mapgl_basemap refuses what it cannot fit", {
